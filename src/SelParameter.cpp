@@ -1,0 +1,28 @@
+// SelParameter.cpp: implementation of the SelParameter class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "SelParameter.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+
+
+PipePara::PipePara():m_dj(0.0),m_tmpT0(0.0)
+{
+
+}
+PipePara::~PipePara()
+{
+
+}
+

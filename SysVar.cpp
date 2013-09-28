@@ -1,0 +1,28 @@
+// SysVar.cpp: implementation of the CSysVar class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "autophs.h"
+#include "SysVar.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+CString CSysVar::sstr;
+
+CSysVar::CSysVar()
+{
+	
+}
+
+CSysVar::~CSysVar()
+{
+
+}
