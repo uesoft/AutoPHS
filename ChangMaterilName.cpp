@@ -80,42 +80,43 @@ BOOL CChangMaterilName::OnInitDialog()
 	m_materNameList.GetWindowRect(rect);
 	width = rect.right-rect.left;
     m_materNameList.InsertColumn( 0, "材料名称", LVCFMT_LEFT, width );
-	CDaoRecordset rsTmpEngin(&EDIBgbl::dbPRJDB );
+	CComPtr<_Recordset> rsTmpEngin;
+	HRESULT hr = S_OK;
+	hr = rsTmpEngin.CoCreateInstance(__uuidof(Recordset));
 	
 	try
 	{
 		
 		CString strSql = "SELECT EnginID,gcmc FROM Engin";
 		
-		rsTmpEngin.Open(dbOpenSnapshot,strSql);
+		rsTmpEngin->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 		int i;
 		CString strVal;
 		
 		m_workNameList.DeleteAllItems();
-		while( !rsTmpEngin.IsEOF() )
+		while( !rsTmpEngin->adoEOF )
 		{
 			i = 0;
-			strVal = vtos(rsTmpEngin.GetFieldValue("EnginID"));
+			strVal = vtos(rsTmpEngin->GetCollect((_variant_t)"EnginID"));
 			m_workNameList.InsertItem(i,strVal);
-			strVal = vtos(rsTmpEngin.GetFieldValue("gcmc"));
+			strVal = vtos(rsTmpEngin->GetCollect((_variant_t)"gcmc"));
 			m_workNameList.SetItemText(i,1,strVal);
-			rsTmpEngin.MoveNext();
+			rsTmpEngin->MoveNext();
 			
 			
 			i++;
 		}
 		
 	}
-	catch(::CDaoException *e)
+	catch(_com_error *e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 
-	if(rsTmpEngin.IsOpen())
+	if(rsTmpEngin->State == adStateOpen)
 	{
-		rsTmpEngin.Close();
+		rsTmpEngin->Close();
 	}
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -142,38 +143,39 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 	CString strEnginID = m_workNameList.GetItemText(x,0);
 	CString strSql;
 	strSql.Format("SELECT jcdm,jcmc FROM Volume WHERE EnginID = '%s'",strEnginID);
-	CDaoRecordset rsTmpVolume(&EDIBgbl::dbPRJDB );
+	CComPtr<_Recordset> rsTmpVolume;
+	HRESULT hr = S_OK;
+	hr = rsTmpVolume.CoCreateInstance(__uuidof(Recordset));
 
 	try
 	{	
-		rsTmpVolume.Open(dbOpenSnapshot,strSql);
+		rsTmpVolume->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 		int i;
 		CString strVal;
 		
 		m_volumeIdList.DeleteAllItems();
-		while( !rsTmpVolume.IsEOF() )
+		while( !rsTmpVolume->adoEOF )
 		{
 			i = 0;
-			strVal = vtos(rsTmpVolume.GetFieldValue("jcdm"));
+			strVal = vtos(rsTmpVolume->GetCollect((_variant_t)"jcdm"));
 			m_volumeIdList.InsertItem(i,strVal);
-			strVal = vtos(rsTmpVolume.GetFieldValue("jcmc"));
+			strVal = vtos(rsTmpVolume->GetCollect((_variant_t)"jcmc"));
 			m_volumeIdList.SetItemText(i,1,strVal);
-			rsTmpVolume.MoveNext();
+			rsTmpVolume->MoveNext();
 			
 			
 			i++;
 		}
 	}
-	catch(::CDaoException *e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 
-	if(rsTmpVolume.IsOpen())
+	if(rsTmpVolume->State == adStateOpen)
 	{
-		rsTmpVolume.Close();
+		rsTmpVolume->Close();
 	}
 	
 
@@ -199,35 +201,35 @@ void CChangMaterilName::OnClickListVolume(NMHDR* pNMHDR, LRESULT* pResult)
 	CString strjcdm = m_volumeIdList.GetItemText(x,0);
 	CString strSql;
 	strSql.Format("SELECT CLcl FROM ZB WHERE VolumeID IN (SELECT VolumeID FROM Volume WHERE jcdm = '%s')",strjcdm);
-	CDaoRecordset rsTmpMateril(&EDIBgbl::dbPRJDB );
+	CComPtr<_Recordset> rsTmpMateril;
+	HRESULT hr = S_OK;
+	hr = rsTmpMateril.CoCreateInstance(__uuidof(Recordset));
 
 	try
 	{
-		rsTmpMateril.Open(dbOpenSnapshot,strSql);
+		rsTmpMateril->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 		int i;
 		CString strVal;
 		
 		m_materNameList.DeleteAllItems();
-		while( !rsTmpMateril.IsEOF() )
+		while( !rsTmpMateril->adoEOF )
 		{
 			i = 0;
-			strVal = vtos(rsTmpMateril.GetFieldValue("CLcl"));
+			strVal = vtos(rsTmpMateril->GetCollect((_variant_t)"CLcl"));
 			m_materNameList.InsertItem(i,strVal);
-			rsTmpMateril.MoveNext();
+			rsTmpMateril->MoveNext();
 			i++;
 		}
 	}
-	catch(::CDaoException *e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
-		return;
 	}
 
-	if(rsTmpMateril.IsOpen())
+	if(rsTmpMateril->State == adStateOpen)
 	{
-		rsTmpMateril.Close();
+		rsTmpMateril->Close();
 	}
 
 
@@ -252,16 +254,13 @@ void CChangMaterilName::OnOK()
 		CString strSql;
 		strSql.Format("UPDATE ZB SET CLcl='%s' WHERE CLcl='%s' AND VolumeID IN (SELECT VolumeID FROM Volume WHERE jcdm = '%s')",m_newMaterilName,strMaterilName,strVolumeID);
 
-		EDIBgbl::dbPRJDB.Execute(strSql);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)strSql, NULL, adCmdText);
 		strtmp.Format("材料:'%s'已修改为'%s'",strMaterilName,m_newMaterilName);
 		AfxMessageBox(strtmp);
 
 	}
-	catch(::CDaoException *e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
-		return;
 	}
 
 	CDialog::OnOK();

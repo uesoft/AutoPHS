@@ -158,9 +158,9 @@ void CComboGenDlg::LoadComboBox(int i)
 	//烟风煤粉管道矩形管径=null
 	if(modPHScal::bPAIsHanger())
 	{
-		m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
-			"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-			+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+		m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
+			"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [; DATABASE=" 
+			+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 			+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 			+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 			+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -169,9 +169,9 @@ void CComboGenDlg::LoadComboBox(int i)
 	}
 	else
 	{
-		m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
-			"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-			+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+		m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
+			"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [; DATABASE=" 
+			+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 			+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 			+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 			+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -191,9 +191,9 @@ void CComboGenDlg::LoadComboBox(int i)
 		m_strFilter += " AND ";
 	int Gnum;			
 	Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-	m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\'"
+	m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\'"
 								+ " WHERE EXISTS ( Select CustomID FROM [" + modPHScal::tbnSA + "] IN \"\" [; DATABASE=" 
-								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
+								+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect("ifLongVertPipe")) ? Gnum : 1))
 								+ " AND (( PictureClipData.ClassID = "
 								+ ltos(iSACantilever) + " OR PictureClipData.ClassID = " + ltos(iSALbrace) + " OR PictureClipData.ClassID = " + ltos(iG51) + " OR PictureClipData.ClassID = " + ltos(iG56) + " OR PictureClipData.ClassID = " + ltos(iG57)  + ") AND GDW1 >="
@@ -203,7 +203,9 @@ void CComboGenDlg::LoadComboBox(int i)
 								+ "  OR PictureClipData.ClassID= " + ltos(iGCement) + ")) )))";
 	
 	CString strSQL;
-	CDaoRecordset rs;
+	CComPtr<_Recordset> rs;
+	HRESULT hr = S_OK;
+	hr = rs.CoCreateInstance(__uuidof(Recordset));
 	try
 	{
 		m_ComboBoxGen.ResetContent();
@@ -216,20 +218,19 @@ void CComboGenDlg::LoadComboBox(int i)
 		if(m_strFilter!="")
 			strSQL+=" WHERE " + m_strFilter;
 		COleVariant vTmp;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		while(!rs.IsEOF())
+//		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_ComboBoxGen.AddString(sTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 		}
 	}
-	catch(CDaoException *e)
+	catch(_com_error *e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 }
