@@ -1,0 +1,26 @@
+// CrudePART.cpp: implementation of the CrudePART class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "CrudePART.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CrudePART::CrudePART()
+{
+
+}
+
+CrudePART::~CrudePART()
+{
+
+}

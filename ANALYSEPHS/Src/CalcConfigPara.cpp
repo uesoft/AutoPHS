@@ -1,0 +1,26 @@
+// alcConfig.cpp: implementation of the CalcConfig class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+#include "CalcConfigPara.h"
+
+#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CalcConfigPara::CalcConfigPara()
+{
+
+}
+
+CalcConfigPara::~CalcConfigPara()
+{
+
+}
