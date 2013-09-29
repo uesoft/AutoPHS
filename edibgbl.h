@@ -263,16 +263,16 @@ public:
 	static long SelHyID;
 	 static CString SelJcdm;//卷册代号
 	 static CString SelZyID;
-	static CDaoDatabase dbPRJ;
-	static CDaoDatabase dbSORT;
-    static CDaoDatabase	dbTable;//20071015
+	static _ConnectionPtr dbPRJ;
+	static _ConnectionPtr dbSORT;
+    static _ConnectionPtr	dbTable;//20071015
 
-	static CDaoDatabase dbDSize;//20071018
-	static CDaoDatabase dbMaterial;//20071018
-	static CDaoDatabase dbPHScode;//20071018
-	static CDaoDatabase dbSACal;//20071018
+	static _ConnectionPtr dbDSize;//20071018
+	static _ConnectionPtr dbMaterial;//20071018
+	static _ConnectionPtr dbPHScode;//20071018
+	static _ConnectionPtr dbSACal;//20071018
 
-    static CDaoDatabase	dbPRJDB;
+    static _ConnectionPtr	dbPRJDB;
 	static CString		strExportPaint;
 	static bool IsCalc;//pfg20051021是否正在计算
 	static BOOL bSymbol;

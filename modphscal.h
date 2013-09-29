@@ -277,7 +277,7 @@ public:
 	static COleVariant sFindAnyTableField(CDaoDatabase&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
 	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
 	static CString GetPhsSAfx(int  SAfx);
-	static CDaoDatabase dbZDJcrude;
+	static _ConnectionPtr dbZDJcrude;
 //	static int gbTbOS;
 //	static long glCurRecordNo;
     static void InitZdjTxName();

@@ -33,7 +33,7 @@ rename("DataTypeEnum","adoDataTypeEnum") rename("ParameterDirectionEnum","adoPar
 rename("RecordStatusEnum","adoRecordStatusEnum") 
 //#include <icrsint.h>
 #include <afxdao.h>
-
+#include <atlbase.h>
  /* #import "D:\Program Files\Microsoft Office\Office\MSO9.DLL" no_namespace
   #import "C:\Program Files\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB" no_namespace
 #import "excel9.olb" no_namespace \
