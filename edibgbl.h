@@ -58,7 +58,7 @@ public:
 	static BOOL UpdateSortDB();
 	static CString VolumeNo;
 	static CString PhsNo;
-	static bool ChangeColumnsToRows(CDaoDatabase &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
+	static bool ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
 	static bool ChangeDatabase(CDaoDatabase& dDb,CDaoDatabase &sDb);
 	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
 	static bool IsExistentQuery(CDaoDatabase &db,CString strQueryName);

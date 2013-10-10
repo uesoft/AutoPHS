@@ -1573,11 +1573,6 @@ void CMainFrame::DrawZdjTab(int index)
 		//因为后面的操作需要大量的图形块准备好
 		CString sTmp,sTmp1;
 		_variant_t vTmp;
-		/*if( LCase(objAcadDoc.GetVariable(_T("DWGPREFIX"))) = LCase(PhsBlkDir) And LCase(objAcadDoc.GetVariable(_T("DWGNAME"))) = _T("phs.dwg") ){
-		}else {
-			objAcadDoc.Open (PhsBlkDir & _T("phs.dwg"))
-		}*/
-		//CDaoRecordset rsTmp;
 		CMObject objTmp;
 		CCadPoint pTmp;
 		CString SQLx;
@@ -2925,11 +2920,6 @@ void CMainFrame::OnDrawZdjArx()
 		}
 		EDIBAcad::SetDimVariables();
 		return;	
-	}
-	catch(::CDaoException* e)
-	{
-		e->ReportError();
-		e->Delete();
 	}
 	catch(COleException* e)
 	{

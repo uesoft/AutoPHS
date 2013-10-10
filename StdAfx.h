@@ -39,7 +39,6 @@ rename("RecordStatusEnum","adoRecordStatusEnum")
 #import "excel9.olb" no_namespace \
 rename("EOF","eceEOF")*/
 //#include "user.h"
-//#include <dbdaoint.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

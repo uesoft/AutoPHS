@@ -157,7 +157,7 @@ extern bool inline IsNull(_variant_t &v);
 #define MINOR(X)   (WORD)X 
 extern CString gObjMainFrm;
 //extern int vtoi( VARIANT & v );
-extern void RsDeleteAll(CDaoRecordset& rs);
+extern void RsDeleteAll(_RecordsetPtr& rs);
 extern COleVariant inline STR_VAR( LPCTSTR X );
 #define V_STR( X ) (X.vt!=VT_NULL ? X.pcVal : "") 
 extern _ConnectionPtr conPRJDB;

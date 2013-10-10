@@ -49,14 +49,14 @@ public:
 	long CheckDuplicateREFRecordWhenAppend(int *ipCheckButton = NULL);//LFX  2005.3.24  加
     void CheckAllCustomIDandIDinPhsStructureREF();
     void ChangeNameInphsStructureName();
-    CDaoRecordset* AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString strFilter);
+    _RecordsetPtr AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString strFilter);
     void GetMaterial();
     void GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza);
     void GetphsSumBom();
     void GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza);
     void GetPhsSAELandPAdxdydz();
-	void simplify2(CDaoRecordset& rsPartBoltNuts,int nth);
-	void simplify(CDaoRecordset& rsSAPart,int nth);
+	void simplify2(CComPtr<_Recordset>& rsPartBoltNuts,int nth);
+	void simplify(CComPtr<_Recordset>& rsSAPart,int nth);
     _variant_t ClassDebugID();
     CString GetBHforDoubleCSBeam(float  GDW1, float  OffsetOfP1toP2, float  Span, float  p1, float  p2, CString  SACustomID, int  iDCS=2, int  FirstCal=2);
     int GetPhsStructFromSampleID(long /*ByVal*/ SampleID);
@@ -65,7 +65,7 @@ public:
     /*Object*/CListBox* ResultObj;
     /*Object*/CListBox* SourceObj;
 	//_RecordsetPtr rsID;
-	CDaoRecordset rsID;
+	CComPtr<_Recordset> rsID;
 	CString	PA;
     CString	SA;
 protected:
@@ -120,19 +120,19 @@ public:
      * 保持属性值的局部变量
      */
     bool	mvarbrsIDStatus;
-    CDaoRecordset	phsAvailableTypeRs;
-    CDaoRecordset	rsTZB;
+    _RecordsetPtr	phsAvailableTypeRs;
+    _RecordsetPtr	rsTZB;
     _RecordsetPtr	rsTZC;
-    CDaoRecordset	rsTmpREF;
+    _RecordsetPtr	rsTmpREF;
     _RecordsetPtr	mvarrsDiameterSerial;
     /*
      * 保持属性值的局部变量
      */
 
-	CDaoRecordset rsUnCheckedType;
-	CDaoRecordset rsConnect;
-	CDaoRecordset rsphsStructureREF;
-	//CDaoRecordset rsPictureClipData;
+	_RecordsetPtr rsUnCheckedType;
+	_RecordsetPtr rsConnect;
+	_RecordsetPtr rsphsStructureREF;
+	//_RecordsetPtr rsPictureClipData;
 
 };
 extern Cphs	* Cavphs;

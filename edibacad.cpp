@@ -1341,7 +1341,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 	CADatt *BlkAtt=NULL; long blkAttCount=0;
 	try
 	{
-		//CDaoDatabase db;
 		_TCHAR* ptTemp;
 		bool bATTBEGIN=0; 
 		bool bGridLine=0;
@@ -1961,7 +1960,6 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 	//输出:绘制的表格可以从下往上(变量bUP=True)，也可以从上往下(变量bUP=False)
 	try
 	{
-		//CDaoDatabase db;
 		bool bUP=0;   //写文字的方向:From Down to UP,bUP=true
 		bool bATTBEGIN=0;
 		bool bGridLine=0;

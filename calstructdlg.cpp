@@ -2200,8 +2200,8 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 		double ret;
 		COleVariant vTemp;
 		CComPtr<_Recordset> rs;
-//		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
 		rs.CoCreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
 
 		strSQL.Format((_T("SELECT [Lamda],[Fi] FROM [SteadyDecreaseCoef] WHERE [Material]=\'%s\' ORDER BY [Lamda] ")),lpszMaterial);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
@@ -2401,8 +2401,8 @@ void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 		rsLiFml=this->m_connSASCal->Execute(_bstr_t(strSQL),NULL,adCmdText);
 
 		CString strLiFml;
-		CComPtr<_Recordset> rsTmp;
 //		rsTmp.m_pDatabase = &EDIBgbl::dbPRJ;
+		CComPtr<_Recordset> rsTmp;
 		HRESULT hr = S_OK;
 		hr = rsTmp.CoCreateInstance(__uuidof(Recordset));
 		
