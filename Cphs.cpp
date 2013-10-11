@@ -236,7 +236,7 @@ long Cphs::SetPhsTypeToListBox()
 			//	+modPHScal::sFindID(Trim(Cntb)+_T("\'"));
 			sSQL=CString(_T(" trim(cntb)=\'"))+modPHScal::sFindID(Trim(Cntb))+_T("\'");
 			//rsConnect.m_strFilter=sSQL;
-			//rsConnect.Requery();
+			//rsConnect->Requery(adExecuteRecord);
 			//rs.Open(dbOpenSnapshot,sSQL,0);
 			FldName = _T("cnte");
 		}
@@ -257,7 +257,7 @@ long Cphs::SetPhsTypeToListBox()
 				sSQL=CString(_T(" trim(cntb)=\'"))
 					+modPHScal::sFindID(Trim(Cntb))+_T("\'");
 				//rsConnect.m_strFilter=sSQL;
-				//rsConnect.Requery();
+				//rsConnect->Requery(adExecuteRecord);
 				FldName = _T("cnte");
 			}
 			else
@@ -483,7 +483,6 @@ long Cphs::SetPhsCheckedTypeToListBox()
 			CString strSQL = _T("SELECT CustomID FROM rsTmpCheckedType");
 			rsTmpCheckedType->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenDynamic, adLockReadOnly, adCmdText); 
-//			rsTmpCheckedType.Open(AFX_DAO_USE_DEFAULT_TYPE,);
 			if ((rsTmpCheckedType->adoEOF)&&(rsTmpCheckedType->BOF));
 			else if (!rsTmpCheckedType->adoEOF){
 				rsTmpCheckedType->MoveLast();
@@ -529,7 +528,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 	
 	try
 	{
-//		CDaoRecordset rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071101 "dbSORT" 改为 "dbPHScode"
+//		rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071101 "dbSORT" 改为 "dbPHScode"
 		CComPtr<_Recordset> rs1;
 		HRESULT hr = S_OK;
 		hr = rs1.CoCreateInstance(__uuidof(Recordset));
@@ -703,7 +702,7 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 	   long ret=0;
 	   try
 	   {
-//		   CDaoRecordset rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071019 "dbSORT" 改为 "dbPHScode"
+//		   rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071019 "dbSORT" 改为 "dbPHScode"
 		   CComPtr<_Recordset> rs1;
 		   HRESULT hr = S_OK;
 		   hr = rs1.CoCreateInstance(__uuidof(Recordset));
@@ -1488,7 +1487,6 @@ bool Cphs::GetphsBHandSizesTest()
 		/* rsza As Recordset, rsX As Recordset, rsxx As Recordset
 		Set rsza = Crs.rsDS*/
 		_RecordsetPtr rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
-//		CDaoRecordset rsTmp,rsX;
 		CComPtr<_Recordset> rsTmp;
 		CComPtr<_Recordset> rsX;
 //		rsTmp.m_pDatabase=&EDIBgbl::dbSORT;
@@ -2232,8 +2230,8 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 	//	 long iLugNo ;               //保存当前拉杆序号：第一根拉杆为iLugNo=1，第二根拉杆为iLugNo=2。
 	long *iBoltsNutsDia=0;      //数组：保存螺栓螺母直径，索引号=当前记录号，因此是一个稀疏数组。用于查找连接附件的规格。
 	CString tbn1;
-//	CDaoRecordset rsX(&modPHScal::dbZDJcrude), rsTmp, rs(&modPHScal::dbZDJcrude);
-//	CDaoRecordset rsTmpZB(&EDIBgbl::dbPRJDB);
+//	 rsX(&modPHScal::dbZDJcrude), rsTmp, rs(&modPHScal::dbZDJcrude);
+//	 rsTmpZB(&EDIBgbl::dbPRJDB);
 	_RecordsetPtr rsX, rsTmp, rs, rsTmpZB;
 	rsX.CreateInstance(__uuidof(Recordset));
 	rsTmp.CreateInstance(__uuidof(Recordset));
@@ -4090,11 +4088,11 @@ void Cphs::ChangeNameInphsStructureName()
 // 	rs3.m_pDatabase=&EDIBgbl::dbPRJ;
 // 	rs4.m_pDatabase=&EDIBgbl::dbPHScode;//20071018 "dbSORT" 改为 "dbPHScode"
 	//打开表备查
-// 	CDaoRecordset rsPA(&EDIBgbl::dbPRJ);
-// 	CDaoRecordset rsSA(&EDIBgbl::dbPRJ);
-// 	CDaoRecordset rsPR(&EDIBgbl::dbPRJ);
-// 	CDaoRecordset rsSP(&EDIBgbl::dbPRJ);
-// 	CDaoRecordset rsCS(&EDIBgbl::dbPRJ);
+// 	 rsPA(&EDIBgbl::dbPRJ);
+// 	 rsSA(&EDIBgbl::dbPRJ);
+// 	 rsPR(&EDIBgbl::dbPRJ);
+// 	 rsSP(&EDIBgbl::dbPRJ);
+// 	 rsCS(&EDIBgbl::dbPRJ);
 	_RecordsetPtr rsPA, rsSA, rsPR, rsSP, rsCS;//rs1与rs2取自同一个表phsStructureREF
 	rsPA.CreateInstance(__uuidof(Recordset));
 	rsSA.CreateInstance(__uuidof(Recordset));
@@ -4144,7 +4142,7 @@ void Cphs::ChangeNameInphsStructureName()
 	int oldSampleID;
 	
 	long t1;
-	long t2;
+//	long t2;
 	t1=::GetTickCount();		
 	//2002.01.03测试时间31084ms<12413+55730ms,故综合在一起查询较快
 	
@@ -4202,7 +4200,7 @@ void Cphs::ChangeNameInphsStructureName()
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		bool stop=false;
 		int iNum=0;
-		int iTimes=-1;//各零部件可用标志的连乘积
+		long iTimes=-1;//各零部件可用标志的连乘积
 		if( rs2->adoEOF && rs2->BOF )
 		{
 			//空的phsStructureREF
@@ -4220,9 +4218,10 @@ void Cphs::ChangeNameInphsStructureName()
 			rs2->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenDynamic, adLockReadOnly, adCmdText); 
 			int fdL;
-			CDaoFieldInfo info;
-			rs3->get_Collect((_variant_t)_T("SampleName"),info);
-			fdL=info.m_lSize;	
+			FieldsPtr info;
+//			rs3->get_Collect((_variant_t)_T("SampleName"),info);
+			rs3->get_Fields(&info);
+			fdL=info->GetCount();	
 			sSPR = _T(" ");
 			//移动到结构表头
 			rs2->MoveFirst();
@@ -4474,7 +4473,7 @@ void Cphs::ChangeNameInphsStructureName()
 					rs3->put_Collect((_variant_t)_T("iNumCSPR"),_variant_t(iNumCSPR));
 					rs3->put_Collect((_variant_t)_T("iNumRod"),_variant_t(iNumRod));
 					//模板是否允许使用
-					rs3->put_Collect((_variant_t)_T("bAllowUse"),_variant_t((bool) iTimes));
+					rs3->put_Collect((_variant_t)_T("bAllowUse"),_variant_t( iTimes));
 					rs3->Update();
 //					EXECUTE_TIME_END
 				}     
@@ -4540,7 +4539,7 @@ void Cphs::GetMaterial()
 	{
 		CString sTmp;
 		COleVariant vTmp;
-//		CDaoRecordset rs(&EDIBgbl::dbPHScode);//20071018 "dbSORT" 改为 "dbPHScode"
+//		 rs(&EDIBgbl::dbPHScode);//20071018 "dbSORT" 改为 "dbPHScode"
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(_Recordset));
 		//材料规范选择表SpecificationOfMaterial
@@ -4552,7 +4551,7 @@ void Cphs::GetMaterial()
 		if(rs->adoEOF && rs->BOF)
 		{
 			//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
-			sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,rs.m_pDatabase->GetName(),_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+			sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::dbPHScode->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
 			throw sTmp;
 		}
 		rs->MoveFirst();
@@ -4619,7 +4618,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		//生成一个空表
 		sGROUPBY = _T("CLgg,CLcl,CLmc,CLID,CLdw,CLdz");
-		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(" INTO TmpCLgroup IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1")), NULL, adCmdText);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(" INTO TmpCLgroup IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1")), NULL, adCmdText);
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段,
 		//但是seq,CLnum不能被分组,故要另外加入seq,CLnum字段到临时表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("ALTER TABLE TmpCLgroup ADD COLUMN seq short"), NULL, adCmdText);
@@ -4633,7 +4632,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmp2"), NULL, adCmdText);
 		CString SQLx;
 		//建立空表tmp2
-		SQLx = _T("SELECT ") + sGROUPBY + _T(" INTO tmp2 IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1");
+		SQLx = _T("SELECT ") + sGROUPBY + _T(" INTO tmp2 IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1");
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		SQLx = _T("DELETE FROM tmp2");
 		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
@@ -4688,7 +4687,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			SQLx+=CLgg+_T("\' AND trim(CLcl)=\'");
 			SQLx+=CLcl+_T("\' AND (trim(CLmc))=\'") ;
 			SQLx+=CLmc+_T("\'");
-			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			//Debug.Print dbPRJ.RecordsAffected, i, rsTmpZB(_T("CLmc")), rsTmpZB(_T("CLgg")), rsTmpZB(_T("CLcl"))
 			//SQLx = _T("SELECT seq FROM tmpCLgroup INNER JOIN [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] AS tbn ON  WHERE ISNULL(seq) AND trim(CLgg)=\'")
 			//	 +CLgg + _T("\' AND trim(CLcl)=\'") +CLcl + _T("\' AND (trim(CLmc))=\'") +CLmc+ _T("\' ");
@@ -4714,7 +4713,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 				//不是混凝土梁
 				//不是所有的零件都写入了索引号,对于索引号为空的零件，需要查表
 				mvIndex = vtoi(modPHScal::sFindFLD(_T("CustomID"), _T("Index"), vtos(vTmp)));
-				rsTmpZB.Edit();
+//				rsTmpZB.Edit();
 				rsTmpCLgroup->get_Collect((_variant_t)_T("seq"), &vTmp);
 				if(mvIndex != iSA)
 				{
@@ -4803,8 +4802,8 @@ void Cphs::GetphsSumBom()
 		CComPtr<_Recordset> rsza;
 		rsza.CoCreateInstance(__uuidof(Recordset));
 
-		CComPtr<_Recordset> rsCL;
-		rsCL.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsCL;
+		rsCL.CreateInstance(__uuidof(Recordset));
 
 		COleVariant v;
 		float sTmp=0, sngSumWeight;
@@ -4832,11 +4831,13 @@ void Cphs::GetphsSumBom()
 		//拷贝TCL到TmpTCL，以便可以删除其中的选择过的材料。
 		SQLx = _T("SELECT * INTO TmpTCL IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE VolumeID=-1");
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
-		if(!rsID->State == adOpenStatic)
+		if(rsID->State != adOpenStatic)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
-			rsID.m_pDatabase=&EDIBgbl::dbPRJ;
-			rsID.Open(dbOpenDynaset,EDIBgbl::SQLx);
+//			rsID.m_pDatabase=&EDIBgbl::dbPRJ;
+//			rsID.Open(dbOpenDynaset,EDIBgbl::SQLx);
+			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 			brsIDStatus=TRUE;
 		}
 		//在dbprj中生成空的Tmp2表
@@ -4848,9 +4849,11 @@ void Cphs::GetphsSumBom()
 		CString strOrderBy;
 		strOrderBy = sGROUPBY;
 		//生成空的Tmp2表
-		EDIBgbl::dbPRJDB->Execute((_bstr_t)CString(_T("SELECT ")) + sGROUPBY + _T(",CLnum,CLnum*CLdz AS CLzz INTO Tmp2 IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE zdjh=0 AND VolumeID=-1"), NULL, adCmdText);
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
-		rs.Open(dbOpenSnapshot,_T("SELECT * FROM BomName ORDER BY BomIndex"));
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)CString(_T("SELECT ") + sGROUPBY + _T(",CLnum,CLnum*CLdz AS CLzz INTO Tmp2 IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE zdjh=0 AND VolumeID=-1")), NULL, adCmdText);
+// 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
+// 		rs.Open(dbOpenSnapshot,_T("SELECT * FROM BomName ORDER BY BomIndex"));
+		rs->Open((_bstr_t)_T("SELECT * FROM BomName ORDER BY BomIndex"),_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		COleVariant vTmp,vTmp1,vTmp2;
 		while(!rs->adoEOF)
 		{
@@ -4869,10 +4872,10 @@ void Cphs::GetphsSumBom()
 					if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, strTmp) )
 					{
 						//表TmpCLgroup用于保存分组结果
-						EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE [") + strTmp + _T("]"), NULL, adCmdText);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("DROP TABLE [") + strTmp + _T("]")), NULL, adCmdText);
 					}
 					//复制tmp2的结构到各个表
-					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("SELECT * INTO [") + strTmp + _T("] FROM Tmp2"), NULL, adCmdText);
+					EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT * INTO [") + strTmp + _T("] FROM Tmp2")), NULL, adCmdText);
 				}
 			}
 			rs->MoveNext();
@@ -4916,8 +4919,10 @@ void Cphs::GetphsSumBom()
 		
 		//正式开始汇总材料
 		SQLx = _T("SELECT * FROM TmpTCL");
-		rsCL.m_pDatabase=&EDIBgbl::dbPRJ; 
-		rsCL.Open(dbOpenDynaset,_T("SELECT * FROM TmpTCL") );
+// 		rsCL.m_pDatabase=&EDIBgbl::dbPRJ; 
+// 		rsCL.Open(dbOpenDynaset,_T("SELECT * FROM TmpTCL") );
+		rsCL->Open((_bstr_t)_T("SELECT * FROM TmpTCL"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 		//首先计算总的要处理的记录数
 		//总的要处理的记录数量，用于进程条显示。
@@ -4933,8 +4938,10 @@ void Cphs::GetphsSumBom()
 		{
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) +_T(" AND ClassID=") + ltos(iCSPR);
 		}
-		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rs.Open(dbOpenDynaset,SQLx );
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rs.Open(dbOpenDynaset,SQLx );
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 			
@@ -4956,8 +4963,10 @@ void Cphs::GetphsSumBom()
 		{
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) + _T(" AND ClassID=") + ltos(iSPR);
 		}
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;
-		rs.Open(dbOpenDynaset,SQLx );
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;
+// 		rs.Open(dbOpenDynaset,SQLx );
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF ) 
 		{	
 		}
@@ -4979,7 +4988,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx += _T(" AND ( Index=") + ltos(iPA) + _T(" )");
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{	}
 		else
@@ -5000,7 +5011,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID);
 		}
 		SQLx+=_T(" AND ( Index=") + ltos(iConnectPART) + _T(" AND ClassID<>") + ltos(iROD) + _T(" AND ClassID<>") + ltos(iCSPR) + _T(" AND ClassID<>") + ltos(iSPR) + _T(" AND IsSAPart<>-1)");
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF ) {	}
 		else
 		{
@@ -5020,7 +5033,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx+= _T(" AND ClassID=") + ltos(iROD);
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{	}
 		else
@@ -5042,7 +5057,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx+=_T(" AND  IsSAPart=-1 AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts);		
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{	}
 		else
@@ -5065,7 +5082,9 @@ void Cphs::GetphsSumBom()
 		}
 		//AND后的条件必须打括号
 		SQLx+=_T(" AND  ((ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) + _T(" OR ClassID=") + ltos(iAttached) + _T(") AND NOT IsNull(SEQ) OR (ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) + _T(") AND IsSAPart=-1) ");
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF ) 
 		{	}
 		else
@@ -5089,7 +5108,9 @@ void Cphs::GetphsSumBom()
 				SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 			}
 			SQLx += _T(" AND  Index=") + ltos(iSA) + _T(" AND ClassID<>") + ltos(iGCement);
-			rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 			rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 			if( rs->adoEOF && rs->BOF )
 			{	}
 			else
@@ -5131,8 +5152,10 @@ void Cphs::GetphsSumBom()
 		{
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) +_T(" AND ClassID=") + ltos(iCSPR);
 		}
-		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rs.Open(dbOpenDynaset,SQLx );
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rs.Open(dbOpenDynaset,SQLx );
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 		}
@@ -5149,7 +5172,9 @@ void Cphs::GetphsSumBom()
 				
 				//SQLx = _T("SELECT * FROM [") +  EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(vTmp1) + _T(" AND zdjh=") + vtos(vTmp2);
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+// 				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5197,18 +5222,18 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM TmpTCL GROUP BY ") + sGROUPBY);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM TmpTCL GROUP BY ") + sGROUPBY), NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//将恒力弹簧的内容拷贝到TmpCSPR表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpCSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpCSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5225,7 +5250,9 @@ void Cphs::GetphsSumBom()
 		{
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) + _T(" AND ClassID=") + ltos(iSPR);
 		}
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 		}
@@ -5241,7 +5268,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+// 				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5289,19 +5318,19 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx =_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将弹簧的内容拷贝到TmpSPR表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") +  EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +  EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5319,7 +5348,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx += _T(" AND ( Index=") + ltos(iPA) + _T(" )");
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 		}
@@ -5335,7 +5366,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+// 				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5380,20 +5413,20 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup    FROM TmpTCL ");
 		SQLx +=_T(" GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将管部内容拷贝到TmpPA表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpPA SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpPA SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5410,7 +5443,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID);
 		}
 		SQLx+=_T(" AND ( Index=") + ltos(iConnectPART) + _T(" AND ClassID<>") + ltos(iROD) + _T(" AND ClassID<>") + ltos(iCSPR) + _T(" AND ClassID<>") + ltos(iSPR) + _T(" AND IsSAPart<>-1)");
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 		}
@@ -5426,7 +5461,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+// 				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5471,20 +5508,20 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 		SQLx +=_T(" GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将非弹性连接件(不包括拉杆)的内容拷贝到TmpConnection表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") +EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5502,7 +5539,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx+= _T(" AND   ClassID=") + ltos(iROD);
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+// 		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 			//没有任何拉杆
@@ -5510,7 +5549,7 @@ void Cphs::GetphsSumBom()
 		else
 		{
 			//有任何拉杆,RS-圆钢
-			this->rsID->Find((_bstr_t) _T("trim(ID)=\'RS\'"));
+			this->rsID->Find((_bstr_t)(_T("trim(ID)=\'RS\'")), 0, adSearchForward, vTmp);
 			while(!rs->adoEOF)
 			{
 				frmStatus.m_Label1= GetResStr(IDS_SumPhsBomRod);
@@ -5521,7 +5560,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase=&EDIBgbl::dbPRJDB; rsza.Open(dbOpenSnapshot,SQLx,dbReadOnly);
+// 				rsza.m_pDatabase=&EDIBgbl::dbPRJDB; rsza.Open(dbOpenSnapshot,SQLx,dbReadOnly);
+				rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5569,25 +5610,25 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 		SQLx +=_T(" GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		if(modPHScal::gbSumRodByRoundSteel)
 			;
 		else
 		{
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将拉杆的内容拷贝到TmpConnection表
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		}
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5613,7 +5654,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase=&EDIBgbl::dbPRJDB; rsza.Open(dbOpenSnapshot,SQLx,dbReadOnly);
+//				rsza.m_pDatabase=&EDIBgbl::dbPRJDB; rsza.Open(dbOpenSnapshot,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5656,26 +5699,26 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 		SQLx +=_T(" GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
 		//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy
 		if(modPHScal::gbSumRodByRoundSteel)
 		{
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据,tmp2的数据记录将输出
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时材料表的内容拷贝到正式材料表TCL
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		}
 		
 		//将拉杆的内容拷贝到TmpLugBom表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpLugBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpLugBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
 		//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
 		//删除临时表
@@ -5696,7 +5739,9 @@ void Cphs::GetphsSumBom()
 			SQLx +=_T(" WHERE VolumeID =") + ltos(EDIBgbl::SelVlmID) ;
 		}
 		SQLx+=_T(" AND IsSAPart=-1 AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts);
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+//		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 			//没有任何非型钢,非螺栓螺母等的附件
@@ -5715,7 +5760,9 @@ void Cphs::GetphsSumBom()
 				
 				//只选择根部材料需要统计的支吊架
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+//				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5723,7 +5770,7 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if( this->rsID->Find((_bstr_t) _T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")))
+					if( this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
 					{
 						int intIndex=vtoi(GetFields(this->rsID,_T("Index")));
 						if( intIndex==iSectionSteel )
@@ -5783,20 +5830,20 @@ void Cphs::GetphsSumBom()
 			if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 			{
 				//表TmpCLgroup用于保存分组结果
-				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 			}
 			//rsCL->Close();
 			//从tmp2生成一个分组结果TmpCLgroup
 			//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 			SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 			SQLx +=_T(" GROUP BY ") + sGROUPBY;
-			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将非螺母,螺栓根部附件的内容拷贝到TmpAttachment表
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpAttachment SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpAttachment SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 			//删除临时表
 			RsDeleteAll(rsCL);
 			//更新临时材料表数据记对象
@@ -5821,7 +5868,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh"))) + _T(" AND  NOT bNotSumSA ");
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+//				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5829,7 +5878,7 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if(this->rsID->Find((_bstr_t) _T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")))
+					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
 					{					
 						if( vtoi(GetFields(this->rsID,_T("Index")))==iSectionSteel )
 						{                  
@@ -5887,19 +5936,19 @@ void Cphs::GetphsSumBom()
 			if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 			{
 				//表TmpCLgroup用于保存分组结果
-				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 			}
 			//rsCL->Close();
 			//从tmp2生成一个分组结果TmpCLgroup
 			//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 			SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 			SQLx +=_T(" GROUP BY ") + sGROUPBY;
-			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据
 			//下句不可少，因为AutoCAD输出材料表时首先要调用GetphsSumBom获得所有材料的集合，且ACAD中该集合来源为tmp2表。
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将型钢的内容拷贝到TmpSSBom表
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpSSBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSSBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
 			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
 			//删除临时表
@@ -5926,7 +5975,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh"))) + _T(" AND NOT bNotSumSA");
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+//				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -5934,7 +5985,7 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if(this->rsID->Find((_bstr_t) _T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")))
+					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
 					{
 						//型钢(自2001.12.31起钢板PS类别从型钢(index=3)改为附件(index=4)
 						if( (vtoi(GetFields(this->rsID,_T("Index")))==iSectionSteel) )
@@ -5993,18 +6044,18 @@ void Cphs::GetphsSumBom()
 			if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 			{
 				//表TmpCLgroup用于保存分组结果
-				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 			}
 			//rsCL->Close();
 			//从tmp2生成一个分组结果TmpCLgroup
 			//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 			SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 			SQLx +=_T(" GROUP BY ") + sGROUPBY;
-			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据
 			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy
 			//将型钢的内容拷贝到TmpSS表
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpSS SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSS SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
 			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
 			//删除临时表
@@ -6027,7 +6078,9 @@ void Cphs::GetphsSumBom()
 			}
 			//不包括混凝土根部和自定义根部
 			SQLx += _T(" AND  Index=") + ltos(iSA) + _T(" AND ClassID<>") + ltos(iGCement) + _T(" AND ClassID<>") + ltos(iG100);
-			rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+//			rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 			if( rs->adoEOF && rs->BOF )
 			{
 			}
@@ -6043,7 +6096,9 @@ void Cphs::GetphsSumBom()
 					iTmp+=1;
 					
 					SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh"))) + _T(" AND NOT bNotSumSA");
-					rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+//					rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+					rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if( rsza->adoEOF && rsza->BOF )
 					{
 					}
@@ -6080,16 +6135,16 @@ void Cphs::GetphsSumBom()
 				if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 				{
 					//表TmpCLgroup用于保存分组结果
-					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 				}
 				//rsCL->Close();
 				//从tmpCL生成一个分组结果TmpCLgroup
 				//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 				SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 				SQLx +=_T(" GROUP BY ") + sGROUPBY;
-				EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+				EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 				//将根部汇总的内容拷贝到TmpSA表
-				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpSA SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+				EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSA SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 				//将临时表的内容拷贝到正式材料表TCL
 				//根部整体零件表不能汇总到材料表中
 				//删除临时表
@@ -6114,7 +6169,9 @@ void Cphs::GetphsSumBom()
 		}
 		//AND后的条件必须打括号
 		SQLx+=_T(" AND  ((ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) + _T(" OR ClassID=") + ltos(iAttached) + _T(") AND NOT IsNull(SEQ) AND IsSAPart<>-1  OR (ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) + _T(") AND IsSAPart=-1 ) ");		
-		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+//		rs.m_pDatabase = &EDIBgbl::dbPRJDB;rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 		}
@@ -6130,7 +6187,9 @@ void Cphs::GetphsSumBom()
 				iTmp+=1;
 				
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + vtos(GetFields(rs,_T("VolumeID"))) + _T(" AND zdjh=") + vtos(GetFields(rs,_T("zdjh")));
-				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+//				rsza.m_pDatabase = &EDIBgbl::dbPRJDB;rsza.Open(dbOpenDynaset,SQLx,dbReadOnly);
+				rsza->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenDynamic, adLockReadOnly, adCmdText); 
 				if( rsza->adoEOF && rsza->BOF )
 				{
 				}
@@ -6195,29 +6254,24 @@ void Cphs::GetphsSumBom()
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("TmpCLgroup")) )
 		{
 			//表TmpCLgroup用于保存分组结果
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		}
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
 		SQLx=_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup   FROM TmpTCL ");
 		SQLx +=_T(" GROUP BY ") + sGROUPBY;
-		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将螺栓螺母的内容拷贝到TmpBoltsNuts表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO TmpBoltsNuts SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpBoltsNuts SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
-		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM TmpTCL"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM TmpTCL"), NULL, adCmdText);
 		//更新临时材料表数据记对象
 		//rsCL.Open(dbOpenDynaset,_T("SELECT * FROM TmpTCL") );
-	}
-	catch(_com_error* e)
-	{
-		e->ReportError();
-		e->Delete();
 	}
 	catch(CException *e)
 	{
@@ -6265,7 +6319,7 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			//tbn = sFindTBN(rsTmpZB.Fields(_T("CustomID")))
 			rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
 			
-			if(rsID->Find((_bstr_t)_T("trim(CustomID)=\'") +vtos(vTmp) + _T("\'"), 0, adSearchForward, vTmp))
+			if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") +vtos(vTmp) + _T("\'")), 0, adSearchForward, vTmp))
 			{
 				rsID->get_Collect((_variant_t)_T("Index"), &vTmp);
 				modPHScal::glIDIndex = vtoi(vTmp);
@@ -6291,8 +6345,9 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			}
 			tmpBlkID =tmpID;
 			//首先看表中是否存在ID名称代表的块
-			bool bm=false;
-			bm=rs->Find((_bstr_t) _T("trim(blkID)=\'") + tmpBlkID + _T("\'"), 0, adSearchForward, vTmp);
+			rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchForward, vTmp);
+			VARIANT_BOOL bm=VARIANT_FALSE;
+			bm= rs->adoEOF;
 			if( modPHScal::glIDIndex == iSA)
 			{
 				//是根部
@@ -6301,7 +6356,8 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 					//如果没有,则肯定是槽钢组成的根部，加上槽钢数量构成新的块,继续查找
 					if( modPHScal::glClassID != iGCement)
 						tmpBlkID = tmpBlkID +vtos( rsza->GetCollect(_T("iCSnum")));
-					bm=rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchForward, vTmp;
+					rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchForward, vTmp);
+					bm=rs->adoEOF;
 				}
 			}
 //			rsTmpZB.Edit();
@@ -6414,7 +6470,7 @@ void Cphs::GetPhsSAELandPAdxdydz()
 		}
 		modPHScal::UpdatePipeDimHeight(); // 管部标高
 	}
-	catch()
+	catch(...)
 	{
 	}
 }
@@ -6461,7 +6517,7 @@ CString Cphs::GetBHforDoubleCSBeam(float /*ByVal*/ GDW1, float /*ByVal*/ OffsetO
 		sSQLx = _T("SELECT * FROM [SSteelPropertyCS] WHERE Wx>=");
 		sSQLx+=sTmp;
 		sSQLx+= _T(" ORDER BY ID");
-		rs->Open((_bstr_t)sSQLx,_variant_t((IDispatch*)EDIBgbl::dbZDJcrude,true), 
+		rs->Open((_bstr_t)sSQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if(rs->adoEOF && rs->BOF)
 		{
@@ -6547,7 +6603,7 @@ Cphs::Cphs()
     iSAPAConnect=-1;
 	SACSHeight=0;
 	rsTZC=NULL;
-	rsphsStructureREF.m_pDatabase=&EDIBgbl::dbSORT;
+//	rsphsStructureREF.m_pDatabase=&EDIBgbl::dbSORT;
 	TZBResultObj=NULL;
 	m_rsObj=NULL;
 }
@@ -6564,22 +6620,26 @@ void Cphs::InitListRs()
 	try
 	{
 		CString sSQL;
-		if(!rsConnect->State == adOpenStatic)
+		if(rsConnect->State != adOpenStatic)
 		{
-			rsConnect.m_pDatabase=&EDIBgbl::dbPRJ;
+//			rsConnect.m_pDatabase=&EDIBgbl::dbPRJ;
 			sSQL=(_T("SELECT * FROM connect "));
-			rsConnect.Open(dbOpenDynaset,sSQL);
+//			rsConnect.Open(dbOpenDynaset,sSQL);
+			rsConnect->Open((_bstr_t)sSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 		}
 		else
-			rsConnect.Requery();
-		if(!rsUnCheckedType->State == adOpenStatic)
+			rsConnect->Requery(adExecuteRecord);
+		if(rsUnCheckedType->State != adOpenStatic)
 		{
-			rsUnCheckedType.m_pDatabase=&EDIBgbl::dbPRJ;
+//			rsUnCheckedType.m_pDatabase=&EDIBgbl::dbPRJ;
 			sSQL=(_T("SELECT * FROM rsUnCheckedType "));
-			rsUnCheckedType.Open(dbOpenDynaset,sSQL);
+//			rsUnCheckedType.Open(dbOpenDynaset,sSQL);
+			rsUnCheckedType->Open((_bstr_t)sSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 		}
 		else
-			rsUnCheckedType.Requery();
+			rsUnCheckedType->Requery(adExecuteRecord);
 	}
 	catch(...)
 	{
