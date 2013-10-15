@@ -167,112 +167,6 @@ BOOL CPrePointPag::OnSetActive()
 
 void CPrePointPag::SetBasePoint()
 {
-/*	try
-	{
-		long bFirst;
-		CPreDrawPag* pag=(CPreDrawPag*)(((CPropertySheet*)this->GetParent())->GetPage(1));
-		pag->UpdateData();
-		this->UpdateData();
-		bFirst = 1;
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbSORT;
-		if(pag->GetCheckedRadioButton(IDC_DRAWSIZE_A3,IDC_DRAWSIZE_AUTO)==IDC_DRAWSIZE_A3)
-			modPHScal::Ax = "A3";
-		else modPHScal::Ax = "A4";
-
-		//modPHScal::Ax = CString("A") + IIf(OptionDrawSIZE_A3A4(0), "3", "4")
-		int ix=this->GetCheckedRadioButton(IDC_OPTIONZ1,IDC_OPTIONZ3);
-		if(ix!=0) ix-=IDC_OPTIONZ1;
-		if(!bGetPos)
-			ix=oldix;
-		CString FDp;
-		if(ix==0) FDp="1_";
-		else 
-		{
-			if(ix==1) FDp="2_";
-			else FDp="S_";
-		}
-		if(pag->m_bCheckDraw_BOM)
-			FDp+="bom";
-		CString SQLx = "SELECT * FROM phsDrawPos";
-		rs.Open(dbOpenDynaset,SQLx);
-		CString sTmp;
-		FDp.MakeUpper();
-		COleVariant vTmp;
-		for(int i=0;i<9;i++)
-		{
-			sTmp=m_posFld[i].FldName;
-			sTmp.MakeUpper();
-			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
-				//MsgBox SQLx
-			if(rs.FindFirst(SQLx))
-			{
-					if(bGetPos)
-					{
-						rs.GetFieldValue(modPHScal::Ax+"pos",vTmp);
-						if(vTmp.vt==VT_NULL)
-							m_posFld[i].FldValue=10;
-						else m_posFld[i].FldValue=vtoi(vTmp);
-					}
-					else if( bSetPrevious)
-					{
-						rs.Edit();
-						rs.GetFieldValue(modPHScal::Ax+"old",vTmp);
-						rs.SetFieldValue(modPHScal::Ax+"pos",vTmp);
-						rs.Update();
-						if(vTmp.vt==VT_NULL)
-							m_posFld[i].FldValue=10;
-						else m_posFld[i].FldValue=vtoi(vTmp);
-					}
-					else if(bSetDefault)
-					{
-						rs.Edit();
-						rs.GetFieldValue(modPHScal::Ax+"Default",vTmp);
-						rs.SetFieldValue(modPHScal::Ax+"pos",vTmp);
-						rs.Update();
-						if(vTmp.vt==VT_NULL)
-							m_posFld[i].FldValue=10;
-						else m_posFld[i].FldValue=vtoi(vTmp);
-					}
-					else if (bSetBPOK )
-					{
-						vTmp=COleVariant((long)m_posFld[i].FldValue);
-						rs.Edit();
-						rs.SetFieldValue(modPHScal::Ax+"pos",vTmp);
-						rs.Update();
-					}
-					else
-					{
-						rs.GetFieldValue(modPHScal::Ax+"pos",vTmp);
-						if(iSetBPbegan == 1 )
-						{
-							rs.Edit();
-							rs.SetFieldValue(modPHScal::Ax+"old",vTmp);
-							rs.Update();
-						}
-						if(vTmp.vt==VT_NULL)
-							m_posFld[i].FldValue=10;
-						else m_posFld[i].FldValue=vtoi(vTmp);
-					}
-			}
-		}
-
-		bSetDefault = false;
-		bSetBPOK = false;
-		bSetPrevious = false;
-		iSetBPbegan = iSetBPbegan + 1;
-	}
-	catch(CDaoException *e)
-	{
-		//e->ReportError();
-		char ss[256];
-		e->GetErrorMessage(ss,255);
-		MessageBox(ss);
-		e->Delete();
-	}
-
-*/
-
 	try
 	{
 		long bFirst;
@@ -280,8 +174,9 @@ void CPrePointPag::SetBasePoint()
 		pag->UpdateData();
 		this->UpdateData();
 		bFirst = 1;
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071022 "dbSORT" 改为 "dbPHScode"
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071022 "dbSORT" 改为 "dbPHScode"
 
 		if(pag->GetCheckedRadioButton(IDC_DRAWSIZE_A3,IDC_DRAWSIZE_AUTO)==IDC_DRAWSIZE_A3)
 			modPHScal::Ax = "A3";
@@ -323,7 +218,9 @@ void CPrePointPag::SetBasePoint()
 		if(pag->m_bCheckDraw_BOM)
 			FDp+="bom";
 		CString SQLx = "SELECT * FROM phsDrawPos";
-		rs.Open(dbOpenDynaset,SQLx);
+//		rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		CString sTmp;
 		FDp.MakeUpper();
 		COleVariant vTmp;
@@ -332,31 +229,31 @@ void CPrePointPag::SetBasePoint()
 			sTmp=m_posFld[i].FldName;
 			sTmp.MakeUpper();
 			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
-			if(rs.FindFirst(SQLx))
+			if(rs->Find((_bstr_t)(SQLx), 0, adSearchForward, vTmp))
 			{
 					if(bGetPos)
 					{
-						rs.GetFieldValue(strCurAx + "pos", vTmp);
+						rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if( bSetPrevious)
 					{
-						rs.Edit();
-						rs.GetFieldValue(strCurAx + "old", vTmp);
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+//						rs.Edit();
+						rs->get_Collect((_variant_t)(strCurAx + "old"), &vTmp);
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if(bSetDefault)
 					{
-						rs.Edit();
-						rs.GetFieldValue(strCurAx + "Default", vTmp);
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+//						rs.Edit();
+						rs->get_Collect((_variant_t)(strCurAx + "Default"), &vTmp);
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
@@ -364,18 +261,18 @@ void CPrePointPag::SetBasePoint()
 					else if (bSetBPOK )
 					{
 						vTmp=COleVariant((long)m_posFld[i].FldValue);
-						rs.Edit();
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+//						rs.Edit();
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 					}
 					else
 					{
-						rs.GetFieldValue(strCurAx + "pos", vTmp);
+						rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(iSetBPbegan == 1 )
 						{
-							rs.Edit();
-							rs.SetFieldValue(strCurAx + "old", vTmp);
-							rs.Update();
+//							rs.Edit();
+							rs->put_Collect((_variant_t)(strCurAx + "old"), vTmp);
+							rs->Update();
 						}
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
@@ -389,12 +286,12 @@ void CPrePointPag::SetBasePoint()
 		bSetPrevious = false;
 		iSetBPbegan = iSetBPbegan + 1;
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
-		char ss[256];
-		e->GetErrorMessage(ss,255);
-		MessageBox(ss);
-		e->Delete();
+// 		char ss[256];
+// 		e->GetErrorMessage(ss,255);
+// 		MessageBox(ss);
+// 		e->Delete();
 	}
 
 	this->UpdateData(false);

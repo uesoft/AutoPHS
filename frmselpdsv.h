@@ -32,10 +32,10 @@ public:
 	void LoadDBComboCategory();
 	void LoadDBComboDsgn();
 	long m_SelDsgnID;
-	CDaoRecordset m_DataCurrWork;
-	CDaoRecordset m_DataCategory;
-	CDaoRecordset m_DataSpe;
-	CDaoRecordset m_DataDsgn;
+	_RecordsetPtr m_DataCurrWork;
+	_RecordsetPtr m_DataCategory;
+	_RecordsetPtr m_DataSpe;
+	_RecordsetPtr m_DataDsgn;
 	_RecordsetPtr	m_DataEng;
 	_RecordsetPtr	m_DataVlm;
 	CString m_SelPrjName;

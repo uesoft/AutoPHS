@@ -900,49 +900,8 @@ void CViewTxsr::LoadDiameterItem2ComboDW()
 	try
 	{
 		LoadtbnPAItem2ComBox(m_comboDW,"dw");
-		/*
-		CDaoRecordset rs;
-		COleVariant tmpvar;
-		CString tbn1;	
-		if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-			return;
-		if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-			modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-		else
-			modPHScal::dn="";
-		tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-		if(tbn1=="") 
-			tbn1=modPHScal::tbnPA;
-		if(modPHScal::dn=="")
-			EDIBgbl::SQLx = "SELECT DISTINCT dw FROM [" + tbn1 + "] ORDER BY dw ASC";
-		else
-			EDIBgbl::SQLx = "SELECT DISTINCT dw FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' BY dw ORDER BY dw ASC";
-		//m_dataLstComboDW->CursorLocation=adUseClient;
-		//m_dataLstComboDW->Open(_bstr_t(EDIBgbl::SQLx),(IDispatch*)modPHScal::dbZDJcrude,adOpenDynamic,adLockOptimistic,adCmdText);
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-		//rs=modPHScal::dbZDJcrude->Execute(_bstr_t(EDIBgbl::SQLx),&tmpvar,adCmdText);
-		if(rs.IsEOF() && rs.IsBOF()) return;
-		
-		//ComboDWCurrent = ComboDW.Text
-		CString MyComboBoxCurrent;
-		m_comboDW.GetWindowText(MyComboBoxCurrent);
-		m_comboDW.ResetContent();
-		CString sTmp;
-		double dtmp;
-		while(!rs.IsEOF())
-		{
-			rs.GetFieldValue("Dw",tmpvar);
-			dtmp=tmpvar.dblVal;
-			sTmp.Format("%g",dtmp);
-			m_comboDW.AddString(sTmp);
-			rs.MoveNext();
-		}
-		rs.Close();
-		m_comboDW.SetWindowText(MyComboBoxCurrent);
-		*/
 	}
-	catch(::CDaoException *e)
+	catch(CException * e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -956,42 +915,8 @@ void CViewTxsr::LoadPAMaterialItem2ComboDCL1()
 	try
 	{
 		LoadtbnPAItem2ComBox(m_PagOption->m_comboDCL1,"Material");
-		/*
-		CString tbn1;	
-		if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-		   return;
-		if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-			modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-		else
-			modPHScal::dn="";
-		tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-		if(tbn1=="") 
-			tbn1=modPHScal::tbnPA;
-		if(modPHScal::dn=="")
-			EDIBgbl::SQLx = "SELECT DISTINCT Material FROM [" + tbn1 + "] ORDER BY Material ASC";
-		else
-			EDIBgbl::SQLx = "SELECT DISTINCT Material FROM [" + tbn1 + "] WHERE CustomID=\'" + modPHScal::dn + "\' ORDER BY Material ASC";
-   
-		CDaoRecordset rs;
-   COleVariant tmpvar;
-   rs.m_pDatabase=&modPHScal::dbZDJcrude;
-   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-
-   CString MyComboBoxCurrent;
-	m_PagOption->m_comboDCL1.GetWindowText(MyComboBoxCurrent);
-   m_PagOption->m_comboDCL1.ResetContent();
-   while(!rs.IsEOF())
-   {
-	   rs.GetFieldValue("Material",tmpvar);
-		m_PagOption->m_comboDCL1.AddString(vtos(tmpvar));
-		rs.MoveNext();
-   }
-   rs.Close();
-   m_PagOption->m_comboDCL1.SetWindowText(MyComboBoxCurrent);
-   //comboDCL1.Text = ComboDCL1Current
-	*/
 	}
-	catch(::CDaoException * e)
+	catch(CException * e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -1005,37 +930,23 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
    //装入管径数据到组合框
    //SQLx = "SELECT DISTINCT " & Trim(strFLD) & " FROM [" & TBNSelPrjSpec & Btype(TZA) & "] ORDER BY " & Trim(strFLD) & " ASC"
 	try{
-		//CDaoRecordset rs(&EDIBgbl::dbPRJDB);
-   //rs.CreateInstance(__uuidof(Recordset));
-	//CString sSQL=(char*)_bstr_t(m_ActiveRs->GetSource());
-//	sSQL+=" ORDER BY zdjh ";
-	//rs->CursorLocation=adUseClient;
-	//rs.Open(dbOpenDynaset,sSQL);
-	//	_variant_t bok=m_ActiveRs->Bookmark;
 	CString MyComboBoxCurrent,sTmp;
 	comBox.GetWindowText(MyComboBoxCurrent);
 	comBox.ResetContent();
 		_RecordsetPtr bkRs=m_ActiveRs->Clone(adLockReadOnly);
 		bkRs->MoveFirst();
 		bkRs->Filter=m_ActiveRs->Filter;
-	//rs.MoveFirst();
 	_variant_t tmpvar;
 	int i=0;
 	while(!bkRs->adoEOF)
 	{
 		tmpvar=bkRs->GetCollect(_variant_t(strFLD));
-		//rs.GetFieldValue(strFLD,tmpvar);
 		sTmp=vtos(tmpvar);
-		/*if(tmpvar.vt==VT_BSTR)
-			sTmp=tmpvar.pcVal;
-		else
-			sTmp.Format("%.2f",vtof(tmpvar));*/
 		
 		comBox.AddString(sTmp);
 		bkRs->MoveNext();
 		i++;
 	}
-	//m_ActiveRs->Bookmark=bok;
 	bkRs->Close();
 	if(i>0)
 	{
@@ -1056,12 +967,6 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
 		//e->Delete();
 	}
 }
-
-//DEL void CViewTxsr::OnPagDw() 
-//DEL {
-//DEL 	// TODO: Add your control notification handler code here
-//DEL 	
-//DEL }
 
 void CViewTxsr::DisPlaySANum()
 {
@@ -1929,27 +1834,31 @@ void CViewTxsr::ShowPicturePASA(int Index)
 	try
 	{
 		_variant_t v;
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+
 		COleVariant varTmp;
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071018 "dbSORT" 改为 "dbPHScode"
+//		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071018 "dbSORT" 改为 "dbPHScode"
 		CString strSQL;
 		strSQL.Format("SELECT CustomID FROM PhsStructureREF WHERE SampleID=%d ORDER BY SEQ ",vtoi(m_ActiveRs->GetCollect("iSelSampleID")));
-		rs.Open(dbOpenSnapshot,strSQL);
-		if(rs.IsBOF() && rs.IsEOF())
+//		rs.Open(dbOpenSnapshot,strSQL);
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
+		if(rs->BOF && rs->adoEOF)
 		{
-			rs.Close();
+			rs->Close();
 			return;
 		}
-		rs.GetFieldValue(0,varTmp);
+		rs->get_Collect((_variant_t)0L, &varTmp);
 		m_ActiveRs->PutCollect("dn1",_variant_t(vtos(varTmp)));
 		if(varTmp.vt!=VT_NULL)
 			modPHScal::IDdn = modPHScal::sFindID(vtos(varTmp));
-		rs.MoveLast();
-		rs.GetFieldValue(0,varTmp);
+		rs->MoveLast();
+		rs->get_Collect((_variant_t)0L, &varTmp);
 		m_ActiveRs->PutCollect("gn1",_variant_t(vtos(varTmp)));
 		if(varTmp.vt!=VT_NULL)
 			modPHScal::IDgn = modPHScal::sFindID(vtos(varTmp));
-		rs.Close();
+		rs->Close();
 		  CString tmp =Index == iSA ? modPHScal::IDgn : modPHScal::IDdn;
 		  tmp.TrimLeft();
 		  tmp.TrimRight();
@@ -2039,65 +1948,7 @@ void CViewTxsr::LoadTJItem2ComboT01()
 {
 	//装入管部温度数据到组合框
 	LoadtbnPAItem2ComBox(m_comboT01,"tj");
-	/*
-	CString tbn1;	
-	if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-	   return;
-	if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-		modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-	else
-		modPHScal::dn="";
-	tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-   
-	if(tbn1=="") 
-		tbn1=modPHScal::tbnPA;
-	   //sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData), "CustomID", modPHScal::dn);
-	   //ShowMessage(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData)+sTmp);
-	if(modPHScal::dn=="")
-	   EDIBgbl::SQLx = CString("SELECT DISTINCT tj FROM [") + tbn1 + "] ORDER BY tj ASC";
-	else
-	   EDIBgbl::SQLx = CString("SELECT DISTINCT tj FROM [") + tbn1 + "] WHERE trim(CustomID)=\'" + modPHScal::dn + "\' ORDER BY tj ASC";
-   
-   CDaoRecordset rs;
-   CString comboT01Current;
-   COleVariant tmpvar;
-   CString sTmp;
-   
-   rs.m_pDatabase=&modPHScal::dbZDJcrude;
-   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-   //rs=modPHScal::dbZDJcrude->Execute(_bstr_t(EDIBgbl::SQLx),&tmpvar,adCmdText);
-   
-   if(rs.IsBOF() && rs.IsEOF())
-	   return;
-   m_comboT01.ResetContent();
-   m_comboT01.GetWindowText(comboT01Current);
-   while(!rs.IsEOF())
-   {
-	   rs.GetFieldValue("tj",tmpvar);
-	   sTmp="";
-		if(tmpvar.vt!=VT_NULL)
-		{
-			switch(tmpvar.vt)
-			{
-			case VT_R8:
-				sTmp.Format("%g",tmpvar.dblVal);
-				break;
-			case VT_I4:
-				sTmp.Format("%d",tmpvar.lVal);
-				break;
-			case VT_R4:
-				sTmp.Format("%g",tmpvar.fltVal);
-				break;
-			}
-			//sTmp.Format("%.1f",(float)rs->GetCollect("tj"));
-			m_comboT01.AddString(sTmp);
-		}
-      rs.MoveNext();
-   }
-   rs.Close();
-   //rs->Release();
-   m_comboT01.SetWindowText(comboT01Current);
-	*/
+
 }
 
 void CViewTxsr::CloseRs()
@@ -3541,27 +3392,21 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 			throw sTmp;
 		}
    
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,SQLx);
-		//pfg20050218
-	/*	int ii;
-		ii=rs.GetRecordCount();
-		rs.m_strFilter="trim(CustomID)=\'" + modPHScal::gn + "\' and Not Isnull(GDW1)";
-		rs.Requery();
-		ii=rs.GetRecordCount();*/
-		//pfg20050218
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;&modPHScal::dbZDJcrude;
+// 		rs.Open(dbOpenSnapshot,SQLx);
 		m_comboGDW1.GetWindowText(ComboGDW1Current);
 		m_comboGDW1.ResetContent();
 		COleVariant vTmp;
-		while(!rs.IsEOF())
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue("GDW1",vTmp);
+			rs->get_Collect((_variant_t)"GDW1",vTmp);
 			if(!(vTmp.vt==VT_NULL||vTmp.vt==VT_EMPTY))//PFG20050218
 			{
 				m_comboGDW1.AddString(vtos(vTmp));
 			}
-			rs.MoveNext();
+			rs->MoveNext();
 		}
 		m_comboGDW1.SetWindowText(ComboGDW1Current);
 		}
@@ -3962,9 +3807,10 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 			modPHScal::dn="";
 			
 		tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		COleVariant tmpvar;
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
+//		rs.m_pDatabase=&modPHScal::dbZDJcrude;
 		if(tbn1=="") 
 			tbn1=modPHScal::tbnPA;
 		if(modPHScal::dn=="")
@@ -3972,30 +3818,34 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 		else
 		{
 			EDIBgbl::SQLx = "SELECT COUNT( [" + strFLD + "]) FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL";
-			rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
-			rs.GetFieldValue(0,tmpvar);
+//			rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
+			rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
+			rs->get_Collect((_variant_t)0L, &tmpvar);
 			if(vtoi(tmpvar)>0)
 				EDIBgbl::SQLx = "SELECT DISTINCT [" + strFLD + "] FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL ORDER BY [" + strFLD + "] ASC";
 			else
 				EDIBgbl::SQLx = "SELECT DISTINCT [" + strFLD + "] FROM [" + tbn1 + "] WHERE [" + strFLD + "] IS NOT NULL ORDER BY [" + strFLD + "] ASC";
-			rs.Close();
+			rs->Close();
 		}
-		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
-		if(rs.IsEOF() && rs.IsBOF()) return;
+//		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
+		rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
+		if(rs->adoEOF && rs->BOF) return;
 		//获得当前选择值
 		CString MyComboBoxCurrent;
 		combo.GetWindowText(MyComboBoxCurrent);
 		CString sTmp;
 		int i=0;
-		while(!rs.IsEOF())
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue(strFLD,tmpvar);
+			rs->get_Collect((_variant_t)strFLD, &tmpvar);
 			sTmp=vtos(tmpvar);
 			combo.AddString(sTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 			i++;
 		}
-		rs.Close();
+		rs->Close();
 		combo.SetWindowText(MyComboBoxCurrent);
 		//重新设置选择
 		if(i>0)
@@ -4121,27 +3971,31 @@ void CViewTxsr::OnKillfocusEdtSsid()
 		if(intSampleID != m_lSelSampleID )
 		{		//当标准支吊架的模板改变时，删除支吊架原来模板结构，以便重建支吊架的结构，
 		
-			CDaoRecordset rsTmpZB(&EDIBgbl::dbPRJDB );
+//			rsTmpZB(&EDIBgbl::dbPRJDB );
+			_RecordsetPtr rsTmpZB;
+			rsTmpZB.CreateInstance(__uuidof(Recordset));
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-			rsTmpZB.Open(dbOpenSnapshot,strTemp);
+//			rsTmpZB.Open(dbOpenSnapshot,strTemp);
+			rsTmpZB->Open((_bstr_t)strTemp,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 			int iCount;
-			if(rsTmpZB.IsBOF() && rsTmpZB.IsEOF())
+			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 				iCount=0;
 			else
 			{
-				rsTmpZB.MoveLast();
-				iCount=rsTmpZB.GetRecordCount();
+				rsTmpZB->MoveLast();
+				iCount=rsTmpZB->RecordCount;
 			}
-			rsTmpZB.Close();
+			rsTmpZB->Close();
 			
 
 			if(iCount <= 1)
 			{
 				strTemp.Format("DELETE * FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-				EDIBgbl::dbPRJDB.Execute(strTemp);
+				EDIBgbl::dbPRJDB->Execute((_bstr_t)strTemp, NULL, adCmdText);
 
 				//strTemp.Format("DELETE * FROM Z1 WHERE VolumeID = %d AND ZDJH = %d ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-				//EDIBgbl::dbPRJDB.Execute(strTemp);
+				//EDIBgbl::dbPRJDB->Execute((_bstr_t)strTemp);
 			}
 
 			modPHScal::iSelSampleID=m_lSelSampleID;
@@ -4150,7 +4004,7 @@ void CViewTxsr::OnKillfocusEdtSsid()
 		}
 		
 	}
-	catch(::CDaoException *e)
+	catch(CException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4346,26 +4200,29 @@ void CViewTxsr::InitBornSA()
 	{
 		CString strSQL=_T("");
 		COleVariant tmpvar;
-		CDaoRecordset rsBornSA;
-		rsBornSA.m_pDatabase=&EDIBgbl::dbPRJDB;
+		_RecordsetPtr rsBornSA;
+		rsBornSA.CreateInstance(__uuidof(Recordset));
+//		rsBornSA.m_pDatabase=&EDIBgbl::dbPRJDB;
 		strSQL=_T("select distinct BornSAName from BornSA");
 		m_ComBoBornSA.ResetContent();
-		rsBornSA.Open(dbOpenDynaset,strSQL);
-		if(rsBornSA.IsEOF() && rsBornSA.IsBOF()) return;
+//		rsBornSA.Open(dbOpenDynaset,strSQL);
+		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
+		if(rsBornSA->adoEOF && rsBornSA->BOF) return;
 
 		CString strComboCur;
 		m_ComBoBornSA.GetWindowText(strComboCur);
 		CString sTmp;
 		int i=0;
-		while(!rsBornSA.IsEOF())
+		while(!rsBornSA->adoEOF)
 		{
-			rsBornSA.GetFieldValue("BornSAName",tmpvar);
+			rsBornSA->get_Collect((_variant_t)"BornSAName",tmpvar);
 			sTmp=vtos(tmpvar);
 			m_ComBoBornSA.AddString(sTmp);
-			rsBornSA.MoveNext();
+			rsBornSA->MoveNext();
 			i++;
 		}
-		rsBornSA.Close();
+		rsBornSA->Close();
 		m_ComBoBornSA.SetWindowText(strComboCur);
 		if(i>0)
 		{
@@ -4391,22 +4248,25 @@ void CViewTxsr::GetBornSA(CString &m_strBornSA)
 		m_strBornSA.TrimRight();
 		if(m_strBornSA=="") m_strBornSA=" ";
 		strSQL.Format("select * from BornSA where BornSAName='%s'",m_strBornSA);
-		CDaoRecordset rsBornSA;
-		rsBornSA.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsBornSA.Open(dbOpenDynaset,strSQL);
-		if(rsBornSA.IsEOF() && rsBornSA.IsBOF())
+		_RecordsetPtr rsBornSA;
+		rsBornSA.CreateInstance(__uuidof(Recordset));
+// 		rsBornSA.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rsBornSA.Open(dbOpenDynaset,strSQL);
+		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
+		if(rsBornSA->adoEOF && rsBornSA->BOF)
 		{
 			m_strBornSAEng="";
 			m_strBornSAEngChina="";
 		}
 		else
 		{
-			rsBornSA.GetFieldValue("BornSAEngName",tmpvar);
+			rsBornSA->get_Collect((_variant_t)"BornSAEngName",tmpvar);
 			m_strBornSAEng=vtos(tmpvar);
-			rsBornSA.GetFieldValue("BornSAEngChina",tmpvar);
+			rsBornSA->get_Collect((_variant_t)"BornSAEngChina",tmpvar);
 			m_strBornSAEngChina=vtos(tmpvar);
 		}
-		rsBornSA.Close();
+		rsBornSA->Close();
 	}
 	catch(_com_error e)
 	{

@@ -625,19 +625,19 @@ double vtod(COleVariant &v)
 	return ret;
 }
 
-void RsDeleteAll(CDaoRecordset& rs)
+void RsDeleteAll(_RecordsetPtr& rs)
 {
 	try{
-		if(!rs.IsOpen() || !rs.CanUpdate())
+		if(!rs->adoEOF)// || !rs->CanUpdate())
 			return ;
-		rs.MoveFirst();
-		while(!rs.IsEOF()&&!rs.IsBOF())
+		rs->MoveFirst();
+		while(!rs->adoEOF && !rs->BOF)
 		{
-			rs.Delete();
-			rs.MoveFirst();
+			rs->Delete(adAffectCurrent);
+			rs->MoveFirst();
 		}
 	}
-	catch(::CDaoException * e)
+	catch(CException * e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -832,10 +832,10 @@ int inline ShowMessage(LPCTSTR lpszText, UINT nType, LPCTSTR lpszTitle,UINT nIDH
 {
 	return ::MessageBox(NULL,lpszText,lpszTitle,nType|MB_TASKMODAL|MB_TOPMOST );
 }
-COleVariant inline GetFields(CDaoRecordset & rs,CString FieldName)
+COleVariant inline GetFields(CComPtr<_Recordset> & rs,CString FieldName)
 {
 	COleVariant vTmp;
-	rs.GetFieldValue(FieldName,vTmp);
+	rs->get_Collect((_variant_t)FieldName,&vTmp);
 	return vTmp;
 }
 void SetWindowCenter(HWND hWnd)
@@ -908,7 +908,7 @@ void ModifyControlStyle(HWND &hWnd,DWORD dwRemove,DWORD dwAdd)
 	::GetClassName(hWnd,wndClassName,256);
 	CString strTmp=wndClassName;
 	strTmp.MakeUpper();
-	int iTmp;
+//	int iTmp;
 	if(strTmp=="COMBOBOX")
 	{
 		//iTmp=((CComboBox*)pWnd)->GetDroppedWidth();

@@ -14,7 +14,7 @@ class DataBasePara
 public:
 	DataBasePara();
 	virtual ~DataBasePara();
-	CDaoDatabase dbZDJcrude;//modPHScal::dbZDJcrude
+	_ConnectionPtr dbZDJcrude;//modPHScal::dbZDJcrude
 
 };
 

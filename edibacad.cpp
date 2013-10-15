@@ -1161,7 +1161,7 @@ long EDIBAcad::GetTableHeaderBlockAttributes(CDaoRecordset& rs, bool  &bATTBEGIN
 					rs.GetFieldValue(_T("cadWidth"),vTmp);
 					BlkAtt[i].iWidth=vtoi(vTmp);
 				}
-				catch(CDaoException* e)
+				catch(...)
 				{
 					e->Delete();
 				}
@@ -1304,7 +1304,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 
 			return;	
 		}
-		catch(::CDaoException* e)
+		catch(...)
 		{
 			e->ReportError();
 			e->Delete();
@@ -1707,7 +1707,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 							}
 							
 						}
-						catch(CDaoException * e)
+						catch(...)
 						{
 							e->Delete();
 						}
@@ -1929,7 +1929,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		}
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("USERI1")), &_variant_t((long)(StartNPage + SPage)));
    }
-   catch(CDaoException * e)
+   catch(...)
    {
 	   e->ReportError();
 	   e->Delete();
@@ -2159,7 +2159,7 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 						
 						//修改完毕  BY YWH
 					}
-					catch(CDaoException * e)
+					catch(...)
 					{
 						e->Delete();
 					}
@@ -2193,7 +2193,7 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 		rs.Close();
 		rsText.Close();		
    }
-   catch(CDaoException * e)
+   catch(...)
    {
 	   e->ReportError();
 	   e->Delete();
@@ -2437,7 +2437,7 @@ void EDIBAcad::AddData2rsTZG(CDaoRecordset& rs, long  iRecNo, long  zdjh, CStrin
 	  rs.SetFieldValue(_T("nth"),(long)1);//标准支吊架路数=1，包括对称双吊和共用根部双吊
       rs.Update();
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -5652,7 +5652,7 @@ catch(COleException *e )
 	e->ReportError();
 	e->Delete();
 }
-catch(CDaoException *e )
+catch(...)
 {
 	e->ReportError();
 	e->Delete();
@@ -6111,7 +6111,7 @@ void EDIBAcad::DrawphsDataEdit()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6165,7 +6165,7 @@ void EDIBAcad::DisplayDataZB()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6596,7 +6596,7 @@ void EDIBAcad::DrawTagAll()
 		e->ReportError();
 		e->Delete();
 	}
-	catch(CDaoException *e )
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -7001,7 +7001,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 			return sTmpDrawNo;
 		}
 	}
-	catch(::CDaoException * e)
+	catch(::...)
 	{
 		e->ReportError();
 		e->Delete();

@@ -53,26 +53,26 @@ public:
 	static void UpdateDBForUpdate();
 	static bool bFieldExists(CDaoTableDef *rd, CString sName);
 	static bool bIndexExists(CDaoTableDef* pTd,CString strIndex);
-	static void UpdateDBTable(CDaoDatabase &SourceDB, CString SourceTBName, CDaoDatabase &DesDB, CString DesTBName);
+	static void UpdateDBTable(_ConnectionPtr &SourceDB, CString SourceTBName, _ConnectionPtr &DesDB, CString DesTBName);
 	static void CloseAll_ConnectionPtr();
 	static BOOL UpdateSortDB();
 	static CString VolumeNo;
 	static CString PhsNo;
 	static bool ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
-	static bool ChangeDatabase(CDaoDatabase& dDb,CDaoDatabase &sDb);
+	static bool ChangeDatabase(_ConnectionPtr& dDb,_ConnectionPtr &sDb);
 	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
-	static bool IsExistentQuery(CDaoDatabase &db,CString strQueryName);
-	static bool bFieldExists(CDaoRecordset &rs, CString sName);
-	static bool DataTabAddRs(CDaoRecordset &dRsData, CDaoRecordset &sRsData, long VolumeID);
+	static bool IsExistentQuery(_ConnectionPtr &db,CString strQueryName);
+	static bool bFieldExists(_RecordsetPtr &rs, CString sName);
+	static bool DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID);
 	
 	static int FindStr(CString *pStr,int Count, CString sName);
-	static bool VolTabAddRs(CDaoRecordset &RsVolume, _VolumeDef &VolumeDef);
-	static bool FindTable(CDaoDatabase &db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
+	static bool VolTabAddRs(_RecordsetPtr &RsVolume, _VolumeDef &VolumeDef);
+	static bool FindTable(_ConnectionPtr &db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
 	static bool UpdateAllPrjDB();
 	static bool UpgradeDatabase();
-	static void InitWorkTable(CDaoDatabase& db,CString tbn,int type);
-	static CString GetDBName(CDaoDatabase& db);
-	static bool tdfExists(CDaoDatabase & db,CString tbn);
+	static void InitWorkTable(_ConnectionPtr& db,CString tbn,int type);
+	static CString GetDBName(_ConnectionPtr& db);
+	static bool tdfExists(_ConnectionPtr & db,CString tbn);
 	static CString GetDBName(_ConnectionPtr db);
 	static const int PrjNw;
 	static const int GDLJB;
@@ -120,7 +120,7 @@ public:
 	static const int TZD800HBYJ;    //华冶建支吊架明细一览表
 
     static bool FdExists(_RecordsetPtr  rs, CString  strFieldName);
-    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
+//    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
     static bool InitBillType();
     static void InitCurrWork();
     static void ConVertDB(CString  sDBN, CString  dDBN, COleVariant dVer, COleVariant  Pwd);

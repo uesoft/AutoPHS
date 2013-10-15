@@ -201,7 +201,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		rs1.Close();
 		db.Close();
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -386,7 +386,7 @@ void CFrmSelSpecification::SetUseCount()
 			rs2.Close();
 		}
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

@@ -311,7 +311,9 @@ void CFrmPhsSamp::mnuDWGM_Click(int Index)
 		this->m_popMenu.GetSubMenu(1)->CheckMenuRadioItem(0,7,Index,MF_BYPOSITION);
 	*/
 	this->m_ListSelPhs.ResetContent();
-	if(!Data1->FindFirst("SampleID="+ ltos(modPHScal::iSelSampleID)) && !(Data1->IsEOF() && Data1->IsBOF()))
+	VARIANT vTmp;
+	Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)), 0, adSearchForward, vTmp);
+	if(!Data1->adoEOF && !Data1->BOF)
 		Data1->MoveFirst();
    //this->Data1_Reposition();
    LoadListSelPhs();
@@ -409,15 +411,15 @@ void CFrmPhsSamp::Data1_Reposition()
 //样本图使用频度
 	try{
 	COleVariant v;
-	Data1->GetFieldValue("SampleID",v);
+	Data1->get_Collect((_variant_t)"SampleID",v);
    modPHScal::iSelSampleID = vtoi(v);
    //FrameSelPhs.Caption = "选择支吊架组装模板" & modPHScal::iSelSampleID & " (第" & (Data1->Recordset.AbsolutePosition + 1) & "项 共" & Data1->Recordset.RecordCount & "项 使用频度" & Data1->Recordset.Fields("FREQUENCE") & ")"
    CString sTmp,sTmp2;
    sTmp.Format(GetResStr(IDS_SelSampleIDNoXSumXFRQx),"\%d","\%d","\%d","\%d");
-   Data1->GetFieldValue("FREQUENCE",v);
+   Data1->get_Collect((_variant_t)"FREQUENCE", &v);
    sTmp2.Format(sTmp,modPHScal::iSelSampleID,Data1->GetAbsolutePosition()+1,Data1->GetRecordCount(),vtoi(v));
    this->m_FrameSelPhs.SetWindowText(sTmp2);
-   Data1->GetFieldValue("SampleName",v);
+   Data1->get_Collect((_variant_t)"SampleName",&v);
    if(v.vt!=VT_NULL)
 	   sBmpName = basDirectory::TemplateDir + vtos(v);
    if(sBmpName.Find(".dwg",0)==-1)
@@ -444,33 +446,34 @@ void CFrmPhsSamp::Data1_Reposition()
    Else
       OLE1.Enabled = False
    End If*/
-   CDaoRecordset rs;
-   rs.m_pDatabase=&EDIBgbl::dbPRJ;
+   _RecordsetPtr rs;
+   rs.CreateInstance(__uuidof(Recordset));
+//   rs.m_pDatabase=&EDIBgbl::dbPRJ;
    sTmp="SELECT CustomID FROM phsStructureREF WHERE SampleID=";
    sTmp2.Format("%d",modPHScal::iSelSampleID);
    sTmp+=sTmp2;
    sTmp+=" ORDER BY SEQ";
-   rs.Open(dbOpenSnapshot,sTmp);
+//   rs.Open(dbOpenSnapshot,sTmp);
+   rs->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+	   adOpenForwardOnly, adLockReadOnly, adCmdText); 
    if(IsWindow(FrmListBox.m_hWnd))
    {
 	   FrmListBox.m_ListPhsStruEDIT.ResetContent();
-	   while(!rs.IsEOF())
+	   while(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue("CustomID",v);
+		   rs->get_Collect((_variant_t)"CustomID",v);
 		   if(vtos(v)!="")
 			   FrmListBox.m_ListPhsStruEDIT.AddString(vtos(v));
-		   rs.MoveNext();
+		   rs->MoveNext();
 	   }
    }
-   rs.Close();
+   rs->Close();
    
    
    Cavphs->SourceObj = &FrmListBox.m_ListPhsStruEDIT;
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
-		//e->ReportError();
-		e->Delete();
 	}
 }
 
@@ -483,7 +486,7 @@ void CFrmPhsSamp::OnFrmSel()
 void CFrmPhsSamp::LoadListSelPhs()
 {
 	try{
-		if(Data1==NULL || !Data1->IsOpen())
+		if(Data1==NULL || Data1->State != adStateOpen)
 			return;
 		COleVariant v;
 		COleVariant book;
@@ -495,9 +498,9 @@ void CFrmPhsSamp::LoadListSelPhs()
 			m_ListID=NULL;
 			m_ListIDCount=0;
 		}
-		if(Data1->IsBOF() && Data1->IsEOF())
+		if(Data1->BOF && Data1->adoEOF)
 			return;
-		Data1->GetFieldValue("SampleID",v);
+		Data1->get_Collect((_variant_t)"SampleID", &v);
 		long id=vtoi(v);
 		book=Data1->GetBookmark();
 		Data1->MoveLast();
@@ -505,47 +508,29 @@ void CFrmPhsSamp::LoadListSelPhs()
 		this->m_ListIDCount=Data1->GetRecordCount();
 		this->m_ListID=new long [m_ListIDCount];
 		int i=0;
-		while(!Data1->IsEOF())
+		while(!Data1->adoEOF)
 		{
-			Data1->GetFieldValue("SampleName",v);
+			Data1->get_Collect((_variant_t)"SampleName",v);
 			if(vtos(v)!="")
 				this->m_ListSelPhs.AddString(vtos(v));
 			else
 				this->m_ListSelPhs.AddString(" ");
-			Data1->GetFieldValue("SampleID",v);
+			Data1->get_Collect((_variant_t)"SampleID",v);
 			m_ListID[i]=vtoi(v);
 			if(m_ListID[i]==id)
 				ix=i;
 			i++;
 			Data1->MoveNext();
 		}
-		Data1->SetBookmark(book);
+		Data1->put_Bookmark(book);
 		if(this->m_ListSelPhs.GetCount()>0)
 			this->m_ListSelPhs.SetCurSel(ix);
 		else
 			this->m_ListSelPhs.SetCurSel(-1);
-		/*Data2.GetFieldValue("SampleID",v);
-		CString sTmp;
-		if(v.vt!=VT_NULL)
-		{
-			sTmp="SampleID=";
-			sTmp+=v.pcVal;
-			if(Data1->FindFirst(sTmp))
-			{
-				Data1->GetFieldValue("SampleName",v);
-				if(v.vt!=VT_NULL && CString(v.pbVal)!="")
-				{
-					int ix=this->m_ListSelPhs.FindStringExact(-1,v.pcVal);
-					if(ix>=0)
-						this->m_ListSelPhs.SetCurSel(ix);
-					else
-						this->m_ListSelPhs.SetCurSel(-1);
-				}
-			}
-		}*/
+
 		Data1_Reposition();
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -558,20 +543,20 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 	// TODO: Add your control notification handler code here
 	try
 	{
-	    if(Data1==NULL || !Data1->IsOpen())
+	    if(Data1==NULL || Data1->State != adStateOpen)
 			return;
 		CString sTmp;
 		int ix=this->m_ListSelPhs.GetCurSel();
 		if(ix<0 || ix > m_ListIDCount-1 || m_ListID==NULL)
 			return;
 		sTmp.Format("%d",m_ListID[ix]);
-		Data1->FindFirst(_T("SampleID="+sTmp));
+		VARIANT vTmp;
+		Data1->Find((_bstr_t)(_T("SampleID="+sTmp)), 0, adSearchForward, vTmp);
 		this->Data1_Reposition();
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		//e->ReportError();
-		e->Delete();
 	}
 }
 
@@ -741,7 +726,7 @@ void CFrmPhsSamp::GetFilterStr()
 		if(m_bCurrentPA)
 		{
 			//按模板列表框中当前管部选择
-			Data1->GetFieldValue("PA",vTmp);
+			Data1->get_Collect((_variant_t)"PA",vTmp);
 			m_strFilter=" PA = \'" + vtos(vTmp) + "\'";
 			m_comboPA.EnableWindow(FALSE);
 		}
@@ -799,9 +784,9 @@ void CFrmPhsSamp::GetFilterStr()
 			//烟风煤粉管道矩形管径=null
 			if(modPHScal::bPAIsHanger())
 			{
-				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
+				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
 					"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-									+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+									+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 									+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 									+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 									+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -810,9 +795,9 @@ void CFrmPhsSamp::GetFilterStr()
 			}
 			else
 			{
-				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
+				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
 					"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-									+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+									+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 									+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 									+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 									+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -821,10 +806,10 @@ void CFrmPhsSamp::GetFilterStr()
 			}
 								//+" )))";
 								//+ ") OR PictureClipData.ClassID=" + ltos(iPAfixZ1) + " OR PictureClipData.ClassID=" + ltos(iPAfixZ2) + ")) ";
-			/*m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
+			/*m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
 				"\' WHERE (ClassID<>" + ltos(iPAfixZ1) + " AND ClassID<>" + ltos(iPAfixZ2) 
 							    + " AND CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE Pmax >=" 
+								+ modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE Pmax >=" 
 								+ ftos(tmppjg)
 								+ " AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 								+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -832,13 +817,13 @@ void CFrmPhsSamp::GetFilterStr()
 								+ " OR ((PictureClipData.ClassID=" + ltos(iPAfixZ1) + " OR PictureClipData.ClassID=" + ltos(iPAfixZ2)
 								+ " ))))";*/
 								/*+ " ) AND CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPAfix + "] IN \"\" [\; DATABASE=" 
-								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE " 
+								+ modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE " 
 								+ "(Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 								+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
 								+ " AND Dw>0 OR Dw IS NULL OR Dw=0) AND tj >= " + ftos(modPHScal::t0) + ")))) ";*/
-			/*m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
+			/*m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
 				"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE  PictureClipData.CustomID=CustomID AND (Pmax >=" 
+								+ modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE  PictureClipData.CustomID=CustomID AND (Pmax >=" 
 								+ ftos(tmppjg)
 								+ " OR PictureClipData.ClassID=" + ltos(iPAfixZ1) + " OR PictureClipData.ClassID=" + ltos(iPAfixZ2) 
 								+ ") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
@@ -873,7 +858,7 @@ void CFrmPhsSamp::GetFilterStr()
 			{
 				if(m_strFilter!="")
 					m_strFilter += " AND ";
-				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\' WHERE " 
+				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\' WHERE " 
 								+ strTmp + ")) ";
 			}
 		}
@@ -886,7 +871,7 @@ void CFrmPhsSamp::GetFilterStr()
 		if(m_bCurrentSA)
 		{
 			//按模板列表框中当前根部选择
-			Data1->GetFieldValue("SA",vTmp);
+			Data1->get_Collect((_variant_t)"SA",vTmp);
 			if(m_strFilter!="")
 				m_strFilter += " AND ";
 			m_strFilter += " ( SA = \'" + vtos(vTmp) + "\' )";
@@ -938,9 +923,9 @@ void CFrmPhsSamp::GetFilterStr()
 				m_strFilter += " AND ";
 			int Gnum;			
 			Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\'"
+			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\'"
 								+ " WHERE EXISTS ( Select CustomID FROM [" + modPHScal::tbnSA + "] IN \"\" [; DATABASE=" 
-								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
+								+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect("ifLongVertPipe")) ? Gnum : 1))
 								+ " AND (( PictureClipData.ClassID = "
 								+ ltos(iSACantilever) + " OR PictureClipData.ClassID = " + ltos(iSALbrace) + " OR PictureClipData.ClassID = " + ltos(iG51) + " OR PictureClipData.ClassID = " + ltos(iG56) + " OR PictureClipData.ClassID = " + ltos(iG57)  + ") AND GDW1 >="
@@ -982,7 +967,7 @@ void CFrmPhsSamp::GetFilterStr()
 			if(strTmp!="")
 			{
 				if(m_strFilter != "") m_strFilter += " AND ";
-				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\' WHERE " 
+				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\' WHERE " 
 								+ strTmp + ") )";
 			}
 		}
@@ -1016,13 +1001,6 @@ void CFrmPhsSamp::GetFilterStr()
 		//MessageBox(m_strFilter);
 		UpdateData(false);
 	}
-#ifdef _DEBUG
-	catch(CDaoException * e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
-#endif
 	catch(CException *e)
 	{
 		e->Delete();
@@ -1051,7 +1029,7 @@ void CFrmPhsSamp::UpdateRecordset()
 	GetFilterStr();
 	mnuDWGM_Click(SelectItemMenu);
 	//	this->m_popMenu.GetSubMenu(1)->CheckMenuRadioItem(0,7,Index,MF_BYPOSITION);
-	if(Data1->IsEOF() && Data1->IsBOF())
+	if(Data1->adoEOF && Data1->BOF)
 	{
 		m_bCurrentPA=FALSE;
 		m_bCurrentSA=FALSE;
@@ -1065,7 +1043,7 @@ void CFrmPhsSamp::UpdateRecordset()
 		UpdateData();
 		GetDlgItem(IDC_CHECK_CURENTSA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvSA);
 		GetDlgItem(IDC_CHECK_CURRENTPA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvPA);
-		//if(!Data1->FindFirst("SampleID="+ ltos(modPHScal::iSelSampleID)))
+		//if(!Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)))
 		//	Data1->MoveFirst();
 	}
 
@@ -1078,9 +1056,9 @@ void CFrmPhsSamp::UpdateRecordset()
    if(iTmp!=-1)
    {
 	   m_comboPA.GetLBText(iTmp,strTmp);
-	   if(!Data1.IsEOF() && !Data1.IsBOF())
+	   if(!Data1->adoEOF && !Data1.IsBOF())
 	   {
-		   Data1.GetFieldValue("PA",vTmp);
+		   Data1->get_Collect((_variant_t)"PA",vTmp);
 		   strTmp2=modPHScal::sFindCustomID(vtos(vTmp));
 		   if(strTmp2!=strTmp)
 			   m_comboPA.SelectString(-1,_T("全部"));
@@ -1102,9 +1080,9 @@ void CFrmPhsSamp::UpdateRecordset()
    if(iTmp!=-1)
    {
 	   m_comboSA.GetLBText(iTmp,strTmp);
-	   if(!Data1.IsEOF() && !Data1.IsBOF())
+	   if(!Data1->adoEOF && !Data1.IsBOF())
 	   {
-		   Data1.GetFieldValue("SA",vTmp);
+		   Data1->get_Collect((_variant_t)"SA",vTmp);
 		   strTmp2=modPHScal::sFindCustomID(vtos(vTmp));
 		   if(strTmp2!=strTmp)
 			   m_comboSA.SelectString(-1,_T("全部"));
@@ -1283,55 +1261,33 @@ void CFrmPhsSamp::OnCheckAutosprnum()
 void CFrmPhsSamp::LoadListPA()
 {
 	CString strSQL;
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(_Recordset));
 	m_bLoadPA=true;
 	try
 	{
 		m_comboPA.ResetContent();
 		m_comboPA.AddString(_T("全部"));
-		/*strSQL="Select [CustomID] FROM [PictureClipData] WHERE [Index]=" + ltos(iPA);
-		if(this->m_bDH )
-		{
-			if(this->m_bSh)
-			{
-				strSQL+=" AND ([ParalleledNum] =1 OR [ParalleledNum]=2) ";
-			}
-			else
-			{
-				strSQL+=" AND ([ParalleledNum] =2 ) ";
-			}
-		}
-		else
-		{
-			if(this->m_bSh)
-			{
-				strSQL+=" AND ([ParalleledNum] =1 ) ";
-			}
-			else
-			{
-			}
-		}*/
 		strSQL="SELECT DISTINCT [PA] FROM [phsStructureName]";
 		if(m_strFilter!="")
 			strSQL+=" WHERE " + m_strFilter;
 
 		COleVariant vTmp;
-		//rs.m_pDatabase=&EDIBgbl::dbSORT;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		while(!rs.IsEOF())
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+// 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
+		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0,vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboPA.AddString(sTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 		}
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 	m_bLoadPA=false;
 }
@@ -1339,60 +1295,31 @@ void CFrmPhsSamp::LoadListPA()
 void CFrmPhsSamp::LoadListSA()
 {
 	CString strSQL;
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(_Recordset));
 	m_bLoadSA=true;
 	try
 	{
 		m_comboSA.ResetContent();
 		m_comboSA.AddString(_T("全部"));
-		/*strSQL="Select [CustomID]  FROM [PictureClipData] WHERE [Index]=" + ltos(iSA);
-		CString strTmp;
-		if(m_bSABEAM)
-		{ 
-			strTmp.Format(" ClassID = %d " , iSAbeam);
-		}
-		if(m_bSACANTil)
-		{
-			if(strTmp=="")
-				strTmp.Format(" ClassID = %d " , iSACantilever);
-			else
-				strTmp +=" OR ClassID = " + ltos(iSACantilever);
-		}
-		if(m_bSALBRACE)
-		{
-			if(strTmp=="")
-				strTmp.Format(" ClassID = %d " , iSALbrace);
-			else
-				strTmp +=" OR ClassID = " + ltos(iSALbrace);
-		}
-		if(m_bSAGCEMENT)
-		{
-			if(strTmp=="")
-				strTmp.Format(" ClassID = %d " , iGCement);
-			else
-				strTmp +=" OR ClassID = " + ltos(iGCement);
-		}
-		if(strTmp !="")
-		{
-			strSQL +=" AND (" + strTmp + ")";
-		}*/
 		strSQL="SELECT DISTINCT [SA] FROM [phsStructureName] ";
 		if(m_strFilter!="")
 			strSQL+=" WHERE " + m_strFilter;
 		COleVariant vTmp;
-		//rs.m_pDatabase=&EDIBgbl::dbSORT;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		while(!rs.IsEOF())
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+// 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
+		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0,vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboSA.AddString(sTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 		}
 	}
-	catch(CDaoException *e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();

@@ -52,8 +52,8 @@ public:
 	int SelectItemOpt;
 	int SelectItemMenu;
 
-	CDaoRecordset* Data1;
-	CDaoRecordset Data2;
+	_RecordsetPtr Data1;
+	_RecordsetPtr Data2;
 	CFrmPhsSamp(CWnd* pParent = NULL);   // standard constructor
 	CString strOrderByDesc;
 // Dialog Data

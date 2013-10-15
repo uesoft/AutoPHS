@@ -139,7 +139,7 @@ void CFrmSelPDSV::initPrjDb()
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();
    }
-   catch(::CDaoException * e)
+   catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -242,7 +242,7 @@ void CFrmSelPDSV::InitDBVlm()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->Delete();
 	}
@@ -717,7 +717,7 @@ void CFrmSelPDSV::OnBeforeUpdateDbgvim(short FAR* Cancel)
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJJDID"))).SetText(ltos(m_SelDsgnID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("ZYID"))).SetText(ltos(m_SelSpecID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJHYID"))).SetText(ltos(m_SelHyID));	}
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

@@ -167,15 +167,18 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 		// 根据DataGrid大小调整窗口大小
 		int nWidth = 0, nHeight = 0;
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		try
 		{
 			_variant_t tmpvar;
 			COleVariant v;
 			CString strSQL;
 			strSQL.Format( "SELECT * FROM tzx WHERE trim(LocalCaption)<>\'\'");
-			rs.m_pDatabase = &EDIBgbl::dbTable;//20071019 "dbSORT" 改为 "dbTable"
-			rs.Open( dbOpenSnapshot, strSQL);
+// 			rs.m_pDatabase = &EDIBgbl::dbTable;//20071019 "dbSORT" 改为 "dbTable"
+// 			rs.Open( dbOpenSnapshot, strSQL);
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbTable,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 			_variant_t ix;
 			ix.ChangeType(VT_I4);
@@ -195,9 +198,10 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 					sTmp == _T("nth") )
 					continue;
 
-				if( rs.FindFirst(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")) )
+				VARIANT vTmp;
+				if( rs->Find((_bstr_t)(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")), 0, adSearchForward, vTmp))
 				{
-					rs.GetFieldValue( _T("width"), v);
+					rs->get_Collect((_variant_t)( _T("width")), &v);
 					if( v.vt == VT_NULL )
 						continue;
 
@@ -206,7 +210,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			}
 			nWidth = float(nWidth)/15.5;	
 		}
-		catch(::CDaoException * e)
+		catch(CException *e)
 		{
 			e->ReportError();
 			e->Delete();
@@ -335,7 +339,7 @@ void CFrmDataEdit::OnBeforeDeleteDatagrid1(short FAR* Cancel)
 				strSQL.Format(_T("DELETE FROM [ZG] WHERE VolumeID=%d AND zdjh=%d AND nth=%d AND recno=%d"),
 					EDIBgbl::SelVlmID,vtoi(m_Data1->GetCollect("zdjh")),vtoi(m_Data1->GetCollect("nth")),
 					vtoi(m_Data1->GetCollect("recno")));
-				EDIBgbl::dbPRJDB.Execute(strSQL);
+				EDIBgbl::dbPRJDB->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 			}
 		}

@@ -40,7 +40,7 @@ SSteelPropertyCSTb::~SSteelPropertyCSTb()
 	
 }
 
-BOOL SSteelPropertyCSTb::GetData(  CDaoRecordset* pRs  )
+BOOL SSteelPropertyCSTb::GetData(  _RecordsetPtr pRs  )
 {
 	if( pRs == NULL )
 		return FALSE;

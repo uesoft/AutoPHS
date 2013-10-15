@@ -542,7 +542,7 @@ COleVariant modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*
      }
 	 rs.Close();
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -593,7 +593,7 @@ COleVariant modPHScal::sFindAnyTableField(CDaoDatabase&  db, CString  strSourceT
 		ret=tmpvar;
 		return ret;
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -636,7 +636,7 @@ CString modPHScal::sFindID(CString CustomID)
    return ret;
    }
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -2075,15 +2075,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbByForce = tmpvar.boolVal;
 	}
 	//以下判断恒力弹簧/碟簧安装尺寸描述字段值是否存在
-	//try
-	//{
 	rsX.GetFieldValue (_T("bE_FormulaPlusHalf"),tmpvar);
-	//}
-	//catch(::CDaoException * e)
-	//{
-	//	rsX.Close();		
-	//	EDIBgbl::dbSORT.Execute(_T("ALTER TABLE phsManuConstantSPRING ADD COLUMN bE_FormulaPlusHalf INTEGER"));
-	//}
 	if(tmpvar.vt==VT_NULL ){
 		bE_FormulaPlusHalf = false;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2307,7 +2299,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	ret = TRUE;
    }
    
-   catch(::CDaoException * e)
+   catch(...)
    {
 	   e->ReportError();
 	   e->Delete();
@@ -2445,7 +2437,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										{
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
-												//DAO3.50未检查密码，而ADO将检查密码,详见phs.arx
+												//ADO将检查密码,详见phs.arx
 												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + dbZDJcrude.GetName() + _T("\' FROM ") + strCrudeTbn;
 												db.Execute( SQLx);
 												mbSPECchanged = true;
@@ -2500,7 +2492,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2634,7 +2626,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										{
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
-												//DAO3.50未检查密码，而ADO将检查密码,详见phs.arx
+												//ADO将检查密码,详见phs.arx
 												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + dbZDJcrude.GetName() + _T("\' FROM ") + strCrudeTbn;
 												db.Execute( SQLx);
 												mbSPECchanged = true;
@@ -2695,7 +2687,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2771,7 +2763,7 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 	}catch(CString e)
 	{
 		ShowMessage(e);
-	}catch(::CDaoException * e)
+	}catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4400,7 +4392,7 @@ void modPHScal::CreateTmpIDCustomIDTable()
 		Cavphs->brsIDStatus=TRUE;
 		//此后一般应该检查ID和修改模板名称
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4443,11 +4435,7 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 //输入:SprMaxSerialNum-总的允许最大串联弹簧片数，圆柱形弹簧一般=4，蝶簧可能=5
 	try
 	{
-			//CDaoDatabase sDb , dDb ;
 			CDaoTableDef sTD(&dbZDJcrude);
-			//CDaoTableDefInfo sTDInfo;
-			
-			//DAOFields * sFDs, * dFDs;
 			CDaoFieldInfo sFD;
 			CString sTD1;
 
@@ -4567,7 +4555,7 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 		   }
 		   
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError ();
 		e->Delete ();
@@ -4673,7 +4661,7 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
 	  FrmTxsr.m_pViewTxsr->UpdateData(false);
 	  FrmTxsr.m_pViewTxsr->m_PagItem->UpdateData(false);
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -5262,7 +5250,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 }
 		 }
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6641,113 +6629,6 @@ void modPHScal::CalDG(_RecordsetPtr rstbl)
 {
 }
 
-//DEL long modPHScal::CalSAPA(_RecordsetPtr rstbl)
-//DEL {
-//DEL 	//目的：对于未设置管部或根部的原始数据，人为确定管部为Z3与根部为G26。以防止程序不能运行。
-//DEL 	//返回:计算成功,0;失败,错误码.
-//DEL    //假设全部成功。
-//DEL 	CString SQLx;
-//DEL 	CDaoRecordset rs(&modPHScal::dbZDJcrude);
-//DEL 	COleVariant v;
-//DEL 	long ret = 0;
-//DEL 	try
-//DEL 	{
-//DEL 	   //获取管部根部及其通用代号
-//DEL 	   if(vtos(rstbl->GetCollect(_T("dn1")))==_T(""))
-//DEL 		{
-//DEL 			SQLx = _T("SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] IN \")\_T(" [\; DATABASE=") 
-//DEL 								+ modPHScal::dbZDJcrude.GetName() + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("]WHERE Pmax >=") 
-//DEL 								+ ftos(fabs(modPHScal::pjg)) + _T(" AND Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
-//DEL 								+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
-//DEL 								+ _T(" AND tj >= ") + ftos(modPHScal::t0) ;
-//DEL 			if(rs.IsOpen())
-//DEL 				rs.Close();
-//DEL 			rs.Open(dbOpenSnapshot,SQLx);
-//DEL 			if(rs.IsBOF() && rs.IsEOF())
-//DEL 			{
-//DEL 				//当前标准找不到管部
-//DEL 			}
-//DEL 			else
-//DEL 			{
-//DEL 				rs.GetFieldValue(_T("CustomID"),v);
-//DEL 				dn=vtos(v);
-//DEL 				rstbl->PutCollect(_T("dn1"),v);
-//DEL 			}
-//DEL 		}	   
-//DEL 		else
-//DEL 		{
-//DEL 			//管部/根部/连接件区分大小写
-//DEL 			dn = vtos(rstbl->GetCollect(_T("dn1")));
-//DEL 		}
-//DEL 	   //确定管部通用代号，以便程序适应各种标准的支吊架类型，
-//DEL 	   //具有通用性
-//DEL 	   IDdn = sFindID(dn);
-//DEL 	   if(IDdn != _T("") )
-//DEL 		  //rstbl.Edit: rstbl(_T("IDdn1")) = IDdn: rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("IDdn1"), _variant_t(IDdn));
-//DEL 	   else
-//DEL 	   {
-//DEL 		  IDdn = vtos(rstbl->GetCollect(_T("IDdn1")));
-//DEL 		  if( Trim(IDdn) != _T(""))
-//DEL 		  {
-//DEL 			 //当改变规范或厂家的时候，因为原始数据中的dn字段或gn字段未作相应变化，将出现查找不到CustomID的错误。
-//DEL 			 //此处试图修正这种错误。
-//DEL 			 dn = sFindCustomID(IDdn);
-//DEL 			 //rstbl.Edit: rstbl(_T("dn1")) = dn: rstbl.Update
-//DEL 			 UpdateTZB4zdjh(_T("dn1"), _variant_t(dn));
-//DEL 		  }
-//DEL 		  else
-//DEL 		  {
-//DEL 			 IDdn = _T("");
-//DEL 			 //MsgBox _T("未找到通用管部代码!请重新定义通用代码之后再运行")
-//DEL 			 throw GetResStr(IDS_NotFoundGeneralPAID);
-//DEL 		  }
-//DEL 	   }
-//DEL 	   
-//DEL 	   if(vtos(rstbl->GetCollect(_T("gn1")))== _T(""))
-//DEL 		  //rstbl.Edit: rstbl(_T("gn1")) = sFindCustomID(_T("G21")): rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("gn1"), _variant_t(sFindCustomID(_T("G21"))));
-//DEL 	   
-//DEL 	   gn = vtos(rstbl->GetCollect(_T("gn1")));
-//DEL 	   //确定通用代号，以便程序适应各种标准的支吊架类型，
-//DEL 	   //具有通用性
-//DEL 	   IDgn = sFindID(gn);
-//DEL 	   if(IDgn != _T(""))
-//DEL 		  //rstbl.Edit: rstbl(_T("IDgn1")) = IDgn: rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("IDgn1"), _variant_t(IDgn));
-//DEL 	   else
-//DEL 	   {
-//DEL 		  IDgn = vtos(rstbl->GetCollect(_T("IDgn1")));
-//DEL 		  if(Trim(IDgn) != _T(""))
-//DEL 		  {
-//DEL 			 //当改变规范或厂家的时候，因为原始数据中的dn字段或gn字段未作相应变化，将出现查找不到CustomID的错误。
-//DEL 			 //此处试图修正这种错误。
-//DEL 			 gn = sFindCustomID(IDgn);
-//DEL 			 //rstbl.Edit: rstbl(_T("gn1")) = gn: rstbl.Update
-//DEL 			 UpdateTZB4zdjh(_T("gn1"), _variant_t(gn));
-//DEL 		  }
-//DEL 		  else
-//DEL 		  {
-//DEL 			 IDgn = _T("");
-//DEL 			 throw GetResStr(IDS_NotFoundGeneralSAID);
-//DEL 			 //MsgBox _T("未找到通用根部代码!请重新定义通用代码之后再运行")
-//DEL 		  }
-//DEL 	   }
-//DEL 
-//DEL 	   return ret;
-//DEL 	}
-//DEL 	catch(CString e)
-//DEL 	{
-//DEL 		ShowMessage(e);
-//DEL 		return -1;
-//DEL 	}
-//DEL 	catch(_com_error e)
-//DEL 	{
-//DEL 		ShowMessage(e.Description());
-//DEL 		return -1;
-//DEL 	}
-//DEL }
-
 void modPHScal::CalUnitX(_RecordsetPtr rstbl)
 {
  //目的:获得原始数据表中的单位制
@@ -6881,7 +6762,7 @@ void modPHScal::UpdateTZB4zdjh(CString FieldName,_variant_t FieldValue)
 		}
 		//_variant_t tmpvar;
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError ();
 		e->Delete ();
@@ -7202,7 +7083,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 	   PhsMLmake(zdjh);    //把支吊架图号\图名写入目录库
    }
 
-   catch(::CDaoException * e)
+   catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -10658,7 +10539,7 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 			}
 		}
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -10856,7 +10737,7 @@ void modPHScal::CreatePhsStructureNameAndREFIndbPRJ()
 		return;
 	}
 
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -10894,7 +10775,7 @@ void modPHScal::CreatePhsStructureNameAndREFatStart()
 		return;
 	}
 
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

@@ -99,7 +99,7 @@ BOOL BestrowJSJDH::OnInitDialog()
 	rect3.left=rect1.left;
 	rect3.right=rect1.right-10;
 	rect3.top=rect1.bottom/4;
-	rect3.bottom=3*rect1.bottom/4.5;
+	rect3.bottom=(LONG)3*rect1.bottom/4.5;
 	m_pGridCtrl->Create(rect3,this,100);
 	
 	m_AddOrUpdate=0;

@@ -264,8 +264,9 @@ void CDlgSARecord::OnOK()
 		if(m_pRs!=NULL && m_pRs->State==adStateOpen && (m_bAddNew || (!m_pRs->adoEOF && !m_pRs->BOF)) )
 		{
 			SQLx=_T("SELECT CustomID FROM [") + modPHScal::tbnSA + _T("] WHERE CustomID=\'") + m_strCustomID + _T("\' ");
-			CDaoRecordset rs(&modPHScal::dbZDJcrude);	
-			
+			_RecordsetPtr rs;//(&modPHScal::dbZDJcrude);	
+			rs.CreateInstance(__uuidof(_Recordset));
+
 			if(count<=0)			
 				bAllowAlter=false;
 
@@ -296,10 +297,12 @@ void CDlgSARecord::OnOK()
 				SQLx+=(_T(" AND ") + strFd + _T(" is NULL ") );
 			}
 			SQLx+=(_T(" AND PmaxH=") + ftos(m_fPMax));
-			if(rs.IsOpen())
-				rs.Close();
-			rs.Open(dbOpenSnapshot,SQLx);
-			if(!rs.IsBOF() || !rs.IsEOF())
+			if(rs->State != adOpenStatic)
+				rs->Close();
+//			rs.Open(dbOpenSnapshot,SQLx);
+			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
+			if(!rs->BOF || !rs->adoEOF)
 			{
 				//有记录,不可加入
 				if(m_bAddNew)
@@ -382,22 +385,6 @@ void CDlgSARecord::OnBtnRemove()
 	GetDlgItem(IDC_BTN_ADD)->EnableWindow(TRUE);
 }
 
-//DEL HBRUSH CDlgSARecord::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor) 
-//DEL {
-//DEL 	HBRUSH hbr = CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
-//DEL 	static HBRUSH tmpbr=NULL;
-//DEL 	// TODO: Change any attributes of the DC here
-//DEL 	if(nCtlColor==CTLCOLOR_EDIT)
-//DEL 	{
-//DEL 		if(tmpbr) ::DeleteObject(tmpbr);
-//DEL 		tmpbr=::CreateSolidBrush(RGB(255,255,255));
-//DEL 		pDC->SetBkColor(RGB(255,255,255));
-//DEL 		hbr=tmpbr;
-//DEL 	}
-//DEL 	// TODO: Return a different brush if the default is not desired
-//DEL 	return hbr;
-//DEL }
-
 void CDlgSARecord::OnChangeEditNum() 
 {
 	// TODO: If this is a RICHEDIT control, the control will not
@@ -469,83 +456,86 @@ void CDlgSARecord::InitLab()
 {
 	try
 	{
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CString strDesc=_T("Description");
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
+//		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
 		CString strSQL;
 		strSQL.Format(_T("Select %s ,FDName FROM FieldNameSizeVar WHERE ID=\'%s\'"),
 			strDesc,modPHScal::sFindID(m_strCustomID));
-		rs.Open(dbOpenSnapshot,strSQL);
-		if(rs.IsBOF() || rs.IsEOF()) return;
+//		rs.Open(dbOpenSnapshot,strSQL);
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
+		if(rs->BOF || rs->adoEOF) return;
 		COleVariant vTmp;
-		if(rs.FindFirst(_T("ucase(FDName)=\'SIZEH\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZEH\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZEH)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'SIZE2\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZE2\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZE2)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'M\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'M\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_M)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'L1\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'L1\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_L1)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'GDW1\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'GDW1\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_GDW1)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'CHDIST\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'CHDIST\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_CHDIST)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'C\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'C\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_C)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'A\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'A\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_A)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'TJ\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'TJ\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_TJ)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'PMAXSS100\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS100\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSS100)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'PMAXSS150\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS150\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSS150)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'PMAXSF\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSF\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSF)->SetWindowText(vtos(vTmp));
 		}
-		if(rs.FindFirst(_T("ucase(FDName)=\'WEIGHT\'")))
+		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'WEIGHT\'")), 0, adSearchForward, vTmp))
 		{
-			rs.GetFieldValue(0,vTmp);
+			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_WEIGTH)->SetWindowText(vtos(vTmp));
 		}
-		rs.Close();
+		rs->Close();
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();

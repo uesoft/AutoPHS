@@ -181,7 +181,7 @@ BOOL CDlgEditDB::ListTableName()
 		}
 		return TRUE;
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

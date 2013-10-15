@@ -489,10 +489,15 @@ void CMainFrame::OnSelPDSV()
 		}
 		//取行业中的相关信息,设计阶段,专业的相关信息
 
-		CDaoRecordset DataCurrWork;
-		CDaoRecordset DataCategory;//行业
-		CDaoRecordset DataSpe;//专业
-		CDaoRecordset DataDsgn;//设计阶段
+		_RecordsetPtr DataCurrWork;
+		DataCurrWork.CreateInstance(__uuidof(_Recordset));
+
+		_RecordsetPtr DataCategory;//行业
+		DataCategory.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr DataSpe;//专业
+		DataSpe.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr DataDsgn;//设计阶段
+		DataDsgn.CreateInstance(__uuidof(_Recordset));
 		CString str_sjhyid;
 		str_sjhyid.Format("%ld",(EDIBgbl::SelHyID));
 		COleVariant tmpVar;
@@ -501,51 +506,60 @@ void CMainFrame::OnSelPDSV()
 		try
 		{
 			//行业
-			DataCategory.m_pDatabase=&EDIBgbl::dbDSize;//20071027 "dbSORT"  改为 "dbDSize"
-			DataCategory.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize where sjhyid="+str_sjhyid+""));
-			DataCategory.GetFieldValue(_T("SJHYIndex"),tmpVar);
+			CString SQLx = _T("SELECT * FROM DrawSize where sjhyid="+str_sjhyid+"");
+			DataCategory->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
+			
+			DataCategory->get_Collect((_variant_t)(_T("SJHYIndex")), &tmpVar);
 			EDIBDB::SJHYIndex=vtoi(tmpVar);
 			//专业
-			DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071027 "dbSORT"  改为 "dbDSize"
-			DataSpe.Open(dbOpenSnapshot,_T("select * from speciality where zyid="+str_zyid+""));
-			DataSpe.GetFieldValue(_T("ZYMC"),tmpVar);
+// 			DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071027 "dbSORT"  改为 "dbDSize"
+// 			DataSpe.Open(dbOpenSnapshot,_T("select * from speciality where zyid="+str_zyid+""));
+			DataSpe->Open((_bstr_t)(_T("select * from speciality where zyid="+str_zyid+"")),_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
+			DataSpe->get_Collect((_variant_t)_T("ZYMC"),&tmpVar);
 			EDIBgbl::SelSpecName = vtos(tmpVar);
-			DataSpe.GetFieldValue(_T("zydm"),tmpVar);
+			DataSpe->get_Collect((_variant_t)_T("zydm"),&tmpVar);
 			EDIBgbl::strSelSpec=vtos(tmpVar);
 			//设计阶段
-			DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071027 "dbSORT"  改为 "dbDSize"
+//			DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071027 "dbSORT"  改为 "dbDSize"
 			CString strDsgn;
 			strDsgn.Format("%ld",(EDIBgbl::SelDsgnID));
-			DataDsgn.Open(dbOpenSnapshot,_T("select * from designstage where sjjdid="+strDsgn+""));
-			DataDsgn.GetFieldValue(_T("sjjdmc"),tmpVar);
+//			DataDsgn.Open(dbOpenSnapshot,_T("select * from designstage where sjjdid="+strDsgn+""));
+			DataDsgn->Open((_bstr_t)(_T("select * from designstage where sjjdid="+strDsgn+"")),_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
+			DataDsgn->get_Collect((_variant_t)_T("sjjdmc"),&tmpVar);
 			EDIBgbl::SelDsgnName =vtos(tmpVar);
-			DataDsgn.GetFieldValue(_T("sjjddm"),tmpVar);
+			DataDsgn->get_Collect((_variant_t)_T("sjjddm"),&tmpVar);
 			EDIBgbl::strSelDsgn=vtos(tmpVar);
 			
 			//保存当的结果
-			DataCurrWork.m_pDatabase=&EDIBgbl::dbPRJ;
-			DataCurrWork.Open(dbOpenDynaset,_T("Select * From CurrentWork"));
+// 			DataCurrWork.m_pDatabase=&EDIBgbl::dbPRJ;
+// 			DataCurrWork.Open(dbOpenDynaset,_T("Select * From CurrentWork"));
+			DataCurrWork->Open((_bstr_t)_T("Select * From CurrentWork"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenDynamic, adLockReadOnly, adCmdText); 
 			
-			CDaoRecordset * m_Rs;
+			_RecordsetPtr m_Rs;
+			m_Rs.CreateInstance(__uuidof(_Recordset));
 			m_Rs=&DataCurrWork;
-			m_Rs->Edit();
-			DataCategory.GetFieldValue(_T("sjhyid"),tmpVar);
-			m_Rs->SetFieldValue(_T("sjhyindex"),tmpVar);
+//			m_Rs->Edit();
+			DataCategory->get_Collect((_variant_t)_T("sjhyid"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("sjhyindex"),tmpVar);
 
-			DataCategory.GetFieldValue(_T("sjhy"),tmpVar);
-			m_Rs->SetFieldValue(_T("sjhy",),tmpVar);
+			DataCategory->get_Collect((_variant_t)_T("sjhy"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("sjhy",),tmpVar);
 
-			DataDsgn.GetFieldValue(_T("sjjddm"),tmpVar);
-			m_Rs->SetFieldValue(_T("sjjddm"),tmpVar);
+			DataDsgn->get_Collect((_variant_t)_T("sjjddm"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("sjjddm"),tmpVar);
 
-			DataDsgn.GetFieldValue(_T("sjjdmc"),tmpVar);
-			m_Rs->SetFieldValue(_T("sjjdmc"),tmpVar);
+			DataDsgn->get_Collect((_variant_t)_T("sjjdmc"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("sjjdmc"),tmpVar);
 
-			DataSpe.GetFieldValue(_T("zydm"),tmpVar);
-			m_Rs->SetFieldValue(_T("zydm"),tmpVar);
+			DataSpe->get_Collect((_variant_t)_T("zydm"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("zydm"),tmpVar);
 
-			DataSpe.GetFieldValue(_T("zymc"),tmpVar);
-			m_Rs->SetFieldValue(_T("zymc"),tmpVar);
+			DataSpe->get_Collect((_variant_t)_T("zymc"),&tmpVar);
+			m_Rs->put_Collect((_variant_t)_T("zymc"),tmpVar);
 			m_Rs->Update();
 
 		}
@@ -570,6 +584,7 @@ void CMainFrame::OnSelPDSV()
 		SetRegValue(_T("RecentWork"), user::gstrAppName + _T("_BillID"), EDIBgbl::SelBillType);
 		SetRegValue(_T("RecentWork"), _T("SJHY"), EDIBDB::SJHY);
 		SetRegValue(_T("RecentWork"), _T("SJHYIndex"), EDIBDB::SJHYIndex);
+
 		EDIBgbl::InitDBTBN();
 		FrmPhsData.ShowWindow(SW_SHOW);
 		AfxGetApp()->EndWaitCursor();
@@ -757,7 +772,7 @@ void CMainFrame::OnDrawZdj()
 		}
 		EDIBAcad::SetAcadTop();
 	}
-	catch(::CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1105,8 +1120,8 @@ void CMainFrame::SumCL(int Index)
 					if( modPHScal::g_bDHT )
 					{
 						rs.AddNew();
-						rs.SetFieldValue("CLmc",STR_VAR("电焊条"));
-						rs.SetFieldValue("CLgg",STR_VAR(modPHScal::g_strDHTGG));
+						rs.->put_Collect((_variant_t)"CLmc",STR_VAR("电焊条"));
+						rs.->put_Collect((_variant_t)"CLgg",STR_VAR(modPHScal::g_strDHTGG));
 						rs.Update();
 						rs.Close();
 						rs.Open(dbOpenDynaset,SQLx);
@@ -1116,7 +1131,7 @@ void CMainFrame::SumCL(int Index)
 					while(!rs.IsEOF())
 					{
 						i++;
-						rs.Edit();rs.SetFieldValue(_T("SEQ"),COleVariant((long)i)); rs.Update();
+						rs.Edit();rs.->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i)); rs.Update();
 						rs.MoveNext();
 					}
 					rs.Close();
@@ -1182,7 +1197,7 @@ void CMainFrame::SumCL(int Index)
 						if( FileExists(strXls) )
 						{
 							db.Open(strXls,FALSE,FALSE,BOM_Format_phs);
-							strTbn = vtos(rs.GetFieldValue("BomName"));
+							strTbn = vtos(rs->get_Collect((_variant_t)"BomName"));
 							if( EDIBgbl::tdfExists(db, strTbn) )
 							{
 								db.Execute(_T("DROP TABLE ") + strTbn);
@@ -1214,14 +1229,14 @@ void CMainFrame::SumCL(int Index)
 								while(!rs1.IsEOF())
 								{
 									i++;
-									rs1.Edit();rs1.SetFieldValue(_T("SEQ"),COleVariant((long)i)); rs1.Update();
+									rs1.Edit();rs1.->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i)); rs1.Update();
 									rs1.MoveNext();
 								}
 							}
 							rs1.Close();
 							//获得表类型,与保温油漆软件AutoIPED接口时,
 							//只有3(管部汇总表),4(型钢零件汇总表用于下料),6(连接件汇总表用于制作),8(附件汇总表),9(螺栓螺母汇总表).须要处理.
-							iBomIndex = vtoi(rs.GetFieldValue("BomIndex"));
+							iBomIndex = vtoi(rs->get_Collect((_variant_t)"BomIndex"));
 
 							if( !EDIBgbl::strExportPaint.IsEmpty() )
 							{
@@ -1286,7 +1301,7 @@ void CMainFrame::SumCL(int Index)
 					while(!rs.IsEOF())
 					{
 						i++;
-						rs.Edit();rs.SetFieldValue(_T("SEQ"),COleVariant((long)i)); rs.Update();
+						rs.Edit();rs.->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i)); rs.Update();
 						rs.MoveNext();
 					}
 					rs.Close();
@@ -1299,7 +1314,7 @@ void CMainFrame::SumCL(int Index)
 				break;
 		}
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1860,19 +1875,19 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				if(!rs.FindFirst(_T("ZDJH <> NULL")))
 					return;
-				rs.GetFieldValue(_T("SEQ"),varTmp);
+				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
 				k = vtoi(varTmp);
 				for( i = 1 ;i< k ;i++)
 				{
 					if(!rs.FindFirst(_T("SEQ=") + ltos(i)))
 					{
 						rs.AddNew();
-						rs.SetFieldValue(_T("SEQ"),COleVariant((long)i));
-						rs.SetFieldValue(_T("Pages"),COleVariant((long)1));
-						rs.SetFieldValue(_T("DrawNo"),STR_VAR(_T("1")));
-						rs.SetFieldValue(_T("DrawNa"),STR_VAR(_T("1")));
-						rs.SetFieldValue(_T("Zdjh"),varNull);
-						rs.SetFieldValue(_T("VolumeID"),varNull);
+						rs.->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i));
+						rs.->put_Collect((_variant_t)_T("Pages"),COleVariant((long)1));
+						rs.->put_Collect((_variant_t)_T("DrawNo"),STR_VAR(_T("1")));
+						rs.->put_Collect((_variant_t)_T("DrawNa"),STR_VAR(_T("1")));
+						rs.->put_Collect((_variant_t)_T("Zdjh"),varNull);
+						rs.->put_Collect((_variant_t)_T("VolumeID"),varNull);
 						rs.Update();
 					}
 				}
@@ -1910,19 +1925,19 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				if(!rs.FindFirst(_T("ZDJH <> NULL")))
 					return;
-				rs.GetFieldValue(_T("SEQ"),varTmp);
+				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
 				k = vtoi(varTmp);
 				for( i = 1 ;i< k ;i++)
 				{
 					if(!rs.FindFirst(_T("SEQ=") + ltos(i)))
 					{
 						rs.AddNew();
-						rs.SetFieldValue(_T("SEQ"),COleVariant((long)i));
-						rs.SetFieldValue(_T("Pages"),COleVariant((long)1));
-						rs.SetFieldValue(_T("DrawNo"),STR_VAR(_T("1")));
-						rs.SetFieldValue(_T("DrawNa"),STR_VAR(_T("1")));
-						rs.SetFieldValue(_T("Zdjh"),varNull);
-						rs.SetFieldValue(_T("VolumeID"),varNull);
+						rs.->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i));
+						rs.->put_Collect((_variant_t)_T("Pages"),COleVariant((long)1));
+						rs.->put_Collect((_variant_t)_T("DrawNo"),STR_VAR(_T("1")));
+						rs.->put_Collect((_variant_t)_T("DrawNa"),STR_VAR(_T("1")));
+						rs.->put_Collect((_variant_t)_T("Zdjh"),varNull);
+						rs.->put_Collect((_variant_t)_T("VolumeID"),varNull);
 						rs.Update();
 					}
 				}

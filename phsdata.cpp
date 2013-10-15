@@ -768,165 +768,17 @@ void CPhsData::CloseRs()
 
 void CPhsData::OnErrorDatagrid1(short DataError, short FAR* Response) 
 {
-	// TODO: Add your control notification handler code here
-	//m_DBGbill.Refresh();
 	*Response=0;
-	//m_ActiveRs->Update();
-	//m_ActiveRs->MoveLast();
-	/*CString ss;
-	ss.Format("%d",DataError);
-	MessageBox(ss);*/
-	/*if(DataError==6153)
-	{
-		/*_variant_t bok;
-		if(this->m_DBGbill.GetSelBookmarks().GetCount()>0)
-		{
-			bok=this->m_DBGbill.GetSelBookmarks().GetItem(_variant_t((long)0));
-			this->m_DataBillRs->Bookmark=bok;
-		}*/
-		//m_DataBillRs->MoveFirst();
-//*Response=0;
+
 	if(!m_RepError)
 		*Response=0;
 }
 
 
-
-//DEL void CPhsData::OnAddNewDatagrid1() 
-//DEL {
-//DEL 	// TODO: Add your control notification handler code here
-//DEL 	//if(EDIBgbl::SelBillType==EDIBgbl::TZA)
-//DEL 	//	m_DBGbill.GetColumns().GetItem(_variant_t((long)0)).SetText(ltos(EDIBgbl::SelVlmID));
-//DEL }
-
 void CPhsData::OnEditDelTab() 
 {
-/*	// TODO: Add your command handler code here
-	try
-	{
-		if(m_ActiveRs==NULL || m_ActiveRs->State==adStateClosed)
-			return;
-		CString  mstrPrompt , mstrTitle;
-		mstrPrompt.Format(GetResStr(IDS_ReallyDeleteAllRecord),EDIBgbl::SelVlmName);
-		mstrTitle.LoadString(IDS_DeleteAllRecord);
-		if( IDNO == ShowMessage(mstrPrompt, MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2, mstrTitle))
-			return;
-		_variant_t varTmp;
-		if(!m_ActiveRs->adoEOF && !m_ActiveRs->BOF)
-		{
-			try
-			{
-				m_ActiveRs->Update();
-			}
-			catch(...)
-			{
-				try
-				{
-					m_ActiveRs->CancelUpdate();
-				}
-				catch(...)
-				{
-				}
-			}
-		}
-		_variant_t tmpcon;
-		_variant_t tmpsur;
-		try
-		{
-			FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
-			m_DBGbill.SetRefDataSource(NULL);
-			_RecordsetPtr tr;
-			m_ActiveRs->Filter=_variant_t((long)adFilterNone);
-			FrmTxsr.m_pViewTxsr->m_popMenu.GetSubMenu(0)->CheckMenuRadioItem(3,12,3,MF_BYPOSITION);
-			if(!m_ActiveRs->adoEOF || !m_ActiveRs->BOF)
-			{
-				m_ActiveRs->MoveFirst();
-				while(!m_ActiveRs->adoEOF && !m_ActiveRs->BOF)
-				{
-					m_ActiveRs->Delete(adAffectCurrent);
-					m_ActiveRs->Update();
-					m_ActiveRs->MoveFirst();
-				}
-			}
-			m_ActiveRs->Requery(-1);
-			m_DBGbill.SetRefDataSource(m_ActiveRs);
-			m_DBGbill.ReBind();
-			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
-		}
-		catch(_com_error e)
-		{
-			m_DBGbill.SetRefDataSource(m_ActiveRs);
-			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
-			FrmTxsr.m_pViewTxsr->m_bAllowUpd=true;
-			ShowMessage(e.Description());
-		}
-		catch(...)
-		{
-			m_DBGbill.SetRefDataSource(m_ActiveRs);
-			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
-			FrmTxsr.m_pViewTxsr->m_bAllowUpd=true;
-		}
-		UpdateLabel();
-
-		//Update Cheng
-		    if(m_ComboGenDlg.m_hWnd!=NULL)
-				m_ComboGenDlg.ShowWindow(SW_HIDE);
-	}
-	catch(...)
-	{
-	}
-		/*conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=" + ltos(EDIBgbl::SelVlmID) ),&varTmp,adCmdText);
-		//CString SQLx=(char*)(_bstr_t)m_ActiveRs->GetSource();
-		//m_ActiveRs->Update();
-		//m_ActiveRs->Close();
-		//EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
-		//EDIBgbl::dbPRJDB.
-		//conPRJDB->Close();
-		//conPRJDB->Open(_bstr_t(::dbConnectionString+basDirectory::ProjectDBDir+"AllPrjDB.mdb"),
-		//   "","",0);
-		//m_ActiveRs->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
-		//for(int i=0 ;i<10000;i++)
-		//	for(int j=0;j<100;j++)
-		//		;
-		//m_ActiveRs->Requery(-1);
-		m_ActiveRs->Open(tmpsur,tmpcon,adOpenDynamic/*adOpenStatic*//*,adLockOptimistic,adCmdText);
-		//m_ActiveRs->Requery(-1);
-		EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
-		if(EDIBgbl::SelBillType==EDIBgbl::TZA)
-		{
-			FrmTxsr.m_bAllowUpd=false;
-			FrmTxsr.m_Databill.SetRefRecordset(m_ActiveRs);
-			FrmTxsr.m_Databill.SetEnabled(TRUE);
-			m_DBGbill.SetRefDataSource(m_ActiveRs);
-			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
-			FrmTxsr.m_bAllowUpd=true;
-		}
-	}
-	catch(_com_error e)
-	{
-		FrmTxsr.m_bAllowUpd=true;
-		ShowMessage(e.Description());
-	}
-	catch(CDaoException * e)
-	{
-		e->ReportError();
-		e->Delete();
-		FrmTxsr.m_bAllowUpd=true;
-	}*/
-
-////////////////////
-//cheng    在添加记录时记录号不对,所以改成这样
-
 try
-{/*
-	while(!m_ActiveRs->adoEOF && !m_ActiveRs->BOF)
-				{
-					m_ActiveRs->Delete(adAffectCurrent);
-					
-					m_ActiveRs->MoveFirst();
-				}
-*/
-//	EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
+{
 	conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=" + ltos(EDIBgbl::SelVlmID)),NULL,adCmdText);
 	m_ActiveRs->Requery(-1);
 			m_DBGbill.SetRefDataSource(m_ActiveRs);
@@ -940,66 +792,6 @@ catch(_com_error *e)
 	ShowMessage(e->Description());
 }
 }
-
-//DEL void CPhsData::OnBeforeInsertDatagrid1(short FAR* Cancel) 
-//DEL {
-//DEL 	// TODO: Add your control notification handler code here
-//DEL 	
-//DEL }
-
-//DEL void CPhsData::OnAfterInsertDatagrid1() 
-//DEL {
-//DEL 	// TODO: Add your control notification handler code here
-//DEL 
-//DEL }
-
-//DEL void CPhsData::InitDlg()
-//DEL {
-//DEL 	
-//DEL }
-
-//This Function is useful, but I don't wanna use it.
-/*void CPhsData::OnColResizeDatagrid1(short ColIndex, short FAR* Cancel) 
-{
-	EDIBgbl::SaveDBGridColumnCaptionAndWidth(m_DBGbill,ColIndex,"");
-	
-	if (PositionLT>26)
-	{
-		CRect Rect;
-		short row,col;
-		VARIANT val;
-		int posXS=0;
-		row=m_DBGbill.RowContain(PositionLT);
-		val.vt=VT_I2;//以下取代了ColContaining函数
-		for (short i=m_DBGbill.GetLeftCol();i<=ColIndex;i++)
-		{
-			val.iVal=i;
-			if (!SHDlg.bIsVisible[i]) continue;
-			posXS+=m_DBGbill.GetColumns().GetItem(val).GetWidth()*1.2;
-		}
-		col=i-1;
-		posXS=posXS-m_DBGbill.GetColumns().GetItem(val).GetWidth()*1.2;
-		//posXS*=1.2;
-		val.iVal=col;
-		Rect.top=(row+5)*24-2;
-		Rect.left=posXS+50;
-		Rect.bottom=Rect.top+24;
-		Rect.right=Rect.left+m_DBGbill.GetColumns().GetItem(val).GetWidth()*1.2;
-		if (m_ComboGenDlg.m_hWnd==NULL)
-		{
-			m_ComboGenDlg.Create(IDD_COMBOGEN_DLG,this);
-			m_ComboGenDlg.MoveWindow(Rect);
-			m_ComboGenDlg.MoveComboBox();
-			m_ComboGenDlg.ShowWindow(SW_SHOW);
-		}
-		else
-		{
-			m_ComboGenDlg.MoveWindow(Rect);
-			m_ComboGenDlg.MoveComboBox();
-			m_ComboGenDlg.ShowWindow(SW_SHOW);
-		}
-	}
-}*/
 
 void CPhsData::OnDataCal() 
 {
@@ -1029,10 +821,6 @@ void CPhsData::OnDrawZdjh()
 
 BOOL CPhsData::Create(UINT IDD ,CWnd* pParentWnd) 
 {
-	// TODO: Add your specialized code here and/or call the base class
-	//CWnd tmpWnd;
-	//tmpWnd.m_hWnd=NULL;
-	//if(pParentWnd==NULL) pParentWnd=&tmpWnd;
 	return CDialog::Create(IDD, NULL);
 }
 

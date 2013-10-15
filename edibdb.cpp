@@ -336,7 +336,7 @@ void EDIBDB::SumNumbers()
 	EDIBgbl::SQLx = _T("INSERT INTO TMP2 SELECT CLID,CLmc,CLgg,CLcl,CLdw,CLdz,CLnum1 as CLnum,CLzz,ifLJ FROM TMP1");
 	EDIBgbl::dbPRJ.Execute((EDIBgbl::SQLx));
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -427,7 +427,7 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 	  }
 	  rs.Close();
    }
-   catch(::CDaoException * e)
+   catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -569,7 +569,7 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 			return true;
 		}
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -646,7 +646,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			dbExcel.Execute( strSQL );
 		}
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

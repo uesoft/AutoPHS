@@ -524,7 +524,6 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 	long i=0, j=0;
 	CString strTmp,sTmp;
 	CString SQLx;
-	CDaoFieldInfo fi;
 	
 	try
 	{
@@ -1220,7 +1219,9 @@ long Cphs::SavephsAllStructToTZB(long& zdjh, int nth, int& /*Optional*/ AttachIn
 		COleVariant rsXv;
 
 		SampleArray = new CString[iCount];
-		for(int i =iCount-1;i >= 0 ;i--)
+
+		int i;
+		for(i =iCount-1;i >= 0 ;i--)
 		{
 			rsX->get_Collect((_variant_t)"ID",rsXv);
 			SampleArray[i] = vtos(rsXv);
@@ -5334,7 +5335,6 @@ void Cphs::GetphsSumBom()
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
-		
 		
 		//************
 		//现在处理管部

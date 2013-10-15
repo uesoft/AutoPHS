@@ -286,7 +286,6 @@ void CFrmListBox::OnCmdSave()
                //下面2句容易造成级联事件，导致死机。
                //新增加的模板应该出现在模板窗体中，为此过滤选择项=mnuIALLSamp
                FrmPhsSamp.SelectItemMenu = mnuIALLSamp;
-			   //CDaoRecordset::Requery();
                FrmPhsSamp.Data1->Requery();
 					FrmPhsSamp.Data1->FindFirst("SampleID=" + ltos(m_OldSelSampleID));
 					FrmPhsSamp.LoadListSelPhs();

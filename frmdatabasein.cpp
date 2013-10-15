@@ -163,7 +163,7 @@ void CFrmDatabaseIn::getDatabase()
 			this->SendMessage(WM_CLOSE);
 		}
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -363,7 +363,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -384,7 +384,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -405,7 +405,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -426,7 +426,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -450,7 +450,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -472,7 +472,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -493,7 +493,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -514,7 +514,7 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB.Execute(SQLx);
 							}
-							catch(CDaoException *e)
+							catch(...)
 							{
 	#ifdef _DEBUG
 								e->ReportError();
@@ -540,7 +540,7 @@ void CFrmDatabaseIn::OnDataIn()
 		FrmPhsData.InitDBbill();
 		this->SendMessage(WM_CLOSE);
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -574,7 +574,7 @@ long inline CFrmDatabaseIn::GetMaxVlmID(CDaoDatabase & db)
 		rs.GetFieldValue(0,vTmp);
 		ret=vtoi(vTmp);
 	}
-	catch(CDaoException* e)
+	catch(...)
 	{
 #ifdef _DEBUG
 		e->ReportError();
@@ -612,7 +612,7 @@ void CFrmDatabaseIn::LoadListEngin()
 			rs.MoveNext();
 		}
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -659,7 +659,7 @@ void CFrmDatabaseIn::LoadListVlm()
 			rs.MoveNext();
 		}
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

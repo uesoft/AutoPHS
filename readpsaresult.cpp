@@ -4255,7 +4255,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4990,7 +4990,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6101,7 +6101,7 @@ void Delete1()
 
 			//AfxMessageBox("aa");
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

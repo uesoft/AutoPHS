@@ -173,7 +173,7 @@ void CDlgAddMaterial::LoadListClass()
 			i++;
 		}
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -294,7 +294,7 @@ void CDlgAddMaterial::LoadListDesc()
 		}
 		rs.Close();
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -426,7 +426,7 @@ void CDlgAddMaterial::LoadListBH()
 			i++;
 		}
 	}
-	catch(CDaoException *e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -860,7 +860,7 @@ void CDlgAddMaterial::OnBtnAdd()
 					strClgg=vtos(vTmp);
 					rsTmp.Close();
 				}
-				catch(CDaoException * e)
+				catch(...)
 				{
 					e->Delete();
 					strClgg=strBH;
@@ -941,7 +941,7 @@ void CDlgAddMaterial::OnBtnAdd()
 				this->EndDialog(IDOK);
 			}
 		}
-		catch(CDaoException* e)
+		catch(...)
 		{
 			e->ReportError();
 			e->Delete();
@@ -973,7 +973,7 @@ void CDlgAddMaterial::UpdateTmpCSLen()
 
 		EDIBgbl::dbPRJ.Execute(strSQL);
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1069,7 +1069,7 @@ void CDlgAddMaterial::LoadListMaterial()
 		if(m_comboMaterial.GetCount()>0)
 			m_comboMaterial.SetCurSel(0);
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1090,7 +1090,7 @@ int CDlgAddMaterial::GetMaxSEQ(CString tbn, CDaoDatabase &db)
 		rs.GetFieldValue(0,vTmp);
 		return vtoi(vTmp);
 	}
-	catch(CDaoException * e)
+	catch(...)
 	{
 		e->ReportError();
 		e->Delete();

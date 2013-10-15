@@ -21,9 +21,11 @@ CString CrudePA::m_strPMAXField=_T("PMAX");
 CString CrudePA::m_strTJField=_T("TJ");
 CString CrudePA::m_strWeightField=_T("Weight");
 CString CrudePA::m_strTableName=_T("crudePA");
-CrudePA::CrudePA(CDaoDatabase &DataMdb)
+
+CrudePA::CrudePA(_Connection &DataMdb)
 {
-	m_pRs.m_pDatabase = &DataMdb;
+//	m_pRs.m_pDatabase = &DataMdb;
+	m_pRs->put_ActiveConnection(DataMdb);
 }
 
 CrudePA::~CrudePA()

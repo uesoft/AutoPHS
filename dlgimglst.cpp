@@ -119,7 +119,7 @@ void CDlgImgLst::LoadAllImage()
 		}
 
 	}
-	catch(::CDaoException * e)
+	catch(...)
 	{
 		//e->ReportError();
 		e->Delete();

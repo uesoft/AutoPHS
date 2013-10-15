@@ -208,7 +208,7 @@ private:
 	static float fltTmp;
 public:	
 	static void UpdatePipeDimHeight(); // 更新Z8表管部的标高（冷态，热态）
-	static int FindPSAType(CString strPSAType,CDaoRecordset *rs);
+	static int FindPSAType(CString strPSAType, _RecordsetPtr rs);
 	static int SpringTypeCompare(CString strType);
 	//LFX 2005.6.30 焊缝绘制选项
 	static bool gbDrawWeldSymbol;   //是否绘制焊缝符号  
@@ -271,10 +271,10 @@ public:
 	static void StressOfMaterial(CString Material,float temperature,float& Sigmat,int iMODE=0,float& Density=vf7850);
 	static BOOL CalOffset(_RecordsetPtr rsZA);
 	static int SprInfoIndex;
-	static bool tbExists(CDaoDatabase& db,CDaoDatabase& db1, CString &tbn, CString s1, CString s2,CString s3);
+	static bool tbExists(_ConnectionPtr& db,_ConnectionPtr& db1, CString &tbn, CString s1, CString s2,CString s3);
 	// LFX 加 bool bWarn 以此标此来确定在表未找到时是否提出警告  2005.2.21
-	static bool HStbExists(CDaoDatabase& db,CDaoDatabase& db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
-	static COleVariant sFindAnyTableField(CDaoDatabase&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
+	static bool HStbExists(_ConnectionPtr& db,_ConnectionPtr& db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
+	static COleVariant sFindAnyTableField(_ConnectionPtr&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
 	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
 	static CString GetPhsSAfx(int  SAfx);
 	static _ConnectionPtr dbZDJcrude;
@@ -319,7 +319,7 @@ public:
     static void CreateTmpConnectTable();
     static void CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum);
     static void CreateTmpSPRPropertyTableUnfinish(int /*Optional*/ SprMaxSerialNum);
-    static void SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType);
+    static void SetSpringPhsInfo(_RecordsetPtr rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType);
     static void AutoSelSpringNo(_RecordsetPtr rss,float fpgz ,float fpaz,float fyr,float fSPR_CHZBH,float& fTotalInstallCompressValue,
 						long lSelSampleID, int nRepZdjType,int iSumDistOfSpring,bool BHintRepZdjType,CString strSpringOrder,
 						CString strZdjType,bool bAutoApplyChzbh,CString strbnSPRINGproperty,CString strbnDiscSPRINGpropertyMaxDist);

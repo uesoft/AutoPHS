@@ -118,28 +118,27 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 		long mlRot =0, mlRot0 =0; //零件/前一个零件Y轴的方向：与块中方向相同，=0；相反，=180。
 		//long lngErrCalPAfix;   //计算固定支架时产生的错误号
 		_Recordset* rsza ;
-// 		CDaoRecordset rsX(&modPHScal::dbZDJcrude) ;
+// 		 rsX(&modPHScal::dbZDJcrude) ;
 		CComPtr<_Recordset> rsX;
 		rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
 		
-//		CDaoRecordset rsPartBoltNuts(&EDIBgbl::dbPRJDB); //恒吊螺栓螺母
-//		CDaoRecordset rsSAPart(&EDIBgbl::dbPRJDB); //组成根部的附件表
+//		 rsPartBoltNuts(&EDIBgbl::dbPRJDB); //恒吊螺栓螺母
+//		 rsSAPart(&EDIBgbl::dbPRJDB); //组成根部的附件表
 		CComPtr<_Recordset> rsPartBoltNuts;
 		CComPtr<_Recordset> rsSAPart;
 
-//		CDaoRecordset rsTZB;//当前支吊架当前路数包含所有零部件的表，包括螺栓螺母，按记录号排序
-		CComPtr<_Recordset> rsTZB;
+		CComPtr<_Recordset> rsTZB;//当前支吊架当前路数包含所有零部件的表，包括螺栓螺母，按记录号排序
 		
-//		CDaoRecordset rs1(&modPHScal::dbZDJcrude);
-//		CDaoRecordset rs3(&EDIBgbl::dbPHScode);//材料规范选择记录集//20071018 "dbSORT" 改为 "dbPHScode"
+//		 rs1(&modPHScal::dbZDJcrude);
+//		 rs3(&EDIBgbl::dbPHScode);//材料规范选择记录集//20071018 "dbSORT" 改为 "dbPHScode"
 		CComPtr<_Recordset> rs1;
 		CComPtr<_Recordset> rs3;
 		CString m_strMaterial;//管部保温层以外的零部件选择的材料
-// 		CDaoRecordset rs(&modPHScal::dbZDJcrude);
-// 		CDaoRecordset rsTmp,rsTmp1,rsTmp2;
-// 		CDaoRecordset rsCal;	//根部强度计算公式表CalFormulaOfFixPASA，位于sort.mdb，用户可修改
-// 		CDaoRecordset rsDiaOfCSPRFiJ(&modPHScal::dbZDJcrude);//恒力弹簧拉杆直径表记录集，该集来源于表tbnLugDiaOfCSPR，上方恒吊松紧螺母荷载不要考虑恒吊自重
-// 		CDaoRecordset rsDiaOfCSPRFiK;//恒力弹簧连接耳子直径表记录集，该集来源于表tbnLugDiaOfCSPR，连接耳子荷载要考虑恒吊自重
+// 		 rs(&modPHScal::dbZDJcrude);
+// 		 rsTmp,rsTmp1,rsTmp2;
+// 		 rsCal;	//根部强度计算公式表CalFormulaOfFixPASA，位于sort.mdb，用户可修改
+// 		 rsDiaOfCSPRFiJ(&modPHScal::dbZDJcrude);//恒力弹簧拉杆直径表记录集，该集来源于表tbnLugDiaOfCSPR，上方恒吊松紧螺母荷载不要考虑恒吊自重
+// 		 rsDiaOfCSPRFiK;//恒力弹簧连接耳子直径表记录集，该集来源于表tbnLugDiaOfCSPR，连接耳子荷载要考虑恒吊自重
 //		rsDiaOfCSPRFiK.m_pDatabase=&modPHScal::dbZDJcrude;
 		CComPtr<_Recordset> rs;
 		CComPtr<_Recordset> rsTmp;
@@ -231,7 +230,7 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 		rsTZB->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 
-//		CDaoRecordset rsTmpZB(&EDIBgbl::dbPRJDB);//当前支吊架当前路数零部件表，不含螺栓螺母、根部附件
+//		 rsTmpZB(&EDIBgbl::dbPRJDB);//当前支吊架当前路数零部件表，不含螺栓螺母、根部附件
 		CComPtr<_Recordset> rsTmpZB;
 		strSQL.Format("SELECT CustomID FROM ZB WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [ClassID]<>%d AND [ClassID]<>%d AND [ClassID]<>%d AND [IsSAPart]<>-1 Order By recno",
 				EDIBgbl::SelVlmID,modPHScal::zdjh,nth,iBolts,iNuts,iAttached);
@@ -1377,7 +1376,6 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 								CString SIGMA2sa,SIGMA2saMax,TAO2sa,TAO2saMax,TAOx2sa,TAOy2sa,TAOz2sa,lamda2;
 								float mfSIGMA1sa,mfSIGMA1saMax,mfTAO1sa,mfTAO1saMax,mfLamda1,mfFi1;
 								float mfSIGMA2sa,mfSIGMA2saMax,mfTAO2sa,mfTAO2saMax,mfLamda2,mfFi2;
-				//				CDaoRecordset rs2;
 								CComPtr<_Recordset> rs2;
 								//modPHScal::PAfixH=320.0;//本句可测试华东院例题
 					
@@ -3085,7 +3083,6 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 						   CString strSQLTmp ;
 							strSQLTmp.Format("SELECT * FROM [%s] WHERE [CUSTOMID]=\'%s\' AND [SIZE2]=%d ORDER BY SIZE2",
 								modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L8")),int(modPHScal::gmiDiameter));			   
-			//			   CDaoRecordset m_rs;
 							CComPtr<_Recordset> m_rs;
 						   COleVariant vT1;
 						   if(m_rs->State == adOpenStatic)
@@ -3349,7 +3346,6 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 					rsTZB->put_Collect((_variant_t)_T("ID"),vTmp1);
 				}
 				   CString strBH,strID;
-			//	   CDaoRecordset rsTmp2;
 				   CComPtr<_Recordset> rsTmp2;
 				   switch(modPHScal::glClassID)
 				   {
@@ -4095,7 +4091,6 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 						   //则恒力弹簧的安装高度H1(sngH1xmax)=直接查得这个下限位移字段fBmin的值。
 						   //否则，按插值法计算位移。add by ligb on 2004.11.24
 						   CString tmpSQL;
-			//			   CDaoRecordset rsX1;			   
 						   _RecordsetPtr rsX1;
 						   rsX1.CreateInstance(__uuidof(Recordset));
 				   
@@ -4529,7 +4524,6 @@ bool Cphs::GetphsBHandSizes(CFrmStatus& frmStatus,int  FirstCal, int  MaxCalCoun
 			//管夹螺栓M1与U形耳子L8的螺栓M功能相似
 			strSQLTmp.Format("SELECT * FROM [%s] WHERE [CUSTOMID]=\'%s\' AND [SIZE2]=%d ORDER BY SIZE2",
 				modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L8")),int(modPHScal::gmiDiameter));
-	//		CDaoRecordset m_rs;
 			_RecordsetPtr m_rs;
 			COleVariant vT1;
 			if(m_rs->State == adOpenStatic)
