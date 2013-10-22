@@ -167,14 +167,14 @@ void CCalStructDlg::OnSelChangeListImg()
 		{
 			m_rsVariable->Update();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		try
 		{
 			m_rsMainDim->Update();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		m_gridVar.SetRefDataSource(NULL);
@@ -559,14 +559,14 @@ void CCalStructDlg::InitVar(int iComNo,BOOL bCurComNo,BOOL bOther,BOOL bUpdMater
 		{
 			m_rsVariable->Update();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		try
 		{
 			m_rsMainDim->Update();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		m_gridVar.SetRefDataSource(NULL);
@@ -711,7 +711,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			strSQL.Format((_T("DROP TABLE [%s]")),strTmpTabName);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 	}
@@ -980,10 +980,6 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 		rs->Close();
 	}
 	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
 	{
 		ReportError( "Exception", __FILE__, __LINE__ );
 	}
@@ -1344,10 +1340,6 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 	}
 	catch(CException *e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
 		ReportError("Exception",__FILE__,__LINE__);
 	}
 	return TRUE;
@@ -1374,7 +1366,7 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 			return;
 		m_comboComMaterial.GetLBText(i,strMaterial);
 		m_comboTmp.GetWindowText(strTemp);
-		fTmp=_tcstod(strTemp,&ptTemp);
+		fTmp=(float)_tcstod(strTemp,&ptTemp);
 		if(ptTemp==(LPCTSTR)strTemp)
 			return;
 
@@ -2342,7 +2334,7 @@ void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		_RecordsetPtr rsVar;
@@ -2443,6 +2435,7 @@ void CCalStructDlg::UpdateComLen()
 		int c=m_ComGrid.GetRowCount()-1;
 		int i;
 		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(_Recordset));
 		for(i=1;i<=c;i++)
 		{
 			CString strSQL;

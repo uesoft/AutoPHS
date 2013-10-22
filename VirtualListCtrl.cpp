@@ -28,7 +28,7 @@ CVirtualListCtrl::CVirtualListCtrl()
 		m_prsREF->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 	}
-	catch(CException * e)
+	catch(CException * ep)
 	{
 		ep->ReportError();
 		ep->Delete();
@@ -107,7 +107,7 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 					//			SetItemText(index, 0, str);
 					
 		}
-		catch(CException * e)
+		catch(CException * ep)
 		{
 			ep->ReportError();
 			ep->Delete();
@@ -149,10 +149,5 @@ DWORD CVirtualListCtrl::GetItemData(int nItem) const
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
 		return 0;
-	}
-
-
 }

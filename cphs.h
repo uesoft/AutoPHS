@@ -64,15 +64,16 @@ public:
 	bool brsIDStatus;
     /*Object*/CListBox* ResultObj;
     /*Object*/CListBox* SourceObj;
-	//_RecordsetPtr rsID;
-	CComPtr<_Recordset> rsID;
+
+	_RecordsetPtr rsID;
+
 	CString	PA;
     CString	SA;
 protected:
 
 public:
 	void CloseRecordsets();
-	_Recordset* m_rsObj;
+	_RecordsetPtr m_rsObj;
 	void SelectItemRsObj();
 	void InitListRs();
 

@@ -77,7 +77,7 @@ bool Cphs::bFirstPartIsPA()
 		else
 			return true;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		return false;
 	}
@@ -174,7 +174,7 @@ long Cphs::SetPhsPATypeToListBox()
 				rs->MoveNext();
 			}
 			}
-			catch(...)
+			catch(CException *e)
 			{
 				return 0;
 			}
@@ -186,7 +186,7 @@ long Cphs::SetPhsPATypeToListBox()
 			return ret;
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		return (long)0;
 	}
@@ -358,7 +358,7 @@ long Cphs::SetPhsTypeToListBox()
 		ret=i;
 		i=SaveRsUnCheckedTypeFromResultObj();		  
    }//try block
-   catch(...)
+   catch(CException *e)
    {
    }
    return ret;
@@ -391,7 +391,7 @@ long Cphs::SaveRsUnCheckedTypeFromResultObj()
 		return i;
 		
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		return 0;
 	}
@@ -501,7 +501,7 @@ long Cphs::SetPhsCheckedTypeToListBox()
 			//Set rsTmpCheckedType = Nothing
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 errH:
@@ -678,7 +678,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 		}
 		delete [] Ptype;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		if(Ptype!=NULL)
 			delete [] Ptype;
@@ -778,9 +778,6 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 	   {
 		   e->Delete();
 	   }
-	   catch(...)
-	   {
-	   }
 	   return ret;
 }
 
@@ -866,7 +863,7 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 			}
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		RCount=rs1->GetRecordCount();
 	}
@@ -1062,7 +1059,7 @@ long Cphs::GetphsStructIDsemiAuto()
 		   ShowMessage(e);
 		   return -1;
 	   }
-	   catch(...)
+	   catch(CException *e)
 	   {
 		   return -1;
 	   }
@@ -1092,9 +1089,6 @@ long Cphs::GetPhsStructSampleID()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	return ret;
 }
@@ -1151,7 +1145,7 @@ long Cphs::SavephsStructTorsTmpREF()
 			return -1;
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		return 0;
 	}
@@ -1372,9 +1366,6 @@ void Cphs::GetPhsStructFromTZB(int zdjh)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void Cphs::SetPhsPASAtoTZA(int zdjh, long /*ByVal*/ SampleID)
@@ -1488,8 +1479,11 @@ bool Cphs::GetphsBHandSizesTest()
 		/* rsza As Recordset, rsX As Recordset, rsxx As Recordset
 		Set rsza = Crs.rsDS*/
 		_RecordsetPtr rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
-		CComPtr<_Recordset> rsTmp;
-		CComPtr<_Recordset> rsX;
+
+		_RecordsetPtr rsTmp;
+		rsTmp.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr rsX;
+		rsX.CreateInstance(__uuidof(_Recordset));
 //		rsTmp.m_pDatabase=&EDIBgbl::dbSORT;
 //		rsX.m_pDatabase=&modPHScal::dbZDJcrude;
 		
@@ -2155,10 +2149,7 @@ spZ1Z2:
 	{
 		e->Delete();
 	}
-   catch(...)
-   {
 	   return false;
-   }
 }
 
 void Cphs::simplify2(CComPtr<_Recordset> &rsPartBoltNuts,int nth)
@@ -2173,7 +2164,7 @@ void Cphs::simplify2(CComPtr<_Recordset> &rsPartBoltNuts,int nth)
 		rsPartBoltNuts->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	
@@ -2204,7 +2195,7 @@ void Cphs::simplify(CComPtr<_Recordset> &rsSAPart,int nth)
 			}
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 }
@@ -3388,9 +3379,6 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 
 	if(rsTmpZB->State == adOpenStatic)
 		rsTmpZB->Close();
@@ -3560,7 +3548,7 @@ long Cphs::CheckMatchPhs()
 		}
 		
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		ret=0;
 	}
@@ -3622,7 +3610,7 @@ void Cphs::CheckDuplicateIndex()
 			}
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 errH:
@@ -3878,10 +3866,6 @@ long Cphs::CheckDuplicateREFRecordWhenAppend(int *ipCheckButton)   //LFX  2005.3
 		e->Delete();
 		ret = -1;
 	}
-	catch(...)
-	{
-		ret=-1;
-	}
 	return ret;
 }
 #pragma warning( disable : 4129 )  //Added by Shuli Luo
@@ -4051,7 +4035,7 @@ try
 		}		
 	}
 }
-catch(...)
+catch(CException *e)
 {
 }
 errH:
@@ -4490,7 +4474,7 @@ void Cphs::ChangeNameInphsStructureName()
 			rs4->Close();
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	//errH:
@@ -4583,7 +4567,7 @@ void Cphs::GetMaterial()
 			+_T(") AND (ISNULL(CLcl) or trim(CLcl)=\'\') ");//AND NOT ISNULL(seq)";
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText); 
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	
@@ -4797,11 +4781,11 @@ void Cphs::GetphsSumBom()
 	//
 	try
 	{
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 
-		CComPtr<_Recordset> rsza;
-		rsza.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsza;
+		rsza.CreateInstance(__uuidof(Recordset));
 
 		_RecordsetPtr rsCL;
 		rsCL.CreateInstance(__uuidof(Recordset));
@@ -6277,9 +6261,6 @@ void Cphs::GetphsSumBom()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 	frmStatus.UpdateStatus(1,true);
 	frmStatus.ShowWindow(SW_HIDE);
 }
@@ -6470,7 +6451,7 @@ void Cphs::GetPhsSAELandPAdxdydz()
 		}
 		modPHScal::UpdatePipeDimHeight(); // 管部标高
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 }
@@ -6606,6 +6587,8 @@ Cphs::Cphs()
 //	rsphsStructureREF.m_pDatabase=&EDIBgbl::dbSORT;
 	TZBResultObj=NULL;
 	m_rsObj=NULL;
+	rsID.CreateInstance(__uuidof(_Recordset));
+	m_rsObj.CreateInstance(__uuidof(_Recordset));
 }
 
 Cphs::~Cphs()
@@ -6641,7 +6624,7 @@ void Cphs::InitListRs()
 		else
 			rsUnCheckedType->Requery(adExecuteRecord);
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	
@@ -6665,9 +6648,6 @@ void Cphs::CloseRecordsets()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 

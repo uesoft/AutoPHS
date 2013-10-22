@@ -78,7 +78,7 @@ void CDlgImgLst::LoadAllImage()
 			//m_Image[i].SetWidth(IMG_W);
 			//m_Image[i].SetHeight(IMG_H);
 		}
-		int Rows=(int)sqrt(m_imgCount);
+		int Rows=(int)sqrt((float)m_imgCount);
 		int Cols=(int)(m_imgCount/Rows);
 		if(m_imgCount%Rows > 0)
 			Cols++;
@@ -119,7 +119,7 @@ void CDlgImgLst::LoadAllImage()
 		}
 
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();

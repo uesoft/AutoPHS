@@ -802,7 +802,7 @@ void CSelTemplate::LoadListPA()
 			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
-			rs->get_Collect((_variant_t)0,vTmp);
+			rs->get_Collect((_variant_t)0L, &vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboPA.AddString(sTmp);
@@ -837,7 +837,7 @@ void CSelTemplate::LoadListSA()
 			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
-			rs->get_Collect((_variant_t)0,vTmp);
+			rs->get_Collect((_variant_t)0L, &vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboSA.AddString(sTmp);

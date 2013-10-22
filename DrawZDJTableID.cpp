@@ -187,7 +187,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp = v.pdispVal;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -210,7 +211,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp = v.pdispVal;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -248,7 +250,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					}else
 					{
 
-						objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						objTmp =v.pdispVal;
 						p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 						p0 = p1;
 					}
@@ -271,7 +274,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 						rs->Close();
 					}else
 					{
-						objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						objTmp =v.pdispVal;
 						p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 						p0 = p1;
 					}
@@ -294,7 +298,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp =v.pdispVal;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -318,7 +323,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 						rs->Close();
 					}else
 					{
-						objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						objTmp = v.pdispVal;
 						p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 						p0 = p1;
 					}
@@ -372,7 +378,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp = v.pdispVal;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -442,7 +449,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp = v.pdispVal;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -464,7 +472,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					rs->Close();
 				}else
 				{
-					objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+					objTmp = v;
 					p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 					p0 = p1;
 				}
@@ -492,7 +501,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					}else
 					{
 
-						objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						objTmp =v.pdispVal;
 						p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 						p0 = p1;
 					}
@@ -516,7 +526,8 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 					}else
 					{
 
-						objTmp=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						_variant_t v=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Utility"));
+						objTmp = v.pdispVal;
 						p1=objTmp.Invoke(_T("GetPoint"),2,(LPVARIANT)p0,&_variant_t(GetResStr(IDS_PleasePickApointAsBOMInsertPointINAutoCAD)));
 						p0 = p1;
 					}

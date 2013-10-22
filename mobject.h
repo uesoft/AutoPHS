@@ -32,8 +32,9 @@ public:
 		{
 			if (p) p->Release();
 		}
-		catch(...)
+		catch(CException *e)
 		{
+			e->Delete();
 		}
 		p=NULL;
 	}
@@ -43,7 +44,9 @@ public:
 		{
 			if (p) p->Release();
 		}
-		catch(...){}
+		catch(CException *e){
+			e->Delete();
+		}
 		p=NULL;
 	}
 

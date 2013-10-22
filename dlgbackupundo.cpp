@@ -62,8 +62,8 @@ void CDlgBackupUndo::OnOK()
 		CopyFile(m_strPrjDBPath+"AllPrjDB.mdb",m_strPrjDBPath+"AllPrjDB.bak",FALSE);
 		CopyFile(m_strPrjDBPath+"Sort.mdb",m_strPrjDBPath+"Sort.bak",FALSE);
 
-		EDIBgbl::dbPRJDB.Close();
-		EDIBgbl::dbSORT.Close();
+		EDIBgbl::dbPRJDB->Close();
+		EDIBgbl::dbSORT->Close();
 
 		CString strDir;
 		m_comboHadBackup.GetLBText(m_comboHadBackup.GetCurSel(),strDir);

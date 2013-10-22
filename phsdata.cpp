@@ -401,9 +401,6 @@ void CPhsData::OnRowColChangeDBGbill(VARIANT FAR* LastRow, short LastCol)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 	UpdateData(false);
 }
 
@@ -536,10 +533,6 @@ void CPhsData::OnBeforeDeleteDBGbill(short FAR* Cancel)
 		e->Delete();
 		m_ActiveRs->CancelUpdate();
 	}
-	catch(...)
-	{
-		m_ActiveRs->CancelUpdate();
-	}
 }
 
 void CPhsData::OnTabExit() 
@@ -576,7 +569,9 @@ void CPhsData::OnAutoML()
 		m_ActiveRs->Close();
 	}
 	_variant_t tmpvar;
-	EDIBgbl::dbPRJDB.Execute(CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'");
+	CString strExecute;
+	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'";
+	EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	if(bf)
 		m_ActiveRs->Open(sour,pCon,adOpenStatic,adLockOptimistic,adCmdText);
    //InitDBbill
@@ -639,7 +634,7 @@ void CPhsData::OnDelRs()
 		{
 			m_ActiveRs->Update();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			m_ActiveRs->CancelUpdate();
 		}
@@ -727,7 +722,7 @@ void CPhsData::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 					{
 						m_ActiveRs->Update();
 					}
-					catch(...)
+					catch(CException *e)
 					{
 						m_ActiveRs->CancelUpdate();
 					}
@@ -836,9 +831,6 @@ CPhsData::~CPhsData()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void CPhsData::OnEditAdd() 
@@ -906,9 +898,6 @@ void CPhsData::UpdateLabel()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 

@@ -103,7 +103,7 @@ BOOL Guide::OnInitDialog()
 	}
 	catch(_com_error *e)
 	{
-		
+		e->Description;
 	}
 		
     m_PopMenu.CreatePopupMenu();
@@ -148,9 +148,6 @@ void Guide::afresh()
 	{
 		e->Delete();
 	}
-    catch(...)
-	{
-	}
 }
 
 
@@ -192,9 +189,6 @@ void Guide::OnClose()
 		catch(CException *e)
 		{
 			e->Delete();
-		}
-		catch(...)
-		{
 		}
 	}
 	   //Rd->Close();
@@ -354,11 +348,6 @@ void Guide::OnEditAddRs()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
-
-	
 }
 
 void Guide::OnEditDelRs()
@@ -375,9 +364,6 @@ void Guide::OnEditDelRs()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 
 }
@@ -402,9 +388,6 @@ void Guide::OnEditFilterRs()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-    catch(...)
-	{
 	}
 }
 
@@ -526,7 +509,7 @@ void Guide::OnBeforeColUpdateDatagrid(short ColIndex, VARIANT FAR* OldValue, sho
 		afresh();
 		Rd->Bookmark=Book;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 */
@@ -614,7 +597,7 @@ extern void GDataPasteCol(_RecordsetPtr Rs,int StartCol,int EndCol,CDataGrid &DG
 			DGrid.Scroll(0,DGrid.GetVisibleRows());		
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		AfxMessageBox("字段类型不同，不能复制");
 		return;
@@ -734,10 +717,6 @@ extern void GDataCopyCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-
-	}
 	AfxGetApp()->EndWaitCursor();
 }
 
@@ -780,9 +759,6 @@ extern void GDataPasteCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 		AfxMessageBox("字段值不符");
 	}
     AfxGetApp()->EndWaitCursor();

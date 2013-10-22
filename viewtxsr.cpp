@@ -111,14 +111,14 @@ void CViewTxsr::InitialUndo(void)
 		pRsUndo->Open("SELECT * FROM Undo", conPRJDB.GetInterfacePtr(),
 			adOpenDynamic, adLockOptimistic, adCmdUnknown);
 	}
-	catch(...)
+	catch(CException *e)
 	{		
 		try
 		{
 			conPRJDB->Execute("SELECT ZA.* INTO Undo FROM ZA", NULL, adExecuteNoRecords);
 			conPRJDB->Execute("ALTER TABLE Undo ADD Times INT NULL", NULL, adExecuteNoRecords);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			m_UndoCount = -1;
 			return;
@@ -129,7 +129,7 @@ void CViewTxsr::InitialUndo(void)
 			pRsUndo->Open("SELECT * FROM Undo", conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			m_UndoCount = -1;
 			return;
@@ -145,7 +145,7 @@ void CViewTxsr::InitialUndo(void)
 			pRsUndo->MoveNext ();
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		m_UndoCount = -1;
 		pRsUndo->Close();
@@ -483,12 +483,6 @@ void CViewTxsr::OnInitialUpdate()
 	{
 		e->Delete();
 	}
-
-	catch(...)
-	{
-		return ;
-	}
-
 return ;
 }
 
@@ -715,10 +709,6 @@ void CViewTxsr::OnWillMoveDatabill(long adReason, long FAR* adStatus, LPDISPATCH
 	{
 		e->Delete();
 	}
-
-	catch(...)
-	{
-	}
 }
 
 void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FAR* adStatus, LPDISPATCH pRecordset) 
@@ -758,10 +748,6 @@ void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FA
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-
-	catch(...)
-	{
 	}
 }
 
@@ -959,12 +945,6 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-
-	catch(...)
-	{
-		//e->ReportError();
-		//e->Delete();
 	}
 }
 
@@ -1898,10 +1878,6 @@ void CViewTxsr::ShowPicturePASA(int Index)
 	{
 		e->Delete();
 	}
-
-	catch(...)
-	{
-	}
 }
 
 void CViewTxsr::ShowPictureGenbuFX()
@@ -1966,7 +1942,7 @@ void CViewTxsr::CloseRs()
 			{
 				m_ActiveRs->Update();
 			}
-			catch(...)
+			catch(CException *e)
 			{
 				m_ActiveRs->CancelUpdate();
 			}
@@ -1990,7 +1966,7 @@ void CViewTxsr::InitRs()
 				{
 					m_ActiveRs->Update();
 				}
-				catch(...)
+				catch(CException *e)
 				{
 					m_ActiveRs->CancelUpdate();
 				}
@@ -1999,7 +1975,7 @@ void CViewTxsr::InitRs()
 			{
 				m_ActiveRs->Close();
 			}
-			catch(...)
+			catch(CException *e)
 			{
 			}
 				
@@ -2012,7 +1988,7 @@ void CViewTxsr::InitRs()
 			}
 
 		}
-		catch(...)
+		catch(CException *e)
 		{
 		}
 		m_bUpd=false;
@@ -2096,11 +2072,6 @@ void CViewTxsr::OnSelchangeZdjh()
 	{
 		e->Delete();
 	}
-
-	catch(...)
-	{
-		//MessageBox(e.Description());
-	}
 }
 
 void CViewTxsr::OnImgXy0() 
@@ -2165,7 +2136,7 @@ void CViewTxsr::SetUndoCount()
 		pRsUndo->Open(_variant_t(strSQL), conPRJDB.GetInterfacePtr(),
 			adOpenDynamic, adLockOptimistic, adCmdUnknown);
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		m_UndoCount = 0;
 		return;
@@ -2184,7 +2155,7 @@ void CViewTxsr::SetUndoCount()
 			pRsUndo->MoveNext();
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		m_UndoCount = 0;
 		return;
@@ -2194,7 +2165,7 @@ void CViewTxsr::SetUndoCount()
 	{
 		pRsUndo->Close();
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 
@@ -2222,7 +2193,7 @@ void CViewTxsr::UndoCopy(void)
 			pRsUndo->Open("SELECT * FROM Undo", conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			return;
 		}
@@ -2257,7 +2228,7 @@ void CViewTxsr::UndoCopy(void)
 				return;
 			}
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			m_ActiveRs->Bookmark = vBookMark;
 			pRsUndo->Close();			
@@ -2272,7 +2243,7 @@ void CViewTxsr::UndoCopy(void)
 			pRsUndo->Update ();
 			pRsUndo->Close();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			return;
 		}     	
@@ -2300,7 +2271,7 @@ void CViewTxsr::UndoPaste(void)
 			pRsUndo->Open(_variant_t(strSQL), conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			return;
 		}
@@ -2335,20 +2306,20 @@ void CViewTxsr::UndoPaste(void)
 			{
 				FrmPhsData.m_DBGbill.Scroll (0,-1);
 			}
-			catch(...)
+			catch(CException *e)
 			{
 			}
 
 			pRsUndo->Close();
 			UndoDelete();
 		}
-		catch(...)
+		catch(CException *e)
 		{	
 			try
 			{
 				pRsUndo->Close();			
 			}
-			catch(...)
+			catch(CException *e)
 			{			
 			}
 			
@@ -2378,7 +2349,7 @@ void CViewTxsr::UndoDelete()
 			pRsUndo->Open(_variant_t(strSQL), conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			return;
 		}
@@ -2391,7 +2362,7 @@ void CViewTxsr::UndoDelete()
 				pRsUndo->MoveFirst ();
 			}
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			try
 			{
@@ -2400,9 +2371,6 @@ void CViewTxsr::UndoDelete()
 			catch(CException *e)
 			{
 				e->Delete();
-			}
-			catch(...)
-			{				
 			}
 
 			m_UndoCount = 0;
@@ -2414,7 +2382,7 @@ void CViewTxsr::UndoDelete()
 		{
 			pRsUndo->Close ();
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			m_UndoCount = 0;
 			InitialUndo();
@@ -2449,7 +2417,7 @@ void CViewTxsr::EditCopy()
 		pRsClip->Open("SELECT * FROM Clip", conPRJDB.GetInterfacePtr(),
 			adOpenDynamic, adLockOptimistic, adCmdUnknown);
 	}
-	catch(...)
+	catch(CException *e)
 	{		
 		try
 		{
@@ -2459,9 +2427,6 @@ void CViewTxsr::EditCopy()
 		catch(CException *e)
 		{
 			e->Delete();
-		}
-		catch(...)
-		{
 			return;
 		}
 		
@@ -2473,9 +2438,6 @@ void CViewTxsr::EditCopy()
 		catch(CException *e)
 		{
 			e->Delete();
-		}
-		catch(...)
-		{
 			return;
 		}
 	}
@@ -2512,10 +2474,6 @@ void CViewTxsr::EditCopy()
 		}	
     }
 	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
 	{	
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
@@ -2578,14 +2536,6 @@ try
 	catch(CException *e)
 	{
 		e->Delete();
-		m_ActiveRs->Requery(-1);
-		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs);
-		FrmPhsData.m_DBGbill.ReBind();
-		EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
-	}
-
-	catch(...)
-	{
 		m_ActiveRs->Requery(-1);
 		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs);
 		FrmPhsData.m_DBGbill.ReBind();
@@ -2664,10 +2614,6 @@ void CViewTxsr::EditPaste()
     }
 	catch(CException *e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
 			pRsClip->Delete (adAffectCurrent);
@@ -2709,9 +2655,7 @@ void CViewTxsr::OnBtnAdd()
 		{
 			e->Delete();
 		}
-		catch(...)
-		{
-		}
+
 		try
 		{
 			m_Databill.SetRefRecordset(NULL);
@@ -2719,9 +2663,6 @@ void CViewTxsr::OnBtnAdd()
 		catch(CException *e)
 		{
 			e->Delete();
-		}
-		catch(...)
-		{
 		}
 		if(EDIBgbl::SelBillType==EDIBgbl::TZA)
 		{
@@ -2732,9 +2673,6 @@ void CViewTxsr::OnBtnAdd()
 			catch(CException *e)
 			{
 				e->Delete();
-			}
-			catch(...)
-			{
 			}
 		}
 		m_popMenu.GetSubMenu(0)->CheckMenuRadioItem(3,12,3,MF_BYPOSITION);
@@ -2789,10 +2727,6 @@ void CViewTxsr::OnBtnAdd()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-		m_bIsAddNew=false;
-	}
 	m_bIsAddNew=false;
 }
 
@@ -2809,9 +2743,6 @@ void CViewTxsr::OnDestroy()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	//user::SavePos(this,"FrmDataEdit");
 }
@@ -3113,9 +3044,6 @@ void CViewTxsr::RefreshOptData()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -3419,9 +3347,6 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 	{
 		e->Delete();
 	}
-   catch(...)
-	{
-	}
 /*	timee=CTime::GetCurrentTime();
 	CTimeSpan t=(timee-timeb);
 	CString s=t.Format(_T("%M·Ö%SÃë"));
@@ -3485,7 +3410,7 @@ void CViewTxsr::OnSetfocusEdtType()
 		EDIBgbl::IsCalc=false;
 		return;
 	}
-	static b=true;
+	static bool b=true;
 	if(b)
 	{
 		b=false;
@@ -3669,9 +3594,6 @@ void CViewTxsr::OnGetZdjhdata()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 long CViewTxsr::GetFirstRow(VARIANT vBookmark)
@@ -3704,10 +3626,7 @@ long CViewTxsr::GetMaxZdjh()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-		return tmpZdjh;
-	}
+	return tmpZdjh;
 }
 
 //DEL BOOL CViewTxsr::Create(UINT IDD ,CWnd* pParentWnd) 
@@ -3768,7 +3687,7 @@ CViewTxsr::~CViewTxsr()
 	{
 		m_ActiveRs=NULL;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	delete m_OptPag4;
@@ -3858,9 +3777,6 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 

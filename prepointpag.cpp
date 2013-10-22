@@ -286,7 +286,7 @@ void CPrePointPag::SetBasePoint()
 		bSetPrevious = false;
 		iSetBPbegan = iSetBPbegan + 1;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 // 		char ss[256];
 // 		e->GetErrorMessage(ss,255);

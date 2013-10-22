@@ -146,7 +146,7 @@ BOOL CFrmPhsSamp::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	CString sTmp;
-	int i;
+//	int i;
 	m_popMenu.LoadMenu(IDR_PHSSAMP);
 	CRect rc;
 	if(user::GetPos("FrmPhsSamp",rc))
@@ -472,8 +472,9 @@ void CFrmPhsSamp::Data1_Reposition()
    
    Cavphs->SourceObj = &FrmListBox.m_ListPhsStruEDIT;
 	}
-	catch(...)
+	catch(CException *e)
 	{
+		e->Delete();
 	}
 }
 
@@ -554,9 +555,10 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 		Data1->Find((_bstr_t)(_T("SampleID="+sTmp)), 0, adSearchForward, vTmp);
 		this->Data1_Reposition();
 	}
-	catch(...)
+	catch(CException *e)
 	{
-		//e->ReportError();
+		e->ReportError();
+		e->Delete();
 	}
 }
 
@@ -1005,9 +1007,6 @@ void CFrmPhsSamp::GetFilterStr()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 void CFrmPhsSamp::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 {
@@ -1286,7 +1285,7 @@ void CFrmPhsSamp::LoadListPA()
 			rs->MoveNext();
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	m_bLoadPA=false;

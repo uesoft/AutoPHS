@@ -141,7 +141,7 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 				strSource=vtos(key);
 				strRight=strSource.Right(1);
 				strSource+=" ";
-				strLeft=strSource.Left(strSource.Find(_T(" ",0)));
+				strLeft=strSource.Left(strSource.Find(_T(" "),0));
 				if(strRight==x)
 				{
 					pRs->PutCollect(_T("xr1"),_variant_t(atof(strLeft)));	
@@ -158,7 +158,7 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 				strSource=vtos(key);
 				strRight=strSource.Right(2);
 				strSource+=" ";
-				strLeft=strSource.Left(strSource.Find(_T(" ",0)));
+				strLeft=strSource.Left(strSource.Find(_T(" "),0));
 				if(strRight==y)
 				{
 					pRs->PutCollect(_T("yr1"),_variant_t(atof(strLeft)));	
@@ -180,7 +180,7 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 				strSource=vtos(key);
 				strRight=strSource.Right(1);
 				strSource+=" ";
-				strLeft=strSource.Left(strSource.Find(_T(" ",0)));
+				strLeft=strSource.Left(strSource.Find(_T(" "),0));
 				if(strRight==z)
 				{
 					pRs->PutCollect(_T("zr1"),_variant_t(atof(strLeft)));	
@@ -241,7 +241,7 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 				strSource=vtos(key);
 				strSource+=" ";
 				strLeft=strSource.Left(strSource.Find(_T(" "),0));
-				strLeft=(strLeft=="")?0.0:strLeft;
+				strLeft=(strLeft=="")?"0.0":strLeft;
 				if(strSource.Find(_T("S"))!=-1)
 				{
 					pRs->PutCollect(_T("dxa1"),_variant_t(-atof(strLeft)));
@@ -264,7 +264,7 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 				strSource=vtos(key);
 				strSource+=" ";
 				strLeft=strSource.Left(strSource.Find(_T(" "),0));
-				strLeft=(strLeft=="")?0.0:strLeft;
+				strLeft=(strLeft=="")?"0.0":strLeft;
 				if(strSource.Find(_T("W"))!=-1)
 				{
 					pRs->PutCollect(_T("dza1"),_variant_t(-atof(strLeft)));

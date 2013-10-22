@@ -177,7 +177,7 @@ public:
     static void DrawphsDataEdit();
     static void DisplayDataZB();
     static void Data2DWG(int /*ByVal*/ recno, CString /*ByVal*/ FieldName);
-    static void DrawTag(_RecordsetPtr& rsTZG, int  iRecNo, CCadPoint& p0, CCadPoint& p1, long  iSEQ, CString  sLine="LINE", CString  sLayer="Tag");
+    static void DrawTag(int  iRecNo, CCadPoint& p0, CCadPoint& p1, long  iSEQ, CString  sLine="LINE", CString  sLayer="Tag");
     static void DrawTagByPickEntity(COleVariant /*Optional*/ pnt);
     static void DrawTagAll();
     static void DrawTagAuto(double p0(), int /*ByVal*/ iRecNo, int /*ByVal*/ iSEQ);

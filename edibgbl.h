@@ -51,8 +51,8 @@ public:
 public:
 	static double MaxLGLong;
 	static void UpdateDBForUpdate();
-	static bool bFieldExists(CDaoTableDef *rd, CString sName);
-	static bool bIndexExists(CDaoTableDef* pTd,CString strIndex);
+//	static bool bFieldExists(CDaoTableDef *rd, CString sName);
+//	static bool bIndexExists(_TablePtr* pTd,CString strIndex);
 	static void UpdateDBTable(_ConnectionPtr &SourceDB, CString SourceTBName, _ConnectionPtr &DesDB, CString DesTBName);
 	static void CloseAll_ConnectionPtr();
 	static BOOL UpdateSortDB();
@@ -60,7 +60,7 @@ public:
 	static CString PhsNo;
 	static bool ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
 	static bool ChangeDatabase(_ConnectionPtr& dDb,_ConnectionPtr &sDb);
-	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
+//	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
 	static bool IsExistentQuery(_ConnectionPtr &db,CString strQueryName);
 	static bool bFieldExists(_RecordsetPtr &rs, CString sName);
 	static bool DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID);
@@ -73,7 +73,7 @@ public:
 	static void InitWorkTable(_ConnectionPtr& db,CString tbn,int type);
 	static CString GetDBName(_ConnectionPtr& db);
 	static bool tdfExists(_ConnectionPtr & db,CString tbn);
-	static CString GetDBName(_ConnectionPtr db);
+//	static CString GetDBName(_ConnectionPtr db);
 	static const int PrjNw;
 	static const int GDLJB;
 	static const int GDZDJ270;

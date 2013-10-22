@@ -10,6 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#define _CRT_SECURE_NO_WARNINGS
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #include <afxwin.h>         // MFC core and standard components
@@ -25,13 +26,15 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <atlbase.h>
 
-#import "C:\Program Files\Common Files\SYSTEM\ADO\msado15.dll" no_namespace \
+#import "C:\Program Files (x86)\Common Files\SYSTEM\ADO\msado15.dll" no_namespace \
 rename("EOF","adoEOF") rename("EditModeEnum","adoEditModeEnum")\
 rename("LockTypeEnum","adoLockTypeEnum") rename("FieldAttributeEnum","adoFieldAttributeEnum")\
 rename("DataTypeEnum","adoDataTypeEnum") rename("ParameterDirectionEnum","adoParameterDirectionEnum")\
 rename("RecordStatusEnum","adoRecordStatusEnum") 
-#include <atlbase.h>
+
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

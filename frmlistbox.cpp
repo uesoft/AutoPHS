@@ -158,84 +158,44 @@ void CFrmListBox::OnCmdApply()
 	// TODO: Add your control notification handler code here
 	try
 	{
-			this->GetDlgItem(IDC_CMD_SAVE)->EnableWindow(false);
-         if (m_ListPhsStruEDIT.GetCount() > 0)
-			{
+		this->GetDlgItem(IDC_CMD_SAVE)->EnableWindow(false);
+		if (m_ListPhsStruEDIT.GetCount() > 0)
+		{
             //检查匹配
             Cavphs->SourceObj = &m_ListPhsStruEDIT;
             Cavphs->ResultObj = &m_ListZDG;
             int i = Cavphs->CheckMatchPhs();
             if( i == -1 )
+			{
+				CString sTmp,sTmp2;
+				sTmp.Format("%d",modPHScal::iSelSampleID);
+				COleVariant v;
+				_variant_t vTmp;
+				FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ sTmp), 0, adSearchForward, vTmp);
+				if (!FrmPhsSamp.Data1->adoEOF)
 				{
-               //匹配则入库
-               //iSelSampleID = Cavphs->CheckDuplicateREFRecordWhenAppend()
-               //改名称
-               //Cavphs->ChangeNameInphsStructureName
-               //更新
-               //FrmphsSamp.Form_Load
-               //With FrmPhsSamp!Data1.Recordset
-               //With Cavphs->AvailableSampleIDrsForphsSamp
-                  //MsgBoxFrmPhsSamp.Data1->RecordCount
-                  //.FindFirst "SampleID=" & iSelSampleID
-					CString sTmp,sTmp2;
-					sTmp.Format("%d",modPHScal::iSelSampleID);
-						COleVariant v;
-                  if (FrmPhsSamp.Data1->FindFirst("SampleID=" +sTmp))
-						{
-                     //dbSORT.Execute "UPDATE PhsStructureName SET FREQUENCE=FREQUENCE+1 WHERE SampleID=" & iSelSampleID
-                     //FrmPhsSamp!Data1.Recordset.Requery
-                     //FrmPhsSamp!Data1.Refresh
-                     //下面的代码可以马上反映改变，而上面的不行。或者虽反映，但是记录指针发生了变化。
-                    
-						  FrmPhsSamp.Data1->GetFieldValue("FREQUENCE",v);
-							  FrmPhsSamp.Data1->Edit();
-							  int vi=vtoi(v);
-							  v.lVal=vi+1;
-								FrmPhsSamp.Data1->SetFieldValue("FREQUENCE",v);
-								FrmPhsSamp.Data1->Update();
-						  if (EDIBgbl::SelBillType == EDIBgbl::TZA)
-						  {
-                     //如果是支吊架原始数据表
-                        //MsgBox "支吊架号" & zdjh & " 组装模板号" & iSelSampleID
-                        //MsgBox ResolveResString(iUE_ZDJHxAndSampleIDx, "|1", zdjh, "|2", iSelSampleID)
-                        sTmp.Format(GetResStr(IDS_ZDJHxAndSampleIDx),"\%d","\%d");
-								sTmp2.Format(sTmp,modPHScal::zdjh,modPHScal::iSelSampleID);
-							  MessageBox(sTmp2);
-							  FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("iSelSampleID",_variant_t((long)modPHScal::iSelSampleID));
-							  /*CString strDn,strGn;
-							  m_ListPhsStruEDIT.GetText(0,strDn);
-							  m_ListPhsStruEDIT.GetText(m_ListPhsStruEDIT.GetCount()-1,strGn);
-								FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("dn1",_variant_t(strDn));
-								FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("gn1",_variant_t(strGn));*/
-
-							  /*if( EDIBgbl::pbFrmLoadedTxsr )
-							  {
-                           //Set rs = frmtxsr!Data1.Recordset
-                           //frmtxsr.Data1.Edit();
-								  frmtxsr.
-                           frmtxsr.Data1.SetFieldValue("iSelSampleID",COleVariant((long)modPHScal::iSelSampleID));
-                           frmtxsr.Data1.Update();
-                        else if (EDIBgbl::pbFrmLoadedphsData )
-								{
-                           Set rs = PhsData!Databill.Recordset
-                           rs.Edit
-                           rs.Fields("iSelSampleID") = iSelSampleID
-                           rs.Update
-                        End If*/
-                        //rs.FindFirst "val(Trim(ZDJH))=" & Zdjh
-                         Cavphs->SourceObj = &m_ListPhsStruEDIT;
-                        i = Cavphs->SavephsStructTorsTmpREF();
-						  }
-						}
-				}
+					  FrmPhsSamp.Data1->get_Collect((_variant_t)"FREQUENCE",&v);
+				//							  FrmPhsSamp.Data1->Edit();
+					int vi=vtoi(v);
+					v.lVal=vi+1;
+					FrmPhsSamp.Data1->put_Collect((_variant_t)"FREQUENCE",v);
+					FrmPhsSamp.Data1->Update();
+					if (EDIBgbl::SelBillType == EDIBgbl::TZA)
+					{
+						//如果是支吊架原始数据表
+						sTmp.Format(GetResStr(IDS_ZDJHxAndSampleIDx),"\%d","\%d");
+						sTmp2.Format(sTmp,modPHScal::zdjh,modPHScal::iSelSampleID);
+						MessageBox(sTmp2);
+						FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("iSelSampleID",_variant_t((long)modPHScal::iSelSampleID));
+						Cavphs->SourceObj = &m_ListPhsStruEDIT;
+						i = Cavphs->SavephsStructTorsTmpREF();
+					}
 			}
-			}
+		}
+		}
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -286,8 +246,10 @@ void CFrmListBox::OnCmdSave()
                //下面2句容易造成级联事件，导致死机。
                //新增加的模板应该出现在模板窗体中，为此过滤选择项=mnuIALLSamp
                FrmPhsSamp.SelectItemMenu = mnuIALLSamp;
-               FrmPhsSamp.Data1->Requery();
-					FrmPhsSamp.Data1->FindFirst("SampleID=" + ltos(m_OldSelSampleID));
+//                FrmPhsSamp.Data1->Requery();
+// 					FrmPhsSamp.Data1->FindFirst("SampleID=" + ltos(m_OldSelSampleID));
+			   _variant_t vTmp;
+			   FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ ltos(m_OldSelSampleID)), 0, adSearchForward, vTmp);
 					FrmPhsSamp.LoadListSelPhs();
                modPHScal::iSelSampleID = m_OldSelSampleID;
 			}
@@ -514,7 +476,7 @@ void CFrmListBox::CalChkCondition()
 		else tmp=1;
 		//if(!this->GetDlgItem(CheckID[i])->IsWindowEnabled())
 		//	tmp=2;
-      iChkCondition = iChkCondition + tmp * (int)pow(2 , i);
+      iChkCondition = iChkCondition + tmp * (int)pow(2.0 , i);
 	}
   
 }

@@ -25,6 +25,7 @@ class _Application;
 
 class CImportFromXLSDlg : public CDialog
 {
+public:
 	// 从EXCEL文件导入数据的子结构
 	struct ImportFromXLSElement		
 	{

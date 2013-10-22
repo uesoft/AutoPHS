@@ -134,7 +134,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 				{
 					m_Data1->Update();
 				}
-				catch(...)
+				catch(CException *e)
 				{
 				//	m_Data1->CancelUpdate();//pfg20050227Ô­´úÂë
 				}
@@ -285,10 +285,8 @@ void CFrmDataEdit::OnDestroy()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
- 	m_Data1=NULL;
+
+	m_Data1=NULL;
 	user::SavePos( this, "FrmDataEdit");
 }
 
@@ -450,9 +448,6 @@ void CFrmDataEdit::OnRowColChangeDatagrid1(VARIANT FAR* LastRow, short LastCol)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void CFrmDataEdit::OnBeforeColEditDatagrid1(short ColIndex, short KeyAscii, short FAR* Cancel) 
@@ -466,9 +461,6 @@ void CFrmDataEdit::OnBeforeColEditDatagrid1(short ColIndex, short KeyAscii, shor
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}	
 }
 
 void CFrmDataEdit::OnAfterColEditDatagrid1(short ColIndex) 
@@ -481,9 +473,6 @@ void CFrmDataEdit::OnAfterColEditDatagrid1(short ColIndex)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 

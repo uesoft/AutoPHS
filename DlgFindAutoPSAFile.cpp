@@ -239,10 +239,10 @@ int CDlgFindAutoPSAFile::GetPHSRecentFile()
    	 LVITEM  lvItem;
 	 m_nCount = 0;
 	 
-	 VARIANT vTmp;
+//	 VARIANT vTmp;
 	 while (!pfileroad->adoEOF && m_nCount<8)
 	 {//有符合条件的记录集且显示的路径没有超过8条
-		strValue = vtos(pfileroad->get_Collect(2L, &vTmp));//得到文件路径
+		strValue = vtos(pfileroad->GetCollect((_variant_t)2L));//得到文件路径
 
 		if (!strValue.IsEmpty() && FileExists(strValue))
 		{

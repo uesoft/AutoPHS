@@ -342,7 +342,7 @@ public:
     static void SetBasePoint();
     static void ReadAutoPHSiniValue();
     static void InitializeCrudeData(_RecordsetPtr rs, bool  bFrmTxsrLoaded);
-    static void CalPAfixZ1Z2(CString /*ByVal*/ dn, float /*ByVal*/ tmpSelPJG, float /*ByVal*/ tmpT0, int /*ByVal*/ mvariNumPart, CComPtr<_Recordset>& rsX);
+    static void CalPAfixZ1Z2(CString /*ByVal*/ dn, float /*ByVal*/ tmpSelPJG, float /*ByVal*/ tmpT0, int /*ByVal*/ mvariNumPart, _RecordsetPtr rsX);
     /*
      * 当查找connect数据表时使用的字段名称,
      * 默认字段是ID,此时只需要在connect表中增加用户特殊的匹配准则,工作量很小

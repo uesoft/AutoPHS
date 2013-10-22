@@ -167,7 +167,7 @@ BOOL CUnitsTransformDlg::OnInitDialog()
 			if((!m_pRsUnits->adoEOF)&&(!m_pRsUnits->BOF))
 			{
 				m_pRsUnits->MoveFirst();
-				char buf[20];
+//				char buf[20];
 				int i=0;//用来记录当前表项的序号
 				while(!m_pRsUnits->adoEOF)
 				{

@@ -254,9 +254,6 @@ void EDIBAcad::WriteToProjectDirphsTxt()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void EDIBAcad::WriteToACADR14_lsp()
@@ -285,14 +282,14 @@ void EDIBAcad::WriteToACADR14_lsp()
 			sTmp+=CString(_T(")\r\n"));
 		f.SeekToEnd();
 		f.Write(sTmp,sTmp.GetLength());
-		f.Close();
+		f->Close();
 	}
 	}
 	catch(CException *e)
 	{
 		e->Delete();
 	}
-	catch(...)
+	catch(CException *e)
 	{
 	}
 	*/
@@ -341,13 +338,19 @@ CString EDIBAcad::GetAcadSrchDir(CString sACADVER)
 		}
 		CString sDir;
 		CMObject PreferencesFiles,tmpObj;
-		if( gbACADR14)	
-			PreferencesFiles = objAcadApp.GetPropertyByName(_T("Preferences"));
+		_variant_t v;
+		if( gbACADR14)
+		{
+			v = objAcadApp.GetPropertyByName(_T("Preferences"));
+			PreferencesFiles = v.pdispVal;
+		}
 		else
 		{
 			//  Set PreferencesFiles = objAcadApp.Preferences.Files
-			tmpObj=objAcadApp.GetPropertyByName(_T("Preferences"));
-			PreferencesFiles = tmpObj.GetPropertyByName(_T("Files"));		
+			v=objAcadApp.GetPropertyByName(_T("Preferences"));
+			tmpObj = v.pdispVal;
+			v = tmpObj.GetPropertyByName(_T("Files"));		
+			PreferencesFiles = v.pdispVal;
 		}
 
 
@@ -380,10 +383,7 @@ CString EDIBAcad::GetAcadSrchDir(CString sACADVER)
 	{
 		e->Delete();
 	}
-   catch(...)
-	{
 		return CString(_T(""));
-	}
 }
 
 BOOL EDIBAcad::StartAcad(CString /*Optional*/ DwgName)
@@ -452,7 +452,9 @@ BOOL EDIBAcad::StartAcad(CString /*Optional*/ DwgName)
 			{
 				gbACADR14=true;
 				CMObject ObjPreferences;
-				ObjPreferences=objAcadApp.GetPropertyByName(_T("Preferences"));
+				_variant_t v;
+				v=objAcadApp.GetPropertyByName(_T("Preferences"));
+				ObjPreferences = v.pdispVal;
 				_variant_t varStr;
 				varStr.SetString("<<Unnamed Profile>>");
 				ObjPreferences.PutPropertyByName(_T("ActiveProfile"),&varStr);
@@ -502,10 +504,12 @@ BOOL EDIBAcad::StartAcad(CString /*Optional*/ DwgName)
 			//objAcadDoc.Invoke(_T("New"),1,&_variant_t(DwgName));
 		}
 
+		_variant_t v;
 		if(modPHScal::gIsACAD==0)//选择了AutoCAD绘图
 		{
-			MoSpace=objAcadDoc.GetPropertyByName(_T("ModelSpace"));
-			PaSpace=objAcadDoc.GetPropertyByName(_T("PaperSpace"));
+			v=objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+			MoSpace = v.pdispVal;
+			PaSpace=objAcadDoc.GetPropertyByName(_T("PaperSpace")).pdispVal;
 			//Set OSNAP mode for duration of the VB program
 			sysVarName = _T("OSMODE");
 			VarName=_variant_t(sysVarName);
@@ -547,15 +551,11 @@ BOOL EDIBAcad::StartAcad(CString /*Optional*/ DwgName)
 		}
 		else //MicroStation
 		{
-			MoSpace=objAcadDoc.GetPropertyByName(_T("ActiveModelReference"));			
+			MoSpace=objAcadDoc.GetPropertyByName(_T("ActiveModelReference")).pdispVal;			
 		}
 
 	}
 	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
 	{
 		CString str;
 		str.LoadString(IDS_AUTOCAD_INITIALIZE_ERROR);
@@ -584,7 +584,7 @@ void EDIBAcad::MakeNewLayer(CString layerName, int LayerColor)
 		CMObject layerObj,tmpObj;
 		long i=0;
 		bool bFound=false ;
-		tmpObj=objAcadDoc.GetPropertyByName(_T("Layers"));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("Layers")).pdispVal;
 		int C=(long)tmpObj.GetPropertyByName(_T("Count"));
 		CString sTmp;
 		layerName.TrimLeft();layerName.TrimRight();
@@ -592,7 +592,7 @@ void EDIBAcad::MakeNewLayer(CString layerName, int LayerColor)
 		//============== 判断是否要创建的层已经存在 =================
 		for( i = 0 ;i<C;i++)
 		{
-			layerObj =tmpObj.Invoke(_T("Item"),1,&_variant_t(i));
+			layerObj =tmpObj.Invoke(_T("Item"),1,&_variant_t(i)).pdispVal;
 			sTmp=vtos(layerObj.GetPropertyByName(_T("Name")));
 			sTmp.TrimLeft();sTmp.TrimRight();
 			sTmp.MakeUpper();
@@ -603,14 +603,14 @@ void EDIBAcad::MakeNewLayer(CString layerName, int LayerColor)
 			}
 		}
 		if( !bFound )
-			layerObj = tmpObj.Invoke(_T("Add"),1,&_variant_t(layerName));
+			layerObj = tmpObj.Invoke(_T("Add"),1,&_variant_t(layerName)).pdispVal;
 		
 		if(LayerColor!=-10)
 			layerObj.PutPropertyByName(_T("Color"),&_variant_t((long)LayerColor));
 
 		GetActiveAcadDoc();
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("clayer")),&_variant_t(layerName));
-		MoSpace=objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+		MoSpace=objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
 	}
 	catch(_com_error e)
 	{
@@ -725,15 +725,12 @@ void EDIBAcad::ModifyAttributes(CADatt* BlkAtt,long acCount, CMObject& AcObject)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 void EDIBAcad::DrawPLine(CCadPoint& StartPoint, float  Length, float  sngRotAng, float  PLwidth)
 {
 	 CVariantArray p(4);
    p.SetData(4,StartPoint[0],StartPoint[1],StartPoint[0] + Length * cos(sngRotAng),StartPoint[1] + Length * sin(sngRotAng));
-   AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p);
+   AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p).pdispVal;
    AcObj.Invoke(_T("SetWidth"),3,&_variant_t((long)0), &_variant_t((double)PLwidth), &_variant_t((double)PLwidth));
 }
 
@@ -741,7 +738,7 @@ void EDIBAcad::DrawPLine(CCadPoint& StartPoint, CCadPoint& EndPoint, float  PLwi
 {
    CVariantArray p(4);
    p.SetData(4,StartPoint[0],StartPoint[1],EndPoint[0],EndPoint[1]);
-   AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p);
+   AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p).pdispVal;
    AcObj.Invoke(_T("SetWidth"),3,&_variant_t((long)0), &_variant_t((double)PLwidth), &_variant_t((double)PLwidth));
 }
 
@@ -792,8 +789,8 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 		LeftMarginWidth = 25;
 		RightMarginWidth = 10;
 		if(SizeIndex >= 3 )RightMarginWidth = 5;
-		AxW = int(0.5 + EDIBDB::A0W / pow(sqrt(2) , SizeIndex));
-		AxH = int(0.5 + EDIBDB::A0H / pow(sqrt(2) , SizeIndex));
+		AxW = int(0.5 + EDIBDB::A0W / pow(sqrt(2.0) , SizeIndex));
+		AxH = int(0.5 + EDIBDB::A0H / pow(sqrt(2.0) , SizeIndex));
 		//;加长图纸
 		AxW = AxW * (1 + TkExtRatio * ((SizeIndex % 2) == 0 ? 0.125 : 0.25));
 		//;A4图只能是立式图幅,故交换长度、宽度;且A4图立式与A0~A3图立式不同
@@ -840,7 +837,7 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 				p0y + RightMarginWidth);
 			//图框线宽
 			PLwidth = 0.3;
-			AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)pi);
+			AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)pi).pdispVal;
 			for( i = 0 ;i<= 3;i++)
 				AcObj.Invoke(_T("SetWidth"),3,&_variant_t((long)i),&_variant_t((double)EDIBAcad::g_fSetTKWidth), &_variant_t((double)EDIBAcad::g_fSetTKWidth));
 		}
@@ -870,7 +867,7 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 			 if( k > 0 )
 				 MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p2s, (LPVARIANT)p2e);
 			 ch[0]=_T('A')+NumSep-1-k;
-			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP,&_variant_t((double)TxtHeight));
+			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP,&_variant_t((double)TxtHeight)).pdispVal;
 			 AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentCenter));
 			 AcObj.PutPropertyByName(_T("VerticalAlignment"),&_variant_t((long)acVerticalAlignmentMiddle));
 			 AcObj.PutPropertyByName(_T("TextAlignmentPoint"),(LPVARIANT)txtP);
@@ -893,7 +890,7 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 			 if( k > 0)
 				 MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p2s, (LPVARIANT)p2e);
 			 ch[0]=_T('A')+NumSep-1-k;
-			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP,&_variant_t((double)TxtHeight));
+			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP,&_variant_t((double)TxtHeight)).pdispVal;
 			 AcObj.PutPropertyByName(_T("VerticalAlignment"),&_variant_t((long)acVerticalAlignmentMiddle));
 			 AcObj.PutPropertyByName(_T("TextAlignmentPoint"), (LPVARIANT)txtP);
 		  }
@@ -917,7 +914,7 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 			 if(k > 0 )
 				 MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p2s, (LPVARIANT)p2e);
 			 _stprintf(ch,_T("%d"),k+1);
-			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP, &_variant_t((double)TxtHeight));
+			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP, &_variant_t((double)TxtHeight)).pdispVal;
 			 AcObj.PutPropertyByName(_T("VerticalAlignment"),&_variant_t((long)acVerticalAlignmentMiddle));
 			 AcObj.PutPropertyByName(_T("TextAlignmentPoint"), (LPVARIANT)txtP);
 		  }
@@ -938,7 +935,7 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 			 if( k > 0 )
 				 	 MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p2s, (LPVARIANT)p2e);
 			 _stprintf(ch,_T("%d"),k+1);
-			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP, &_variant_t((double)TxtHeight));
+			 AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ch), (LPVARIANT)txtP, &_variant_t((double)TxtHeight)).pdispVal;
 			 AcObj.PutPropertyByName(_T("VerticalAlignment"),&_variant_t((long)acVerticalAlignmentMiddle));
 			 AcObj.PutPropertyByName(_T("TextAlignmentPoint"), (LPVARIANT)txtP);
 		  }
@@ -949,12 +946,12 @@ void EDIBAcad::drawTK(long SizeIndex, long TkExtRatio, long DrawType, long TbhqF
 			p0[1] + RightMarginWidth,
 			p0[2]);
 		if( gbACADR14)
-			AcEnt=MoSpace.Invoke(_T("InsertBlock"),5,(LPVARIANT)InsPnt, &_variant_t(CString((SizeIndex <= 1 ? _T("tb0") : _T("tb2"))) + ltos(EDIBDB::SJHYIndex)), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0));
+			AcEnt=MoSpace.Invoke(_T("InsertBlock"),5,(LPVARIANT)InsPnt, &_variant_t(CString((SizeIndex <= 1 ? _T("tb0") : _T("tb2"))) + ltos(EDIBDB::SJHYIndex)), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0)).pdispVal;
 		else
 		{
 			CString str(CString((SizeIndex <= 1 ? _T("tb0") : _T("tb2"))) + ltos(EDIBDB::SJHYIndex));
 
-			AcEnt=MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt, &_variant_t(basDirectory::PhsBlkDir + str + ".dwg"), &_variant_t((double)1),&_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0));
+			AcEnt=MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt, &_variant_t(basDirectory::PhsBlkDir + str + ".dwg"), &_variant_t((double)1),&_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0)).pdispVal;
 		}
 
 		
@@ -1001,13 +998,13 @@ void EDIBAcad::SetACADCurrentStyle(CString sStyle,CString sBigFont,CString sShxF
 		CMObject TS,tmpObj;
 		CString sTmp;
 		long i=0;bool Found=false;
-		tmpObj=objAcadDoc.GetPropertyByName(_T("TextStyles"));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("TextStyles")).pdispVal;
 		sStyle.TrimLeft();sStyle.TrimRight();
 		sStyle.MakeUpper();
 		int C=(long)tmpObj.GetPropertyByName(_T("Count"));
 		for( i = 0;i<C;i++)
 		{
-			TS = tmpObj.Invoke(_T("Item"),1,&_variant_t(i));
+			TS = tmpObj.Invoke(_T("Item"),1,&_variant_t(i)).pdispVal;
 			sTmp=vtos(TS.GetPropertyByName(_T("Name")));
 			sTmp.TrimLeft();sTmp.TrimRight();
 			sTmp.MakeUpper();
@@ -1031,7 +1028,7 @@ void EDIBAcad::SetACADCurrentStyle(CString sStyle,CString sBigFont,CString sShxF
 		else
 		{
 			tmpObj.Invoke(_T("Add"),1,&_variant_t(sStyle));
-			TS = tmpObj.Invoke(_T("Item"),1,&_variant_t(sStyle));
+			TS = tmpObj.Invoke(_T("Item"),1,&_variant_t(sStyle)).pdispVal;
 			if(TS.p)
 			{
 				TS.PutPropertyByName(_T("BigFontFile"),&_variant_t(sBigFont));
@@ -1058,13 +1055,13 @@ void EDIBAcad::SetACADStyleBigFont2Hzfs(CString sStyle)
 		CMObject TS ,tmpObj;
 		long i=0 ,C=0;
 		bool Found=0;
-		tmpObj=objAcadDoc.GetPropertyByName(_T("TestStyles"));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("TestStyles")).pdispVal;
 		C=(long)tmpObj.GetPropertyByName(_T("Count"));
 		CString sTmp;
 		sStyle.MakeUpper();
 		for(i=0;i<C;i++)
 		{
-			TS =tmpObj.Invoke(_T("Item"),1,&_variant_t((long)i));
+			TS =tmpObj.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			sTmp=vtos(TS.GetPropertyByName(_T("Name")));
 			sTmp.MakeUpper();
 			if(sStyle==_T("") || sTmp==sStyle)
@@ -1080,9 +1077,6 @@ void EDIBAcad::SetACADStyleBigFont2Hzfs(CString sStyle)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void EDIBAcad::DeleteACADStyle(CString sStyle)
@@ -1093,13 +1087,13 @@ void EDIBAcad::DeleteACADStyle(CString sStyle)
 		GetActiveAcadDoc();
 		CMObject TS,tmpObj;
 		long i=0,C=0;
-		tmpObj=objAcadDoc.GetPropertyByName(_T("TextStyles"));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("TextStyles")).pdispVal;
 		C=(long)tmpObj.GetPropertyByName(_T("Count"));
 		sStyle.MakeUpper();
 		CString sTmp;
 		for(i=C-1;i>=0;i--)
 		{
-			TS=tmpObj.Invoke(_T("Item"),1,&_variant_t((long)i));
+			TS=tmpObj.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			sTmp=vtos(TS.GetPropertyByName(_T("Name")));
 			sTmp.MakeUpper();
 			if(sStyle==_T(""))
@@ -1119,12 +1113,10 @@ void EDIBAcad::DeleteACADStyle(CString sStyle)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
-long EDIBAcad::GetTableHeaderBlockAttributes(CDaoRecordset& rs, bool  &bATTBEGIN, long & NPage,long & iNPage,long & SPage, CADatt* & BlkAtt,int iTabIndex)
+long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr& rs, bool  &bATTBEGIN, long & NPage,long & iNPage,long & SPage, 
+											 CADatt* & BlkAtt,int iTabIndex)
 {
 	//目的:获取txx表中ATTBEGIN引导的后续记录，每个记录的LocalCaption字段值指出了AutoCAD表头块属性的Tag,
 	//因此块中所有的属性都必须包含在这些记录中，允许记录多于属性数。程序自动对应。
@@ -1133,24 +1125,28 @@ long EDIBAcad::GetTableHeaderBlockAttributes(CDaoRecordset& rs, bool  &bATTBEGIN
 		long iPosATTBEGIN=0 ;
 		long i=0 ;
 		EDIBgbl::GetSelPrjName();
-		bool bf=rs.FindFirst(_T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'"));
-		iPosATTBEGIN = rs.GetAbsolutePosition();
+//		bool bf=rs.FindFirst(_T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'"));
+		_variant_t vTmp;
+		rs->Find((_bstr_t)(_T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'")), 0, adSearchForward, vTmp);
+		bool bf = rs->adoEOF;
+
+		iPosATTBEGIN = rs->AbsolutePosition;
 		long count=0,ret=0;
 		if(BlkAtt!=NULL)
 			delete [] BlkAtt;
 		BlkAtt=NULL;
-		COleVariant vTmp;
+// 		COleVariant vTmp;
 		if(bf)
 		{
 			bATTBEGIN = true;
-			count=rs.GetRecordCount()-iPosATTBEGIN;
+			count=rs->RecordCount-iPosATTBEGIN;
 			BlkAtt=new CADatt [count];
-			for( i = 0 ;i< rs.GetRecordCount() - iPosATTBEGIN;i++)
+			for( i = 0 ;i< rs->RecordCount - iPosATTBEGIN;i++)
 			{
-				rs.MoveNext();
-				if( rs.IsEOF())
+				rs->MoveNext();
+				if( rs->adoEOF)
 					break;
-				rs.GetFieldValue(_T("LocalCaption"),vTmp);
+				rs->get_Collect((_variant_t)_T("LocalCaption"),&vTmp);
 				BlkAtt[i].Name = vtos(vTmp);
 				BlkAtt[i].Name.TrimLeft();
 				BlkAtt[i].Name.TrimRight();
@@ -1158,10 +1154,10 @@ long EDIBAcad::GetTableHeaderBlockAttributes(CDaoRecordset& rs, bool  &bATTBEGIN
 				BlkAtt[i].iWidth=0;
 				try
 				{
-					rs.GetFieldValue(_T("cadWidth"),vTmp);
+					rs->get_Collect((_variant_t)_T("cadWidth"),&vTmp);
 					BlkAtt[i].iWidth=vtoi(vTmp);
 				}
-				catch(...)
+				catch(CException *e)
 				{
 					e->Delete();
 				}
@@ -1255,22 +1251,15 @@ long EDIBAcad::GetTableHeaderBlockAttributes(CDaoRecordset& rs, bool  &bATTBEGIN
 		BlkAtt=NULL;
 		return 0;
 	}
-	catch(...)
-	{
-		if(BlkAtt!=NULL)
-			delete [] BlkAtt;
-		BlkAtt=NULL;
-		return 0;
-	}
 }
 extern BOOL gStartAcad();
 void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
-         double sngRotAng, CDaoRecordset& rsText,
+         double sngRotAng, _RecordsetPtr& rsText,
          long lRowsPerPages, float fBlkScale,
          LPCTSTR Layer, LPCTSTR  Style,
          LPCTSTR lpszColTxtFmt,int iAlign)
 {
-	if( !rsText.IsOpen() )//12/17  使用动态库画图
+	if( rsText->State != adStateOpen )//12/17  使用动态库画图
 	{
 		try  
 		{
@@ -1294,7 +1283,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 				EDIBAcad::StartAcad();
 			}
 			EDIBAcad::DisplayAcadTop();
-			EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument"));
+			EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
 
 			CString strTblID;
 			strTblID.Format("drawzdjtable\n%d\n", BillID);
@@ -1304,7 +1293,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 
 			return;	
 		}
-		catch(...)
+		catch(CException *e)
 		{
 			e->ReportError();
 			e->Delete();
@@ -1317,13 +1306,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		catch(_com_error e)
 		{		
 			AfxMessageBox(e.Description());
-		}
-		catch(CException *e)
-		{
-			e->Delete();
-		}
-		catch(...)
-		{
 		}
 		return ;  //12/17
 	}
@@ -1345,7 +1327,8 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		bool bATTBEGIN=0; 
 		bool bGridLine=0;
 		bool bUP=0;   //写文字的方向:From Down to UP,bUP=true
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CString strTableName;
 		CString BlkName;
 		CString ColTxt, ColFormat;
@@ -1382,34 +1365,36 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		CString SQLx;
 		//首先从管理表t??中获取表格的高宽、每页行数等信息
 		SQLx = _T("SELECT * FROM TableINFO WHERE ID=") + ltos(BillID);
-		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
-		rs.Open(dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		COleVariant vTmp;
-		rs.GetFieldValue(_T("TableName"),vTmp);//获得需要绘制的表格格式信息表的表名
+		rs->get_Collect((_variant_t)_T("TableName"),&vTmp);//获得需要绘制的表格格式信息表的表名
 		strTableName = vtos(vTmp);
 		
-		rs.GetFieldValue(_T("CADtitleBlock"),vTmp);//插入表的块名
+		rs->get_Collect((_variant_t)_T("CADtitleBlock"),&vTmp);//插入表的块名
 		BlkName=vtos(vTmp);
 		
-		rs.GetFieldValue(_T("CADRowsPerpage"),vTmp);//需要绘制的表每页所容纳的行数
+		rs->get_Collect((_variant_t)_T("CADRowsPerpage"),&vTmp);//需要绘制的表每页所容纳的行数
 		RowsPerPage=vtoi(vTmp);
 		
-		rs.GetFieldValue(_T("CADRowHeight"),vTmp);//表格的行高
+		rs->get_Collect((_variant_t)_T("CADRowHeight"),&vTmp);//表格的行高
 		sngRowHeight=vtof(vTmp);
 		
-		rs.GetFieldValue(_T("CADFromDownToUP"),vTmp);//表格是否从上至下绘制
+		rs->get_Collect((_variant_t)_T("CADFromDownToUP"),&vTmp);//表格是否从上至下绘制
 		bUP=vtob(vTmp);
 		
-		rs.GetFieldValue(_T("CADGridLine"),vTmp);//是否有格线
+		rs->get_Collect((_variant_t)_T("CADGridLine"),&vTmp);//是否有格线
 		bGridLine=vtob(vTmp);
 		
-		rs.GetFieldValue(_T("CADW0"),vTmp);//
+		rs->get_Collect((_variant_t)_T("CADW0"),&vTmp);//
 		W0=vtof(vTmp);
 		
-		rs.GetFieldValue(_T("CADh0"),vTmp);//
+		rs->get_Collect((_variant_t)_T("CADh0"),&vTmp);//
 		H0=vtof(vTmp);
 		
-		rs.Close();
+		rs->Close();
 		
 		if( (sngRowHeight*RowsPerPage) < 200)
 			VerticalPages = 3;
@@ -1428,41 +1413,45 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		MakeNewLayer(Layer);
 		
 		//如果内容行数少于每页行数,则重新设定
-		rsText.MoveLast();
-		if( rsText.GetRecordCount() < RowsPerPage) RowsPerPage = rsText.GetRecordCount();
+		rsText->MoveLast();
+		if( rsText->RecordCount < RowsPerPage) RowsPerPage = rsText->RecordCount;
 		NPage = 1;
-		SPage = (rsText.GetRecordCount() / RowsPerPage) +((rsText.GetRecordCount() % RowsPerPage) == 0 ? 0 : 1);
+		SPage = (rsText->RecordCount / RowsPerPage) +((rsText->RecordCount % RowsPerPage) == 0 ? 0 : 1);
 		
 		
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("]");
-		rs.Open(dbOpenSnapshot,SQLx );
-		rs.MoveLast();
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		rs->MoveLast();
 		//获得块属性值
 		blkAttCount=GetTableHeaderBlockAttributes( rs, bATTBEGIN, NPage, iNPage, SPage, BlkAtt,BillID);
-		rs.Close();
+		rs->Close();
 		
 		
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("] WHERE NOT ISNULL(CADFieldSeq) ORDER BY CADFieldSeq");
-		rs.Open(dbOpenSnapshot,SQLx );
-		rs.MoveLast();
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		rs->MoveLast();
 		//MsgBox rsText(0)
-		if(rsText.IsEOF() && rsText.IsBOF())
+		if(rsText->adoEOF || rsText->BOF)
 		{
 			if(BlkAtt!=NULL)
 				delete [] BlkAtt;
 			return;
 		}
-		rsText.MoveFirst();
+		rsText->MoveFirst();
 		//第一页表格起始页号
 		StartNPage = (NPage == 1 ? 0 : (long)objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("USERI1"))));
 		//最后一页的行数
 		long iLastPageRecNo;
-		iLastPageRecNo = rsText.GetRecordCount() % RowsPerPage;
+		iLastPageRecNo = rsText->RecordCount % RowsPerPage;
 		if(iLastPageRecNo == 0)
 			iLastPageRecNo = RowsPerPage;
 		
 		//开始逐行画表格
-		while(!rsText.IsEOF())
+		while(!rsText->adoEOF)
 		{
 			//如果是BJBW则还要下调Y坐标并且是LJMX
 			if( BillID == EDIBgbl::TLJ_BJBW )
@@ -1509,11 +1498,11 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 			//广西院
 			//if( BillID == EDIBgbl::TLJ )
 			//	pB1.SetY(pB1.GetY()+2);
-			Block = objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+			Block = objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
 			if(gbACADR14)
-				AcEnt = Block.Invoke(_T("InsertBlock"),5,(LPVARIANT)pB1, &_variant_t(BlkName), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0));
+				AcEnt = Block.Invoke(_T("InsertBlock"),5,(LPVARIANT)pB1, &_variant_t(BlkName), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0)).pdispVal;
 			else
-				AcEnt = Block.Invoke(_T("InsertBlock"),6,(LPVARIANT)pB1, &_variant_t(basDirectory::PhsBlkDir + BlkName + ".dwg"), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0));
+				AcEnt = Block.Invoke(_T("InsertBlock"),6,(LPVARIANT)pB1, &_variant_t(basDirectory::PhsBlkDir + BlkName + ".dwg"), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)1), &_variant_t((double)0)).pdispVal;
 			
 			//表头标题块属性,有些表格没有
 			ModifyAttributes(BlkAtt,blkAttCount, AcEnt);
@@ -1523,13 +1512,13 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 			//画每一页
 			for( k = 0 ;k< RowsPerPage;k++)
 			{
-				if( rsText.IsEOF())
+				if( rsText->adoEOF)
 				{
 					if(BlkAtt!=NULL)
 						delete [] BlkAtt;
 					return;
 				}
-				rs.MoveFirst();
+				rs->MoveFirst();
 				//	VARIANT va1;
 				//	va1.vt= VT_I2;
 				//	va1.iVal=1;
@@ -1549,8 +1538,8 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 				
 				if(BillID == EDIBgbl::TLJ || BillID == EDIBgbl::TCL || BillID == EDIBgbl::TCLA4 )
 				{
-					rsText.GetFieldValue(_T("CLdw"),Tmp);
-					rsText.GetFieldValue(_T("CLzz"),vTmp);
+					rsText->get_Collect((_variant_t)_T("CLdw"),&Tmp);
+					rsText->get_Collect((_variant_t)_T("CLzz"),&vTmp);
 					if(vTmp.vt!=VT_NULL)
 					{
 						//累计总重
@@ -1566,8 +1555,8 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 				{
 					
 					//	rsText.GetFieldValue (strZDMC,vt);
-					rsText.GetFieldValue("PAZ1",vpaz1);
-					rsText.GetFieldValue("PGZ1",vpgz1);
+					rsText->get_Collect((_variant_t)"PAZ1",&vpaz1);
+					rsText->get_Collect((_variant_t)"PGZ1",&vpgz1);
 				}
 				sumColW = 0;
 				//第0行基点
@@ -1582,26 +1571,26 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 				CString strPartSingleWeight= _T("CLdz");
 				CString strPartZZ;
 				BOOL bNotDraw = FALSE;
-				for( i = 0 ;i<rs.GetRecordCount();i++)
+				for( i = 0 ;i<rs->RecordCount;i++)
 				{
-					rs.GetFieldValue(_T("CADFieldWidth"),vTmp);
+					rs->get_Collect((_variant_t)_T("CADFieldWidth"),&vTmp);
 					if(vTmp.vt==VT_NULL)
 						ColW = 10;
 					else
 						ColW = vtof(vTmp);
-					rs.GetFieldValue(_T("CADFieldTxtHeight"),vTmp);
+					rs->get_Collect((_variant_t)_T("CADFieldTxtHeight"),&vTmp);
 					if(vTmp.vt==VT_NULL)
 						ColTxtHeight = 3;
 					else
 						ColTxtHeight =vtof(vTmp);
-					rs.GetFieldValue(_T("FieldName"),vTmp);
+					rs->get_Collect((_variant_t)_T("FieldName"),&vTmp);
 					strPartZZ = ColTxt = vtos(vTmp);
 					
 					if(ColTxt!=_T(""))
 					{
 						try
 						{
-							rsText.GetFieldValue(ColTxt,vTmp); //默认的(原来程序的读取过程)
+							rsText->get_Collect((_variant_t)ColTxt,&vTmp); //默认的(原来程序的读取过程)
 							
 							//若"用户手工输入的图号"的选项选中 和 单前数据库读取的字段为DrawNo
 							//则读取ALLPRJDB.MDB中的ZA表的字段为CustomDwgName的值。
@@ -1613,24 +1602,27 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 								long m_volumeID,m_zdjh;
 								COleVariant var;
 								
-								rsText.GetFieldValue(_T("VolumeID"),var);
+								rsText->get_Collect((_variant_t)_T("VolumeID"),&var);
 								m_volumeID = vtoi(var);
 								
-								rsText.GetFieldValue(_T("ZDJH"),var);
+								rsText->get_Collect((_variant_t)_T("ZDJH"),&var);
 								m_zdjh = vtoi(var);
 								
-								CDaoRecordset rs1;
+								_RecordsetPtr rs1;
+								rs1.CreateInstance(__uuidof(Recordset));
 								CString SQLstr;
 								SQLstr.Format("SELECT * FROM ZA WHERE VolumeID = %d AND ZDJH = %d ",m_volumeID,m_zdjh);
 								
-								rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
-								rs1.Open(dbOpenSnapshot,SQLstr);
+// 								rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 								rs1.Open(dbOpenSnapshot,SQLstr);
+								rs1->Open((_bstr_t)SQLstr, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+									adOpenForwardOnly, adLockReadOnly, adCmdText); 
 								
-								if(!rs1.IsEOF() && !rs1.IsBOF())
+								if(!rs1->adoEOF && !rs1->BOF)
 								{
-									rs1.GetFieldValue(_T("CustomDwgName"),vTmp);
+									rs1->get_Collect((_variant_t)_T("CustomDwgName"),&vTmp);
 								}
-								rs1.Close();
+								rs1->Close();
 								
 							}
 							//修改完毕  BY YWH
@@ -1696,8 +1688,8 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 								if(ColTxt == _T("PAZ1") )//列名为"安装荷载"的字段,并且安装
 								{
 									COleVariant vpaz1,vpgz1;
-									rsText.GetFieldValue("PAZ1",vpaz1);
-									rsText.GetFieldValue("PAZ1",vpgz1);
+									rsText->get_Collect((_variant_t)"PAZ1",&vpaz1);
+									rsText->get_Collect((_variant_t)"PAZ1",&vpgz1);
 									if(vtof(vpaz1)==0.0f || vtof(vpaz1)==vtof(vpgz1))
 									{
 										vTmp = STR_VAR("");//安装荷载写成"/"
@@ -1707,7 +1699,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 							}
 							
 						}
-						catch(...)
+						catch(CException *e)
 						{
 							e->Delete();
 						}
@@ -1742,7 +1734,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 								ColTxt.Replace(_T("Φ"),_T("%%c"));
 							if(ColTxt.Find((_T("φ")))!=-1)
 								ColTxt.Replace(_T("φ"),_T("%%c"));
-							rs.GetFieldValue(_T("Format"),vTmp);
+							rs->get_Collect((_variant_t)_T("Format"),&vTmp);
 							ColFormat = vtos(vTmp);
 							if(ColFormat!=_T(""))
 							{
@@ -1794,7 +1786,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 							p0e.SetZ(p0s[2]);
 							//AcEnt = Block.Invoke(_T("AddLine"),2,(LPVARIANT)p0s, (LPVARIANT)p0e);
 							DrawPLine(p0s,p0e,EDIBAcad::g_fSetTableWidth);
-							if( i == rs.GetRecordCount() - 1 ) 
+							if( i == rs->RecordCount - 1 ) 
 							{
 								////////加最后一列的竖线. 05/1/4
 								pAfter1 = p0s; 
@@ -1821,7 +1813,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 						//		}
 						//	    else
 						//		{
-						AcEnt = Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)p0c, &_variant_t((double)ColTxtHeight));
+						AcEnt = Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)p0c, &_variant_t((double)ColTxtHeight)).pdispVal;
 						AcEnt.PutPropertyByName(_T("StyleName"),&_variant_t(Style));
 						ApplyTextStyleProperty(AcEnt, Style,"零件明细表" );
 						GetBoundingBox(AcEnt,minExt, MaxExt);
@@ -1859,7 +1851,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 						}
 					}
 					//HS->到最后一行，零件明细表或材料汇总表要统计总重
-					if((rsText.GetAbsolutePosition() == rsText.GetRecordCount() - 1) &&
+					if((rsText->AbsolutePosition == rsText->RecordCount - 1) &&
 						(BillID == EDIBgbl::TLJ/*零件明细表*/ ||
 						BillID == EDIBgbl::TCL/*材料汇总表*/ ||
 						BillID == EDIBgbl::TCLA4) )
@@ -1868,7 +1860,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 						{
 							if( EDIBAcad::g_bDrawSumWeight )
 							{		
-								rs.GetFieldValue(_T("FieldName"),vTmp);
+								rs->get_Collect((_variant_t)_T("FieldName"),&vTmp);
 								tmpStr=vtos(vTmp);
 								tmpStr.TrimLeft();tmpStr.TrimRight();
 								tmpStr.MakeUpper();
@@ -1876,7 +1868,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 								{
 									txtP.SetPoint(p0c[0],p0c[1] + (bUP ? 1 : -1) * sngRowHeight,p0c[2]);
 									ColTxt.Format(_T("%s%.2fkg"), GetResStr(IDS_MsgBox_60640) ,sumWeight);
-									AcEnt=Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)txtP, &_variant_t((double)ColTxtHeight));				
+									AcEnt=Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)txtP, &_variant_t((double)ColTxtHeight)).pdispVal;				
 									AcEnt.PutPropertyByName(_T("StyleName"),&_variant_t(Style));
                                     ApplyTextStyleProperty(AcEnt, Style,"零件明细表");
 								}
@@ -1884,7 +1876,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 						}
 						else
 						{
-							rs.GetFieldValue(_T("FieldName"),vTmp);
+							rs->get_Collect((_variant_t)_T("FieldName"),&vTmp);
 							tmpStr=vtos(vTmp);
 							tmpStr.TrimLeft();tmpStr.TrimRight();
 							tmpStr.MakeUpper();
@@ -1892,15 +1884,15 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 							{
 								txtP.SetPoint(p0c[0],p0c[1] + (bUP ? 1 : -1) * sngRowHeight,p0c[2]);
 								ColTxt.Format(_T("%s%.2fkg"), GetResStr(IDS_MsgBox_60640) ,sumWeight);
-								AcEnt=Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)txtP, &_variant_t((double)ColTxtHeight));				
+								AcEnt=Block.Invoke(_T("AddText"),3,&_variant_t(ColTxt), (LPVARIANT)txtP, &_variant_t((double)ColTxtHeight)).pdispVal;				
 								AcEnt.PutPropertyByName(_T("StyleName"),&_variant_t(Style));
                                 ApplyTextStyleProperty(AcEnt, Style,"零件明细表");
 							}						
 						}
 					}
-					rs.MoveNext();
+					rs->MoveNext();
 					sumColW = sumColW + ColW;
-					if( bGridLine && (i == rs.GetRecordCount() - 1) )
+					if( bGridLine && (i == rs->RecordCount - 1) )
 					{
 						if( k == 0 && BillID == EDIBgbl::TZD800HSY )
 						{	
@@ -1914,39 +1906,32 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 
 							p0e.SetY(p0s[1] + (bUP ? 1 : -1) * (NPage - 1 == SPage ? iLastPageRecNo : RowsPerPage) * sngRowHeight);
 
-							AcEnt=Block.Invoke(_T("AddLine"),2,(LPVARIANT)p0s, (LPVARIANT)p0e);
+							AcEnt=Block.Invoke(_T("AddLine"),2,(LPVARIANT)p0s, (LPVARIANT)p0e).pdispVal;
 						}
 						//写完最后一列后，要画记录分割线,这是零件与零件之间的分割线，仅改变Y坐标。
 						//p0s--线起点，p0e--线终点
 						p0s.SetPoint(pR0[0],pR0[1] + (bUP ? 1 : 0) * sngRowHeight,pR0[2]);
 						p0e.SetPoint(p0s[0] + sumColW,p0s[1],p0s[2]);
-						AcEnt=Block.Invoke(_T("AddLine"),2,(LPVARIANT)p0s, (LPVARIANT)p0e);
+						AcEnt=Block.Invoke(_T("AddLine"),2,(LPVARIANT)p0s, (LPVARIANT)p0e).pdispVal;
 					}
 				}
-				rsText.MoveNext();
+				rsText->MoveNext();
 			}
 			AcEnt.Invoke0(_T("Update"));
 		}
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("USERI1")), &_variant_t((long)(StartNPage + SPage)));
    }
-   catch(...)
+   catch(CException *e)
    {
 	   e->ReportError();
 	   e->Delete();
-   }
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-   catch(...)
-   {
    }
    if(BlkAtt!=NULL)
 	   delete [] BlkAtt;
 }
 
 
-void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
+void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr& rsText)
 {
 	//功能:绘制表格
 	//Pb------基点,3元素数组,双精度
@@ -1973,7 +1958,8 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 		CString ColTxt, ColFormat;
 		CString strSheet,strCorpCell,strPrjCell,strVlmCell,strDateCell,strZYCell,strJDCell,strInsCell;
 		CADatt *BlkAtt=NULL; long blkAttCount=0;
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CMObject WorkBook;
 		long RowsPerPage=0;
 		long iNPage=0;
@@ -1992,26 +1978,28 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 		DistY = 20;
 		
 		SQLx = _T("SELECT * FROM TableINFO WHERE ID=") + ltos(BillID);
-		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
-		rs.Open(dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		COleVariant vTmp;
 		
-		rs.GetFieldValue(_T("TableName"),vTmp);
+		rs->get_Collect((_variant_t)_T("TableName"),&vTmp);
 		strTableName = vtos(vTmp);
 	
-		rs.GetFieldValue(_T("CADtitleBlock"),vTmp);
+		rs->get_Collect((_variant_t)_T("CADtitleBlock"),&vTmp);
 		strWorksheet = vtos(vTmp);      
 	
-		rs.GetFieldValue(_T("TableCaption"),vTmp);
+		rs->get_Collect((_variant_t)_T("TableCaption"),&vTmp);
 		strTableCaption=vtos(vTmp);   	
-		rs.Close();
+		rs->Close();
 	
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("]");
-		rs.Open(dbOpenSnapshot,SQLx );
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenForwardOnly,adLockReadOnly,adCmdText);
 	
 		//获得块属性值
 		blkAttCount=GetTableHeaderBlockAttributes(rs, bATTBEGIN, NPage, iNPage, SPage, BlkAtt);
-		rs.Close();
+		rs->Close();
 		
 		//modified by fln
 		CString strNFileName;  //本地模板(安装包下模板的副本)
@@ -2045,10 +2033,6 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 			StartExcelAndLoadTemplate(strNFileName,strDFileName,objWorksheets);
 		}
 		catch(CException *e)
-		{
-			e->Delete();
-		}
-		catch(...)
 		{
 			AfxMessageBox("你已经打开了该文件，请关闭后再运行该命令！");
 			return;
@@ -2101,30 +2085,31 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 		strInsCell.Format(_T("%c%d"),(char)(objRange.GetColumn()-1) +_T('A'),objRange.GetRow());
 		//如果内容行数少于每页行数,则重新设定
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("] WHERE NOT ISNULL(CADFieldSeq) ORDER BY CADFieldSeq");
-		rs.Open(dbOpenSnapshot,SQLx );
-		rs.MoveLast();
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		rs->MoveLast();
 		//开始逐行画表格
 		int iRow=0,iCol1=0,iCol2=0;
 		bool bpageSetup=false;
 		int colNum=0;
-		while(!rsText.IsEOF())
+		while(!rsText->adoEOF)
 		{
 			//画每一页
-			rs.MoveFirst();
+			rs->MoveFirst();
 			//rs中含有字段及其格式信息
 			iCol1=0;iCol2=0;
-			for( i = 0 ;i<rs.GetRecordCount();i++)
+			for( i = 0 ;i<rs->RecordCount;i++)
 			{
-				rs.GetFieldValue(_T("FieldName"),vTmp);
+				rs->get_Collect((_variant_t)_T("FieldName"),&vTmp);
 				ColTxt=vtos(vTmp);
-				rs.GetFieldValue(_T("ExcelColNum"),vTmp);
+				rs->get_Collect((_variant_t)_T("ExcelColNum"),&vTmp);
 				colNum+=vtoi(vTmp);
 				iCol2=(vtoi(vTmp)-1)+iCol1;
 				if(ColTxt!=_T("") && iCol2>=iCol1)
 				{
 					try
 					{
-						rsText.GetFieldValue(ColTxt,vTmp);  //原来程序的读取过程
+						rsText->get_Collect((_variant_t)ColTxt,&vTmp);  //原来程序的读取过程
 						
 						//若"用户手工输入的图号"的选项选中 和 单前数据库读取的字段为DrawNo
 						//则读取ALLPRJDB.MDB中的ZA表的字段为CustomDwgName的值。
@@ -2136,30 +2121,32 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 							long m_volumeID,m_zdjh;
 							COleVariant var;
 							
-							rsText.GetFieldValue(_T("VolumeID"),var);
+							rsText->get_Collect((_variant_t)_T("VolumeID"),&var);
 							m_volumeID = vtoi(var);
 							
-							rsText.GetFieldValue(_T("ZDJH"),var);
+							rsText->get_Collect((_variant_t)_T("ZDJH"),&var);
 							m_zdjh = vtoi(var);
 							
-							CDaoRecordset rs1;
+							_RecordsetPtr rs1;
+							rs1.CreateInstance(__uuidof(Recordset));
 							CString SQLstr;
 							SQLstr.Format("SELECT * FROM ZA WHERE VolumeID = %d AND ZDJH = %d ",m_volumeID,m_zdjh);
 							
-							rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
-							rs1.Open(dbOpenSnapshot,SQLstr);
+// 							rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 							rs1.Open(dbOpenSnapshot,SQLstr);
+							rs1->Open(_variant_t(SQLstr),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 							
-							if(!rs1.IsEOF() && !rs1.IsBOF())
+							if(!rs1->adoEOF && !rs1->BOF)
 							{
-								rs1.GetFieldValue(_T("CustomDwgName"),vTmp);
+								rs1->get_Collect((_variant_t)_T("CustomDwgName"),&vTmp);
 							}
-							rs1.Close();
+							rs1->Close();
 							
 						}
 						
 						//修改完毕  BY YWH
 					}
-					catch(...)
+					catch(CException *e)
 					{
 						e->Delete();
 					}
@@ -2172,7 +2159,7 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 					if(iCol1!=iCol2) objRange.Merge(_variant_t());
 					objRange.SetValue(_variant_t(strVal));
 				}
-				rs.MoveNext();
+				rs->MoveNext();
 				iCol1=iCol2+1;
 			}
 			if(!bpageSetup)
@@ -2183,20 +2170,15 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 				objPageSetup.SetPrintArea(strPrintArea);
 				colNum=0;
 			}
-			rsText.MoveNext();
+			rsText->MoveNext();
 			iRow++;
 		}
 		
         SaveAndGetControl(objWorksheets,strDefaultPath);
 
 		//关闭记录集
-		rs.Close();
-		rsText.Close();		
-   }
-   catch(...)
-   {
-	   e->ReportError();
-	   e->Delete();
+		rs->Close();
+		rsText->Close();		
    }
    catch(COleException * e)
    {
@@ -2208,6 +2190,11 @@ void EDIBAcad::DrawTableExcel(long BillID, CDaoRecordset& rsText)
 	   //e->ReportError();
 	   e->Delete();
    }  
+   catch(CException *e)
+   {
+	   e->ReportError();
+	   e->Delete();
+   }
 }
 
 
@@ -2265,12 +2252,12 @@ bool StartExcelAndLoadTemplate(const CString &strSFileName,const CString &strDFi
 	}
 
 	//获得工作薄管理器
-	ExcWorkBook=ObjExcelApp.GetPropertyByName(_T("Workbooks"));
+	ExcWorkBook=ObjExcelApp.GetPropertyByName(_T("Workbooks")).pdispVal;
 
 	//加载模板
 	CMObject WorkBook;
 //    WorkBook=ExcWorkBook.Invoke(_T("Open"),1,&_variant_t(strTempPath));
-    WorkBook=ExcWorkBook.Invoke(_T("Open"),1,&_variant_t(strDFileName));
+    WorkBook=ExcWorkBook.Invoke(_T("Open"),1,&_variant_t(strDFileName)).pdispVal;
 	objWorksheets.m_lpDispatch=(IDispatch*)WorkBook.GetPropertyByName(_T("Sheets"));
 
 	//设置Excel可见 
@@ -2313,7 +2300,7 @@ try
    {
       SetAcadTop();
 		CCadPoint pt0;
-	  tmpObj=objAcadDoc.GetPropertyByName(_T("Utility"));
+	  tmpObj=objAcadDoc.GetPropertyByName(_T("Utility")).pdispVal;
       pnt =tmpObj.Invoke(_T("GetPoint"),2,(LPVARIANT)pt0, &_variant_t(_T("From AutoCAD enter a point: ")));
       InsPnt=pnt;
    }
@@ -2321,11 +2308,11 @@ try
    bool bFoundBlk=0;
    long i=0;
    //检查块是否存在，速度较慢，但是可避免ACAD致命错误
-   tmpObj=objAcadDoc.GetPropertyByName(_T("Blocks"));
+   tmpObj=objAcadDoc.GetPropertyByName(_T("Blocks")).pdispVal;
 	//long blkCount=(long)tmpObj.GetPropertyByName(_T("Count"));
    bFoundBlk = false;
 	blk.MakeUpper();
-	objBlk=tmpObj.Invoke(_T("Item"),1,&_variant_t(blk));
+	objBlk=tmpObj.Invoke(_T("Item"),1,&_variant_t(blk)).pdispVal;
 	BlkName =vtos(objBlk.GetPropertyByName(_T("Name")));
 	BlkName.MakeUpper();
 	if(BlkName==blk)
@@ -2346,7 +2333,7 @@ try
    {
       if( bFoundBlk)
 	  {
-		  AcObj = MoSpace.Invoke(_T("InsertBlock"),5,(LPVARIANT)InsPnt,&_variant_t( blk ),&_variant_t( xs), &_variant_t(ys), &_variant_t(rotA));
+		  AcObj = MoSpace.Invoke(_T("InsertBlock"),5,(LPVARIANT)InsPnt,&_variant_t( blk ),&_variant_t( xs), &_variant_t(ys), &_variant_t(rotA)).pdispVal;
          GetBoundingBox(AcObj,MinPoint,MaxPoint);
         // MsgBox MinPoint(0)
         // MsgBox MinPoint(1)
@@ -2362,7 +2349,7 @@ try
       if( !bFoundBlk)
 	  {
 //		 AcObj = MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt,&_variant_t(basDirectory::PhsBlkDir + blk  + ".dwg"),&_variant_t( xs), &_variant_t(ys), &_variant_t((double)1),&_variant_t(rotA));
-	     AcObj = MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt,&_variant_t( basDirectory::PhsBlkDir + blk+_T(".dwg") ),&_variant_t( xs), &_variant_t(ys), &_variant_t((double)1),&_variant_t(rotA));
+	     AcObj = MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt,&_variant_t( basDirectory::PhsBlkDir + blk+_T(".dwg") ),&_variant_t( xs), &_variant_t(ys), &_variant_t((double)1),&_variant_t(rotA)).pdispVal;
 
 		 GetBoundingBox(AcObj,MinPoint,MaxPoint);
         // MsgBox MinPoint(0)
@@ -2374,7 +2361,7 @@ try
       else
 	  {
        //  throw GetResStr(IDS_NoThisBlockInphsDotDwg)+_T(":\"")+blk+_T("\"");
-        AcObj = MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt,&_variant_t( blk ),&_variant_t( xs), &_variant_t(ys), &_variant_t((double)1),&_variant_t(rotA));
+        AcObj = MoSpace.Invoke(_T("InsertBlock"),6,(LPVARIANT)InsPnt,&_variant_t( blk ),&_variant_t( xs), &_variant_t(ys), &_variant_t((double)1),&_variant_t(rotA)).pdispVal;
          GetBoundingBox(AcObj,MinPoint,MaxPoint);
         // MsgBox MinPoint(0)
         // MsgBox MinPoint(1)
@@ -2401,46 +2388,37 @@ catch(CException *e)
 	e->Delete();
 	return false;
 }
-catch(...)
-{
-	return false;
-}
 }
 
-void EDIBAcad::AddData2rsTZG(CDaoRecordset& rs, long  iRecNo, long  zdjh, CString  FD, CString  sView, CString sBlkName, COleSafeArray& InsPnt)
+void EDIBAcad::AddData2rsTZG(_RecordsetPtr& rs, long  iRecNo, long  zdjh, CString  FD, CString  sView, CString sBlkName, COleSafeArray& InsPnt)
 {
 	try
 	{
-      rs.AddNew();
-      rs.SetFieldValue(_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
-      rs.SetFieldValue(_T("recno"),COleVariant(iRecNo));
-      rs.SetFieldValue(_T("zdjh"),COleVariant(zdjh));
+      rs->AddNew();
+      rs->put_Collect((_variant_t)_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
+      rs->put_Collect((_variant_t)_T("recno"),COleVariant(iRecNo));
+      rs->put_Collect((_variant_t)_T("zdjh"),COleVariant(zdjh));
 		CString sTmp;
 		sTmp=vtos(AcObj.GetPropertyByName(_T("Handle")));
 		if(sTmp!=_T(""))
-			rs.SetFieldValue(_T("Handle"),STR_VAR(sTmp));
-      rs.SetFieldValue(_T("EntityName"),STR_VAR(vtos(AcObj.GetPropertyByName(_T("EntityName")))));
-      rs.SetFieldValue(_T("Layer"),STR_VAR(vtos(AcObj.GetPropertyByName(_T("Layer")))));
+			rs->put_Collect((_variant_t)_T("Handle"),STR_VAR(sTmp));
+      rs->put_Collect((_variant_t)_T("EntityName"),STR_VAR(vtos(AcObj.GetPropertyByName(_T("EntityName")))));
+      rs->put_Collect((_variant_t)_T("Layer"),STR_VAR(vtos(AcObj.GetPropertyByName(_T("Layer")))));
 		long ix=0;
 		double va;
 		InsPnt.GetElement(&ix,&va);
-      rs.SetFieldValue(_T("x"),COleVariant(va));
+      rs->put_Collect((_variant_t)_T("x"),COleVariant(va));
 		ix=1;
 		InsPnt.GetElement(&ix,&va);
-      rs.SetFieldValue(_T("y"),COleVariant(va));
+      rs->put_Collect((_variant_t)_T("y"),COleVariant(va));
 		ix=2;
 		InsPnt.GetElement(&ix,&va);
-      rs.SetFieldValue(_T("z"),COleVariant(va));
-      rs.SetFieldValue(_T("FieldName"),STR_VAR(FD));
-      rs.SetFieldValue(_T("View"),STR_VAR(sView));
-      rs.SetFieldValue(_T("BlkName"),STR_VAR(sBlkName));
-	  rs.SetFieldValue(_T("nth"),(long)1);//标准支吊架路数=1，包括对称双吊和共用根部双吊
-      rs.Update();
-	}
-	catch(...)
-	{
-		e->ReportError();
-		e->Delete();
+      rs->put_Collect((_variant_t)_T("z"),COleVariant(va));
+      rs->put_Collect((_variant_t)_T("FieldName"),STR_VAR(FD));
+      rs->put_Collect((_variant_t)_T("View"),STR_VAR(sView));
+      rs->put_Collect((_variant_t)_T("BlkName"),STR_VAR(sBlkName));
+	  rs->put_Collect((_variant_t)_T("nth"),(_variant_t)1L);//标准支吊架路数=1，包括对称双吊和共用根部双吊
+      rs->Update();
 	}
 	catch(COleException *e)
 	{
@@ -2451,12 +2429,9 @@ void EDIBAcad::AddData2rsTZG(CDaoRecordset& rs, long  iRecNo, long  zdjh, CStrin
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
-void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
+void EDIBAcad::DrawPhsAssemble(_RecordsetPtr& rsRefZB, long iView)
 {
 	//目的：绘制支吊架组装图。
 	//输入：rstzb,绘图所需的零件数据
@@ -2529,7 +2504,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		float mvMaxLugLen=0, mvMaxPartRatioOfHeight=0;    //零件绘制高度与实际高度的比
 		float mvMaxLugRatioOfHeight=0;  //拉杆绘制高度与实际高度的比
 		long mlRot0=0, mlRot=0 ; //零件旋转方向
-		CDaoRecordset rs, rsTZG;
+
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsTZG;
+		rsTZG.CreateInstance(__uuidof(Recordset));
 		float lngMaxLUGDrawingLength=0;    //最大拉杆绘制长度,用于直接使用pline线绘制拉杆时。
 		float lngLUGDrawingLength=0;    //单节拉杆绘制长度,用于直接使用pline线绘制拉杆时。
 		float sngYoffsetOfAttached=0;  //附件（螺母/扁螺母Y方向绘制间距）
@@ -2566,23 +2545,26 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("USERI5")),&_variant_t((short)modPHScal::zdjh));
 		//删除TZG表中字段zdjh=Zdjh的记录
 		
-		EDIBgbl::dbPRJDB.Execute(CString( _T("DELETE * FROM [") )+ EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND ZDJH=") +ltos(modPHScal::zdjh)); // iDelZdjh
+		CString strSql = CString( _T("DELETE * FROM [") )+ EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND ZDJH=") +ltos(modPHScal::zdjh);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)strSql, NULL, adCmdText); // iDelZdjh
 		modPHScal::iSelSampleID = vtoi(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("iSelSampleID")));
 		modPHScal::giNumRod = Cavphs->GetPhsOneClassPartNumAndPartInfo(iROD, modPHScal::iSelSampleID, Ptype, mlPartClassID, mlPartIndex,lngLastPartNo);
 		//求出A4图零件明细表的上限位置
 		long rc =0;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,_T("SELECT count(*) AS rc FROM tmp2"));
-		if( rs.IsBOF() && rs.IsEOF() )
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+// 		rs.Open(dbOpenSnapshot,_T("SELECT count(*) AS rc FROM tmp2"));
+		strSql = _T("SELECT count(*) AS rc FROM tmp2");
+		rs->Open(_variant_t(strSql),(IDispatch*)EDIBgbl::dbPRJ,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		if( rs->BOF || rs->adoEOF )
 		{
 			rc = 0;
 		}
 		else
 		{
-			rs.GetFieldValue(_T("rc"),vTmp);
+			rs->get_Collect((_variant_t)_T("rc"),&vTmp);
 			rc =vtoi(vTmp);
 		}
-		rs.Close();
+		rs->Close();
 		Bound[0]=25.0;
 		//Bound[1]=(modPHScal::Ax == _T("A3") ? (5.0+30.0) : 74.0 + 7.0 * rc);//pfg20050922原代码
 		Bound[1]=(modPHScal::Ax == _T("A3") ? (5.0+(110-EDIBgbl::MaxLGLong)) : 74.0 + 7.0 * rc);//pfg20050922
@@ -2610,17 +2592,18 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		
 		//调整拉杆绘制长度
 		SQLx = _T("SELECT sum(Crd) as sumCrd FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 AND NOT IsNull(SEQ)");// ORDER BY SEQ";
-		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rs.m_strFilter=_T("");
-		rs.m_strSort=_T("");
-		rs.Open(dbOpenSnapshot,SQLx );
-		rs.GetFieldValue(_T("sumCrd"),vTmp);
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rs.m_strFilter=_T("");
+// 		rs.m_strSort=_T("");
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		rs->get_Collect((_variant_t)_T("sumCrd"),&vTmp);
 		if(lngMaxLUGDrawingLength > vtof(vTmp))
 			lngMaxLUGDrawingLength = 260 -30 - vtof(vTmp);	
 		else
 			//lngMaxLUGDrawingLength=110-30;//原代码pfg20050922
 			lngMaxLUGDrawingLength=EDIBgbl::MaxLGLong;//pfg20050922
-		rs.Close();
+		rs->Close();
 		//减小拉杆绘制长度
 		if(modPHScal::giNumRod!=0)
 			lngLUGDrawingLength = lngMaxLUGDrawingLength / modPHScal::giNumRod;
@@ -2629,27 +2612,28 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		mvMaxLugRatioOfHeight = 0;
 		mvMaxLugLen = 0;
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 AND NOT IsNull(SEQ) ORDER BY SEQ");
-		rs.Open(dbOpenSnapshot,SQLx );
-		if(!rs.IsBOF() && !rs.IsEOF())
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		if(!rs->BOF && !rs->adoEOF)
 		{
-			rs.GetFieldValue(_T("crd"),vTmp);
+			rs->get_Collect((_variant_t)_T("crd"),&vTmp);
 			sngCrd0 = fabs(vtof(vTmp));
-			while(!rs.IsEOF())
+			while(!rs->adoEOF)
 			{
-				rs.GetFieldValue(_T("sizeDIM"),vTmp);
+				rs->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);
 				if(vTmp.vt!=VT_NULL)
 				{
 					if( vtof(vTmp)!=0)
 					{
-						rs.GetFieldValue(_T("crd"),vTmp);
+						rs->get_Collect((_variant_t)_T("crd"),&vTmp);
 						if( vTmp.vt!=VT_NULL)
 						{
 							//if( rs.Fields(_T("crd")) <> 0 ){
-							rs.GetFieldValue(_T("ClassID"),vTmp);
+							rs->get_Collect((_variant_t)_T("ClassID"),&vTmp);
 							if(vtoi(vTmp)!= iROD && vtoi(vTmp) != iConnected )
 							{						
-								rs.GetFieldValue(_T("crd"),vTmp);
-								rs.GetFieldValue(_T("sizeDIM"),vTmp1);
+								rs->get_Collect((_variant_t)_T("crd"),&vTmp);
+								rs->get_Collect((_variant_t)_T("sizeDIM"),&vTmp1);
 								if( mvMaxPartRatioOfHeight < fabs(vtof(vTmp) / vtof(vTmp1)) )
 								{
 									mvMaxPartRatioOfHeight = fabs(vtof(vTmp)/vtof(vTmp1));
@@ -2657,8 +2641,8 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							}
 							else if( vtoi(vTmp) == iROD )
 							{
-								rs.GetFieldValue(_T("crd"),vTmp);
-								rs.GetFieldValue(_T("sizeDIM"),vTmp1);
+								rs->get_Collect((_variant_t)_T("crd"),&vTmp);
+								rs->get_Collect((_variant_t)_T("sizeDIM"),&vTmp1);
 								if( mvMaxLugLen < fabs(vtof(vTmp1)) )
 									mvMaxLugLen = fabs(vtof(vTmp1));
 								if( mvMaxLugRatioOfHeight < fabs(lngLUGDrawingLength / vtof(vTmp1)) )
@@ -2670,9 +2654,9 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 						}
 					}
 				}
-				rs.MoveNext();
+				rs->MoveNext();
 			}
-			rs.Close();
+			rs->Close();
 			
 			if( mvMaxPartRatioOfHeight > mvMaxLugRatioOfHeight )
 			{
@@ -2702,20 +2686,22 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		
 		//选择记录集rsTZG以便记录图形内容
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") +ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID);
-		rsTZG.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsTZG.Open(dbOpenDynaset,SQLx );
+// 		rsTZG.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rsTZG.Open(dbOpenDynaset,SQLx );
+		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		//选择记录集rs以便查找图块名称
 		
 		//**************************************************************************************//
 		SQLx = _T("SELECT * FROM phsBlkDimPos");
-		if(rs.IsOpen())
-			rs.Close();
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//"dbSORT" 改为 "dbPHScode"
-		rs.Open(dbOpenSnapshot,SQLx );
+		if(rs->State == adStateOpen)
+			rs->Close();
+// 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//"dbSORT" 改为 "dbPHScode"
+// 		rs.Open(dbOpenSnapshot,SQLx );
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPHScode,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		float xGDW1=0,xSAxa=0,xL1=0;
 		bool bxSAxa_Null=false;
 		bool brsFind=true;
-		if( rs.IsEOF() && rs.IsBOF() ) return;
+		if( rs->adoEOF && rs->BOF ) return;
 		//MsgBox Zdjh
 		
 		EDIBAcad::GetActiveAcadDoc();
@@ -2726,13 +2712,13 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		//下句没有效果。
 		//rsRefZB.Sort = _T("recno")
 		CString tmpStr1,tmpStr2;
-		if( rsRefZB.IsEOF() && rsRefZB.IsBOF())
+		if( rsRefZB->adoEOF || rsRefZB->BOF)
 		{
-			tmpStr1.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::dbPRJDB.GetName(),  EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
+			tmpStr1.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::dbPRJDB->DefaultDatabase,  EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
 			throw tmpStr1;
 		}
-		rsRefZB.MoveLast();
-		rsRefZB.MoveFirst();
+		rsRefZB->MoveLast();
+		rsRefZB->MoveFirst();
 		//判断是否为吊架
 		if( modPHScal::sngSEL > modPHScal::sngPEL )
 		{
@@ -2742,39 +2728,43 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 		{
 			bDJ = false;
 		}
-		int C=rsRefZB.GetRecordCount();
+		int C=rsRefZB->RecordCount;
 		
 		//*********************************************************************************************
 		for( i = 0 ;i<C;i++)
 		{
-			rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+			rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 			if(vtos(vTmp)==_T(""))
 			{
 				//块名无值
-				tmpStr1.Format(GetResStr(IDS_NullXFieldValueInXtableInXmdb),EDIBgbl::dbPRJDB.GetName(),EDIBgbl::TBNSelPrjSpec+EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh),ltos(i+1),_T("blkID"));
+				tmpStr1.Format(GetResStr(IDS_NullXFieldValueInXtableInXmdb),EDIBgbl::dbPRJDB->DefaultDatabase,EDIBgbl::TBNSelPrjSpec+EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh),ltos(i+1),_T("blkID"));
 				ShowMessage(tmpStr1);
 			}
 			else
 			{
 				//块名有值
 				blkID = vtos(vTmp);
-				rsRefZB.GetFieldValue(_T("ID"),vTmp);
+				rsRefZB->get_Collect((_variant_t)_T("ID"),&vTmp);
 				mstrCurrentPart =vtos(vTmp);
-				rsRefZB.GetFieldValue(_T("CustomID"),vTmp);
+				rsRefZB->get_Collect((_variant_t)_T("CustomID"),&vTmp);
 				tbn1 = modPHScal::sFindTBN(vtos(vTmp));
 				//*************************************************
-				brsFind=rs.FindFirst(_T("Trim(BlkID)=\'")+blkID+_T("\'"));
+//				brsFind=rs.FindFirst(_T("Trim(BlkID)=\'")+blkID+_T("\'"));
+				_variant_t vTmp;
+				SQLx = _T("Trim(BlkID)=\'")+blkID+_T("\'");
+				rs->Find((_bstr_t)SQLx, 0, adSearchForward, vTmp);
+
 				//获得双槽钢间距值xC
-				rs.GetFieldValue(_T("xC"),vTmp);
+				rs->get_Collect((_variant_t)_T("xC"),&vTmp);
 				tmpGBwidth=vtof(vTmp);
-				rs.GetFieldValue(_T("xGDW1"),vTmp);
+				rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 				xGDW1=vtof(vTmp);
-				rs.GetFieldValue(_T("xSAxa"),vTmp);
+				rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 				bxSAxa_Null=false;
 				if(vTmp.vt==VT_NULL)
 					bxSAxa_Null=true;
 				xSAxa=vtof(vTmp);
-				rs.GetFieldValue(_T("xL1"),vTmp);
+				rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 				xL1=vtof(vTmp);
 				if( iView == iViewXZ )
 				{
@@ -2783,7 +2773,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 					{
 						//管部
 						mstrPAID=mstrCurrentPart;
-						rsRefZB.GetFieldValue(_T("crd"),vTmp);
+						rsRefZB->get_Collect((_variant_t)_T("crd"),&vTmp);
 						sngCrd =vtof(vTmp);
 						sngCrd0 = sngCrd;
 						//左视图管部坐标
@@ -2823,10 +2813,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							}
 							p3.SetPoint(p1[0],p1[1] + 5.0);
 							//标注双吊中心距
-							AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+							AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 							GetBoundingBox(AcObj,MinPoint,MaxPoint);
 							OrdinateBound();
-							rsRefZB.GetFieldValue(_T("sizeC"),vTmp);
+							rsRefZB->get_Collect((_variant_t)_T("sizeC"),&vTmp);
 							if( vTmp.vt!=VT_NULL)
 							{
 								AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(vtos(vTmp)));
@@ -2853,21 +2843,21 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							//拉杆无需查表
 							//左侧视图,管部
 							//支架，初始坐标范围设置在管部中心位置。
-							rs.GetFieldValue(_T("xGDW1"),vTmp);
+							rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 							xGDW1=vtof(vTmp);
-							rs.GetFieldValue(_T("xSAxa"),vTmp);
+							rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 							bxSAxa_Null=false;
 							if(vTmp.vt==VT_NULL)
 								bxSAxa_Null=true;
 							xSAxa=vtof(vTmp);
-							rs.GetFieldValue(_T("xL1"),vTmp);
+							rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 							xL1=vtof(vTmp);
 							tmpBound[0]=InsPnt[0];
 							tmpBound[1]=InsPnt[1];
 							tmpBound[2]=tmpBound[0];
 							tmpBound[3]=InsPnt[1] + 4;
 							sVX = _T("P") + modPHScal::df;
-							rs.GetFieldValue(sVX+_T("blk"),vTmp);
+							rs->get_Collect((_variant_t)(sVX+_T("blk")),&vTmp);
 							Xblk = vtos(vTmp);
 							bTmp = InsertPhsBLK(InsPnt, Xblk, 1, 1, 0, iGIPAuto);
 							GetBoundingBox(AcObj,MinPoint,MaxPoint);
@@ -2878,7 +2868,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							tmpBound[3]=MaxPoint[1];
 							if( bTmp )
 							{
-								rsRefZB.GetFieldValue(_T("recno"),vTmp);
+								rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 								AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), _T("X"), Xblk, InsPnt);
 							}
 							//左侧视图,管部外径尺寸
@@ -2920,19 +2910,19 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							}
 							if( bTmp )  
 							{
-								rsRefZB.GetFieldValue(_T("recno"),vTmp);
+								rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 								AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), _T("X"), Xblk, InsPnt);
 							}
 							//左侧视图,管部编号
-							rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+							rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 							xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 							yPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("y1"), vtos(vTmp)));
 							SeqPnt.SetPoint(
 								InsPnt[0] + xPos,
 								InsPnt[1] + yPos,
 								InsPnt[2]);
-							rsRefZB.GetFieldValue(_T("recno"),vTmp);
-							rsRefZB.GetFieldValue(_T("seq"),vTmp2);
+							rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
+							rsRefZB->get_Collect((_variant_t)_T("seq"),&vTmp2);
 							DrawTagPoint(SeqPnt, vtoi(vTmp), vtoi(vTmp2));
 							//绘制左侧视图柱子编号
 							tmpLowPoint = InsPnt[1];
@@ -2949,16 +2939,16 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							tmpInsPnt.SetX(InsPnt[0]);
 							tmpInsPnt.SetZ(InsPnt[2]);
 							sVZ = CString(_T("P")) + (modPHScal::df == _T("X") ? _T("Z") : _T("X"));
-							rs.GetFieldValue(sVZ+_T("blk"),vTmp);
+							rs->get_Collect((_variant_t)(sVZ+_T("blk")),&vTmp);
 							Zblk = vtos(vTmp);
-							rsRefZB.GetFieldValue(_T("SizeC"),vTmp);
+							rsRefZB->get_Collect((_variant_t)_T("SizeC"),&vTmp);
 							tmpGBJJwidth = vtof(vTmp);
 							InsertPhsBLK(InsPnt, Zblk, 1, 1, 0, iGIPAuto);
 							//右侧视图,管部外径尺寸
 							DrawphsDimOfDW(InsPnt, AcObj);
 							if( bTmp )
 							{ 
-								rsRefZB.GetFieldValue(_T("recno"),vTmp);
+								rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 								AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), _T("Z"), Zblk, InsPnt);
 							}
 							//绘制右侧视图柱子编号
@@ -2989,11 +2979,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 						p1.SetPoint((double)InsPnt1[0], (double)modPHScal::VX_pt0y,0.0);
 						p2.SetPoint(p1[0],p1[1] + sngCrd,0);
 						p3.SetPoint(p1[0] + (modPHScal::sngSEL > modPHScal::sngPEL ? 5 : 10) + HeightOffset + dimDist,p1[1] + sngCrd / 2);////支架尺寸线要移开一些，否则粘连
-						AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+						AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 						GetBoundingBox(AcObj,MinPoint,MaxPoint);
 						OrdinateBound();
 						//Set AcObj = MoSpace.AddDimRotated(p1(), p2(), p3(), Atn(1) * 2)
-						rsRefZB.GetFieldValue(_T("sizeDIM"),vTmp);
+						rsRefZB->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);
 
 						if( vTmp.vt==VT_NULL)
 							ShowMessage(GetResStr(IDS_NullPartSizeInTZB));
@@ -3003,7 +2993,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							GetBoundingBox(AcObj,MinPoint,MaxPoint);
 							OrdinateBound();
 						}
-						rsRefZB.GetFieldValue(_T("recno"),vTmp);
+						rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 						AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T("sizeDIM"), _T("X"), _T(""), p1);
 						//如果是横担之类，则移开尺寸线基点x坐标，防止绘制重合。
 						if( modPHScal::gintParallelNum == 2 )
@@ -3020,14 +3010,14 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 					//从phsBlkDimPos获取根部的定位值
 					if( modPHScal::glIDIndex == iSA)
 					{
-						rs.GetFieldValue(_T("xGDW1"),vTmp);
+						rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 						xGDW1=vtof(vTmp);
-						rs.GetFieldValue(_T("xSAxa"),vTmp);
+						rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 						bxSAxa_Null=false;
 						if(vTmp.vt==VT_NULL)
 							bxSAxa_Null=true;
 						xSAxa=vtof(vTmp);
-						rs.GetFieldValue(_T("xL1"),vTmp);
+						rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 						xL1=vtof(vTmp);
 					}
 					if( modPHScal::glClassID != iAttached && modPHScal::glClassID != iBolts && modPHScal::glClassID != iNuts )
@@ -3060,7 +3050,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 							//双支吊
 							//if( glNumSA = 2 ){
 							//改变根部数量后必须计算才能获得正确结果。
-							rsRefZB.GetFieldValue(_T("CLnum"),vTmp);
+							rsRefZB->get_Collect((_variant_t)_T("CLnum"),&vTmp);
 							if( vtoi(vTmp) == 2 )
 							{
 								//双支吊，双根部
@@ -3092,7 +3082,6 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												{
 													//双支吊，双根部,左视图两路,右视图一路,左视图1st路,根部,根部沿X方向,P向
 													//根部定位gdw
-													//rs.GetFieldValue(_T("xGDW1"),vTmp);
 													h2.SetX(xGDW1);
 													h1.SetX(InsPnt[0]);
 													h1.SetY(tmpHeight);
@@ -3104,22 +3093,20 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 														}
 														//根部延伸长度a														
-														//rs.GetFieldValue(_T("xSAxa"),vTmp);
-														//rs.GetFieldValeu(_T("xGDW1"),vTmp2);
-														rs.GetFieldValue(_T("xGDW1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 														xGDW1=vtof(vTmp);
-														rs.GetFieldValue(_T("xSAxa"),vTmp);
+														rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 														bxSAxa_Null=false;
 														if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;
 														xSAxa=vtof(vTmp);
-														rs.GetFieldValue(_T("xL1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 														xL1=vtof(vTmp);
 														if(bxSAxa_Null) 
 															h2.SetX(h1[0] + xL1 - xGDW1);
@@ -3127,10 +3114,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															h2.SetX(h1[0] + xSAxa - xGDW1);
 														
 														h3.SetX((h1[0] + h2[0]) / 2 );
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
@@ -3138,16 +3125,14 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												{ //IF LEFT(sVfx,1)=_T("O")
 													//双支吊，双根部,左视图两路,右视图一路,左视图1st路,根部,根部沿X方向,O向
 													//根部定位gdw
-													//rs.GetFieldValue(_T("xGDW1"),vTmp);
-													//h2.SetX(vtof(vTmp);
-													rs.GetFieldValue(_T("xGDW1"),vTmp);
+													rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 													xGDW1=vtof(vTmp);
-													rs.GetFieldValue(_T("xSAxa"),vTmp);
+													rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 													bxSAxa_Null=false;
 													if(vTmp.vt==VT_NULL)
 														bxSAxa_Null=true;
 													xSAxa=vtof(vTmp);
-													rs.GetFieldValue(_T("xL1"),vTmp);
+													rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 													xL1=vtof(vTmp);
 													h1.SetPoint(InsPnt[0],tmpHeight);
 													h2.SetPoint(h1[0] + xGDW1,h1[1]);
@@ -3156,26 +3141,26 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 														}
 														//根部延伸长度a
-														//rs.GetFieldValue(_T("xSAxa"),vTmp);
+														//rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 														//rs.GetFieldValeu(_T("xGDW1"),vTmp2);
 														if(bxSAxa_Null)
 														{	
-															// rs.GetFieldValue(_T("xL1"),vTmp);
+															// rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 															h2.SetX(h1[0] - xL1 + xGDW1);
 														}
 														else
 															h2.SetX(h1[0] - xSAxa + xGDW1);
 														h3.SetX((h1[0] + h2[0]) / 2 );
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
@@ -3188,7 +3173,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetX((h1[0] + h2[0]) / 2 );
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(modPHScal::gdwx -  tmpGBJJwidth / 2)));
@@ -3209,10 +3194,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetPoint((h1[0] + h2[0]) / 2  , h1[1] + HeightOffset+ dimDist);
 													if( modPHScal::glClassID != iGCement )
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("C"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
@@ -3222,7 +3207,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetPoint((h1[0] + h2[0]) / 2,h1[1] + 2 * HeightOffset + 2 * dimDist);
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx - tmpGBJJwidth / 2))));
@@ -3233,7 +3218,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										else
 										{
 											//双支吊，双根部,左视图两路,右视图一路,左视图1st路,不是根部
-											rsRefZB.GetFieldValue(_T("fx"),vTmp);
+											rsRefZB->get_Collect((_variant_t)_T("fx"),&vTmp);
 											sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp) % 4);
 											xScal = (sVfx.Left(1) == _T("P") ? 1: -1);
 										}
@@ -3258,15 +3243,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												{
 													//双支吊，双根部,左视图两路,右视图一路,左视图2nd路,根部,根部沿X方向,P向
 													//根部定位gdw
-													//	rs.GetFieldValue(_T("xGDW1"),vTmp);
-													rs.GetFieldValue(_T("xGDW1"),vTmp);
+													//	rs->get_Collect((_variant_t)_T("xGDW1"),vTmp);
+													rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 													xGDW1=vtof(vTmp);
-													rs.GetFieldValue(_T("xSAxa"),vTmp);
+													rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 													bxSAxa_Null=false;
 													if(vTmp.vt==VT_NULL)
 														bxSAxa_Null=true;
 													xSAxa=vtof(vTmp);
-													rs.GetFieldValue(_T("xL1"),vTmp);
+													rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 													xL1=vtof(vTmp);
 													h2.SetX(xGDW1);
 													h1.SetPoint(InsPnt[0],tmpHeight);
@@ -3276,35 +3261,35 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 														}
 														//根部延伸长度a
-														//rs.GetFieldValue(_T("xSAxa"),vTmp);
+														//rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 														//	  rs.GetFieldValeu(_T("xGDW1"),vTmp2);
-														rs.GetFieldValue(_T("xGDW1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 														xGDW1=vtof(vTmp);
-														rs.GetFieldValue(_T("xSAxa"),vTmp);
+														rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 														bxSAxa_Null=false;
 														if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;
 														xSAxa=vtof(vTmp);
-														rs.GetFieldValue(_T("xL1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 														xL1=vtof(vTmp);
 														if(bxSAxa_Null)
 														{
-															//  rs.GetFieldValue(_T("xL1"),vTmp);
+															//  rs->get_Collect((_variant_t)_T("xL1"),vTmp);
 															h2.SetX(h1[0] + xL1 - xGDW1);
 														}
 														else
 															h2.SetX(h1[0] + xSAxa - xGDW1);
 														h3.SetX((h1[0] + h2[0]) / 2);
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
@@ -3312,16 +3297,6 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												{ //IF LEFT(sVfx,1)=_T("O")
 													//双支吊，双根部,左视图两路,右视图一路,左视图2nd路,根部,根部沿X方向,O向
 													//根部定位gdw
-													//rs.GetFieldValue(_T("xGDW1"),vTmp);
-													/*rs.GetFieldValue(_T("xGDW1"),vTmp);
-													xGDW1=vtof(vTmp);
-													rs.GetFieldValue(_T("xSAxa"),vTmp);
-													bxSAxa_Null=false;
-													if(vTmp.vt==VT_NULL)
-													bxSAxa_Null=true;
-													xSAxa=vtof(vTmp);
-													rs.GetFieldValue(_T("xL1"),vTmp);
-													xL1=vtof(vTmp);*/
 													h2.SetX(xGDW1);
 													h1.SetX(InsPnt[0]);
 													h1.SetY(tmpHeight);
@@ -3333,36 +3308,36 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 														}
 														//根部延伸长度a
-														//rs.GetFieldValue(_T("xSAxa"),vTmp);
+														//rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 														//rs.GetFieldValeu(_T("xGDW1"),vTmp2);
-														rs.GetFieldValue(_T("xGDW1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 														xGDW1=vtof(vTmp);
-														rs.GetFieldValue(_T("xSAxa"),vTmp);
+														rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 														bxSAxa_Null=false;
 														if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;
 														xSAxa=vtof(vTmp);
-														rs.GetFieldValue(_T("xL1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 														xL1=vtof(vTmp);
 														if(bxSAxa_Null)
 														{
-															//rs.GetFieldValue(_T("xL1"),vTmp);
+															//rs->get_Collect((_variant_t)_T("xL1"),vTmp);
 															h2.SetX(h1[0] - xL1 + xGDW1);
 														}
 														else
 															h2.SetX(h1[0] - xSAxa + xGDW1);
 														
 														h3.SetX((h1[0] + h2[0]) / 2 );
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														
 													}
@@ -3384,22 +3359,14 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetPoint((h1[0] + h2[0]) / 2 ,h1[1] + HeightOffset + dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 												}												
-												/*h1.SetPoint(insPnt[0],tmpHeight);
-												h2.SetPoint(h1[0] - giAttDzOffsetX,h1[1]);
-												h3.SetPoint((h1[0] + h2[0]) / 2,h1[1] + 2 * HeightOffset);
-												AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
-												GetBoundingBox(AcObj,MinPoint,MaxPoint);
-												OrdinateBound();
-												AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
-												*/
 											}
 											else
 											{
@@ -3429,15 +3396,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 														//双支吊，双根部,左视图两路,右视图一路,右视图1st路,根部,根部沿X方向,P向
 														//根部定位gdw
-														//rs.GetFieldValue(_T("xGDW1"),vTmp);
-														rs.GetFieldValue(_T("xGDW1"),vTmp);
+														//rs->get_Collect((_variant_t)_T("xGDW1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 														xGDW1=vtof(vTmp);
-														rs.GetFieldValue(_T("xSAxa"),vTmp);
+														rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 														bxSAxa_Null=false;
 														if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;
 														xSAxa=vtof(vTmp);
-														rs.GetFieldValue(_T("xL1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 														xL1=vtof(vTmp);
 														h2.SetX(xGDW1);
 														h1.SetPoint(InsPnt[0],tmpHeight);
@@ -3447,32 +3414,32 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 															}
 															//根部延伸长度a
-															//rs.GetFieldValue(_T("xSAxa"),vTmp);
+															//rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 															//	  rs.GetFieldValeu(_T("xGDW1"),vTmp2);
-															rs.GetFieldValue(_T("xGDW1"),vTmp);
+															rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 															xGDW1=vtof(vTmp);
-															rs.GetFieldValue(_T("xSAxa"),vTmp);
+															rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 															bxSAxa_Null=false;
 															if(vTmp.vt==VT_NULL)
 																bxSAxa_Null=true;
 															xSAxa=vtof(vTmp);
-															rs.GetFieldValue(_T("xL1"),vTmp);
+															rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 															xL1=vtof(vTmp);
 															if(bxSAxa_Null)	
 																h2.SetX(h1[0] + xL1 - xGDW1);
 															else
 																h2.SetX(h1[0] + xSAxa - xGDW1);
 															h3.SetX((h1[0] + h2[0]) / 2 );
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
@@ -3480,15 +3447,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{ //IF LEFT(sVfx,1)=_T("O")
 														//双支吊，双根部,左视图两路,右视图一路,右视图1st路,根部,根部沿X方向,P向
 														//根部定位gdw
-														//rs.GetFieldValue(_T("xGDW1"),vTmp);
-														rs.GetFieldValue(_T("xGDW1"),vTmp);
+														//rs->get_Collect((_variant_t)_T("xGDW1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 														xGDW1=vtof(vTmp);
-														rs.GetFieldValue(_T("xSAxa"),vTmp);
+														rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 														bxSAxa_Null=false;
 														if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;
 														xSAxa=vtof(vTmp);
-														rs.GetFieldValue(_T("xL1"),vTmp);
+														rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 														xL1=vtof(vTmp);
 														h2.SetX(xGDW1);
 														h1.SetPoint(InsPnt[0],tmpHeight);
@@ -3498,35 +3465,35 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 															}
 															//根部延伸长度a
-															//rs.GetFieldValue(_T("xSAxa"),vTmp);
+															//rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 															//rs.GetFieldValeu(_T("xGDW1"),vTmp2);
-															rs.GetFieldValue(_T("xGDW1"),vTmp);
+															rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 															xGDW1=vtof(vTmp);
-															rs.GetFieldValue(_T("xSAxa"),vTmp);
+															rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 															bxSAxa_Null=false;
 															if(vTmp.vt==VT_NULL)
 																bxSAxa_Null=true;
 															xSAxa=vtof(vTmp);
-															rs.GetFieldValue(_T("xL1"),vTmp);
+															rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 															xL1=vtof(vTmp);
 															if(bxSAxa_Null)
 															{
-																//rs.GetFieldValue(_T("xL1"),vTmp);
+																//rs->get_Collect((_variant_t)_T("xL1"),vTmp);
 																h2.SetX(h1[0] - xL1 + xGDW1);
 															}
 															else
 																h2.SetX(h1[0] - xSAxa + xGDW1);
 															h3.SetX((h1[0] + h2[0]) / 2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
@@ -3536,7 +3503,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetPoint((h1[0] + h2[0]) / 2,h1[1] + 2 * HeightOffset + dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -3557,10 +3524,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetPoint((h1[0] + h2[0]) / 2,h1[1] + HeightOffset + dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
@@ -3569,7 +3536,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetPoint((h1[0] + h2[0]) / 2,h1[1] + 2 * HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -3623,13 +3590,13 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
 															}
 															//根部延伸长度a
-															/*rs.GetFieldValue(_T("xSAxa"),vTmp);
+															/*rs->get_Collect((_variant_t)_T("xSAxa"),vTmp);
 															bxSAxa_Null=false;
 															if(vTmp.vt==VT_NULL)
 															bxSAxa_Null=true;*/
@@ -3638,10 +3605,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -3659,7 +3626,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -3670,10 +3637,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else 
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -3685,7 +3652,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -3709,10 +3676,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -3724,7 +3691,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -3735,7 +3702,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											else
 											{
 												//双支吊，双根部,左视图一路,右视图两路,左视图1st路,不是根部
-												rsRefZB.GetFieldValue(_T("fx"),vTmp);
+												rsRefZB->get_Collect((_variant_t)_T("fx"),&vTmp);
 												sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
 											}
 											sVfx1 = _T("X");
@@ -3770,7 +3737,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -3781,10 +3748,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -3802,7 +3769,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -3813,10 +3780,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -3828,7 +3795,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz-tmpGBJJwidth / 2))));
@@ -3852,10 +3819,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -3868,7 +3835,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz-tmpGBJJwidth / 2))));
@@ -3914,7 +3881,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -3925,10 +3892,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -3946,7 +3913,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -3957,10 +3924,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}                                    
 													//}else{ //sVfx.Right(1) = _T("Z")
@@ -3984,10 +3951,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 												}
@@ -4045,7 +4012,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4056,10 +4023,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]+xSAxa-xGDW1);	
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -4077,7 +4044,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4089,10 +4056,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															}
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4104,7 +4071,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+HeightOffset+ 1.5 *  dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx-tmpGBJJwidth/2))));
@@ -4128,10 +4095,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4144,7 +4111,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+HeightOffset+ 2* dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx-tmpGBJJwidth/2))));
@@ -4154,7 +4121,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											else
 											{
 												//双支吊，单根部,左视图两路,右视图一路,左视图1st路,不是根部
-												rsRefZB.GetFieldValue(_T("fx"),vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
+												rsRefZB->get_Collect((_variant_t)_T("fx"),&vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
 												xScal = (sVfx.Left(1) == _T("P") ? 1 : -1);
 											}
 											sVfx1 = _T("X");
@@ -4208,7 +4175,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 					//										if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4220,10 +4187,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															}
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -4241,7 +4208,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 													//		if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4252,10 +4219,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]-xSAxa+xGDW1);	
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4267,7 +4234,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -4291,10 +4258,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4307,7 +4274,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -4362,7 +4329,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4374,10 +4341,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															}
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -4395,7 +4362,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4406,10 +4373,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															else
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4421,7 +4388,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -4446,10 +4413,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													h1.SetX(InsPnt[0]);
@@ -4461,7 +4428,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													
 													if(g_bPrintSA_Value)
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -4471,7 +4438,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											else
 											{
 												//双支吊，单根部,左视图一路,右视图两路,左视图1st路,不是根部
-												rsRefZB.GetFieldValue(_T("fx"),vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
+												rsRefZB->get_Collect((_variant_t)_T("fx"),&vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
 											}
 											sVfx1 = _T("X");
 											xScal = (sVfx.Left(1) == _T("P") ? 1 : -1);
@@ -4497,7 +4464,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetY(h1[1]+HeightOffset+ dimDist + 5);
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz-tmpGBJJwidth / 2))));
@@ -4541,7 +4508,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4553,10 +4520,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 																h2.SetX(h1[0]+xSAxa-xGDW1);
 															}
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													else
@@ -4574,7 +4541,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														{
 														//	if(g_bPrintSA_Value)
 															{
-																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+																AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 																GetBoundingBox(AcObj,MinPoint,MaxPoint);
 																OrdinateBound();
 																AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4586,10 +4553,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 																h2.SetX(h1[0]-xSAxa+xGDW1);
 															}
 															h3.SetX((h1[0]+h2[0])/2);
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4614,10 +4581,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														h3.SetY(h1[1]+HeightOffset+ dimDist);
 														if( modPHScal::glClassID != iGCement )
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
-															rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+															rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 														}
 													}
 													
@@ -4676,7 +4643,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4688,10 +4655,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															h2.SetX(h1[0]+xSAxa-xGDW1);
 														}
 														h3.SetX((h1[0]+h2[0])/2);
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												else
@@ -4709,7 +4676,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4720,10 +4687,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														else
 															h2.SetX(h1[0]-xSAxa+xGDW1);	
 														h3.SetX((h1[0]+h2[0])/2);
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												
@@ -4736,7 +4703,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -4760,10 +4727,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+HeightOffset+ dimDist);
 													if( modPHScal::glClassID != iGCement )
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												
@@ -4776,7 +4743,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetY(h1[1]+2* HeightOffset+ dimDist);
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwx))));
@@ -4786,7 +4753,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										else
 										{ //不是根部
 											//单支吊,左视图1st路,不是根部
-											rsRefZB.GetFieldValue(_T("fx"),vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
+											rsRefZB->get_Collect((_variant_t)_T("fx"),&vTmp); sVfx = modPHScal::GetPhsSAfx(vtoi(vTmp)%4);
 										}
 										sVfx1 = _T("X");
 										xScal = (sVfx.Left(1) == _T("P") ? 1 : -1);
@@ -4820,10 +4787,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													h3.SetY(h1[1]+HeightOffset+ dimDist);
 													if( modPHScal::glClassID != iGCement )
 													{
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("C"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("C"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												
@@ -4836,7 +4803,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetY(h1[1]+2* HeightOffset + dimDist );
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -4860,7 +4827,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4872,10 +4839,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															h2.SetX(h1[0]+xSAxa-xGDW1);
 														}
 														h3.SetX((h1[0]+h2[0])/2);
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												else
@@ -4893,7 +4860,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													{
 													//	if(g_bPrintSA_Value)
 														{
-															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+															AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 															GetBoundingBox(AcObj,MinPoint,MaxPoint);
 															OrdinateBound();
 															AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdw))));
@@ -4905,10 +4872,10 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															h2.SetX(h1[0]-xSAxa+xGDW1);
 														}
 														h3.SetX((h1[0]+h2[0])/2 );  
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
-														rsRefZB.GetFieldValue(_T("T"),vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
+														rsRefZB->get_Collect((_variant_t)_T("T"),&vTmp);AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 													}
 												}
 												
@@ -4920,7 +4887,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												h3.SetY(h1[1]+HeightOffset + dimDist);
 												if(g_bPrintSA_Value)
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)h1, (LPVARIANT)h2, (LPVARIANT)h3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(modPHScal::gdwz))));
@@ -4961,7 +4928,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													bLowPoint = true;
 												else
 												{
-													rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 													if(vtof(vTmp) <= 0 )
 														tmpLowPoint = tmpInsPnt[1] + vtof(vTmp);
 													else
@@ -4973,7 +4940,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											}
 											else
 											{
-												rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+												rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 												if(vtof(vTmp) <= 0 )
 													tmpHeight = tmpInsPnt[1] - vtof(vTmp);
 												else
@@ -4988,7 +4955,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													bLowPoint = true;
 												else
 												{
-													rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 													if(vtof(vTmp) <= 0 )
 														tmpLowPoint = tmpInsPnt[1] - vtof(vTmp);
 													else
@@ -5000,7 +4967,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											}
 											else
 											{
-												rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+												rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 												if(vtof(vTmp) <= 0 )
 													tmpHeight = tmpInsPnt[1] + vtof(vTmp);
 												else
@@ -5023,11 +4990,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												tmpInsPnt.SetY(InsPnt[1] - (lngAttachedPartNo + 1) * sngYoffsetOfAttached);
 												tmpInsPnt.SetZ(InsPnt[2]);
 												//块方向旋转180度,至少球面垫圈F3要旋转180度
-												rotA = atan(1) * 4;
+												rotA = atan(1.0) * 4;
 												//附件编号
 												if( k == lngSEQColumn )
 												{
-													rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 													xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 													SeqPnt.SetPoint(tmpInsPnt[0] + xPos,tmpInsPnt[1],tmpInsPnt[2]);
 												}
@@ -5054,11 +5021,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													//  bHighPoint = True
 													//}
 													//块方向不旋转
-													rotA = atan(1) * -0;
+													rotA = atan(1.0) * -0;
 													//附件编号
 													if( k == lngSEQColumn )
 													{
-														rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 														xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 														SeqPnt.SetPoint(tmpInsPnt[0] + xPos,tmpInsPnt[1],tmpInsPnt[2]);
 													}
@@ -5071,7 +5038,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													rotA = 0;
 													if( k == lngSEQColumn )
 													{
-														rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+														rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 														xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 														SeqPnt.SetPoint(tmpInsPnt[0] + xPos,tmpInsPnt[1],tmpInsPnt[2]);
 													}
@@ -5088,12 +5055,12 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														if( Ptype[lngCurrentPartNo] == _T("PHD") || Ptype[lngCurrentPartNo] == _T("PHD1") )
 														{
 															COleVariant vID;
-															rsRefZB.GetFieldValue(_T("ID"),vID);
+															rsRefZB->get_Collect((_variant_t)_T("ID"),&vID);
 															if( vtos(vID)== _T("F9") )
 															{
 																bPHDorPHD1 = true;
 																tmpInsPnt.SetPoint(InsPnt[0] + sngTmp,InsPnt[1] - 10.8 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7),InsPnt[2]);
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp);
 																sBlk = vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetX(InsPnt[0] - sngTmp);
@@ -5103,15 +5070,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															{
 																bPHDorPHD1 = true;
 																tmpInsPnt.SetPoint(InsPnt[0] + sngTmp,InsPnt[1] - 9 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7),InsPnt[2]);
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp);
 																sBlk = vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetY(InsPnt[1] + 2.4 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetX(InsPnt[0] - sngTmp);
 																tmpInsPnt.SetY(InsPnt[1] - 9 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetY(InsPnt[1] + 2.4 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
 															}
@@ -5119,14 +5086,14 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 															{
 																bPHDorPHD1 = true;
 																tmpInsPnt.SetPoint(InsPnt[0] + sngTmp,InsPnt[1] - 7.5 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7),InsPnt[2]);
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetY(InsPnt[1] + 0.9 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetX(InsPnt[0] - sngTmp);
 																tmpInsPnt.SetY(InsPnt[1] - 7.5 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
-																rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+																rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 																bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 																tmpInsPnt.SetY(InsPnt[1] + 0.9 + (Ptype[lngCurrentPartNo] == _T("PHD") ? 0 : 7));
 															}
@@ -5143,9 +5110,9 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														if( Ptype[lngCurrentPartNo + 1] == _T("L7") || Ptype[lngCurrentPartNo + 1] == _T("G12") || Ptype[lngCurrentPartNo + 1] == _T("L7Dd") || Ptype[lngCurrentPartNo + 1] == _T("G12Lc") )
 														{
 															//后一个组件是L7或G12
-															rotA = atan(1) * 2;
+															rotA = atan(1.0) * 2;
 															COleVariant vID;
-															rsRefZB.GetFieldValue(_T("ID"),vID);
+															rsRefZB->get_Collect((_variant_t)_T("ID"),&vID);
 															if( vtos(vID)== _T("F14") )
 															{
 																tmpInsPnt.SetPoint(InsPnt[0] + 2.5,InsPnt[1],InsPnt[2]);
@@ -5221,7 +5188,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												//附件编号
 												if( k == lngSEQColumn )
 												{
-													rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 													xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 													SeqPnt.SetPoint(tmpInsPnt[0] + xPos,tmpInsPnt[1],tmpInsPnt[2]);
 												}
@@ -5232,11 +5199,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											}
 										}
 									}
-									rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+									rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 									bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 									if( bTmp )
 									{
-										rsRefZB.GetFieldValue(_T("recno"),vTmp);
+										rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 										AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), sVfx1, sBlk, tmpInsPnt);
 									}
 								}
@@ -5254,11 +5221,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										{
 											if( mlPartIndex[lngCurrentPartNo + 1] == iSA && k==1)
 												tmpHeight=tmpHeight+lngLUGDrawingLength;
-											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + 2 * tmpLUGyOffset, atan(1) * 2,0.5);
+											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + 2 * tmpLUGyOffset, atan(1.0) * 2,0.5);
 										}
 										else
 										{
-											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + tmpLUGyOffset + tmpLugInsLen, atan(1) * 2,0.5);
+											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + tmpLUGyOffset + tmpLugInsLen, atan(1.0) * 2,0.5);
 										}
 									}
 									else
@@ -5269,11 +5236,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										{
 											if( mlPartIndex[lngCurrentPartNo + 1] == iSA && k==1)
 												tmpHeight=tmpHeight+lngLUGDrawingLength;
-											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + tmpLUGyOffset + tmpLugInsLen, atan(1) * 2,0.5);
+											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + tmpLUGyOffset + tmpLugInsLen, atan(1.0) * 2,0.5);
 										}
 										else
 										{
-											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + 2 * tmpLugInsLen, atan(1) * 2,0.5);
+											DrawPLine(tmpLUGpnt, lngLUGDrawingLength + 2 * tmpLugInsLen, atan(1.0) * 2,0.5);
 										}
 									}
 								}
@@ -5310,7 +5277,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													tmpSApnt.SetY(tmpInsPnt[1]); //+ 2 * Abs(rsRefZB.Fields(_T("Crd")))
 												else //上部生根，位置下移
 												{
-													rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 													tmpSApnt.SetY(tmpInsPnt[1] - fabs(vtof(vTmp)));
 												}
 											}
@@ -5318,13 +5285,13 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										else
 										{
 											//支架
-											rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+											rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 											tmpSApnt.SetY(tmpInsPnt[1] - fabs(vtof(vTmp)));
 										}
 										//更新临时坐标点tmpInspnt()，用于根部标高标注
 										tmpInsPnt=tmpSApnt;
 										
-										rs.GetFieldValue(sVfx+_T("blk"),vTmp); 
+										rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); 
 										sBlk=vtos(vTmp);
 										if( modPHScal::gintParallelNum == 2 && modPHScal::glNumSA == 1 && k == 2 )
 										{
@@ -5336,7 +5303,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											bTmp = InsertPhsBLK(tmpSApnt, sBlk, xScal, 1, rotA, iGIPAuto);
 											if( bTmp )
 											{
-												rsRefZB.GetFieldValue(_T("recno"),vTmp);
+												rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 												AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), sVfx1, sBlk, tmpSApnt);
 											}
 										}
@@ -5348,36 +5315,38 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 										//}else{
 										//}
 										//旋转180的零件需要特殊块(with 0 tail)
-										rsRefZB.GetFieldValue(_T("Rotation"),vTmp);
+										rsRefZB->get_Collect((_variant_t)_T("Rotation"),&vTmp);
 										mlRot0 = vtof(vTmp);
 										if( mlRot0 == 180 )
 										{
-											rs.FindFirst(_T("Trim(BlkID)=\'") + blkID + _T("0\'"));
-											rs.GetFieldValue(_T("xGDW1"),vTmp);
+											_variant_t vTmp;
+											rs->Find((_bstr_t)(_T("Trim(BlkID)=\'") + blkID + _T("0\'")), 0, adSearchForward, vTmp);
+// 											rs.FindFirst();
+											rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 											xGDW1=vtof(vTmp);
-											rs.GetFieldValue(_T("xSAxa"),vTmp);
+											rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
 											bxSAxa_Null=false;
 											if(vTmp.vt==VT_NULL)
 												bxSAxa_Null=true;
 											xSAxa=vtof(vTmp);
-											rs.GetFieldValue(_T("xL1"),vTmp);
+											rs->get_Collect((_variant_t)_T("xL1"),&vTmp);
 											xL1=vtof(vTmp);
 											if( mlPartClassID[0] == iPAh )
 											{
-												rs.GetFieldValue(_T("Dh"),vTmp);
+												rs->get_Collect((_variant_t)_T("Dh"),&vTmp);
 												sngCrd0 =vtof(vTmp);
 											}
 											else
 											{
-												rs.GetFieldValue(_T("Zh"),vTmp);
+												rs->get_Collect((_variant_t)_T("Zh"),&vTmp);
 												sngCrd0 =vtof(vTmp);
 											}
 										}
-										rs.GetFieldValue(sVfx+_T("blk"),vTmp); sBlk=vtos(vTmp);
+										rs->get_Collect((_variant_t)(sVfx+_T("blk")),&vTmp); sBlk=vtos(vTmp);
 										bTmp = InsertPhsBLK(tmpInsPnt, sBlk, xScal, 1, rotA, iGIPAuto);
 										if( bTmp )
 										{
-											rsRefZB.GetFieldValue(_T("recno"),vTmp);
+											rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 											AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T(""), sVfx1, sBlk, tmpInsPnt);
 										}
 									}
@@ -5394,15 +5363,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 								}
 								else
 								{
-									rsRefZB.GetFieldValue(_T("Crd"),vTmp);
+									rsRefZB->get_Collect((_variant_t)_T("Crd"),&vTmp);
 									sngCrd0 = vtof(vTmp);
 									sngCrd = sngCrd + sngCrd0;
 									if( (modPHScal::glClassID == iSPR || modPHScal::glClassID == iCSPR) && modPHScal::gbAnnotateCSPR )
 									{
 										//清晰标注弹性件规格
 										SeqPnt.SetPoint(tmpInsPnt[0],tmpInsPnt[1] + fabs(sngCrd0) / 2,tmpInsPnt[2]);
-										rsRefZB.GetFieldValue(_T("CLgg"),vTmp);
-										AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(vtos(vTmp)), (LPVARIANT)SeqPnt, &_variant_t((double)3));
+										rsRefZB->get_Collect((_variant_t)_T("CLgg"),&vTmp);
+										AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(vtos(vTmp)), (LPVARIANT)SeqPnt, &_variant_t((double)3)).pdispVal;
                                         AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标注尺寸"), _T("DIM"))));
 										AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentLeft));
 										AcObj.PutPropertyByName(_T("TextAlignmentPoint"),(LPVARIANT)SeqPnt);
@@ -5410,7 +5379,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 									}
 								}
 								
-								if( i == rsRefZB.GetRecordCount() - 1 )
+								if( i == rsRefZB->RecordCount - 1 )
 								{
 									//根部标高,位置在槽钢上部
 									//绘到左侧
@@ -5457,7 +5426,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 								//编号列
 								if( modPHScal::glClassID != iAttached && modPHScal::glClassID != iBolts && modPHScal::glClassID != iNuts )
 								{
-									rsRefZB.GetFieldValue(_T("blkID"),vTmp);
+									rsRefZB->get_Collect((_variant_t)_T("blkID"),&vTmp);
 									xPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("x1"), vtos(vTmp)));
 									yPos = vtof(modPHScal::sFindBlkPosFLD(_T("BlkID"), _T("y1"), vtos(vTmp)));
 									SeqPnt.SetPoint(tmpInsPnt[0] + xPos,tmpInsPnt[1] + yPos,tmpInsPnt[2]);
@@ -5468,15 +5437,15 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 								//附件的编号插入点已经在前面赋值
 								}
 								*/
-								rsRefZB.GetFieldValue(_T("recno"),vTmp);
-								rsRefZB.GetFieldValue(_T("seq"),vTmp2);
+								rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
+								rsRefZB->get_Collect((_variant_t)_T("seq"),&vTmp2);
 								DrawTagPoint(SeqPnt,vtoi(vTmp),vtoi(vTmp2));
 							}
 							
 							if( k == lngDIMColumn )
 							{//5
 								//尺寸列
-								rsRefZB.GetFieldValue(_T("sizeDIM"),vTmp);
+								rsRefZB->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);
 								if( vTmp.vt!=VT_NULL)
 								{//4
 									if( vtof(vTmp) != 0 )
@@ -5503,7 +5472,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 														//G52~G55板肋高度H图面高度28.3mm
 														p2.SetPoint(p1[0],p1[1] + 28.3);
 														p3.SetPoint(p1[0] + (modPHScal::sngSEL > modPHScal::sngPEL ? 5 : 10),(p1[1] + p2[1]) / 2);
-														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+														AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 														GetBoundingBox(AcObj,MinPoint,MaxPoint);
 														OrdinateBound();
 														vTmp=(VARIANT)FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("A01"));
@@ -5531,11 +5500,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 											if(fabs(sngCrd0)<2.5) 
 												p3.SetPoint(p3[0] + 5,p1[1] );
 											
-											AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+											AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 											GetBoundingBox(AcObj,MinPoint,MaxPoint);
 											OrdinateBound();
 											//Set AcObj = MoSpace.AddDimRotated(p1(), p2(), p3(), Atn(1) * 2)
-											rsRefZB.GetFieldValue(_T("sizeDIM"),vTmp);
+											rsRefZB->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);
 											if(vTmp.vt==VT_NULL)
 												ShowMessage(GetResStr(IDS_NullPartSizeInTZB));
 											else
@@ -5546,7 +5515,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 													AcObj.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(ftos1(fabs(vtof(vTmp)))));
 											}
 											AcObj.Invoke0(_T("Update"));
-											rsRefZB.GetFieldValue(_T("recno"),vTmp);
+											rsRefZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 											AddData2rsTZG(rsTZG, vtoi(vTmp), modPHScal::zdjh, _T("sizeDIM"), _T("X"), _T(""), p1);
 											
 											if( modPHScal::glClassID == iROD )
@@ -5567,11 +5536,11 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												
 												if( g_bInsertLength )
 												{
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													//字段A保存了下端伸入尺寸
-													rsRefZB.GetFieldValue(_T("A"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("A"),&vTmp);
 													if( vTmp.vt==VT_NULL)
 													{
 														//MsgBox ResolveResString(iUE_NullLugExtendDimInTZB, _T("|1"), _T("A"), _T("|2"), ResolveResString(iUE_UP)), vbMsgBoxSetForeground
@@ -5595,12 +5564,12 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 												p3.SetPoint(p1[0] - 5,(p1[1] + p2[1]) / 2);
 												if( g_bInsertLength )
 												{	
-													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+													AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 													GetBoundingBox(AcObj,MinPoint,MaxPoint);
 													OrdinateBound();
 													
 													//字段B保存了上端伸入尺寸
-													rsRefZB.GetFieldValue(_T("B"),vTmp);
+													rsRefZB->get_Collect((_variant_t)_T("B"),&vTmp);
 													if( vTmp.vt==VT_NULL)
 													{
 														//MsgBox ResolveResString(iUE_NullLugExtendDimInTZB, _T("|1"), _T("B"), _T("|2"), ResolveResString(iUE_DOWN)), vbMsgBoxSetForeground
@@ -5629,7 +5598,7 @@ void EDIBAcad::DrawPhsAssemble(CDaoRecordset& rsRefZB, long iView)
 			}
 			//MsgBox blk
 		}
-		rsRefZB.MoveNext();
+		rsRefZB->MoveNext();
 	}
 	
 	//在最后绘制零件编号。只有这样才能判断那些零件在最上面，那些在最下面，编号指向线才不会交叉。
@@ -5652,17 +5621,10 @@ catch(COleException *e )
 	e->ReportError();
 	e->Delete();
 }
-catch(...)
+catch(CException *e)
 {
 	e->ReportError();
 	e->Delete();
-}
-catch(CException *e)
-{
-	e->Delete();
-}
-catch(...)
-{
 }
 delete [] Ptype;  //记录支吊架结构组件，不包括附件
 delete [] mlPartClassID;    //记录组件的子类别
@@ -5672,7 +5634,7 @@ delete [] mlPartIndex;
 //objAcadDoc.ActiveViewport.ZoomAll
 }
 
-void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView)
+void EDIBAcad::DrawphsZUZI(_RecordsetPtr& rsRefZB, CCadPoint& InsPnt, long iView)
 {
    //Dim rsza As Recordset
 	try
@@ -5713,7 +5675,7 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 		p2.SetPoint(p1[0] - iAttDOffsetX,p1[1],0);
 		//尺寸线位置
 		p3.SetPoint(p2[0] + iAttDOffsetX / 2,p2[1] - sngHS * modPHScal::giAttDOffsetY / 2 + sngHS * 5);//0
-		AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3);
+		AcObj = MoSpace.Invoke(_T("AddDimAligned"),3,(LPVARIANT)p1, (LPVARIANT)p2, (LPVARIANT)p3).pdispVal;
 		GetBoundingBox(AcObj,MinPoint,MaxPoint);
 		OrdinateBound();
 		//安装定位
@@ -5769,11 +5731,11 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 			{
 				text.Format(IDS_COLE_FORM,(int)(iView == iViewX ? fabs(modPHScal::dxl) : fabs(modPHScal::dzl)));	  
 				if( giUPxyz == 1)
-					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight));
+					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight)).pdispVal;
 				else if( giUPxyz == 2)
-					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight));
+					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight)).pdispVal;
 				else if( giUPxyz == 3 )
-					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight));
+					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight)).pdispVal;
                 AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标注尺寸"), _T("DIM"))));
 				AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentMiddle));
 				AcObj.PutPropertyByName(_T("TextAlignmentPoint"),(LPVARIANT)p);
@@ -5789,7 +5751,7 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 			if((iView == iViewX) && (modPHScal::dxr!=modPHScal::dxa) || (iView == iViewZ) && (modPHScal::dzr!=modPHScal::dza))
 			{
 				text.Format(IDS_HOT_FORM,(int)(iView == iViewX ? fabs(modPHScal::dxr) : fabs(modPHScal::dzr)));
-				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight));
+				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(text), (LPVARIANT)p, &_variant_t((double)msTxtHeight)).pdispVal;
                 AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标注尺寸"), _T("DIM"))));
 				AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentMiddle));
 				AcObj.PutPropertyByName(_T("TextAlignmentPoint"),(LPVARIANT)p);
@@ -5813,7 +5775,7 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 					InsPnt[0] - iAttDOffsetX + (iView == iViewX ? Sgn(modPHScal::giAttDxOffsetX) : Sgn(modPHScal::giAttDzOffsetX)) * 10 * ((i - 1) % 2),
 					InsPnt[1] - sngHS * (0.5 * modPHScal::giAttDOffsetY + 7 + 6 * ((i - 1) / 2)),
 					InsPnt[2]);
-				AcObj = MoSpace.Invoke(_T("AddCircle"),2,(LPVARIANT)p, &_variant_t((double)3));
+				AcObj = MoSpace.Invoke(_T("AddCircle"),2,(LPVARIANT)p, &_variant_t((double)3)).pdispVal;
 				GetBoundingBox(AcObj,MinPoint,MaxPoint);
 				int iTemp=(iView == iViewX ? modPHScal::giAttDxOffsetX : modPHScal::giAttDzOffsetX);
 				
@@ -5828,7 +5790,7 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 				if( sZU.GetLength() <= 2 )
 				{
 					//2字符按中点对齐
-					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sZU), (LPVARIANT)p, &_variant_t((double)3));
+					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sZU), (LPVARIANT)p, &_variant_t((double)3)).pdispVal;
                     AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标注尺寸"), _T("DIM"))));
 					AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentMiddle));
 					AcObj.PutPropertyByName(_T("TextAlignmentPoint"),(LPVARIANT)p);
@@ -5839,7 +5801,7 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 					//>2字符按两端对齐
 					p.SetX(p[0] - 2.5);
 					p.SetY(p[1] - 1.5);
-					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sZU), (LPVARIANT)p, &_variant_t((double)3));
+					AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sZU), (LPVARIANT)p, &_variant_t((double)3)).pdispVal;
                     AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标注尺寸"), _T("DIM"))));
 					AcObj.PutPropertyByName(_T("HorizontalAlignment"),&_variant_t((long)acHorizontalAlignmentFit));
 					p.SetX(p[0] + 5);
@@ -5863,9 +5825,6 @@ void EDIBAcad::DrawphsZUZI(CDaoRecordset& rsRefZB, CCadPoint& InsPnt, long iView
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -5967,7 +5926,7 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
       //否则，搜索管部所有实体，找到一个圆，认为它是管道
       //直接给它做直径尺寸标注
       float mvA, mvR; //直径尺寸与X轴正向的夹角/半径
-      mvA = 165.0 / 180.0 * atan(1) * 4;   //135degree
+      mvA = 165.0 / 180.0 * atan(1.0) * 4;   //135degree
       CMObject ent , ent1;
       CMObject PAblk;
       long PAblkCount;
@@ -5992,8 +5951,8 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
                //离尺寸文字较近的点
                //The WCS coordinate for the first diameter point on the circle or arc.
                px.SetPoint(
-					InsPnt[0] + mvR * cos(mvA + atan(1) * 4),
-					InsPnt[1] + mvR * sin(mvA + atan(1) * 4));
+					InsPnt[0] + mvR * cos(mvA + atan(1.0) * 4),
+					InsPnt[1] + mvR * sin(mvA + atan(1.0) * 4));
                //离尺寸文字较远的点
                //The WCS coordinate for the second diameter point on the circle or arc.
                p2.SetPoint(
@@ -6023,16 +5982,14 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
 	{
 		e->Delete();
 	}
-   catch(...)
-   {
-   }
 }
 
 void EDIBAcad::DrawphsDataEdit()
 {
 	try
 	{
-		CDaoRecordset rsY;
+		_RecordsetPtr rsY;
+		rsY.CreateInstance(__uuidof(Recordset));
 		CCadPoint pnt;
 		CCadPoint tempPoint;
 		CCadPoint Point;
@@ -6084,8 +6041,9 @@ void EDIBAcad::DrawphsDataEdit()
 		FrmDataEDIT.m_DBGrid1.GetColumns().GetItem(_variant_t(_T("Index"))).SetVisible(FALSE);
 
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(iZdjhInDwg) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-		rsY.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsY.Open(dbOpenDynaset,SQLx);
+// 		rsY.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rsY.Open(dbOpenDynaset,SQLx);
+		rsY->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		if(!FrmDataEDIT.IsWindowVisible())
 			FrmDataEDIT.ShowWindow(SW_SHOW);
 		CMObject tmpObj;
@@ -6096,9 +6054,12 @@ void EDIBAcad::DrawphsDataEdit()
 		{
 			tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)i));
 			sHandle = vtos(tmpObj.GetPropertyByName(_T("Handle")));
-			if(!rsY.IsBOF() && !rsY.IsEOF())
+			if(!rsY->BOF && !rsY->adoEOF)
 			{
-				if(rsY.FindFirst(CString(_T("ucase(trim(Handle))=\'")) + sHandle + _T("\'")))
+				_variant_t vTmp;
+				CString strSql = CString(_T("ucase(trim(Handle))=\'")) + sHandle + _T("\'");
+				rsY->Find((_bstr_t)strSql, 0, adSearchForward, vTmp);
+				if(!rsY->adoEOF)
 				{
 					sTmp=vtos(::GetFields(rsY,_T("recno")));
 					FrmDataEDIT.m_Data1->Find(_bstr_t(CString(_T("recno="))+sTmp),0,adSearchForward);
@@ -6111,7 +6072,7 @@ void EDIBAcad::DrawphsDataEdit()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6122,10 +6083,11 @@ void EDIBAcad::DisplayDataZB()
 {
    try
 	{
-		CDaoRecordset rsY, rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CString SQLx;
 		//SQLx.Format(_T("UPDATE [ZB] SET [Zdjh]=[zdjh] WHERE [VolumeID]=%d AND [ZDJH]=%d"),EDIBgbl::SelVlmID,modPHScal::zdjh);
-		//EDIBgbl::dbPRJDB.Execute(SQLx);
+		//EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx);
 		//支吊架零件组合记录集TZB
 		if(modPHScal::zdjh==0) {modPHScal::zdjh=1;}//pfg20050228
 		SQLx = _T("SELECT zdjh,recno,nth,SEQ,CLmc,CLgg,CLcl,sizeDIM,CLnum,CLdz,CLzz,bUserAdd,Index,L1,sizeH,ClassID FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (IsSAPart<>-1 OR bUserAdd=-1 ) ORDER BY bUserAdd DESC, nth,recno");
@@ -6137,8 +6099,9 @@ void EDIBAcad::DisplayDataZB()
 		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		SQLx = _T("SELECT SUM(CLzz) as SumWeight FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (IsSAPart<>-1 OR bUserAdd=-1 )");
-		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rs.Open (dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 		rs.Open (dbOpenSnapshot,SQLx);
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
    
 		//数据记录集Rsy=TZG
 		//SQLx = _T("SELECT * FROM [") & TBNSelPrjSpec & Btype(TZG) & _T("] WHERE zdjh=") & zdjh & _T(" AND IsSAPart<>-1 ORDER BY recno")
@@ -6153,7 +6116,7 @@ void EDIBAcad::DisplayDataZB()
 		//FrmDataEDIT.Caption = _T("当前支吊架零件明细表:支吊架号=") & zdjh
 		CString sTmp,sTmp1;
 		COleVariant vTmp;
-		rs.GetFieldValue(_T("SumWeight"),vTmp);
+		rs->get_Collect((_variant_t)_T("SumWeight"),&vTmp);
 		sTmp1.Format(_T("%0.3f"),vtof(vTmp));
 		sTmp.Format(GetResStr(IDS_CurrentPhsBOMzdjh),ltos(modPHScal::zdjh),sTmp1);
 		FrmDataEDIT.SetWindowText(sTmp);
@@ -6165,7 +6128,7 @@ void EDIBAcad::DisplayDataZB()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6176,7 +6139,7 @@ void EDIBAcad::Data2DWG(int /*ByVal*/ recno, CString /*ByVal*/ FieldName)
 {
 }
 
-void EDIBAcad::DrawTag(CDaoRecordset& rsTZG,
+void EDIBAcad::DrawTag(
 					   int iRecNo, 
 					   CCadPoint& p0, 
 					   CCadPoint& p1, 
@@ -6310,9 +6273,6 @@ void EDIBAcad::DrawTag(CDaoRecordset& rsTZG,
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 void EDIBAcad::DrawTagByPickEntity(COleVariant /*Optional*/ pnt)
@@ -6328,10 +6288,13 @@ void EDIBAcad::DrawTagAll()
 		//设置是否绘制重复的件好 （巴威需要这个设置）
 		if(!EDIBAcad::g_bDimNumber)
 		{
-			CDaoRecordset rsRefZB(&EDIBgbl::dbPRJDB);
+// 			 rsRefZB(&EDIBgbl::dbPRJDB);
+			_RecordsetPtr rsRefZB;
+			rsRefZB.CreateInstance(__uuidof(Recordset));
 			CString SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-			rsRefZB.Open(dbOpenDynaset,SQLx );
-			if( rsRefZB.IsEOF() && rsRefZB.IsBOF() )
+// 			rsRefZB.Open(dbOpenDynaset,SQLx );
+			rsRefZB->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+			if( rsRefZB->adoEOF || rsRefZB->BOF )
 			{
 			}
 			else
@@ -6340,21 +6303,18 @@ void EDIBAcad::DrawTagAll()
 				CString str;
 				while( i < 20 )
 				{
-					rsRefZB.MoveFirst();
+					rsRefZB->MoveFirst();
 					str.Format(_T("seq=%d"), i);
-					if( rsRefZB.FindFirst(str) )
+					_variant_t vTmp;
+					rsRefZB->Find((_bstr_t)str, 0, adSearchForward, vTmp);
+					while( !rsRefZB->adoEOF )
 					{
-						while( rsRefZB.FindNext(str) )
-						{
-							rsRefZB.Edit();
-							rsRefZB.SetFieldValue(_T("seq"),COleVariant());
-							rsRefZB.Update();
-						}
+//							rsRefZB.Edit();
+						rsRefZB->put_Collect((_variant_t)_T("seq"),COleVariant());
+						rsRefZB->Update();
 
-					}
-					else
-					{
-						break;
+						rsRefZB->Find((_bstr_t)str, 0, adSearchForward, vTmp);
+
 					}
 
 					i++;
@@ -6362,15 +6322,19 @@ void EDIBAcad::DrawTagAll()
 
 			}
 
-			rsRefZB.Close();
+			rsRefZB->Close();
 		}
 
 		CCadPoint p0,p1,p2;
 		CVariantArray p3(12);				//Crossingpolygon选择集点阵
 		long iRecNo=0, iSEQ=0;
 		long iMaxSeq=0;
-		CDaoRecordset rsTZG(&EDIBgbl::dbPRJDB);
-		CDaoRecordset rsRefZB(&EDIBgbl::dbPRJDB);
+// 		 rsTZG(&EDIBgbl::dbPRJDB);
+// 		 rsRefZB(&EDIBgbl::dbPRJDB);
+		_RecordsetPtr rsTZG;
+		rsTZG.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsRefZB;
+		rsRefZB.CreateInstance(__uuidof(Recordset));
 		COleVariant vTmp1,vTmp2,vTmp3;
 		long i =0, k=0;
 		long j =0;
@@ -6384,8 +6348,9 @@ void EDIBAcad::DrawTagAll()
 		
 		//选择支吊架结构记录集rsRefZB
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-		rsRefZB.Open(dbOpenDynaset,SQLx );
-		if( rsRefZB.IsEOF() && rsRefZB.IsBOF() )
+// 		rsRefZB.Open(dbOpenDynaset,SQLx );
+		rsRefZB->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		if( rsRefZB->adoEOF || rsRefZB->BOF )
 		{
 			//Err.Raise
 		}
@@ -6395,22 +6360,23 @@ void EDIBAcad::DrawTagAll()
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] ;
 			SQLx+=_T("] WHERE zdjh=");
 			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ucase(trim(Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ucase(trim(FieldName))=\'SEQ\' ORDER BY y");
-			rsTZG.Open(dbOpenDynaset,SQLx);
-			if( rsTZG.IsEOF() && rsTZG.IsBOF() )
+// 			rsTZG.Open(dbOpenDynaset,SQLx);
+			rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+			if( rsTZG->adoEOF || rsTZG->BOF )
 			{
 			}
 			else
 			{
 				//xOffset += maxX;
 
-				rsTZG.MoveFirst();
-				while(!rsTZG.IsEOF())
+				rsTZG->MoveFirst();
+				while(!rsTZG->adoEOF)
 				{
 					i++;
 					//编号指向线起点
-					rsTZG.GetFieldValue(_T("x"),vTmp1);
-					rsTZG.GetFieldValue(_T("y"),vTmp2);
-					rsTZG.GetFieldValue(_T("z"),vTmp3);
+					rsTZG->get_Collect((_variant_t)_T("x"),&vTmp1);
+					rsTZG->get_Collect((_variant_t)_T("y"),&vTmp2);
+					rsTZG->get_Collect((_variant_t)_T("z"),&vTmp3);
 					p0.SetPoint(vtof(vTmp1),vtof(vTmp2),vtof(vTmp3));
 					p1 = p0;
 					//编号指向线终点
@@ -6427,10 +6393,10 @@ void EDIBAcad::DrawTagAll()
 							//Y方向每次增量位移modPHScal::gnSEQyOffset(一般=8mm)
 							p2y = p2[1] + modPHScal::gnSEQyOffset * k;
 							//计算编号指向线角度
-							if( atan(fabs((p2y - p1[1]) / xOffset)) * 180 / atan(1) / 4 < 10 )
+							if( atan(fabs((p2y - p1[1]) / xOffset)) * 180 / atan(1.0) / 4 < 10 )
 							{
 								//编号指向线角度太平
-								p2y = p1[1] + Sgn(p2y - p1[1]) * xOffset * atan(atan(1) * 4 / 180 * 10);
+								p2y = p1[1] + Sgn(p2y - p1[1]) * xOffset * atan(atan(1.0) * 4 / 180 * 10);
 								if( p2y >= p2[1] + modPHScal::gnSEQyOffset )
 								{
 									//编号指向线角度适中
@@ -6475,10 +6441,10 @@ void EDIBAcad::DrawTagAll()
 							}
 							else
 							{
-								if( atan(fabs((p2y - p1[1]) / xOffset)) * 180 / atan(1) / 4 > 50 )
+								if( atan(fabs((p2y - p1[1]) / xOffset)) * 180 / atan(1.0) / 4 > 50 )
 								{
 									//编号指向线角度太陡
-									p2y = p1[1] + Sgn(p2y - p1[1]) * xOffset * tan(atan(1) * 4 / 180 * 50);
+									p2y = p1[1] + Sgn(p2y - p1[1]) * xOffset * tan(atan(1.0) * 4 / 180 * 50);
 									if( p2y >= p2[1] + modPHScal::gnSEQyOffset )
 									{
 										//编号指向线角度适中
@@ -6558,11 +6524,13 @@ void EDIBAcad::DrawTagAll()
 					p2.SetZ(p0[2]);
 					//找出编号
 					COleVariant vTmp;
-					rsTZG.GetFieldValue(_T("recno"),vTmp);
+					rsTZG->get_Collect((_variant_t)_T("recno"),&vTmp);
 					iRecNo = vtoi(vTmp);
-					if( rsRefZB.FindFirst(_T("recno=") + ltos(iRecNo)))
+
+					rsRefZB->Find((_bstr_t)(_T("recno=") + ltos(iRecNo)), 0, adSearchForward, vTmp);
+					if( !rsRefZB->adoEOF)
 					{
-						rsRefZB.GetFieldValue(_T("seq"),vTmp1);
+						rsRefZB->get_Collect((_variant_t)_T("seq"),&vTmp1);
 						if(vTmp1.vt==VT_NULL)
 						{
 							//编号为空，不绘制编号
@@ -6574,13 +6542,13 @@ void EDIBAcad::DrawTagAll()
 								iMaxSeq=iSEQ;
 							//绘制编号
 							//dMaxX = max( p2[0],oldp2X );
-							DrawTag(rsTZG, iRecNo, p1, p2, iSEQ,
+							DrawTag(iRecNo, p1, p2, iSEQ,
 								(EDIBAcad::g_bTagUsingCircle?"CIRCLE":"LINE") );
 							//oldp2X = p2[0];
 						}
 					}
 
-					rsTZG.MoveNext();
+					rsTZG->MoveNext();
 				}
 			}
 		}
@@ -6596,17 +6564,10 @@ void EDIBAcad::DrawTagAll()
 		e->ReportError();
 		e->Delete();
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -6623,7 +6584,9 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 	{
 		//On Error Resume Next
 		CCadPoint p1, p2;
-		CDaoRecordset rsTZG(&EDIBgbl::dbPRJDB);
+// 		 rsTZG(&EDIBgbl::dbPRJDB);
+		_RecordsetPtr rsTZG;
+		rsTZG.CreateInstance(__uuidof(Recordset));
 		CString SQLx;
 		
 		CString sCLayer;
@@ -6635,7 +6598,8 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		
 		//选择记录集rsTZG以便记录图形内容
 		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ucase(trim(Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ucase(trim(FieldName))=\'SEQ\' ORDER BY recno");
-		rsTZG.Open(dbOpenDynaset,SQLx);
+// 		rsTZG.Open(dbOpenDynaset,SQLx);
+		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		
 		AddData2rsTZG(rsTZG, iRecNo, modPHScal::zdjh, _T("seq"), _T("X"), _T("POINT"), p0);
 		//恢复原来层
@@ -6645,10 +6609,6 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 	catch(CException *e)
 	{
 		e->Delete();
-		MakeNewLayer(sCLayer);
-	}
-	catch(...)
-	{
 		MakeNewLayer(sCLayer);
 	}
 }
@@ -6699,10 +6659,6 @@ bool EDIBAcad::DeleteAllEntitiesInLayers(int Count,...)
 	catch(CException *e)
 	{
 		e->Delete();
-		return false;
-	}
-	catch(...)
-	{
 		return false;
 	}
 }
@@ -6762,10 +6718,6 @@ _variant_t EDIBAcad::SetSelectionSet(CString /*ByVal*/ ssetName)
 		e->Delete();
 		return _variant_t();
 	}
-	catch(...)
-	{
-		return _variant_t();
-	}
 }
 
 //void EDIBAcad::VBSetXdata(Object ent, COleVariant /*ByVal*/ vbApp, COleVariant ParamArray xData())
@@ -6789,37 +6741,46 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 	CString sTmp,sTmp1,sTmp2,sTmp3,sTmp4;
 	CString sTmpDrawNo, sTmpDrawNa;
 	CString sTmpDrawNaEnglish;
-	//_RecordsetPtr rs;
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(_Recordset));
 	COleVariant tmpvar;
+	CString strExecute;
 	//在添加目录信息之前，建立一个临时表以便生成图名、图号等信息。
 	try
 	{
 		if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpDrawNameAndDrawNo")))
 			//这样比较方便，而且版本升级时兼容性好。
-			EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpDrawNameAndDrawNo"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpDrawNameAndDrawNo"), NULL, adCmdText);
 
 		//不存在,则建立临时表tmpDrawNameAndDrawNo,准备获得图纸编号和图纸名称
 
-		EDIBgbl::dbPRJ.Execute( _T("CREATE TABLE tmpDrawNameAndDrawNo (PhsTypeName char(255),PhsTypeChineseName char(255),PhsTypeNameEnglish char(255),CompanyID char(50),gcdm CHAR (50),sjjddm char(50),zydm char(20),jcdm char(50),Version char(50),seq LONG,zdjh LONG)"));
-		EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpDrawNameAndDrawNo (zdjh) VALUES (0)"));
+		strExecute = _T("CREATE TABLE tmpDrawNameAndDrawNo (PhsTypeName char(255),PhsTypeChineseName char(255),PhsTypeNameEnglish char(255),CompanyID char(50),gcdm CHAR (50),sjjddm char(50),zydm char(20),jcdm char(50),Version char(50),seq LONG,zdjh LONG)");
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 
-		if(!EDIBgbl::dbSORT.IsOpen())
-			EDIBgbl::dbSORT.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
+		strExecute = _T("INSERT INTO tmpDrawNameAndDrawNo (zdjh) VALUES (0)");
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		if(!EDIBgbl::dbSORT->State != adStateOpen)
+		{
+// 			EDIBgbl::dbSORT.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
+			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
+			EDIBgbl::dbSORT->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+		}
 		CString strSQL;
 		if( EDIBAcad::g_bDrawNameWithoutNo )
 		{//图号不带支吊架号
 			strSQL.Format("UPDATE [DrawSize] SET PhsDrawNameFormat=\'trim(PhsTypeName)\'");
-			EDIBgbl::dbDSize.Execute(strSQL); //20071018 "dbSORT" 改为 "dbDSize"
+			EDIBgbl::dbDSize->Execute((_bstr_t)strSQL, NULL, adCmdText); //20071018 "dbSORT" 改为 "dbDSize"
 		}
 		else
 		{
 			strSQL.Format("UPDATE [DrawSize] SET PhsDrawNameFormat=defaultPhsDrawNameFormat");
-			EDIBgbl::dbDSize.Execute(strSQL); //20071018 "dbSORT" 改为 "dbDSize"
+			EDIBgbl::dbDSize->Execute((_bstr_t)strSQL, NULL, adCmdText); //20071018 "dbSORT" 改为 "dbDSize"
 		}
 
 		//开始设置初始信息
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET PhsTypeName=\'") + modPHScal::gsPhsName + _T("\'")));
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET PhsTypeName=\'") + modPHScal::gsPhsName + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 		CString m_strTmp;
 		m_strTmp = modPHScal::gsPhsName +" ";
 		m_strTmp.TrimLeft();
@@ -6828,98 +6789,117 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 		if( m_strTmp.Find(' ') >= 0 )
 			strTmpSql =  modPHScal::gsPhsName.Left(m_strTmp.Find(' '));	
 		strTmpSql = _T("UPDATE tmpDrawNameAndDrawNo SET PhsTypeChineseName=\'") + strTmpSql + _T("\'");
-		EDIBgbl::dbPRJ.Execute(strTmpSql/*CString()*/);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strTmpSql, NULL, adCmdText);
 	
 		if( m_strTmp.Find(' ') >= 0 )
 			modPHScal::gsPhsEnglishName = m_strTmp.Mid(m_strTmp.Find(' '));
 		modPHScal::gsPhsEnglishName.TrimLeft();
 		modPHScal::gsPhsEnglishName.TrimRight();
 
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET PhsTypeNameEnglish=\'") + modPHScal::gsPhsEnglishName + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET CompanyID=\'") + EDIBgbl::CompanyID + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET gcdm=\'") + EDIBgbl::SelPrjID + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString( _T("UPDATE tmpDrawNameAndDrawNo SET sjjddm=\'") + EDIBgbl::strSelDsgn + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET zydm=\'") + EDIBgbl::strSelSpec + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET Version=\'") + EDIBgbl::strDwgVersion + _T("\'")));
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET jcdm=\'") + EDIBgbl::SelJcdm + _T("\'")));
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET PhsTypeNameEnglish=\'") + modPHScal::gsPhsEnglishName + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET CompanyID=\'") + EDIBgbl::CompanyID + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET gcdm=\'") + EDIBgbl::SelPrjID + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString( _T("UPDATE tmpDrawNameAndDrawNo SET sjjddm=\'") + EDIBgbl::strSelDsgn + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET zydm=\'") + EDIBgbl::strSelSpec + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET Version=\'") + EDIBgbl::strDwgVersion + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET jcdm=\'") + EDIBgbl::SelJcdm + _T("\'"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 		sTmp.Format(_T("%d"),modPHScal::zdjh);
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET zdjh=") + sTmp));
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET zdjh=") + sTmp);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 		sTmp.Format(_T("%d"),lngSEQ);
-		EDIBgbl::dbPRJ.Execute(CString(_T("UPDATE tmpDrawNameAndDrawNo SET SEQ=") + sTmp));
+
+		strExecute = CString(_T("UPDATE tmpDrawNameAndDrawNo SET SEQ=") + sTmp);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 		
 		
 		CString SQLx;
 		SQLx=_T("SELECT * FROM DrawSize WHERE sjhyIndex=") + ltos(EDIBDB::SJHYIndex);
-		rs.m_pDatabase=&EDIBgbl::dbDSize;//20071018 "dbSort" 改为 "dbDSize"
-		rs.Open(dbOpenSnapshot,SQLx);
-		if(rs.IsBOF() && rs.IsEOF())
+// 		rs.m_pDatabase=&EDIBgbl::dbDSize;//20071018 "dbSort" 改为 "dbDSize"
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbDSize,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		if(rs->BOF || rs->adoEOF)
 		{
-			if(rs.IsOpen())
-				rs.Close();
+			if(rs->State == adStateOpen)
+				rs->Close();
 		}
 		else
 		{
 			//获得图纸编号格式
-			rs.GetFieldValue(_T("DrawNoFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("DrawNoFormat"),&tmpvar);
 			sTmpDrawNo=vtos(tmpvar);
 			//获得支吊架图纸中文名称格式
-			rs.GetFieldValue(_T("PhsDrawNameFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("PhsDrawNameFormat"),&tmpvar);
 			sTmpDrawNa=vtos(tmpvar);
 			//获得支吊架图纸英文名称格式
-			rs.GetFieldValue(_T("PhsDrawNameFormatEnglish"),tmpvar);
+			rs->get_Collect((_variant_t)_T("PhsDrawNameFormatEnglish"),&tmpvar);
 			sTmpDrawNaEnglish=vtos(tmpvar);
 
 			//获得窗口标题条内容格式
-			rs.GetFieldValue(_T("APHSCaptionFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("APHSCaptionFormat"),&tmpvar);
 			sTmp1=vtos(tmpvar);
 			//获得图纸编号前缀(不含图纸序号)格式
-			rs.GetFieldValue(_T("DrawNoPreFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("DrawNoPreFormat"),&tmpvar);
 			sTmp2=vtos(tmpvar);
 			//获得支吊架标号格式(如轻工北京院格式，实际上是图号)
-			rs.GetFieldValue(_T("VolumeFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("VolumeFormat"),&tmpvar);
 			sTmp3=vtos(tmpvar);
 			//获得支吊架编号格式(如No.1等格式)
-			rs.GetFieldValue(_T("PhsNoFormat"),tmpvar);
+			rs->get_Collect((_variant_t)_T("PhsNoFormat"),&tmpvar);
 			sTmp4=vtos(tmpvar);
 
-			rs.GetFieldValue(_T("A0PrjNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A0PrjNameWidth"),&tmpvar);
 			iA0PrjNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A2PrjNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A2PrjNameWidth"),&tmpvar);
 			iA2PrjNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A0DrawNoWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A0DrawNoWidth"),&tmpvar);
 			iA0DrawNoWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A2DrawNoWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A2DrawNoWidth"),&tmpvar);
 			iA2DrawNoWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A0DrawNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A0DrawNameWidth"),&tmpvar);
 			iA0DrawNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A2DrawNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A2DrawNameWidth"),&tmpvar);
 			iA2DrawNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A0VlmNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A0VlmNameWidth"),&tmpvar);
 			iA0VlmNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A2VlmNameWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A2VlmNameWidth"),&tmpvar);
 			iA2VlmNameWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A0DateWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A0DateWidth"),&tmpvar);
 			iA0DateWidth=vtoi(tmpvar);
-			rs.GetFieldValue(_T("A2DateWidth"),tmpvar);
+			rs->get_Collect((_variant_t)_T("A2DateWidth"),&tmpvar);
 			iA2DateWidth=vtoi(tmpvar);
 
-			if(rs.IsOpen())
-				rs.Close();
+			if(rs->State == adStateOpen)
+				rs->Close();
 
 			if(sTmpDrawNo.GetLength()>0  && sTmpDrawNa.GetLength()>0 && sTmpDrawNaEnglish.GetLength()>0 && sTmp1.GetLength()>0 && sTmp2.GetLength()>0 && sTmp3.GetLength()>0 && sTmp4.GetLength()>0)
 			{
 				EDIBgbl::SQLx = _T("SELECT ") + sTmpDrawNa + _T(" AS DrawNa,") + sTmpDrawNaEnglish + _T(" AS DrawNaEnglish,") + sTmpDrawNo + _T(" AS DrawNo,") + sTmp1 + _T(" AS APHSCaption,") + sTmp2 + _T(" AS DrawNoPreFmt,") + sTmp3 + _T(" AS VolumeNoFmt,") + sTmp4 + _T(" AS PhsNoFmt FROM tmpDrawNameAndDrawNo");
 				//AfxMessageBox(EDIBgbl::SQLx);
-				rs.m_pDatabase=&EDIBgbl::dbPRJ;
-				rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
+// 				rs.m_pDatabase=&EDIBgbl::dbPRJ;
+// 				rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
+				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenForwardOnly,adLockReadOnly,adCmdText);
 				//rs = EDIBgbl::dbPRJ.Execute  (_bstr_t(),&tmpvar,adCmdText);
-				if( rs.IsBOF() && rs.IsEOF())
+				if( rs->BOF || rs->adoEOF)
 				{
 				//生成图名信息失败
 				}
 				else
 				{   
-					rs.GetFieldValue( _T("DrawNa"),tmpvar);
+					rs->get_Collect((_variant_t) _T("DrawNa"),&tmpvar);
 					sTmpDrawNa =vtos(tmpvar);
 					if(sTmpDrawNa.GetLength()<=0)
 						sTmpDrawNa=_T("");
@@ -6929,7 +6909,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 						sTmpDrawNa.TrimRight();
 					}
 
-					rs.GetFieldValue( _T("DrawNaEnglish"),tmpvar);
+					rs->get_Collect((_variant_t) _T("DrawNaEnglish"),&tmpvar);
 					sTmpDrawNaEnglish =vtos(tmpvar);
 					if(sTmpDrawNaEnglish.GetLength()<=0)
 						sTmpDrawNaEnglish=_T("");
@@ -6939,7 +6919,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 						sTmpDrawNaEnglish.TrimRight();
 					}
 
-					rs.GetFieldValue( _T("DrawNo"),tmpvar);
+					rs->get_Collect((_variant_t) _T("DrawNo"),&tmpvar);
 					sTmpDrawNo = vtos(tmpvar);//_bstr_t(rs->GetCollect(_T("DrawNo")));
 					if(sTmpDrawNo.GetLength()<=0)
 						sTmpDrawNo=_T("");
@@ -6949,7 +6929,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 						sTmpDrawNo.TrimRight();
 					}
 
-					rs.GetFieldValue( _T("APHSCaption"),tmpvar);
+					rs->get_Collect((_variant_t) _T("APHSCaption"),&tmpvar);
 					sTmp1 = vtos(tmpvar);//_bstr_t(rs->GetCollect(_T("DrawNo")));
 					if(sTmp1.GetLength()<=0)
 						sTmp1=_T("");
@@ -6959,7 +6939,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 						sTmp1.TrimRight();
 					}
 
-					rs.GetFieldValue( _T("DrawNoPreFmt"),tmpvar);
+					rs->get_Collect((_variant_t) _T("DrawNoPreFmt"),&tmpvar);
 					sTmp2 = vtos(tmpvar);
 					if(sTmp2.GetLength()<=0)
 						sTmp2=_T("");
@@ -6969,7 +6949,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 						sTmp2.TrimRight();
 					}
 
-					rs.GetFieldValue( _T("VolumeNoFmt"),tmpvar);
+					rs->get_Collect((_variant_t) _T("VolumeNoFmt"),&tmpvar);
 					sTmp3 = vtos(tmpvar);
 					if(sTmp3.GetLength()<=0)
 						sTmp3=_T("");
@@ -6980,7 +6960,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 					}
 					EDIBgbl::VolumeNo=sTmp3;
 
-					rs.GetFieldValue( _T("PhsNoFmt"),tmpvar);
+					rs->get_Collect((_variant_t) _T("PhsNoFmt"),&tmpvar);
 					sTmp4 = vtos(tmpvar);
 					if(sTmp4.GetLength()<=0)
 						sTmp4=_T("");
@@ -7001,7 +6981,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 			return sTmpDrawNo;
 		}
 	}
-	catch(::...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -7021,18 +7001,6 @@ void EDIBAcad::DisplayAcadTop()
 	   if(objAcadApp.GetActiveObject(_T(gstrApplicatonName))==S_OK)
 	   {
 		  GetAllMenu(GetSystemMenu(hwnd, false), nPos);
-		  //i = GetAllMenu(GetMenu(Me.hWnd), nPos)
-		  /*if( IsIconic(hwnd) != 0)
-		  {
-			 if( OpenIcon(hwnd) != 0 )
-				//MsgBox _T("to restore AutoCAD window Successfully!")
-			 Else
-			 End If
-		  Else
-			 //MsgBox _T("AutoCAD Window is not iconic!")
-		  End If*/
-		  //k = SetWindowPos(hwnd, HWND_TOP, Me.Left, (Me.Top + Me.Height), Me.Width, Me.Height, SWP_SHOWWINDOW)
-		  //SetWindowPos hwnd, HWND_TOPMOST, 0, 0, 100, 100, SWP_SHOWWINDOW
 		  DisabledSystemMenu(hwnd, GetSystemMenu(hwnd, false));
 		  //使用objAcadApp对象属性
 		  CRect rect,rc1;
@@ -7062,9 +7030,6 @@ void EDIBAcad::DisplayAcadTop()
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -7136,9 +7101,6 @@ void EDIBAcad::MoveObj(long Count,...)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -7270,9 +7232,6 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -7420,10 +7379,6 @@ bool EDIBAcad::SelectLayerAllV(long Count, va_list argList)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-		return false;
-	}
 }
 
 void EDIBAcad::FindAllFileToTxt(CString dir,CFile *f)
@@ -7467,9 +7422,6 @@ void EDIBAcad::FindAllFileToTxt(CString dir,CFile *f)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -7549,10 +7501,6 @@ void EDIBAcad::GetActiveAcadDoc()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
-
 }
 
 bool EDIBAcad::SelectLayerV(long Count, va_list argList)
@@ -7703,13 +7651,8 @@ BOOL EDIBAcad::LoadArx(CString strArxName)
 	catch(CException *e)
 	{
 		e->Delete();
-		return false;
-	}
-	catch(...)
-	{
 		return FALSE;
 	}
-
 }
 
 double EDIBAcad::GetTextStyleWidthFactor(LPCTSTR lpszStyle)

@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "PDMSCore.h"
 #include "user.h"
-#include <fstream.h>
+#include <fstream>
+using namespace std;
 #include <math.h>
 #include "frmtxsr.h"
 #include "phsdata.h"

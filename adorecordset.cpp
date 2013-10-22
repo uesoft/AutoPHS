@@ -70,15 +70,6 @@ void CADORecordset::Close()
 	{
 		if(m_pSet->State != adStateClosed)
 		{
-			try
-			{
-
-//				m_pSet->Update();
-			}
-			catch(...)
-			{
-				m_pSet->CancelUpdate();
-			}
 			m_pSet->Close();
 		}
 	}
@@ -157,10 +148,6 @@ BOOL CADORecordset::FindFirst(CString strFind)
 		e->Delete();
 		return FALSE;
 	}
-	catch(...)
-	{
-		return FALSE;
-	}
 }
 
 void  CADORecordset::MoveNext()
@@ -189,8 +176,5 @@ void CADORecordset::SetCursorLocation(int val)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }

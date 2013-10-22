@@ -153,7 +153,7 @@ void CPhsStart::OnActivateApp(BOOL bActive, DWORD hTask/*HTASK hTask*/)
 #ifdef _AUTOPHS2004
 	CDialog::OnActivateApp(bActive,hTask);
 #else
-	CDialog::OnActivateApp(bActive,(HTASK)hTask);
+	CDialog::OnActivateApp(bActive, (HTASK)hTask);
 #endif
 }
 

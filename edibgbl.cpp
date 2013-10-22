@@ -199,7 +199,7 @@ bool EDIBgbl::FdExists(_RecordsetPtr  rs, CString  strFieldName)
 {
 	return true;
 }
-
+/*
 bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 {
 	if(pConn==NULL || tbn==_T(""))
@@ -219,7 +219,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 		return false;
 	}
 }
-
+*/
 bool EDIBgbl::InitBillType()
 {
 	_RecordsetPtr rs;
@@ -547,9 +547,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 
    //dbPRJDB.Recordsets.Refresh
@@ -1036,7 +1033,7 @@ void EDIBgbl::GetSelPrjName()
 }
 
 
-
+/*
 CString EDIBgbl::GetDBName(_ConnectionPtr db)
 {
 	if(db==NULL || db->GetState()==adStateClosed)
@@ -1048,7 +1045,7 @@ CString EDIBgbl::GetDBName(_ConnectionPtr db)
 		  return dbName;
 
 }
-/*
+
 bool EDIBgbl::tdfExists(_ConnectionPtr &db, CString tbn)
 {
 	//11/3
@@ -1074,7 +1071,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr &db, CString tbn)
 		//11/3
 
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		return false;
 	}	 
@@ -1087,17 +1084,17 @@ void EDIBgbl::InitWorkTable(_ConnectionPtr &db, CString tbn, int type)
 
 
 
-CStringList* GetTableNameList(_ConnectionPtr *pDB)
+CStringList* GetTableNameList(_ConnectionPtr pDB)
 {
 /*
 * 作者：罗峰
 * 功能：升级数据库
 * 日期：2003-07-18
 */
-	ASSERT_VALID(pDB);
+//	ASSERT_VALID(pDB);
 	CStringList *tableNameList;
-	CDaoTableDefInfo tDefInfo;
 	tableNameList = new CStringList();
+/*
 	int iCount = pDB->GetTableDefCount();
 	for(int i=0; i<iCount; i++)
 	{
@@ -1108,25 +1105,39 @@ CStringList* GetTableNameList(_ConnectionPtr *pDB)
 			tableNameList->AddTail(tDefInfo.m_strName);
 		}
 	}
+*/
+	_bstr_t bt;
+	_RecordsetPtr rs;
+	rs = pDB->Execute((_bstr_t)_T("SELECT * FROM sysobjects"), NULL, adCmdText);
+	while (!rs->adoEOF)
+	{
+		bt = rs->Fields->GetItem(_T("TABLE_TYPE"))->Value;
+		if (!strcmp((char*)bt, "TABLE"))
+		{
+			bt = rs->Fields->GetItem(_T("TABLE_NAME"))->Value;
+			tableNameList->AddTail((char*)bt);
+		}
+		rs->MoveNext();
+	}
 	return tableNameList;
 }
 
-CStringList* GetFieldNameList(CDaoTableDef *pTDef)
+CStringList* GetFieldNameList(_RecordsetPtr pTDef)
 {
 /*
 * 作者：罗峰
 * 功能：升级数据库
 * 日期：2003-07-18
 */
-	ASSERT_VALID(pTDef);
+//	ASSERT_VALID(pTDef);
 	CStringList *pNameList;
-	CDaoFieldInfo tDefInfo;
+	FieldPtr tDefInfo;
 	pNameList = new CStringList();
-	int iCount = pTDef->GetFieldCount();
-	for(int i=0; i<iCount; i++)
+	int iCount = pTDef->GetFields();
+	for(LONG i=0; i<iCount; i++)
 	{
-		pTDef->GetFieldInfo(i, tDefInfo);
-		pNameList->AddTail(tDefInfo.m_strName);
+		pTDef->GetFields()->get_Item((_variant_t)i, &tDefInfo);
+		pNameList->AddTail(tDefInfo->Name);
 	}
 	return pNameList;
 }
@@ -1175,43 +1186,63 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 	
 
 	_ConnectionPtr sDB, dDB;
-	CDaoTableDef sTDef(&sDB), dTDef(&dDB);
-	CDaoFieldInfo fieldInfo,fieldInfoS,fieldInfoD;
+	sDB.CreateInstance(__uuidof(_Connection));
+	dDB.CreateInstance(__uuidof(_Connection));
+
+// 	sTDef(&sDB), dTDef(&dDB);
+	FieldPtr fieldInfo,fieldInfoS,fieldInfoD;
 	CString strSql;
 	try
 	{
-		sDB->Open((_bstr_t)(strSourceDB);
-		dDB->Open((_bstr_t)(strDestDB);
+		CString ConnectionString;
+		
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strSourceDB;
+		sDB->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strDestDB;
+		dDB->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 		CStringList *sListTableName, *dListTableName, *sListFieldName, *dListFieldName;
-		sListTableName = GetTableNameList(&sDB);
-		dListTableName = GetTableNameList(&dDB);
+		sListTableName = GetTableNameList(sDB);
+		dListTableName = GetTableNameList(dDB);
 		for(POSITION pos = sListTableName->GetHeadPosition(); pos != NULL; )
 		{
 			CString strTableName = sListTableName->GetNext(pos);
 			if(StringInList(strTableName, dListTableName))
 			{
-				sTDef->Open((_bstr_t)(strTableName);
-				dTDef->Open((_bstr_t)(strTableName);
-				sListFieldName = GetFieldNameList(&sTDef);
-				dListFieldName = GetFieldNameList(&dTDef);	
+// 				sTDef->Open((_bstr_t)(strTableName);
+// 				dTDef->Open((_bstr_t)(strTableName);
+				_RecordsetPtr sTDef;
+				sTDef = sDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
+
+				_RecordsetPtr dTDef;
+				dTDef = dDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
+
+				sListFieldName = GetFieldNameList(sTDef);
+				dListFieldName = GetFieldNameList(dTDef);	
 				for(POSITION pos = sListFieldName->GetHeadPosition(); pos != NULL; )
 				{
 					CString strFieldName = sListFieldName->GetNext(pos);
 					if(!StringInList(strFieldName, dListFieldName))
 					{
-						sTDef.GetFieldInfo(strFieldName, fieldInfo);
-						fieldInfo.m_bAllowZeroLength = FALSE;
-						fieldInfo.m_bRequired = FALSE;
-						dTDef.CreateField(fieldInfo);
+// 						fieldInfo.m_bAllowZeroLength = FALSE;
+// 						fieldInfo.m_bRequired = FALSE;
+// 						_variant_t fieldValue;
+// 						dTDef->GetFields()->Append(fieldInfo->Name, fieldInfo->Type, fieldInfo->DefinedSize, 
+// 							fieldInfo->Attributes, (_variant_t)fieldValue);
+						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfo);
+						//添加字段
+						strSql.Format("ALTER TABLE %s ADD COLUMN %s VARCHAR(%d)",strTableName,strFieldName,fieldInfoS->DefinedSize );
+						dDB->Execute(_bstr_t(strSql),NULL,adCmdText);
 					}
 					else
 					{
-						sTDef.GetFieldInfo(strFieldName, fieldInfoS);
-						dTDef.GetFieldInfo(strFieldName, fieldInfoD);
-						if(fieldInfoS.m_lSize != fieldInfoD.m_lSize)
+						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfoS);
+						dTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfoD);
+// 						sTDef.GetFieldInfo(strFieldName, fieldInfoS);
+// 						dTDef.GetFieldInfo(strFieldName, fieldInfoD);
+						if(fieldInfoS->ActualSize != fieldInfoD->ActualSize)
 						{
 							//改变字段大小
-							strSql.Format("ALTER TABLE %s ALTER COLUMN %s VARCHAR(%d)",strTableName,strFieldName,fieldInfoS.m_lSize);
+							strSql.Format("ALTER TABLE %s ALTER COLUMN %s VARCHAR(%d)",strTableName,strFieldName,fieldInfoS->DefinedSize );
 							
 							::conPRJDB4->Execute(_bstr_t(strSql),NULL,adCmdText);
 						}
@@ -1229,8 +1260,8 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 			{
 				CString	SQLx;
 				SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),
-					strTableName,strTableName,sDB.GetName());
-				dDB->Execute((_bstr_t)SQLx);	
+					strTableName,strTableName,sDB->DefaultDatabase);
+				dDB->Execute((_bstr_t)SQLx, NULL, adCmdText);	
 			}			
 
 		}
@@ -1257,11 +1288,18 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 	if(sListTableName->IsEmpty())
 		return;
 	_ConnectionPtr sDB, dDB;
-	CDaoFieldInfo fieldInfo;
+	sDB.CreateInstance(__uuidof(_Connection));
+	dDB.CreateInstance(__uuidof(_Connection));
+	FieldPtr fieldInfo;
 	try
 	{
-		sDB->Open((_bstr_t)(strSourceDB, FALSE, FALSE, _T(";pwd=") + strSourcePwd + _T(";"));
-		dDB->Open((_bstr_t)(strDestDB, FALSE, FALSE, _T(";pwd=") + strDestPwd + _T(";"));
+		CString ConnectionString;
+
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strSourceDB;
+		sDB->Open((_bstr_t)ConnectionString, "", (_bstr_t)strSourcePwd, adConnectUnspecified);
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strDestDB;
+		dDB->Open((_bstr_t)ConnectionString, "", (_bstr_t)strDestPwd, adConnectUnspecified);
+
 		CStringList *dListTableName, *sListFieldName, *dListFieldName;
 		dListTableName = GetTableNameList(&dDB);
 		for(POSITION pos = sListTableName->GetHeadPosition(); pos != NULL; )
@@ -1269,20 +1307,30 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 			CString strTableName = sListTableName->GetNext(pos);
 			if(StringInList(strTableName, dListTableName))
 			{
-				CDaoTableDef sTDef(&sDB), dTDef(&dDB);
-				sTDef->Open((_bstr_t)(strTableName);
-				dTDef->Open((_bstr_t)(strTableName);
+// 				sTDef(&sDB), dTDef(&dDB);
+// 				sTDef->Open((_bstr_t)(strTableName);
+// 				dTDef->Open((_bstr_t)(strTableName);
+				_RecordsetPtr sTDef;
+				sTDef = sDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
+
+				_RecordsetPtr dTDef;
+				dTDef = sDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
 				sListFieldName = GetFieldNameList(&sTDef);
 				dListFieldName = GetFieldNameList(&dTDef);	
+				CString strSql;
 				for(POSITION pos = sListFieldName->GetHeadPosition(); pos != NULL; )
 				{
 					CString strFieldName = sListFieldName->GetNext(pos);
 					if(!StringInList(strFieldName, dListFieldName))
 					{
-						sTDef.GetFieldInfo(strFieldName, fieldInfo);
-						fieldInfo.m_bAllowZeroLength = FALSE;
-						fieldInfo.m_bRequired = FALSE;
-						dTDef.CreateField(fieldInfo);
+						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfo);
+// 						sTDef.GetFieldInfo(strFieldName, fieldInfo);
+// 						fieldInfo.m_bAllowZeroLength = FALSE;
+// 						fieldInfo.m_bRequired = FALSE;
+// 						dTDef.CreateField(fieldInfo);
+						//添加字段
+						strSql.Format("ALTER TABLE %s ADD COLUMN %s VARCHAR(%d)",strTableName,strFieldName,fieldInfo->DefinedSize );
+						dDB->Execute(_bstr_t(strSql),NULL,adCmdText);
 					}
 				}
 				sListFieldName->RemoveAll();
@@ -1296,8 +1344,8 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 			{
 				CString	SQLx;
 				SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),
-					strTableName,strTableName,sDB.GetName());
-				dDB->Execute((_bstr_t)SQLx);	
+					strTableName,strTableName,sDB->DefaultDatabase);
+				dDB->Execute((_bstr_t)SQLx, NULL, adCmdText);	
 			}
 		}
 		sListTableName->RemoveAll();
@@ -1321,6 +1369,7 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 * 日期：2003-07-18
 */
 	_ConnectionPtr db;
+	db.CreateInstance(__uuidof(_Connection));
 	CStringList *listTableName;
 	CString strTableName;
 	POSITION pos1,pos2;
@@ -1328,7 +1377,11 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 	iLen = strFilter.GetLength();
 	try
 	{
-		db->Open((_bstr_t)(strDBPath, FALSE, FALSE, _T(";pwd=") + strPwd + _T(";"));
+// 		db->Open((_bstr_t)(strDBPath, FALSE, FALSE, _T(";pwd=") + strPwd + _T(";"));
+		CString ConnectionString;
+
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strDBPath;
+		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)strPwd, adConnectUnspecified);
 		listTableName = GetTableNameList(&db);
 		for( pos1 = listTableName->GetHeadPosition(); (pos2=pos1)!=NULL; )
 		{
@@ -1356,6 +1409,8 @@ bool EDIBgbl::UpgradeDatabase()
 		{
 			//复位安装标志
 			_ConnectionPtr sDb , dDb ;
+			sDb.CreateInstance(__uuidof(_Connection));
+			dDb.CreateInstance(__uuidof(_Connection));
 			int i =0;
 			CString sTmp,SQLx;
 			
@@ -1369,7 +1424,8 @@ bool EDIBgbl::UpgradeDatabase()
 			//首先升级sort.mdb
 			//升级sort.mdb/workprj.mdb的最好办法是拷贝
 			bool sortCrtFd=false;
-			CDaoRecordset drsTmp;
+			_RecordsetPtr drsTmp;
+			drsTmp.CreateInstance(__uuidof(_Recordset));
 			//20071031 "TemplateDir" 改为 "CommonDir" ; "ProjectDBDir" 改为 "DBShareDir"
 			if ( FileExists(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")) && FileExists(basDirectory::DBShareDir  +  _T("AllPrjDB.mdb")) )  
 			{
@@ -1409,17 +1465,24 @@ bool EDIBgbl::UpgradeDatabase()
 				CStringList *listTable = GetFilterTableList(basDirectory::ProjectDBDir + _T("Zdjcrude.mdb"), _T("PhsManu"), _T("ProductDB888"));
 				UpgradeDB(basDirectory::ProjectDBDir  +   _T("sort.mdb"), basDirectory::ProjectDBDir  +  _T("Zdjcrude.mdb"), listTable, _T(""), _T("ProductDB888"));
 
-			}         
+			}     
+			CString ConnectionString;
 			//其次升级workprj.mdb
 			if ( FileExists(basDirectory::TemplateDir  +  _T("workprj.mdb")) && FileExists(basDirectory::ProjectDir  +  _T("workprj.mdb")) ) 
 			{
-				sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("workprj.mdb"));
-				dDb->Open((_bstr_t)(basDirectory::ProjectDir  +  _T("workprj.mdb"));
+				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::TemplateDir  +  _T("workprj.mdb");
+				sDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDir  +  _T("workprj.mdb");
+				dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+// 				sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("workprj.mdb")));
+// 				dDb->Open((_bstr_t)(basDirectory::ProjectDir  +  _T("workprj.mdb")));
 				ChangeDatabase(dDb,sDb);
 				dDb->Close();
 				sDb->Close();
 			}
-			dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb"));//20071031 "ProjectDBDir" 改为 "DBShareDir"
+			ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
+			dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+// 			dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb")));//20071031 "ProjectDBDir" 改为 "DBShareDir"
 			if(!EDIBgbl::tdfExists(dDb,_T("ZA")) || !EDIBgbl::tdfExists(dDb,_T("ZB")))
 			{
 				dDb->Close();
@@ -1427,8 +1490,13 @@ bool EDIBgbl::UpgradeDatabase()
 				{
 					return false;
 				}
-				dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb"));//20071031 "ProjectDBDir" 改为 "DBShareDir"
+// 				dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb")));//20071031 "ProjectDBDir" 改为 "DBShareDir"
+				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
+				dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 			}
+
+			// 删除索引
+/*
 		::CDaoTableDef tmptdf(&dDb);
 		tmptdf->Open((_bstr_t)(_T("ML"));
 		DAOIndexes* ixs;
@@ -1444,24 +1512,26 @@ bool EDIBgbl::UpgradeDatabase()
 		{
 			e->Delete();
 		}
-		catch(...)
-		{
-		}
 		tmptdf->Close();
-		sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb"));
+*/
+			dDb->Execute((_bstr_t)"DROP INDEX PrimaryKey ON ML ", NULL, adCmdText);
+
+// 		sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")));
+			sDb->Open(_bstr_t(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")),_T(""),_T(""), adConnectUnspecified);//20071018"sort.mdb"改为"PHScode.mdb"
 		//按F4511s.mdb结构升级AllPrjdb.mdb中的表的结构
 		ChangeDatabase(dDb,sDb);
 		//升级ZB表中以前根部附件(recno=NULL)特性字段:recno=NULL升级为IsSAPart=-1,recno=根部recno依次+1
 		SQLx.Format(_T("SELECT recno,VolumeID,zdjh,seq,nth,IsSAPart FROM ZB ORDER BY VolumeID,zdjh,recno DESC"));
-		drsTmp.m_pDatabase=&dDb;
+// 		drsTmp.m_pDatabase=&dDb;
 		//recno按降序排列，则根部排在最前，根部附件排在最后
-		drsTmp->Open((_bstr_t)(dbOpenDynaset,SQLx);
+// 		drsTmp->Open((_bstr_t)(dbOpenDynaset,SQLx);
+		drsTmp->Open(_variant_t(SQLx),(IDispatch*)dDb,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		int maxRecno=1;//current zdjh maxmium recno
 		int iPrevZdjh=-1;//previous zdjh
 		COleVariant v;
 		while(!drsTmp->adoEOF)
 		{
-			drsTmp->get_Collect((_variant_t)(_T("zdjh"),v);
+			drsTmp->get_Collect((_variant_t)_T("zdjh"), &v);
 			if(iPrevZdjh==vtoi(v))
 			{
 				iPrevZdjh=vtoi(v);
@@ -1470,23 +1540,23 @@ bool EDIBgbl::UpgradeDatabase()
 			else
 			{
 				iPrevZdjh=vtoi(v);
-				drsTmp->get_Collect((_variant_t)(_T("recno"),v);
+				drsTmp->get_Collect((_variant_t)_T("recno"),v);
 				maxRecno=vtoi(v);
 			}
-			drsTmp->get_Collect((_variant_t)(_T("recno"),v);
+			drsTmp->get_Collect((_variant_t)_T("recno"),v);
 			if(v.vt==VT_NULL)
 			{
 				//更新旧的根部附件
-				drsTmp.Edit();
+//				drsTmp.Edit();
 				drsTmp->put_Collect((_variant_t)_T("IsSAPart"),COleVariant((short)-1));
 				drsTmp->put_Collect((_variant_t)_T("recno"),COleVariant((long)maxRecno));
 				drsTmp->Update();
 			}
-			drsTmp->get_Collect((_variant_t)(_T("nth"),v);
+			drsTmp->get_Collect((_variant_t)_T("nth"), &v);
 			if(v.vt==VT_NULL)
 			{
 				//更新旧的根部附件
-				drsTmp.Edit();
+//				drsTmp.Edit();
 				drsTmp->put_Collect((_variant_t)_T("nth"),COleVariant((short)1));//标准支吊架路数=1，包括对称双吊和共用根部双吊
 				drsTmp->Update();
 			}
@@ -1494,6 +1564,8 @@ bool EDIBgbl::UpgradeDatabase()
 			drsTmp->MoveNext();
 		}
 
+		// 修改表字段长度
+/*
 		CDaoFieldInfo fi;
 		tmptdf->Open((_bstr_t)(_T("ZA"));
 		
@@ -1517,58 +1589,70 @@ bool EDIBgbl::UpgradeDatabase()
 			tmptdf.DeleteField(_T("tmpDwgName"));
 		}
 		tmptdf->Close();
+*/
+		dDb->Execute((_bstr_t)"ALTER TABLE [ZA] ALTER COLUMN [DwgName] Text(255)", NULL, adCmdText);
+/*
+// 		tmptdf->Open((_bstr_t)(_T("ZG"));
+		tmptdf = dDb->Execute((_bstr_t)"SELECT * FROM ZG")->GetFields();
 
-		tmptdf->Open((_bstr_t)(_T("ZG"));
-
-		tmptdf.GetFieldInfo(_T("Handle"),fi,AFX_DAO_ALL_INFO);
-		if(fi.m_lSize<16)
+		tmptdf->get_Item((_variant_t)_T("Handle"), &fi);
+		if(fi->DefinedSize<16)
 		{
-			fi.m_lSize=16;
+			fi->DefinedSize=16;
+			_variant_t fieldValue;
 			if(!bFieldExists(&tmptdf,_T("tmpHANDLE")))
 			{
-				fi.m_strName=_T("tmpHANDLE");
-				tmptdf.CreateField(fi);
+				fi->Name=_T("tmpHANDLE");
+//				tmptdf.CreateField(fi);
+				tmptdf->Append(fi->Name, fi->Type, fi->DefinedSize, 
+					fi->Attributes, (_variant_t)fieldValue);
 			}
 
-			dDb->Execute((_bstr_t)_T("Update [ZG] SET [tmpHandle] = [Handle] "));
-			tmptdf.DeleteField(_T("Handle"));
+			dDb->Execute((_bstr_t)_T("Update [ZG] SET [tmpHandle] = [Handle] "), NULL, adCmdText);
+//			tmptdf.DeleteField(_T("Handle"));
+			tmptdf->Delete(_T("Handle"));
 
-			fi.m_strName=_T("HANDLE");
-			tmptdf.CreateField(fi);
+			fi->Name=_T("HANDLE");
+//			tmptdf.CreateField(fi);
+			tmptdf->Append(fi->Name, fi->Type, fi->DefinedSize, 
+				fi->Attributes, (_variant_t)fieldValue);
 
-			dDb->Execute((_bstr_t)_T("Update [ZG] SET [Handle] = [tmpHandle] "));
-			tmptdf.DeleteField(_T("tmpHandle"));
+			dDb->Execute((_bstr_t)_T("Update [ZG] SET [Handle] = [tmpHandle] "), NULL, adCmdText);
+// 			tmptdf.DeleteField(_T("tmpHandle"));
+			tmptdf->Delete(_T("tmpHandle"));
 		}
-		tmptdf->Close();
+// 		tmptdf->Close();
+*/
+		dDb->Execute((_bstr_t)"ALTER TABLE [ZG] ALTER COLUMN [DwgName] Text(16)", NULL, adCmdText);
 
 		::SetRegValue(_T("Status"), _T("Install"), _T("1"));
-		return true;
 		}
 		return true;
 	}
 	
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
 		return false;
 	}
 }
-bool EDIBgbl::bIndexExists(CDaoTableDef* pTd,CString strIndex)
+/*
+bool EDIBgbl::bIndexExists(_TablePtr* pTd,CString strIndex)
 {
 	int c=pTd->GetIndexCount();
-	CDaoIndexInfo info;
+	_IndexPtr info;
 	strIndex.MakeUpper();
 	for(int i=0;i<c;i++)
 	{		
-		pTd->GetIndexInfo(i,info);
+		pTd->GetIndexes()->get_Item(i, &info);
 		info.m_strName.MakeUpper();
 		if(info.m_strName==strIndex)
 			return true;
 	}
 	return false;
 }
-
+*/
 bool EDIBgbl::UpdateAllPrjDB()
 {
 	CString sdbName=_T("AllPrjdb.mdb");
@@ -1593,66 +1677,102 @@ bool EDIBgbl::UpdateAllPrjDB()
 	{
 		CString strSQL(_T(""));
 		_ConnectionPtr sDb,dDb;
-		CDaoRecordset sRsEngin,dRsEngin,sRsVolume,dRsVolume;
+		sDb.CreateInstance(__uuidof(_Connection));
+		dDb.CreateInstance(__uuidof(_Connection));
+
+		_RecordsetPtr sRsEngin;
+		sRsEngin.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr dRsEngin;
+		dRsEngin.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr sRsVolume;
+		sRsVolume.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr dRsVolume;
+		dRsVolume.CreateInstance(__uuidof(_Recordset));
+
 		CString EnginID;
 		COleVariant vTmp1,vTmp,vTmp2;
-		sDb->Open((_bstr_t)(basDirectory::ProjectDBDir+ddbName);
-		dDb->Open((_bstr_t)(basDirectory::ProjectDBDir+tdbName);
-		strSQL=CString(_T("DELETE * FROM Volume"));
-		dDb->Execute((_bstr_t)strSQL);
-		strSQL=CString(_T("DELETE * FROM Engin"));
-		dDb->Execute((_bstr_t)strSQL);
-		strSQL=CString(_T("INSERT INTO Engin IN \'")) + dDb.GetName() + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
-		sDb->Execute((_bstr_t)strSQL);
+		CString ConnectionString;
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+ddbName;
+		sDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 
-		sRsEngin.m_pDatabase=&sDb;
-		sRsEngin->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Engin"));
-		sRsEngin.MoveLast();
-		sRsEngin.MoveFirst();
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+tdbName;
+		dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+		strSQL=CString(_T("DELETE * FROM Volume"));
+		dDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
+		strSQL=CString(_T("DELETE * FROM Engin"));
+		dDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
+		strSQL=CString(_T("INSERT INTO Engin IN \'")) + (LPTSTR)(LPCTSTR)dDb->DefaultDatabase + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
+		sDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
+
+// 		sRsEngin.m_pDatabase=&sDb;
+// 		sRsEngin->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Engin"));
+		sRsEngin->Open(_variant_t(_T("Select * From Engin")),(IDispatch*)sDb,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		sRsEngin->MoveLast();
+		sRsEngin->MoveFirst();
 
 		int i;
 		_VolumeDef VolumeDef;
 		char tc;
 		int tf;
+		short Ctd;
 
+/*
 		DAOTableDefs * tdfs;
 		dDb.m_pDAODatabase ->get_TableDefs (&tdfs);
 		tdfs->Refresh();
-		short Ctd;
 		tdfs->get_Count(&Ctd);
 		tdfs->Release();
+*/
+		_RecordsetPtr tdfs;
+		tdfs.CreateInstance(__uuidof(_Recordset));
+		tdfs = dDb->Execute((_bstr_t)"SELECT * FROM sysobjects", NULL, adCmdText);
+		Ctd = tdfs->RecordCount;
+
 		int VolumeID=1;
 
-		dRsVolume.m_pDatabase=&dDb;
-		dRsVolume->Open((_bstr_t)(dbOpenDynaset,_T("Select * From Volume"));
+// 		dRsVolume.m_pDatabase=&dDb;
+// 		dRsVolume->Open((_bstr_t)(dbOpenDynaset,_T("Select * From Volume"));
+		dRsVolume->Open(_variant_t(_T("Select * From Volume")),(IDispatch*)dDb,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		CDaoTableDefInfo tdDefInfo;
-		CDaoRecordset sRsData,dRsData;
-		CDaoRecordset rsJD,rsZY;
+		_RecordsetPtr sRsData;
+		sRsData.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr dRsData;
+		dRsData.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr rsJD;
+		rsJD.CreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr rsZY;
+		rsZY.CreateInstance(__uuidof(_Recordset));
+
 		_ConnectionPtr tmpSort;
-		tmpSort->Open((_bstr_t)(basDirectory::DBShareDir + _T("DrawingSize"));//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort"改为 "DrawingSize"
-		rsJD.m_pDatabase=&tmpSort;
-		rsZY.m_pDatabase=&tmpSort;
-		rsJD->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From DesignStage"));
-		rsZY->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Speciality"));
+		tmpSort.CreateInstance(__uuidof(_Connection));
+		tmpSort->Open((_bstr_t)(basDirectory::DBShareDir + _T("DrawingSize")), "", "", adConnectUnspecified);//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort"改为 "DrawingSize"
+// 		rsJD.m_pDatabase=&tmpSort;
+// 		rsZY.m_pDatabase=&tmpSort;
+// 		rsJD->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From DesignStage"));
+// 		rsZY->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Speciality"));
+		rsJD->Open(_variant_t(_T("Select * From DesignStage")),(IDispatch*)tmpSort,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		rsZY->Open(_variant_t(_T("Select * From Speciality")),(IDispatch*)tmpSort,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		int stc,sti;
 		sti=0;
-		stc=sRsEngin.GetRecordCount();
+		stc=sRsEngin->RecordCount;
 		while(!sRsEngin->adoEOF)
 		{
 			frmStatus.UpdateStatus((float)sti / (float)stc);
 			frmStatus.UpdateWindow();
 			::DoEvents();
 			sti++;
-			sRsEngin->get_Collect((_variant_t)(_T("gcdm"),vTmp);
+			sRsEngin->get_Collect((_variant_t)(_T("gcdm")), &vTmp);
 			EnginID=vtos(vTmp);
 			VolumeDef.EnginID=EnginID;
 			FindTable(sDb,EnginID,VoltabName,DatatabName,&vc,&dc);
 			for(i=0;i<vc;i++)
 			{
 				tc=VoltabName[i].GetAt(VoltabName[i].GetLength()-1);
-				if(rsZY.FindFirst(CString(_T("zydm=\'")) + tc + _T("\'")))
+				_variant_t vTmp;
+				rsZY->Find((_bstr_t)(CString(_T("zydm=\'")) + tc + _T("\'")), 0, adSearchForward, vTmp);
+				if(!rsZY->adoEOF)
 				{
-					rsZY->get_Collect((_variant_t)(_T("ZYID"),vTmp);
+					rsZY->get_Collect((_variant_t)(_T("ZYID")), &vTmp);
 					VolumeDef.ZYID=vtoi(vTmp);
 				}
 				else VolumeDef.ZYID=0;
@@ -1660,22 +1780,24 @@ bool EDIBgbl::UpdateAllPrjDB()
 				tf=VoltabName[i].Find(_T("-"));
 				tc=VoltabName[i].GetAt(tf-1);
 
-				if(rsJD.FindFirst(CString(_T("sjjddm=\'")) + tc + _T("\'")))
+				rsJD->Find((_bstr_t)(CString(_T("sjjddm=\'")) + tc + _T("\'")), 0, adSearchForward, vTmp);
+				if(!rsJD->adoEOF)
 				{
-					rsJD->get_Collect((_variant_t)(_T("SJJDID"),vTmp);
+					rsJD->get_Collect((_variant_t)(_T("SJJDID")), &vTmp);
 					VolumeDef.SJJDID=vtoi(vTmp);
 				}
 				else VolumeDef.SJJDID=0;
 
 				VolumeDef.SJHYID=0;
-				sRsVolume.m_pDatabase=&sDb;
+// 				sRsVolume.m_pDatabase=&sDb;
 				strSQL=_T("Select * From [") + VoltabName[i] + _T("]");
-				sRsVolume->Open((_bstr_t)(dbOpenSnapshot,strSQL,dbForwardOnly);
+// 				sRsVolume->Open((_bstr_t)(dbOpenSnapshot,strSQL,dbForwardOnly);
+				sRsVolume->Open(_variant_t(strSQL),(IDispatch*)sDb,adOpenForwardOnly,adLockReadOnly,adCmdText);
 				while(!sRsVolume->adoEOF)
 				{
-					sRsVolume->get_Collect((_variant_t)(_T("jcdm"),vTmp);
+					sRsVolume->get_Collect((_variant_t)(_T("jcdm")), &vTmp);
 					VolumeDef.jcdm=vtos(vTmp);
-					sRsVolume->get_Collect((_variant_t)(_T("jcmc"),vTmp);
+					sRsVolume->get_Collect((_variant_t)(_T("jcmc")), &vTmp);
 					VolumeDef.jcmc=vtos(vTmp);
 					
 					VolumeDef.VolumeID=VolumeID;
@@ -1702,7 +1824,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 									if(SQL1!=_T(""))
 									{
 										strSQL = _T("INSERT INTO [") + tdDefInfo.m_strName + _T("]  SELECT DISTINCT ") + ltos(VolumeDef.VolumeID) + _T(" AS VolumeID,")
-												+ SQL1 + _T(" FROM [") + DatatabName[item] + _T("] IN \'") + sDb.GetName() + _T("\' ")  
+												+ SQL1 + _T(" FROM [") + DatatabName[item] + _T("] IN \'") + sDb->DefaultDatabase + _T("\' ")  
 												+ _T(" WHERE VolumeID =\'") + VolumeDef.jcdm + _T("\' AND  ZDJH IS NOT NULL ") ;
 										//MessageBox(strSQL);
 										try
@@ -1711,7 +1833,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 											//strSQL =_T("DROP TABLE [") + VoltabName[i] + tdDefInfo.m_strName + _T("] ");
 											//dDb->Execute((_bstr_t)strSQL);
 										}
-										catch(...)
+										catch(CException *e)
 										{
 #ifdef _DEBUG
 											e->ReportError();
@@ -1719,26 +1841,6 @@ bool EDIBgbl::UpdateAllPrjDB()
 											e->Delete();
 										}
 									}
-									//strSQL=_T("Select * From [") + DatatabName[item] + _T("] Where VolumeID=\'") + VolumeDef.jcdm + _T("\' AND Zdjh Is NOT NULL ");
-									/*strSQL=_T("Select * From [") + DatatabName[item] + _T("] Where VolumeID=\'") + VolumeDef.jcdm + _T("\' AND Zdjh Is NOT NULL ");
-
-									if(VolumeDef.jcdm==_T("0501"))
-									{
-										VolumeDef.jcdm=_T("0501");
-									}
-									sRsData.m_pDatabase=&sDb;
-									sRsData->Open((_bstr_t)(dbOpenSnapshot,strSQL,dbForwardOnly);
-									dRsData.m_pDatabase=&dDb;
-									strSQL=_T("Select * From [") + tdDefInfo.m_strName + _T("]");
-									dRsData->Open((_bstr_t)(dbOpenDynaset,strSQL);
-									while(!sRsData->adoEOF)
-									{
-										DataTabAddRs(dRsData,sRsData,VolumeDef.VolumeID);
-										sRsData->MoveNext();
-									}
-									sRsData->Close();
-									dRsData->Close();*/
-									//::DoEvents();
 								}
 							}
 						}
@@ -1760,7 +1862,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 		AfxGetApp()->EndWaitCursor();
 		return true;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1808,7 +1910,7 @@ bool EDIBgbl::FindTable(_ConnectionPtr &db, CString sTab, CString *pSTabName, CS
 			}
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1821,7 +1923,7 @@ bool EDIBgbl::FindTable(_ConnectionPtr &db, CString sTab, CString *pSTabName, CS
 	return TRUE;
 }
 
-bool EDIBgbl::VolTabAddRs(CDaoRecordset &RsVolume, _VolumeDef &VolumeDef)
+bool EDIBgbl::VolTabAddRs(_RecordsetPtr &RsVolume, _VolumeDef &VolumeDef)
 {
 	try
 	{
@@ -1835,10 +1937,10 @@ bool EDIBgbl::VolTabAddRs(CDaoRecordset &RsVolume, _VolumeDef &VolumeDef)
 		RsVolume->put_Collect((_variant_t)_T("ZYID"),COleVariant(VolumeDef.ZYID));
 		
 		RsVolume->Update();
-		RsVolume.MoveLast();
+		RsVolume->MoveLast();
 		return TRUE;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1859,44 +1961,48 @@ int EDIBgbl::FindStr(CString *pStr, int Count, CString sName)
 	return -1;
 }
 
-bool EDIBgbl::DataTabAddRs(CDaoRecordset &dRsData, CDaoRecordset &sRsData, long VolumeID)
+bool EDIBgbl::DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID)
 {
 	try
 	{
-		int fc=sRsData.GetFieldCount();
-		CDaoFieldInfo fi;
+		int fc=sRsData->RecordCount;
+		FieldPtr fi;
 		COleVariant vTmp;
 		COleVariant vNul;
 		vNul.ChangeType(VT_NULL);
-		DAOFields * pF;
-		dRsData.m_pDAORecordset->get_Fields(&pF);
-		pF->Refresh();
-		pF->Release();
-		sRsData.m_pDAORecordset->get_Fields(&pF);
-		pF->Refresh();
-		pF->Release();
+//		DAOFields * pF;
+		FieldPtr pF;
+//		dRsData.m_pDAORecordset->get_Fields(&pF);
+		pF = dRsData->Fields;
+// 		pF->Refresh();
+// 		pF->Release();
+//		sRsData.m_pDAORecordset->get_Fields(&pF);
+		pF = sRsData->GetFields();
+// 		pF->Refresh();
+// 		pF->Release();
 		dRsData->AddNew();
 		dRsData->put_Collect((_variant_t)_T("VolumeID"),COleVariant(VolumeID));
-		for(int i=0;i<fc;i++)
+		FieldsPtr fields = sRsData->GetFields();
+		for(LONG i=0;i<fc;i++)
 		{
-			sRsData.GetFieldInfo(i,fi);
-			if(fi.m_strName!=_T("VolumeID"))
+			fields->get_Item((_variant_t)i, &fi);
+			if(fi->Name!=_T("VolumeID"))
 			{
-				if(bFieldExists(dRsData,fi.m_strName))
+				if(bFieldExists(dRsData,fi->Name))
 				{
-					sRsData->get_Collect((_variant_t)(i,vTmp);
+					sRsData->get_Collect((_variant_t)i,vTmp);
 					if(vTmp.vt==VT_BSTR && vtos(vTmp)== _T(""))
-						dRsData->put_Collect((_variant_t)fi.m_strName,vNul);
+						dRsData->put_Collect((_variant_t)fi->Name,vNul);
 					else
-						dRsData->put_Collect((_variant_t)fi.m_strName,vTmp);
+						dRsData->put_Collect((_variant_t)fi->Name,vTmp);
 				}
 			}
 		}
 		dRsData->Update();
-		dRsData.MoveLast();
+		dRsData->MoveLast();
 		return TRUE;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -1904,36 +2010,38 @@ bool EDIBgbl::DataTabAddRs(CDaoRecordset &dRsData, CDaoRecordset &sRsData, long 
 	}
 }
 
-bool EDIBgbl::bFieldExists(CDaoRecordset &rs, CString sName)
+bool EDIBgbl::bFieldExists(_RecordsetPtr &rs, CString sName)
 {
 	try
 	{
-		CDaoFieldInfo fi;
-		rs.GetFieldInfo(sName,fi);
+		FieldPtr fi;
+		FieldsPtr fields;
+		fields = rs->GetFields();
+		fi = fields->GetItem((_variant_t)sName);
 		return TRUE;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->Delete();
 		return FALSE;
 	}
 }
-
+/*
 bool EDIBgbl::bFieldExists(CDaoTableDef *rd, CString sName)
 {
 	try
 	{
-		CDaoFieldInfo fi;
-		rd->GetFieldInfo(sName,fi);
+		FieldPtr fi;
+		rd->GetFieldInfo(sName, &fi);
 		return TRUE;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->Delete();
 		return FALSE;
 	}
 }
-
+*/
 bool EDIBgbl::IsExistentQuery(_ConnectionPtr &db, CString strQueryName)
 {
 	bool bDuplicateQueryName=true;
@@ -1952,7 +2060,7 @@ bool EDIBgbl::IsExistentQuery(_ConnectionPtr &db, CString strQueryName)
 		qds->Release();
 		db.GetQueryDefInfo(strQueryName,queryInfo);
 	}
-	CATCH(CDaoException, e)
+	CATCH(CException, e)
 	{
 		if(e->m_pErrorInfo->m_lErrorCode==3265)
 			bDuplicateQueryName=false;
@@ -1969,12 +2077,14 @@ CString EDIBgbl::GetTblField(CDaoTableDef &tbldef, CString tblName)
 	{
 		CString ret;
 		ret = _T(" ");
-		CDaoFieldInfo fi;
+		FieldPtr fi;
+		fi.CreateInstance(__uuidof(Field));
+
 		DAOFields * pF;
 		tbldef.m_pDAOTableDef->get_Fields(&pF);
 		pF->Refresh();
 		pF->Release();
-		int fc=tbldef.GetFieldCount();
+		int fc=tbldef->RecordCount;
 		int iTmp=0;
 		for(int i=0;i<fc;i++)
 		{
@@ -1996,7 +2106,7 @@ CString EDIBgbl::GetTblField(CDaoTableDef &tbldef, CString tblName)
 		ret+=_T(" ");
 		return ret;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->Delete();
 		return CString(_T(" "));
@@ -2010,8 +2120,8 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 	{
 		CDaoTableDef sTD(&sDb) , dTD(&dDb) ;
 		CDaoTableDefInfo sTDInfo,dTDInfo;
-		CDaoRecordset drsTmp,srsTmp;
-		CDaoFieldInfo sFD , dFD ;
+
+		FieldPtr sFD , dFD ;
 		CString sTD1 , dTD1 ;
 		bool bFDexists =false, bTDexists =false;
 		int i =0;
@@ -2049,14 +2159,14 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 						sTD.m_pDAOTableDef->get_Fields(&pF);
 						pF->Refresh();
 						pF->Release();
-						int sc1=sTD.GetFieldCount();
+						int sc1=sTD->RecordCount;
 						dTD->Open((_bstr_t)(dTDInfo.m_strName);
 						for (int i1=0;i1<sc1;i1++)
 						{
 							DAO_CHECK(dTD.m_pDAOTableDef->get_Fields(&pF));
 							pF->Refresh();
 							pF->Release();
-							int dc1=dTD.GetFieldCount();
+							int dc1=dTD->RecordCount;
 							sTD.GetFieldInfo(i1,sFD,AFX_DAO_ALL_INFO);
 							bFDexists = false;
 							for (int n1=0;n1<dc1;n1++)
@@ -2067,18 +2177,18 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 									//字段存在，设置标志
 									/*if(dFD.m_nType == dbText && sFD.m_nType == dbText && sFD.m_lSize > dFD.m_lSize)
 									{
-										dFD.m_lSize=sFD.m_lSize;
+										dFD->DefinedSize =sFD->DefinedSize ;
 										try
 										{
 											DAO_CHECK(dTD.m_pDAOFields->get_Item(
 												COleVariant(dFD.m_strName, VT_BSTRT), &pDAOField));
 											if(pDAOField!=NULL)
 											{
-												pDAOField->put_Size(dFD.m_lSize);
+												pDAOField->put_Size(dFD->DefinedSize );
 												pDAOField->Release();
 											}
 										}
-										catch(...)
+										catch(CException *e)
 										{
 										}
 									}*/
@@ -2095,7 +2205,7 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 									dTD.CreateField( sFD);
 									bIsChange=true;
 								}
-								catch(...)
+								catch(CException *e)
 								{
 									e->Delete();
 								}
@@ -2136,14 +2246,14 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 				}
 				if(!bTDexists)
 				{
-					SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),sTDInfo.m_strName,sTDInfo.m_strName,sDb.GetName());
+					SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),sTDInfo.m_strName,sTDInfo.m_strName,sDb->DefaultDatabase);
 					dDb->Execute((_bstr_t)SQLx);
 				}
 			}
 			sTD->Close();
 		}
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2157,8 +2267,12 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString O
 	//目的:将一个表的列转换成行表示，行转换成列表示。
 	//典型的例子：将一个有许多字段的表tmpCalFixPhs的一个记录转换成多行，以便输出到Excel打印
 	CDaoTableDefInfo tbInfo;
-	CDaoFieldInfo FdInfo;
-	CDaoRecordset rs(&db),rs1(&db);
+	FieldPtr FdInfo;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(_Recordset));
+	_RecordsetPtr rs1;
+	rs1.CreateInstance(__uuidof(_Recordset));
+
 	CString SQLx;
 	COleVariant v;
 	TblName.TrimLeft();TblName.TrimRight();
@@ -2177,21 +2291,23 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString O
 		}
 		db->Execute((_bstr_t)_T("CREATE TABLE ") + OutTblName + _T(" (Name CHAR(30),Data CHAR(40),Formula CHAR(255))"));
 		SQLx=_T("SELECT * FROM ") + OutTblName;
-		if(rs1->State != adStateOpen)
+		if(rs1->State == adStateOpen)
 			rs1->Close();
-		rs1->Open((_bstr_t)(dbOpenDynaset,SQLx);
+// 		rs1->Open((_bstr_t)(dbOpenDynaset,SQLx);
+		rs1->Open(_variant_t(SQLx),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
 
 		SQLx=_T("SELECT * FROM ") + TblName;
-		if(rs->State != adStateOpen)
+		if(rs->State == adStateOpen)
 			rs->Close();
-		rs->Open((_bstr_t)(dbOpenSnapshot,SQLx);
-		if(rs->BOF && rs->BOF)
+// 		rs->Open((_bstr_t)(dbOpenSnapshot,SQLx);
+		rs->Open(_variant_t(SQLx),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+		if(rs->BOF || rs->BOF)
 		{
 		}
 		else
 		{
-			rs.Move(iRowStart-1);
-			if(rs->BOF && rs->adoEOF)
+			rs->Move(iRowStart-1);
+			if(rs->BOF || rs->adoEOF)
 			{
 				//移动超过起始记录
 			}
@@ -2201,21 +2317,21 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString O
 				{
 					if(!rs->adoEOF)
 					{
-						int iFC=rs.GetFieldCount();						
+						int iFC=rs->RecordCount;						
 						if(rs1->BOF && rs1->adoEOF)
 						{
 						}
 						else
 						{
 							//准备重新开始将rs另外一行记录修改到rs1的另外一列
-							rs1.MoveFirst();
+							rs1->MoveFirst();
 						}
 
 						for(int i=0;i<iFC;i++)
 						{
 							//把每一个字段的所有行都写完
-							rs.GetFieldInfo(i,FdInfo);
-							rs->get_Collect((_variant_t)(i,v);
+							rs.GetFieldInfo(i, &FdInfo);
+							rs->get_Collect((_variant_t)i,&v);
 							if(iCount==1)
 							{
 								rs1->AddNew();
@@ -2226,7 +2342,7 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString O
 							}
 							else
 							{
-								rs1.Edit();
+//								rs1.Edit();
 								rs1->put_Collect((_variant_t)_T("Data"),v);
 								rs1->Update();
 							}
@@ -2237,7 +2353,7 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString O
 		}
 		return true;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		//ShowMessage(e->Description);
 		e->ReportError();
@@ -2273,7 +2389,7 @@ BOOL EDIBgbl::UpdateSortDB()
 		}while(bIsSuc==FALSE && i<10);
 		return TRUE;
 	}
-	catch(...)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2289,16 +2405,16 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr &SourceDB, CString SourceTBName, _Con
 	int iSourceCount;
 	int iDesCount;
 	bool bFound ;			//标志是否找到不存在的字段
-	CDaoFieldInfo SourceDBFieldInfo;
-	CDaoFieldInfo DesDBFieldInfo;
+	FieldPtr SourceDBFieldInfo;
+	FieldPtr DesDBFieldInfo;
 	try
 	{
 		CDaoTableDef tabSource(&SourceDB);
 		CDaoTableDef tabDes(&DesDB);
 		tabSource->Open((_bstr_t)(SourceTBName);
 		tabDes->Open((_bstr_t)(DesTBName);
-		iSourceCount = tabSource.GetFieldCount();
-		iDesCount = tabDes.GetFieldCount();
+		iSourceCount = tabSource->RecordCount;
+		iDesCount = tabDes->RecordCount;
 		CString strSource;
 		CString strDest;
 		for ( int i = 0 ; i<iSourceCount;i++)
@@ -2328,7 +2444,7 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr &SourceDB, CString SourceTBName, _Con
 			}
 		}
 	}
-	catch( CDaoException e)
+	catch( CException e)
 	{
 		e.ReportError();
 	}

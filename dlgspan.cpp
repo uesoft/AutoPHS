@@ -476,7 +476,7 @@ void CDlgSpan::Cal()
 	float LmaxSOld,LmaxSNew;
 	//新管规,fQ:unit=kN/m
 	LmaxSNew=0.4336*sqrt(fW/(fQ*EDIBgbl::kgf2N/1000));
-	LmaxRNew=0.2118*pow((float)fEt*fI/(fQ*EDIBgbl::kgf2N/1000),(float)1.0/4.0);
+	LmaxRNew=0.2118*pow((float)(fEt*fI/(fQ*EDIBgbl::kgf2N/1000)),(float)(1.0/4.0));
 
 	float fPHI;//高铬钢0.7碳素钢0.9
 	if(m_bHighCrSteel)
@@ -489,7 +489,7 @@ void CDlgSpan::Cal()
 	else
 		LmaxSOld=2.24*sqrt(fW*fPHI*(fSigmat/100)/fQ);//Pg<=40
 	
-	LmaxROld=0.0241*pow((float)(fEt*1000/EDIBgbl::kgf2N*100)*fI/fQ,(float)1.0/3.0);
+	LmaxROld=0.0241*pow((float)(fEt*1000/EDIBgbl::kgf2N*100)*fI/fQ,(float)(1.0/3.0));
 	//m_iGS=this->GetCheckedRadioButton(IDC_RADIO_NEW,IDC_RADIO_OLD)-IDC_RADIO_NEW;
 
 	m_strLMaxR.Format(_T("%.2fm"),LmaxROld);
