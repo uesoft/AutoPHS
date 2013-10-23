@@ -752,7 +752,7 @@ BOOL CImportFromXLSDlg::ConnectExcelFile(const CString strExcelName, _Connection
 // Return       :
 // Remark       :用ADO记录集的方式打开，EXCEL文件中的表。
 //------------------------------------------------------------------
-BOOL CImportFromXLSDlg::OpenExcelTable(_RecordsetPtr& pRsTbl, CString& strSheetName, CString strExcelFileName)
+BOOL CImportFromXLSDlg::OpenExcelTable(_RecordsetPtr pRsTbl, CString& strSheetName, CString strExcelFileName)
 { 
 	CString strSQL;
 	try

@@ -135,7 +135,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 	COleVariant v,v1;
 	try
 	{
-		int i,ix;
+		long i,ix;
 // 		db.Open(basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
 		db->Open(_bstr_t(basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),_T(""), (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
 		m_iSelIndex = Index;

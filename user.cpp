@@ -625,7 +625,7 @@ double vtod(COleVariant &v)
 	return ret;
 }
 
-void RsDeleteAll(_RecordsetPtr& rs)
+void RsDeleteAll(_RecordsetPtr rs)
 {
 	try{
 		if(!rs->adoEOF)// || !rs->CanUpdate())
@@ -832,7 +832,7 @@ int inline ShowMessage(LPCTSTR lpszText, UINT nType, LPCTSTR lpszTitle,UINT nIDH
 {
 	return ::MessageBox(NULL,lpszText,lpszTitle,nType|MB_TASKMODAL|MB_TOPMOST );
 }
-COleVariant inline GetFields(_RecordsetPtr & rs,CString FieldName)
+COleVariant inline GetFields(_RecordsetPtr rs,CString FieldName)
 {
 	COleVariant vTmp;
 	rs->get_Collect((_variant_t)FieldName,&vTmp);

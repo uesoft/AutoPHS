@@ -709,7 +709,7 @@ void CSelTemplate::OpenTemplateRs()
 	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
 		m_rsTemplateName->MoveFirst();
 
-	m_listctrlStruct.m_prsNAME = &m_rsTemplateName;
+	m_listctrlStruct.m_prsNAME = m_rsTemplateName;
 
 	LoadListName();
 	DataReposition();
@@ -1650,7 +1650,7 @@ void CSelTemplate::OnCheckPa()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(); 
-	if(m_bRePA == true)
+	if(m_bRePA == TRUE)
 	{
 		for(int i=0;i<6;i++)
 			GetDlgItem(m_CheckID[i])->EnableWindow(TRUE);

@@ -1115,7 +1115,7 @@ void EDIBAcad::DeleteACADStyle(CString sStyle)
 	}
 }
 
-long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr& rs, bool  &bATTBEGIN, long & NPage,long & iNPage,long & SPage, 
+long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN, long & NPage,long & iNPage,long & SPage, 
 											 CADatt* & BlkAtt,int iTabIndex)
 {
 	//目的:获取txx表中ATTBEGIN引导的后续记录，每个记录的LocalCaption字段值指出了AutoCAD表头块属性的Tag,
@@ -1254,7 +1254,7 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr& rs, bool  &bATTBEGIN
 }
 extern BOOL gStartAcad();
 void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
-         double sngRotAng, _RecordsetPtr& rsText,
+         double sngRotAng, _RecordsetPtr rsText,
          long lRowsPerPages, float fBlkScale,
          LPCTSTR Layer, LPCTSTR  Style,
          LPCTSTR lpszColTxtFmt,int iAlign)
@@ -1931,7 +1931,7 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 }
 
 
-void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr& rsText)
+void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 {
 	//功能:绘制表格
 	//Pb------基点,3元素数组,双精度
@@ -2390,7 +2390,7 @@ catch(CException *e)
 }
 }
 
-void EDIBAcad::AddData2rsTZG(_RecordsetPtr& rs, long  iRecNo, long  zdjh, CString  FD, CString  sView, CString sBlkName, COleSafeArray& InsPnt)
+void EDIBAcad::AddData2rsTZG(_RecordsetPtr rs, long  iRecNo, long  zdjh, CString  FD, CString  sView, CString sBlkName, COleSafeArray& InsPnt)
 {
 	try
 	{
@@ -2431,7 +2431,7 @@ void EDIBAcad::AddData2rsTZG(_RecordsetPtr& rs, long  iRecNo, long  zdjh, CStrin
 	}
 }
 
-void EDIBAcad::DrawPhsAssemble(_RecordsetPtr& rsRefZB, long iView)
+void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 {
 	//目的：绘制支吊架组装图。
 	//输入：rstzb,绘图所需的零件数据
@@ -5634,7 +5634,7 @@ delete [] mlPartIndex;
 //objAcadDoc.ActiveViewport.ZoomAll
 }
 
-void EDIBAcad::DrawphsZUZI(_RecordsetPtr& rsRefZB, CCadPoint& InsPnt, long iView)
+void EDIBAcad::DrawphsZUZI(_RecordsetPtr rsRefZB, CCadPoint& InsPnt, long iView)
 {
    //Dim rsza As Recordset
 	try
@@ -6985,8 +6985,8 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 	{
 		e->ReportError();
 		e->Delete();
-		return _T("");
 	}
+	return _T("");
 }
 
 void EDIBAcad::DisplayAcadTop()
@@ -7379,6 +7379,7 @@ bool EDIBAcad::SelectLayerAllV(long Count, va_list argList)
 	{
 		e->Delete();
 	}
+	return false;
 }
 
 void EDIBAcad::FindAllFileToTxt(CString dir,CFile *f)

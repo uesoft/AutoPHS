@@ -717,12 +717,12 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 	}
 	try
 	{
-		CComPtr<_Recordset> rsVar;
-		CComPtr<_Recordset> rsLreal;
+		_RecordsetPtr rsVar;
+		_RecordsetPtr rsLreal;
 		COleVariant vTemp;
 		
 		HRESULT hr = S_OK;
-		hr = rsVar.CoCreateInstance(__uuidof(Recordset));
+		hr = rsVar.CreateInstance(__uuidof(Recordset));
 //		rsVar.m_pDatabase=&EDIBgbl::dbSORT;
 		strSQL.Format((_T("SELECT [VarName],[VarValue] FROM [SAStructVariable] WHERE [StructID]=%d")),pCalInfo->pStrCom->lStructID);
 		rsVar->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
@@ -926,8 +926,8 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL.Format((_T("SELECT [%s] FROM [%s]")),pCalInfo->strResult,strTmpTabName);
 
-		CComPtr<_Recordset> rs;
-		hr = rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		hr = rs.CreateInstance(__uuidof(Recordset));
 //		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -1000,10 +1000,10 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 	const TCHAR szError1[]=_T("找不到指定零件的特性数据!");
 	CList < VarInfo , VarInfo& > lstVarInfo;
 	VarInfo sVarInfo;
-	CComPtr<_Recordset> pRs;
+	_RecordsetPtr pRs;
 	try
 	{
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 		COleVariant vTemp;
 		if(bUpdCom)
 		{
@@ -1439,9 +1439,9 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 		HRESULT hr = S_OK;
-		hr = rs.CoCreateInstance(__uuidof(Recordset));
+		hr = rs.CreateInstance(__uuidof(Recordset));
 		CString strFDs,strTbs,strWheres,strWeights;
 		for(i=0;i<this->m_iComCount;i++)
 		{
@@ -1475,8 +1475,8 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		strSQL=(_T("SELECT * FROM [CalSelList] ORDER BY [Weight]"));
-		CComPtr<_Recordset> rs1;
-		hr = rs1.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		hr = rs1.CreateInstance(__uuidof(Recordset));
 //		rs1.m_pDatabase=&EDIBgbl::dbPRJ;
 		rs1->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
@@ -1487,16 +1487,16 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		strSQL.Format((_T("SELECT [Number],[Result],[Formula],[Where] FROM [SAStructComponent] , [SAStructFormula] WHERE [SAStructComponent].[StructID]=%d ")
 			_T(" AND [SAStructComponent].[ComponentID]=[SAStructFormula].[ComponentID] ORDER BY [Number]")),
 			this->m_lStructID);
-		CComPtr<_Recordset> rsf;
+		_RecordsetPtr rsf;
 //		rsf.m_pDatabase=&EDIBgbl::dbSORT;
-		hr = rsf.CoCreateInstance(__uuidof(Recordset));
+		hr = rsf.CreateInstance(__uuidof(Recordset));
 		rsf->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		
 		strSQL=(_T("SELECT * FROM [CalSelResult]"));
-		CComPtr<_Recordset> rs2;
+		_RecordsetPtr rs2;
 //		rs2.m_pDatabase=&EDIBgbl::dbPRJ;
-		hr = rs2.CoCreateInstance(__uuidof(Recordset));
+		hr = rs2.CreateInstance(__uuidof(Recordset));
 		rs2->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 
@@ -1745,9 +1745,9 @@ void CCalStructDlg::LoadComGrid()
 	{
 		strSQL.Format(_T("SELECT [Number],[Name],[Types] FROM [SAStructComponent] WHERE [StructID]=%d "),
 			m_lStructID);
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 //		rs.m_pDatabase=&EDIBgbl::dbSORT;
-		rs.CoCreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(_Recordset));
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		CString strTemp;
@@ -1946,8 +1946,8 @@ void CCalStructDlg::LoadComGridGg(int iRow)
 			strSQL.Format((_T("SELECT [BH] FROM [%s] WHERE [CustomID]=\'%s\'")),
 				modPHScal::tbnBoltsNuts,pS->szCustomID);
 		}
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(_Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(_Recordset));
 //		rs.m_pDatabase=&modPHScal::dbZDJcrude;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
@@ -2032,7 +2032,7 @@ void CCalStructDlg::LoadPjgList()
 		CString strSQL;
 		strSQL.Format((_T("SELECT DISTINCT [VarName] FROM [SAStructVariable] WHERE [StructID]=%d AND [VarName] LIKE \'Pjg*\' ORDER BY [VarName]")),
 			this->m_lStructID);
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 //		rs.m_pDatabase=&EDIBgbl::dbSORT;
 //		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -2086,7 +2086,7 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	}
 	try
 	{
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 //		rs.m_pDatabase=&EDIBgbl::dbSORT;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
@@ -2191,8 +2191,8 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 		double lla=0.0,hla=-1.0;
 		double ret;
 		COleVariant vTemp;
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 //		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
 
 		strSQL.Format((_T("SELECT [Lamda],[Fi] FROM [SteadyDecreaseCoef] WHERE [Material]=\'%s\' ORDER BY [Lamda] ")),lpszMaterial);
@@ -2394,9 +2394,9 @@ void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 
 		CString strLiFml;
 //		rsTmp.m_pDatabase = &EDIBgbl::dbPRJ;
-		CComPtr<_Recordset> rsTmp;
+		_RecordsetPtr rsTmp;
 		HRESULT hr = S_OK;
-		hr = rsTmp.CoCreateInstance(__uuidof(Recordset));
+		hr = rsTmp.CreateInstance(__uuidof(Recordset));
 		
 		for(;!rsLiFml->adoEOF;rsLiFml->MoveNext())
 		{

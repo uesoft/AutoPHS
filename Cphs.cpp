@@ -79,6 +79,7 @@ bool Cphs::bFirstPartIsPA()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		return false;
 	}
 }
@@ -91,9 +92,9 @@ long Cphs::SetPhsPATypeToListBox()
 	//返回:可用零件个数
 	CString sSQL;
 	long ret;
-	CComPtr<_Recordset> rs;
+	_RecordsetPtr rs;
 	HRESULT hr = S_OK;
-	hr = rs.CoCreateInstance(__uuidof(Recordset));
+	hr = rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		int	i;
@@ -159,23 +160,25 @@ long Cphs::SetPhsPATypeToListBox()
 		}
 		else
 		{
-			try{ COleVariant vTmp; 
-			//COleVariant vTmp;
-			ResultObj->ResetContent();
-			i=0;
-			RsDeleteAll(rsUnCheckedType);
-			while(!rs->BOF)
-			{
-				i++;
-				rs->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-				rsUnCheckedType->AddNew();
-				rsUnCheckedType->put_Collect((_variant_t)_T("CustomID"),vTmp);//STR_VAR(vTmp));
-				rsUnCheckedType->Update();
-				rs->MoveNext();
-			}
+			try{ 
+				COleVariant vTmp; 
+				//COleVariant vTmp;
+				ResultObj->ResetContent();
+				i=0;
+				RsDeleteAll(rsUnCheckedType);
+				while(!rs->BOF)
+				{
+					i++;
+					rs->get_Collect((_variant_t)_T("CustomID"), &vTmp);
+					rsUnCheckedType->AddNew();
+					rsUnCheckedType->put_Collect((_variant_t)_T("CustomID"),vTmp);//STR_VAR(vTmp));
+					rsUnCheckedType->Update();
+					rs->MoveNext();
+				}
 			}
 			catch(CException *e)
 			{
+				e->Delete();
 				return 0;
 			}
 			
@@ -188,6 +191,7 @@ long Cphs::SetPhsPATypeToListBox()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		return (long)0;
 	}
 }
@@ -204,9 +208,9 @@ long Cphs::SetPhsTypeToListBox()
 	//注意:connect表中Cntb、Cnte、Cntn字段内容为ID,不是CustomID;
 	//     PhsStructureREF表中CustomID字段内容为CustomID.
 	
-	CComPtr<_Recordset> rs;
+	_RecordsetPtr rs;
 	HRESULT hr = S_OK;
-	hr = rs.CoCreateInstance(__uuidof(Recordset));
+	hr = rs.CreateInstance(__uuidof(Recordset));
 	CString FldName;
 	CString tmp,sSQL;
 	long ret;
@@ -360,6 +364,7 @@ long Cphs::SetPhsTypeToListBox()
    }//try block
    catch(CException *e)
    {
+	   e->Delete();
    }
    return ret;
 }
@@ -393,6 +398,7 @@ long Cphs::SaveRsUnCheckedTypeFromResultObj()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		return 0;
 	}
 }
@@ -415,9 +421,9 @@ long Cphs::SetPhsCheckedTypeToListBox()
 	//'Output:可用零件都加入到列表框控件ResultObj
 	//'返回:可用零件个数
 	//'rsTmpCheckedType及rsTmpREF--表中内容为CustomID
-	CComPtr<_Recordset> rsTmpCheckedType;
+	_RecordsetPtr rsTmpCheckedType;
 	HRESULT hr = S_OK;
-	hr = rsTmpCheckedType.CoCreateInstance(__uuidof(Recordset));
+	hr = rsTmpCheckedType.CreateInstance(__uuidof(Recordset));
 
 	CString temp;
 	int j=0,m=0;
@@ -503,6 +509,7 @@ long Cphs::SetPhsCheckedTypeToListBox()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 errH:
 	return 0;
@@ -528,12 +535,12 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 	try
 	{
 //		rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071101 "dbSORT" 改为 "dbPHScode"
-		CComPtr<_Recordset> rs1;
+		_RecordsetPtr rs1;
 		HRESULT hr = S_OK;
-		hr = rs1.CoCreateInstance(__uuidof(Recordset));
+		hr = rs1.CreateInstance(__uuidof(Recordset));
 
-		CComPtr<_Recordset> rs;
-		hr = rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		hr = rs.CreateInstance(__uuidof(Recordset));
 		if(rsID->State != adOpenStatic)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
@@ -680,6 +687,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		if(Ptype!=NULL)
 			delete [] Ptype;
 	}
@@ -702,12 +710,12 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 	   try
 	   {
 //		   rs1(&EDIBgbl::dbPHScode), rs(&EDIBgbl::dbPRJ);//20071019 "dbSORT" 改为 "dbPHScode"
-		   CComPtr<_Recordset> rs1;
+		   _RecordsetPtr rs1;
 		   HRESULT hr = S_OK;
-		   hr = rs1.CoCreateInstance(__uuidof(Recordset));
+		   hr = rs1.CreateInstance(__uuidof(Recordset));
 
-		   CComPtr<_Recordset> rs;
-		   hr = rs.CoCreateInstance(__uuidof(Recordset));
+		   _RecordsetPtr rs;
+		   hr = rs.CreateInstance(__uuidof(Recordset));
 
 		   long  i =0, iNumTmp=0;
 		   CString tmpStr;
@@ -789,9 +797,9 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 	//返回:RCount,记录数
 	//此函数与GetPhsOneClassPartNumAndPartType函数只有几处赋值语句不同
 	//数组下标为0。
-	CComPtr<_Recordset> rs1;
+	_RecordsetPtr rs1;
 	HRESULT hr = S_OK;
-	hr = rs1.CoCreateInstance(__uuidof(Recordset));
+	hr = rs1.CreateInstance(__uuidof(Recordset));
 	long iNumTmp=0;
 	CString SQLx;
 	COleVariant v;
@@ -865,6 +873,7 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		RCount=rs1->GetRecordCount();
 	}
 	rs1->Close();
@@ -888,9 +897,9 @@ long Cphs::GetphsStructIDsemiAuto()
 	{
 		//long IC , iSampID , iNum ;
 		//CString tmpSQLPA , tmpSQLSA , tmpSQLSpr;
-		CComPtr<_Recordset> rs1;
+		_RecordsetPtr rs1;
 		HRESULT hr = S_OK;
-		hr = rs1.CoCreateInstance(__uuidof(Recordset));
+		hr = rs1.CreateInstance(__uuidof(Recordset));
 		_Recordset* rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
 		//假定支吊架最多可能有100个零件
 		CString strSprNum;
@@ -1061,6 +1070,7 @@ long Cphs::GetphsStructIDsemiAuto()
 	   }
 	   catch(CException *e)
 	   {
+		   e->Delete();
 		   return -1;
 	   }
 	   
@@ -1101,9 +1111,9 @@ long Cphs::SavephsStructTorsTmpREF()
 	//iAttachIncluded=iAttachIncluded/iNotAttachInclude(包括附件/不包括附件)
 	//Output:long,成功=-1;否则=错误码
 	try{
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 		HRESULT hr = S_OK;
-		hr = rs.CoCreateInstance(__uuidof(Recordset));
+		hr = rs.CreateInstance(__uuidof(Recordset));
 		//	int i;
 		CString sTmp,sTmp2,SQLx;
 		sTmp.Format(_T("%d"),modPHScal::iSelSampleID);
@@ -1147,6 +1157,7 @@ long Cphs::SavephsStructTorsTmpREF()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		return 0;
 	}
 }
@@ -1167,9 +1178,9 @@ long Cphs::SavephsAllStructToTZB(long& zdjh, int nth, int& /*Optional*/ AttachIn
 	int ret=0;
 	
 	_Recordset* rsza=::FrmTxsr.m_pViewTxsr->m_ActiveRs;
-	CComPtr<_Recordset> rsTmpZB;
+	_RecordsetPtr rsTmpZB;
 	HRESULT hr = S_OK;
-	hr = rsTmpZB.CoCreateInstance(__uuidof(Recordset));
+	hr = rsTmpZB.CreateInstance(__uuidof(Recordset));
 	CString SQLx;
 	_variant_t vTmp;
 
@@ -1180,8 +1191,8 @@ long Cphs::SavephsAllStructToTZB(long& zdjh, int nth, int& /*Optional*/ AttachIn
 		k = 1;
 		//删除表中所有字段zdjh值=zdjh的记录
 		//modPHScal::MakeZDJ_ZBZG();
-		CComPtr<_Recordset> rsX;
-		hr = rsX.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsX;
+		hr = rsX.CreateInstance(__uuidof(Recordset));
 		//连接表，保存的是ID值
 		if(rsConnect->State != adOpenStatic)
 		{
@@ -1330,9 +1341,9 @@ void Cphs::GetPhsStructFromTZB(int zdjh)
 		if(TZBResultObj==NULL || !IsWindow(TZBResultObj->m_hWnd))
 			return; 
 
-		CComPtr<_Recordset> rs;
+		_RecordsetPtr rs;
 		HRESULT hr = S_OK;
-		hr = rs.CoCreateInstance(__uuidof(Recordset));
+		hr = rs.CreateInstance(__uuidof(Recordset));
 		TZBResultObj->ResetContent();
 		
 		CString SQLx;
@@ -2152,7 +2163,7 @@ spZ1Z2:
 	   return false;
 }
 
-void Cphs::simplify2(CComPtr<_Recordset> &rsPartBoltNuts,int nth)
+void Cphs::simplify2(_RecordsetPtr rsPartBoltNuts,int nth)
 {
 	CString SQLx;
 	try
@@ -2166,12 +2177,13 @@ void Cphs::simplify2(CComPtr<_Recordset> &rsPartBoltNuts,int nth)
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 	
 	
 }
 #pragma warning( disable : 4129 )  //Added by Shuli Luo
-void Cphs::simplify(CComPtr<_Recordset> &rsSAPart,int nth)
+void Cphs::simplify(_RecordsetPtr rsSAPart,int nth)
 {
 	try{
 		CString SQLx;
@@ -2197,6 +2209,7 @@ void Cphs::simplify(CComPtr<_Recordset> &rsSAPart,int nth)
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 }
 
@@ -3550,6 +3563,7 @@ long Cphs::CheckMatchPhs()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 		ret=0;
 	}
 	if(Ptype!=NULL)
@@ -3612,6 +3626,7 @@ void Cphs::CheckDuplicateIndex()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 errH:
 	AfxGetApp()->EndWaitCursor();
@@ -4037,6 +4052,7 @@ try
 }
 catch(CException *e)
 {
+	e->Delete();
 }
 errH:
 frmStatus.ShowWindow(SW_HIDE);
@@ -4476,6 +4492,7 @@ void Cphs::ChangeNameInphsStructureName()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 	//errH:
 	AfxGetApp()->EndWaitCursor();
@@ -4497,7 +4514,7 @@ _RecordsetPtr Cphs::AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString
 {
 	//可用于frmphsSamp窗体的数据控件选择数据
 	CString tmpSQL;
-	static _RecordsetPtr ret;
+	_RecordsetPtr ret;
 	ret.CreateInstance(__uuidof(Recordset));
 	if(ret->State == adOpenStatic)
 		ret->Close();
@@ -4512,7 +4529,7 @@ _RecordsetPtr Cphs::AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString
 //	ret->Open(dbOpenDynaset,tmpSQL);
 	ret->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		adOpenDynamic, adLockReadOnly, adCmdText); 
-	return & ret;
+	return ret;
 }
 #pragma warning( disable : 4129 )  //Added by Shuli Luo
 void Cphs::GetMaterial()
@@ -4569,6 +4586,7 @@ void Cphs::GetMaterial()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 	
 }
@@ -6272,11 +6290,11 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 	//        dbprjdb中的F####?-JZB,
 	//output:
 	//        dbprj中的TmpCLgroup,
-	CComPtr<_Recordset> rs;
-	rs.CoCreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
 
-	CComPtr<_Recordset> rsTmpZB;
-	rsTmpZB.CoCreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rsTmpZB;
+	rsTmpZB.CreateInstance(__uuidof(Recordset));
 	CString tbn,tmpID,tmpBlkID,SQLx;
 	CString tmpStr;
 	try
@@ -6381,8 +6399,8 @@ void Cphs::GetPhsSAELandPAdxdydz()
 	//目的:计算支吊架定位尺寸，计算支架根部标高。
 	try
 	{
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CString SQLx;
 		COleVariant vTmp;
 		modPHScal::glPAid = vtoi(modPHScal::sFindFLD(_T("CustomID"), _T("ClassID"), modPHScal::dn));
@@ -6453,6 +6471,7 @@ void Cphs::GetPhsSAELandPAdxdydz()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 }
 
@@ -6491,8 +6510,8 @@ CString Cphs::GetBHforDoubleCSBeam(float /*ByVal*/ GDW1, float /*ByVal*/ OffsetO
 	{
 		Wx = GDW1 * (p1 * (OffsetOfP1toP2 + C) + p2 * C) / 3200 / Span * (2 / iDCS);
 		Wx1 = C * (p2 * (OffsetOfP1toP2 + GDW1) + p1 * GDW1) / 3200 / Span * (2 / iDCS);
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 //		rs.m_pDatabase=&modPHScal::dbZDJcrude;
 		sTmp.Format(_T("%d"),(Wx1>Wx ? Wx1 : Wx));
 		sSQLx = _T("SELECT * FROM [SSteelPropertyCS] WHERE Wx>=");
@@ -6531,8 +6550,8 @@ int Cphs::GetPhsStructFromSampleID(long /*ByVal*/ SampleID)
 	int ret=-1;
 	try
 	{
-		CComPtr<_Recordset> rs;
-		rs.CoCreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		_Recordset* rsza = FrmTxsr.m_pViewTxsr->m_ActiveRs;
 		CString SQLx,sTmp,sTmp2;
 		COleVariant v;
@@ -6626,6 +6645,7 @@ void Cphs::InitListRs()
 	}
 	catch(CException *e)
 	{
+		e->Delete();
 	}
 	
 }

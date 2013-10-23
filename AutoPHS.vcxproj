@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName>"$/AutoPHS50", QQFAAAAA</SccProjectName>
+    <SccLocalPath>.</SccLocalPath>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>D:\shareDLL\lib\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>D:\shareDLL\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level2</WarningLevel>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Release\AutoPHS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>D:\shareDLL\lib\AutoPHS.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>D:\shareDLL\lib\AutoPHS.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>D:\shareDLL\lib\AutoPHS.exe</OutputFile>
+      <AdditionalDependencies>DataFormatDlg.lib;version.lib;SelEngineVolume.lib;FillExcelDll.lib;PSAPointElevation.lib;interfaceAndStruct.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\SelEngineVolume\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\AutoPHS.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>D:\shareDLL\AutoPHS.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0804</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>D:\shareDLL\AutoPHS.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OutputFile>D:\shareDLL\AutoPHS7.0.exe</OutputFile>
+      <ImportLibrary>Debug\AutoPHS7.0.lib</ImportLibrary>
+      <AdditionalDependencies>htmlhelp.lib;FillExcelDlld.lib;DataFormatDlgd.lib;version.lib;SelEngineVolumed.lib;InterfaceAndStructd.lib;PSAPointElevationd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="dlgbackupundo.cpp" />
+    <ClCompile Include="dlgexportvolume.cpp" />
+    <ClCompile Include="dlgoutdescopt.cpp" />
+    <ClCompile Include="gridctrl_src\gridcell.cpp" />
+    <ClCompile Include="gridctrl_src\gridcellbase.cpp" />
+    <ClCompile Include="gridcomboboxcell.cpp" />
+    <ClCompile Include="gridctrl_src\gridctrl.cpp" />
+    <ClCompile Include="gridctrl_src\griddroptarget.cpp" />
+    <ClCompile Include="gridctrl_src\inplaceedit.cpp" />
+    <ClCompile Include="gridctrl_src\inplacelist.cpp" />
+    <ClCompile Include="TBFormatDlg.cpp" />
+    <ClCompile Include="gridctrl_src\titletip.cpp" />
+    <ClCompile Include="_recordset.cpp" />
+    <ClCompile Include="adodc.cpp" />
+    <ClCompile Include="adorecordset.cpp" />
+    <ClCompile Include="AutoPHS.cpp" />
+    <ClCompile Include="AutoPHSDoc.cpp" />
+    <ClCompile Include="AutoPHSView.cpp" />
+    <ClCompile Include="basdirectory.cpp" />
+    <ClCompile Include="BestrowJSJDH.cpp" />
+    <ClCompile Include="bmpsewnd.cpp" />
+    <ClCompile Include="browseforfolermodule.cpp" />
+    <ClCompile Include="cadfontpag.cpp" />
+    <ClCompile Include="cadpoint.cpp" />
+    <ClCompile Include="CAESARIIToPHS.cpp" />
+    <ClCompile Include="Calculate.cpp" />
+    <ClCompile Include="calstructdlg.cpp" />
+    <ClCompile Include="calstructpag.cpp" />
+    <ClCompile Include="ChangMaterilName.cpp" />
+    <ClCompile Include="ClipCtrl.cpp" />
+    <ClCompile Include="column.cpp" />
+    <ClCompile Include="columns.cpp" />
+    <ClCompile Include="ComboGenDlg.cpp" />
+    <ClCompile Include="CommDBOper.cpp" />
+    <ClCompile Include="Cphs.cpp" />
+    <ClCompile Include="Cphs1.cpp" />
+    <ClCompile Include="dataformatdisp.cpp" />
+    <ClCompile Include="datagrid.cpp" />
+    <ClCompile Include="DataGridEx.cpp" />
+    <ClCompile Include="DataInput.cpp" />
+    <ClCompile Include="dbcombobox.cpp" />
+    <ClCompile Include="dlgaddmaterial.cpp" />
+    <ClCompile Include="dlgcalstructres.cpp" />
+    <ClCompile Include="DlgDBOper.cpp" />
+    <ClCompile Include="dlgeditdb.cpp" />
+    <ClCompile Include="DlgFavoriteTemplate.cpp" />
+    <ClCompile Include="DlgFindAutoPSAFile.cpp" />
+    <ClCompile Include="dlgimglst.cpp" />
+    <ClCompile Include="dlgimgscroll.cpp" />
+    <ClCompile Include="dlglistbox.cpp" />
+    <ClCompile Include="dlgmodifyzdjh.cpp" />
+    <ClCompile Include="dlgsarecord.cpp" />
+    <ClCompile Include="dlgspan.cpp" />
+    <ClCompile Include="DrawZDJTable.cpp" />
+    <ClCompile Include="DrawZDJTableID.cpp" />
+    <ClCompile Include="edibacad.cpp" />
+    <ClCompile Include="edibdb.cpp" />
+    <ClCompile Include="edibgbl.cpp" />
+    <ClCompile Include="excel9.cpp" />
+    <ClCompile Include="ExportPaint.cpp" />
+    <ClCompile Include="field.cpp" />
+    <ClCompile Include="fields.cpp" />
+    <ClCompile Include="filedialogex.cpp" />
+    <ClCompile Include="Files.cpp" />
+    <ClCompile Include="font.cpp" />
+    <ClCompile Include="Format.cpp" />
+    <ClCompile Include="frmaddsarecord.cpp" />
+    <ClCompile Include="frmbmpse.cpp" />
+    <ClCompile Include="frmdatabasein.cpp" />
+    <ClCompile Include="frmdataedit.cpp" />
+    <ClCompile Include="frmdrawinfo.cpp" />
+    <ClCompile Include="frmfolderlocation.cpp" />
+    <ClCompile Include="frmlistbox.cpp" />
+    <ClCompile Include="frmphssamp.cpp" />
+    <ClCompile Include="frmpreferences.cpp" />
+    <ClCompile Include="frmselpdsv.cpp" />
+    <ClCompile Include="frmselspecification.cpp" />
+    <ClCompile Include="frmstatus.cpp" />
+    <ClCompile Include="frmtk.cpp" />
+    <ClCompile Include="frmtxsr.cpp" />
+    <ClCompile Include="Guide.cpp" />
+    <ClCompile Include="hyperlink.cpp" />
+    <ClCompile Include="ImportAutoPHSData.cpp" />
+    <ClCompile Include="ImportAutoPHSUserData.cpp" />
+    <ClCompile Include="importfromxlsdlg.cpp" />
+    <ClCompile Include="ImportPlantVision.cpp" />
+    <ClCompile Include="inputbox.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="messageboxex.cpp" />
+    <ClCompile Include="mimage.cpp" />
+    <ClCompile Include="mobject.cpp" />
+    <ClCompile Include="modencrypt.cpp" />
+    <ClCompile Include="modPHScal.cpp" />
+    <ClCompile Include="modregistry.cpp" />
+    <ClCompile Include="modselpdsv.cpp" />
+    <ClCompile Include="msmask.cpp" />
+    <ClCompile Include="mybutton.cpp" />
+    <ClCompile Include="mylistctrl.cpp" />
+    <ClCompile Include="mystatic.cpp" />
+    <ClCompile Include="NewStyleDlg.cpp" />
+    <ClCompile Include="OutputPDSFileTr.cpp" />
+    <ClCompile Include="pagtxsroption.cpp" />
+    <ClCompile Include="pdmscore.cpp" />
+    <ClCompile Include="PHSApp.cpp" />
+    <ClCompile Include="PHSBasepointSetting.cpp" />
+    <ClCompile Include="PHSCaculateSetting.cpp" />
+    <ClCompile Include="phsdata.cpp" />
+    <ClCompile Include="PHSDrawSetting.cpp" />
+    <ClCompile Include="PHSSetting.cpp" />
+    <ClCompile Include="phsstart.cpp" />
+    <ClCompile Include="picture.cpp" />
+    <ClCompile Include="PlantVisionToPHS.cpp" />
+    <ClCompile Include="precalpag.cpp" />
+    <ClCompile Include="predrawpag.cpp" />
+    <ClCompile Include="prepointpag.cpp" />
+    <ClCompile Include="PreStylePag.cpp" />
+    <ClCompile Include="properties.cpp" />
+    <ClCompile Include="property.cpp" />
+    <ClCompile Include="propertywnd.cpp" />
+    <ClCompile Include="psdstart.cpp" />
+    <ClCompile Include="qsort.cpp" />
+    <ClCompile Include="readpsaresult.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="rstevent.cpp" />
+    <ClCompile Include="selbookmarks.cpp" />
+    <ClCompile Include="SelectXYZdlg.cpp" />
+    <ClCompile Include="selpsaprojectnamedlg.cpp" />
+    <ClCompile Include="seltemplate.cpp" />
+    <ClCompile Include="selzdjhdlg.cpp" />
+    <ClCompile Include="SHDlg.cpp" />
+    <ClCompile Include="splashthread.cpp" />
+    <ClCompile Include="split.cpp" />
+    <ClCompile Include="splits.cpp" />
+    <ClCompile Include="statusbarthread.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <ClCompile Include="stddataformatsdisp.cpp" />
+    <ClCompile Include="SumStuff.cpp" />
+    <ClCompile Include="SysVar.cpp" />
+    <ClCompile Include="Tab.cpp" />
+    <ClCompile Include="textprogressctrl.cpp" />
+    <ClCompile Include="txsrpag1.cpp" />
+    <ClCompile Include="txsrpag2.cpp" />
+    <ClCompile Include="txsrpag3.cpp" />
+    <ClCompile Include="txsrpagitem.cpp" />
+    <ClCompile Include="UnitsTransformDlg.cpp" />
+    <ClCompile Include="user.cpp" />
+    <ClCompile Include="variantarray.cpp" />
+    <ClCompile Include="viewtxsr.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
+      <TreatWarningAsError Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</TreatWarningAsError>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Disabled</Optimization>
+    </ClCompile>
+    <ClCompile Include="VirtualListCtrl.cpp" />
+    <ClCompile Include="xdialog.cpp" />
+    <ClCompile Include="xedit.cpp" />
+    <ClCompile Include="XHeaderCtrl.cpp" />
+    <ClCompile Include="ximglistbox.cpp" />
+    <ClCompile Include="xlistbox.cpp" />
+    <ClCompile Include="xtabctrl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PipeStruct\otherstruct.h" />
+    <ClInclude Include="PipeStruct\outfunction.h" />
+    <ClInclude Include="PipeStruct\pipeunitdata.h" />
+    <ClInclude Include="gridctrl_src\cellrange.h" />
+    <ClInclude Include="dlgbackupundo.h" />
+    <ClInclude Include="dlgcalstructres.h" />
+    <ClInclude Include="dlgexportvolume.h" />
+    <ClInclude Include="dlgoutdescopt.h" />
+    <ClInclude Include="gridctrl_src\gridcell.h" />
+    <ClInclude Include="gridctrl_src\gridcellbase.h" />
+    <ClInclude Include="gridcomboboxcell.h" />
+    <ClInclude Include="gridctrl_src\gridctrl.h" />
+    <ClInclude Include="gridctrl_src\griddroptarget.h" />
+    <ClInclude Include="gridctrl_src\inplaceedit.h" />
+    <ClInclude Include="gridctrl_src\inplacelist.h" />
+    <ClInclude Include="gridctrl_src\memdc.h" />
+    <ClInclude Include="Tab.h" />
+    <ClInclude Include="gridctrl_src\titletip.h" />
+    <ClInclude Include="_recordset.h" />
+    <ClInclude Include="adodc.h" />
+    <ClInclude Include="adorecordset.h" />
+    <ClInclude Include="AutoPHS.h" />
+    <ClInclude Include="AutoPHS_h.h" />
+    <ClInclude Include="AutoPHSDoc.h" />
+    <ClInclude Include="AutoPHSView.h" />
+    <ClInclude Include="basdirectory.h" />
+    <ClInclude Include="BestrowJSJDH.h" />
+    <ClInclude Include="bmpsewnd.h" />
+    <ClInclude Include="browseforfolermodule.h" />
+    <ClInclude Include="cadfontpag.h" />
+    <ClInclude Include="cadpoint.h" />
+    <ClInclude Include="CAESARIIToPHS.h" />
+    <ClInclude Include="Calculate.h" />
+    <ClInclude Include="calstructdlg.h" />
+    <ClInclude Include="calstructpag.h" />
+    <ClInclude Include="ChangMaterilName.h" />
+    <ClInclude Include="ClipCtrl.h" />
+    <ClInclude Include="column.h" />
+    <ClInclude Include="columns.h" />
+    <ClInclude Include="ComboGenDlg.h" />
+    <ClInclude Include="CommDBOper.h" />
+    <ClInclude Include="comstart.h" />
+    <ClInclude Include="cphs.h" />
+    <ClInclude Include="dataformatdisp.h" />
+    <ClInclude Include="datagrid.h" />
+    <ClInclude Include="DataGridEx.h" />
+    <ClInclude Include="DataInput.h" />
+    <ClInclude Include="dbcombobox.h" />
+    <ClInclude Include="dlgaddmaterial.h" />
+    <ClInclude Include="dlgdataformatdll.h" />
+    <ClInclude Include="DlgDBOper.h" />
+    <ClInclude Include="dlgeditdb.h" />
+    <ClInclude Include="DlgFavoriteTemplate.h" />
+    <ClInclude Include="DlgFindAutoPSAFile.h" />
+    <ClInclude Include="dlgimglst.h" />
+    <ClInclude Include="dlgimgscroll.h" />
+    <ClInclude Include="dlglistbox.h" />
+    <ClInclude Include="dlgmodifyzdjh.h" />
+    <ClInclude Include="dlgsarecord.h" />
+    <ClInclude Include="dlgspan.h" />
+    <ClInclude Include="DrawZDJTable.h" />
+    <ClInclude Include="DrawZDJTableID.h" />
+    <ClInclude Include="edibacad.h" />
+    <ClInclude Include="edibdb.h" />
+    <ClInclude Include="edibgbl.h" />
+    <ClInclude Include="excel9.h" />
+    <ClInclude Include="ExportPaint.h" />
+    <ClInclude Include="field.h" />
+    <ClInclude Include="fields.h" />
+    <ClInclude Include="filedialogex.h" />
+    <ClInclude Include="Files.h" />
+    <ClInclude Include="font.h" />
+    <ClInclude Include="Format.h" />
+    <ClInclude Include="frmaddsarecord.h" />
+    <ClInclude Include="frmbmpse.h" />
+    <ClInclude Include="frmdatabasein.h" />
+    <ClInclude Include="frmdataedit.h" />
+    <ClInclude Include="frmdrawinfo.h" />
+    <ClInclude Include="frmfolderlocation.h" />
+    <ClInclude Include="frmlistbox.h" />
+    <ClInclude Include="frmphssamp.h" />
+    <ClInclude Include="frmpreferences.h" />
+    <ClInclude Include="frmselpdsv.h" />
+    <ClInclude Include="frmselspecification.h" />
+    <ClInclude Include="frmstatus.h" />
+    <ClInclude Include="frmtk.h" />
+    <ClInclude Include="frmtxsr.h" />
+    <ClInclude Include="Guide.h" />
+    <ClInclude Include="htmlhelp.h" />
+    <ClInclude Include="hyperlink.h" />
+    <ClInclude Include="ImportAutoPHSData.h" />
+    <ClInclude Include="ImportAutoPHSUserData.h" />
+    <ClInclude Include="importfromxlsdlg.h" />
+    <ClInclude Include="ImportPlantVision.h" />
+    <ClInclude Include="inputbox.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="messageboxex.h" />
+    <ClInclude Include="mimage.h" />
+    <ClInclude Include="mobject.h" />
+    <ClInclude Include="modencrypt.h" />
+    <ClInclude Include="modphscal.h" />
+    <ClInclude Include="modregistry.h" />
+    <ClInclude Include="modselpdsv.h" />
+    <ClInclude Include="msmask.h" />
+    <ClInclude Include="mybutton.h" />
+    <ClInclude Include="mylistctrl.h" />
+    <ClInclude Include="mystatic.h" />
+    <ClInclude Include="netdog.h" />
+    <ClInclude Include="NewStyleDlg.h" />
+    <ClInclude Include="OutputPDSFileTr.h" />
+    <ClInclude Include="pagtxsroption.h" />
+    <ClInclude Include="pdmscore.h" />
+    <ClInclude Include="PHSApp.h" />
+    <ClInclude Include="PHSBasepointSetting.h" />
+    <ClInclude Include="PHSCaculateSetting.h" />
+    <ClInclude Include="phsdata.h" />
+    <ClInclude Include="PHSDrawSetting.h" />
+    <ClInclude Include="PHSSetting.h" />
+    <ClInclude Include="phsstart.h" />
+    <ClInclude Include="picture.h" />
+    <ClInclude Include="PlantVisionToPHS.h" />
+    <ClInclude Include="precalpag.h" />
+    <ClInclude Include="predrawpag.h" />
+    <ClInclude Include="prepointpag.h" />
+    <ClInclude Include="PreStylePag.h" />
+    <ClInclude Include="properties.h" />
+    <ClInclude Include="property.h" />
+    <ClInclude Include="propertywnd.h" />
+    <ClInclude Include="PSAPointElevation.h" />
+    <ClInclude Include="psdstart.h" />
+    <ClInclude Include="qsort.h" />
+    <ClInclude Include="readpsaresult.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="rstevent.h" />
+    <ClInclude Include="selbookmarks.h" />
+    <ClInclude Include="SelectXYZdlg.h" />
+    <ClInclude Include="selpsaprojectnamedlg.h" />
+    <ClInclude Include="seltemplate.h" />
+    <ClInclude Include="selzdjhdlg.h" />
+    <ClInclude Include="SHDlg.h" />
+    <ClInclude Include="splashthread.h" />
+    <ClInclude Include="split.h" />
+    <ClInclude Include="splits.h" />
+    <ClInclude Include="statusbarthread.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="stddataformatsdisp.h" />
+    <ClInclude Include="SumStuff.h" />
+    <ClInclude Include="SysVar.h" />
+    <ClInclude Include="TBFormatDlg.h" />
+    <ClInclude Include="textprogressctrl.h" />
+    <ClInclude Include="txsrpag1.h" />
+    <ClInclude Include="txsrpag2.h" />
+    <ClInclude Include="txsrpag3.h" />
+    <ClInclude Include="txsrpagitem.h" />
+    <ClInclude Include="UnitsTransformDlg.h" />
+    <ClInclude Include="user.h" />
+    <ClInclude Include="variantarray.h" />
+    <ClInclude Include="viewtxsr.h" />
+    <ClInclude Include="VirtualListCtrl.h" />
+    <ClInclude Include="xdialog.h" />
+    <ClInclude Include="xedit.h" />
+    <ClInclude Include="XHeaderCtrl.h" />
+    <ClInclude Include="ximglistbox.h" />
+    <ClInclude Include="xlistbox.h" />
+    <ClInclude Include="xtabctrl.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="autophs2002.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="nhwin32c.obj" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="res\AutoPHS.ico" />
+    <CustomBuild Include="res\AutoPHS.rc2">
+      <FileType>RC</FileType>
+    </CustomBuild>
+    <CustomBuild Include="res\autophs2002.bmp" />
+    <CustomBuild Include="res\AutoPHSDoc.ico" />
+    <CustomBuild Include="res\bitmap10.bmp" />
+    <CustomBuild Include="res\bitmap2.bmp" />
+    <CustomBuild Include="res\bitmap3.bmp" />
+    <CustomBuild Include="res\bom.ico" />
+    <CustomBuild Include="res\cursor1.cur" />
+    <CustomBuild Include="res\cursor2.cur" />
+    <CustomBuild Include="res\figinpug1.bmp" />
+    <CustomBuild Include="res\gdox.bmp" />
+    <CustomBuild Include="res\gdoz.bmp" />
+    <CustomBuild Include="res\gdpx.bmp" />
+    <CustomBuild Include="res\gdpz.bmp" />
+    <CustomBuild Include="res\gsox.bmp" />
+    <CustomBuild Include="res\gsoz.bmp" />
+    <CustomBuild Include="res\gspx.bmp" />
+    <CustomBuild Include="res\gspz.bmp" />
+    <CustomBuild Include="res\hpyelink.cur" />
+    <CustomBuild Include="res\ico00001.ico" />
+    <CustomBuild Include="res\ico00002.ico" />
+    <CustomBuild Include="res\icon3.ico" />
+    <CustomBuild Include="res\icon4.ico" />
+    <CustomBuild Include="res\upxry.bmp" />
+    <CustomBuild Include="res\upxrz.bmp" />
+    <CustomBuild Include="res\upyrx.bmp" />
+    <CustomBuild Include="res\upyrz.bmp" />
+    <CustomBuild Include="res\upzrx.bmp" />
+    <CustomBuild Include="res\upzry.bmp" />
+    <CustomBuild Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="HTMLHELP.LIB" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

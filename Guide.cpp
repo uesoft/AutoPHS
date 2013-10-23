@@ -103,7 +103,7 @@ BOOL Guide::OnInitDialog()
 	}
 	catch(_com_error *e)
 	{
-		e->Description;
+		e->Description();
 	}
 		
     m_PopMenu.CreatePopupMenu();

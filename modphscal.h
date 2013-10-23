@@ -271,11 +271,11 @@ public:
 	static void StressOfMaterial(CString Material,float temperature,float& Sigmat,int iMODE=0,float& Density=vf7850);
 	static BOOL CalOffset(_RecordsetPtr rsZA);
 	static int SprInfoIndex;
-	static bool tbExists(_ConnectionPtr& db,_ConnectionPtr& db1, CString &tbn, CString s1, CString s2,CString s3);
+	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1, CString &tbn, CString s1, CString s2,CString s3);
 	// LFX 加 bool bWarn 以此标此来确定在表未找到时是否提出警告  2005.2.21
-	static bool HStbExists(_ConnectionPtr& db,_ConnectionPtr& db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
-	static COleVariant sFindAnyTableField(_ConnectionPtr&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
-	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
+	static bool HStbExists(_ConnectionPtr db,_ConnectionPtr db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
+	static COleVariant sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
+// 	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
 	static CString GetPhsSAfx(int  SAfx);
 	static _ConnectionPtr dbZDJcrude;
 //	static int gbTbOS;
@@ -287,7 +287,7 @@ public:
     static int iBOMStartNo(int SN=10);
     static COleVariant sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID);
     static COleVariant sFindFLD(CString  strSourceFLD, CString  strDestFLD, CString strSourceFLDvalue);
-    static _variant_t sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
+//    static _variant_t sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
     static CString sFindID(CString  CustomID);
     static CString sFindCustomID(CString  ID);
     static CString sFindTBN(CString  PartCustomID);
@@ -338,7 +338,7 @@ public:
     static float CalUnitCovertCoef(_RecordsetPtr rstbl, int /*Optional*/ iUNIT=0);
     static void UpdateTZB4zdjh(CString FieldName,_variant_t FieldValue);
     static void VB_Cal(_RecordsetPtr  rs, long  zdjh,CFrmStatus &frmStatus,int nth = 1);
-    static bool CalRodLength(_Recordset*  rstbl, long  zdjh);
+    static bool CalRodLength(_RecordsetPtr  rstbl, long  zdjh);
     static void SetBasePoint();
     static void ReadAutoPHSiniValue();
     static void InitializeCrudeData(_RecordsetPtr rs, bool  bFrmTxsrLoaded);

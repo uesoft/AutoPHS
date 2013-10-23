@@ -123,7 +123,7 @@ void CFrmSelPDSV::initPrjDb()
 		m_DataDsgn->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
 			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 
-		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+// 		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
 // 		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
 		SQLx = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataSpe->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
@@ -269,8 +269,8 @@ void CFrmSelPDSV::LoadDBComboDsgn()
 //设计阶段
 	try
 	{
-		m_DBComboDsgn.m_Rs=&m_DataCurrWork;
-		m_DBComboDsgn.m_RowRs=&m_DataDsgn;
+		m_DBComboDsgn.m_Rs=m_DataCurrWork;
+		m_DBComboDsgn.m_RowRs=m_DataDsgn;
 		m_DBComboDsgn.m_Field=_T("sjjddm");
 		m_DBComboDsgn.m_BoundField=_T("sjjddm");
 		m_DBComboDsgn.m_ListField=_T("sjjdmc");
@@ -286,8 +286,8 @@ void CFrmSelPDSV::LoadDBComboSpec()
 {
 //设计专业
 	try{
-		m_DBComboSpec.m_Rs=&m_DataCurrWork;
-		m_DBComboSpec.m_RowRs=&m_DataSpe;
+		m_DBComboSpec.m_Rs=m_DataCurrWork;
+		m_DBComboSpec.m_RowRs=m_DataSpe;
 		m_DBComboSpec.m_Field=_T("zydm");
 		m_DBComboSpec.m_BoundField=_T("zydm");
 		m_DBComboSpec.m_ListField=_T("zymc");
@@ -312,8 +312,8 @@ void CFrmSelPDSV::LoadDBComboCategory()
    DBComboCategory.ReFill*/
 	try
 	{
-		m_DBComboCategory.m_Rs=&m_DataCurrWork;
-		m_DBComboCategory.m_RowRs=&m_DataCategory;
+		m_DBComboCategory.m_Rs=m_DataCurrWork;
+		m_DBComboCategory.m_RowRs=m_DataCategory;
 		m_DBComboCategory.m_Field=_T("SJHYINDEX");
 		m_DBComboCategory.m_BoundField=_T("SJHYID");
 		m_DBComboCategory.m_ListField=_T("SJHY");
@@ -573,6 +573,7 @@ void CFrmSelPDSV::OnRowColChangeDbgvim(VARIANT FAR* LastRow, short LastCol)
 		}
 		catch(CException *e)
 		{
+			e->Delete();
 			m_DataEng->CancelUpdate();
 		}
 	}
@@ -614,6 +615,7 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 		}
 		catch (CException *e)
 		{
+			e->Delete();
 			//很可能是更新时出错
 			m_DataVlm->CancelUpdate();
 		}

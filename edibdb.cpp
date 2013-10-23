@@ -505,7 +505,7 @@ void EDIBDB::CloseExcel()
 	}
 }
 
-bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, _ConnectionPtr&  db, CString sSrcTableName, CString  Table_Format)
+bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, _ConnectionPtr  db, CString sSrcTableName, CString  Table_Format)
 {
 	try
 	{

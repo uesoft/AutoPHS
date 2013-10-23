@@ -13,7 +13,7 @@ class EDIBDB
 {
 public:
 	static void CreateTableToAutoIPED(CString& strFileName,CString& strTblName,CString remark,double CLzz);
-	static bool OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, _ConnectionPtr&  db, CString sSrcTableName, CString  Table_Format);
+	static bool OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, _ConnectionPtr  db, CString sSrcTableName, CString  Table_Format);
 	static void CloseExcel();
 	static _variant_t GridCol(CDataGrid& grid,LPCSTR ColName);
 	static void RefreshGrid(CDataGrid& grid,_RecordsetPtr rs);

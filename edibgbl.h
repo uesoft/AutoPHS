@@ -53,26 +53,26 @@ public:
 	static void UpdateDBForUpdate();
 //	static bool bFieldExists(CDaoTableDef *rd, CString sName);
 //	static bool bIndexExists(_TablePtr* pTd,CString strIndex);
-	static void UpdateDBTable(_ConnectionPtr &SourceDB, CString SourceTBName, _ConnectionPtr &DesDB, CString DesTBName);
+	static void UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _ConnectionPtr DesDB, CString DesTBName);
 	static void CloseAll_ConnectionPtr();
 	static BOOL UpdateSortDB();
 	static CString VolumeNo;
 	static CString PhsNo;
-	static bool ChangeColumnsToRows(_ConnectionPtr &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
-	static bool ChangeDatabase(_ConnectionPtr& dDb,_ConnectionPtr &sDb);
+	static bool ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
+	static bool ChangeDatabase(_ConnectionPtr dDb,_ConnectionPtr sDb);
 //	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
-	static bool IsExistentQuery(_ConnectionPtr &db,CString strQueryName);
+	static bool IsExistentQuery(_ConnectionPtr db,CString strQueryName);
 	static bool bFieldExists(_RecordsetPtr &rs, CString sName);
 	static bool DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID);
 	
 	static int FindStr(CString *pStr,int Count, CString sName);
 	static bool VolTabAddRs(_RecordsetPtr &RsVolume, _VolumeDef &VolumeDef);
-	static bool FindTable(_ConnectionPtr &db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
+	static bool FindTable(_ConnectionPtr db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
 	static bool UpdateAllPrjDB();
 	static bool UpgradeDatabase();
-	static void InitWorkTable(_ConnectionPtr& db,CString tbn,int type);
-	static CString GetDBName(_ConnectionPtr& db);
-	static bool tdfExists(_ConnectionPtr & db,CString tbn);
+	static void InitWorkTable(_ConnectionPtr db,CString tbn,int type);
+	static CString GetDBName(_ConnectionPtr db);
+	static bool tdfExists(_ConnectionPtr  db,CString tbn);
 //	static CString GetDBName(_ConnectionPtr db);
 	static const int PrjNw;
 	static const int GDLJB;
@@ -233,8 +233,8 @@ public:
      */
     static const _TCHAR*	YLJSBAT;
     static CString	PSA_OutDataUnit;
-    static const float	kgf2N;
-    static const float	kgf2MPa;
+    static const double	kgf2N;
+    static const double	kgf2MPa;
     static const int	cm2mm;
     /*
      * 以下为TK窗体使用的变量和常数

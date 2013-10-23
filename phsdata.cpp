@@ -25,7 +25,7 @@
 
 extern "C" __declspec(dllexport) bool DLCreateTemplate(CString& strTemplateName, const int nTableId, const CString strDbPath);
 extern "C" __declspec(dllexport) bool DLFillExcelContent(char* cSFileName,char* cDFileName,
-														 const int nTableId,const _RecordsetPtr& pRs,
+														 const int nTableId,const _RecordsetPtr pRs,
 					                                   const char* cDbPath, const bool bAddTable=false);
 #ifdef _DEBUG
 #define new DEBUG_NEW

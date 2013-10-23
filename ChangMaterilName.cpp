@@ -80,9 +80,9 @@ BOOL CChangMaterilName::OnInitDialog()
 	m_materNameList.GetWindowRect(rect);
 	width = rect.right-rect.left;
     m_materNameList.InsertColumn( 0, "²ÄÁÏÃû³Æ", LVCFMT_LEFT, width );
-	CComPtr<_Recordset> rsTmpEngin;
+	_RecordsetPtr rsTmpEngin;
 	HRESULT hr = S_OK;
-	hr = rsTmpEngin.CoCreateInstance(__uuidof(Recordset));
+	hr = rsTmpEngin.CreateInstance(__uuidof(Recordset));
 	
 	try
 	{
@@ -143,9 +143,9 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 	CString strEnginID = m_workNameList.GetItemText(x,0);
 	CString strSql;
 	strSql.Format("SELECT jcdm,jcmc FROM Volume WHERE EnginID = '%s'",strEnginID);
-	CComPtr<_Recordset> rsTmpVolume;
+	_RecordsetPtr rsTmpVolume;
 	HRESULT hr = S_OK;
-	hr = rsTmpVolume.CoCreateInstance(__uuidof(Recordset));
+	hr = rsTmpVolume.CreateInstance(__uuidof(Recordset));
 
 	try
 	{	
@@ -201,9 +201,9 @@ void CChangMaterilName::OnClickListVolume(NMHDR* pNMHDR, LRESULT* pResult)
 	CString strjcdm = m_volumeIdList.GetItemText(x,0);
 	CString strSql;
 	strSql.Format("SELECT CLcl FROM ZB WHERE VolumeID IN (SELECT VolumeID FROM Volume WHERE jcdm = '%s')",strjcdm);
-	CComPtr<_Recordset> rsTmpMateril;
+	_RecordsetPtr rsTmpMateril;
 	HRESULT hr = S_OK;
-	hr = rsTmpMateril.CoCreateInstance(__uuidof(Recordset));
+	hr = rsTmpMateril.CreateInstance(__uuidof(Recordset));
 
 	try
 	{

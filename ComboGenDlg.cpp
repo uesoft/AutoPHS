@@ -203,9 +203,9 @@ void CComboGenDlg::LoadComboBox(int i)
 								+ "  OR PictureClipData.ClassID= " + ltos(iGCement) + ")) )))";
 	
 	CString strSQL;
-	CComPtr<_Recordset> rs;
+	_RecordsetPtr rs;
 	HRESULT hr = S_OK;
-	hr = rs.CoCreateInstance(__uuidof(Recordset));
+	hr = rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		m_ComboBoxGen.ResetContent();

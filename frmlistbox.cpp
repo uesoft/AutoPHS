@@ -190,9 +190,10 @@ void CFrmListBox::OnCmdApply()
 						Cavphs->SourceObj = &m_ListPhsStruEDIT;
 						i = Cavphs->SavephsStructTorsTmpREF();
 					}
+				}
 			}
 		}
-		}
+	}
 	catch(CException *e)
 	{
 		e->Delete();

@@ -2119,9 +2119,9 @@ void CViewTxsr::OnImgXy0()
 
 void CViewTxsr::SetUndoCount()
 {
-	long i;
+//	long i;
 	VARIANT vRecord;
-	long nCountColforCopy;
+//	long nCountColforCopy;
 	short nCount = 0;
 	
 	_RecordsetPtr pRsUndo;
@@ -2254,7 +2254,7 @@ void CViewTxsr::UndoPaste(void)
 {
 	long i;
 	VARIANT vRecord;
-	VARIANT vBookMark;
+//	VARIANT vBookMark;
 	_RecordsetPtr pRsUndo;
 	long nCountColforCopy;
 	
@@ -2331,10 +2331,10 @@ void CViewTxsr::UndoPaste(void)
 
 void CViewTxsr::UndoDelete()
 {
-	long i;
-	VARIANT vRecord;
+//	long i;
+//	VARIANT vRecord;
 	_RecordsetPtr pRsUndo;
-	long nCountColforCopy;
+//	long nCountColforCopy;
 	
 	CString strSQL;
 	strSQL.Format("SELECT * FROM Undo WHERE VolumeID=%ld AND Times=%d", EDIBgbl::SelVlmID, m_UndoCount);
@@ -2492,11 +2492,11 @@ try
 {
 	short i;
 	short nCountRowforCopy;	
-	long nCountColforCopy;	
+//	long nCountColforCopy;	
 	VARIANT vBookMark;
 	
-	long FirstRow;
-	short row;
+//	long FirstRow;
+//	short row;
 	//得到选中的行数
 	try
 	{
@@ -2553,7 +2553,7 @@ catch(_com_error *e)
 
 void CViewTxsr::EditPaste()
 {
-	long i, j;
+	long j;
 	long lno;
 	long nCountColforCopy;
     long startColIndex = 3;	//The program haven't copy fields VolumeId, ZDJH and JSDBH1

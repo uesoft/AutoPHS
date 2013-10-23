@@ -39,6 +39,9 @@ public:
     void MakeRsTZB(long iDbID, CString  rsPrefixName,CString strDeleteUserMaterial="");
     bool GetphsBHandSizesTest();
     bool GetphsBHandSizes(CFrmStatus& frmStatus, int FirstCal, int  MaxCalCount,int nth,float& ,float& );
+    bool GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNuts, int FirstCal,int MaxCalCount,int nth,float& TmpPaz,float& TmpPgz);
+	void doGetphsBHandSizes();
+	void doGetphsBHandSizes2();
     void GetBoltsNutsAndAttachmentsCLgg(int nth = 1);
     void GetphsBlkRotation();
     long CheckMatchPhs();
@@ -55,8 +58,8 @@ public:
     void GetphsSumBom();
     void GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza);
     void GetPhsSAELandPAdxdydz();
-	void simplify2(CComPtr<_Recordset>& rsPartBoltNuts,int nth);
-	void simplify(CComPtr<_Recordset>& rsSAPart,int nth);
+	void simplify2(_RecordsetPtr rsPartBoltNuts,int nth);
+	void simplify(_RecordsetPtr rsSAPart,int nth);
     _variant_t ClassDebugID();
     CString GetBHforDoubleCSBeam(float  GDW1, float  OffsetOfP1toP2, float  Span, float  p1, float  p2, CString  SACustomID, int  iDCS=2, int  FirstCal=2);
     int GetPhsStructFromSampleID(long /*ByVal*/ SampleID);
