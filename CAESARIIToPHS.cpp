@@ -349,7 +349,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 //记录集是结果集 对应ZA表
 //rsHR记录集是数据源集(弹簧、吊架)
 //ltemp 支吊架号
-void CAESARIIToPHS::ImportHangerRestraints(_RecordsetPtr &rsData,_RecordsetPtr &rsHR,long &ltemp,long &FileNameID,char *strPSAVER,long &node,int flag)
+void CAESARIIToPHS::ImportHangerRestraints(_RecordsetPtr rsData,_RecordsetPtr rsHR,long &ltemp,long &FileNameID,char *strPSAVER,long &node,int flag)
 {
 	_variant_t tmpvar; 
 	long lTmp;
@@ -404,7 +404,7 @@ void CAESARIIToPHS::ImportHangerRestraints(_RecordsetPtr &rsData,_RecordsetPtr &
 //导入支架、吊架中的单位，各个方向的推力(冷态、热态)
 //rsData为结果数据库	m_strLGKname为冷态、m_strRGKname为热态
 //m_strJOBNAME_P 工程名称
-void CAESARIIToPHS::importUnitsForces(_RecordsetPtr &rsData,long node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,CString m_strLGKname)
+void CAESARIIToPHS::importUnitsForces(_RecordsetPtr rsData,long node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,CString m_strLGKname)
 {
 	CString strSQL;
 	CString strMessage;
@@ -827,7 +827,7 @@ void CAESARIIToPHS::ImportDisplacements(_RecordsetPtr rsData,long node, CString 
 }
 
 //导入管道外径、介质温度
-void CAESARIIToPHS::ImportDiameter(_RecordsetPtr &rsData,long node,CString strJOBNAME_A)
+void CAESARIIToPHS::ImportDiameter(_RecordsetPtr rsData,long node,CString strJOBNAME_A)
 {
 	CString strSQL;
 	_RecordsetPtr pRs;
@@ -900,7 +900,7 @@ void CAESARIIToPHS::ImportDiameter(_RecordsetPtr &rsData,long node,CString strJO
 }
 
 //导入弹簧数据(变力弹簧)
-void CAESARIIToPHS::ImportHanger(_RecordsetPtr &rsData,long node,CString strJOBNAME_P)
+void CAESARIIToPHS::ImportHanger(_RecordsetPtr rsData,long node,CString strJOBNAME_P)
 {
 	CString strSQL;
 	_RecordsetPtr pRs;
@@ -983,7 +983,7 @@ void CAESARIIToPHS::ImportHanger(_RecordsetPtr &rsData,long node,CString strJOBN
 //注意：弹簧支吊架只简单分为可变弹簧和恒力弹簧
 //支架也只处理以下几种:X、Y、Z、XY、XZ、YZ、XYZ
 //iType:支吊架类型
-void CAESARIIToPHS::ConversionTypeCaesarToPhs(_RecordsetPtr &rsData,long node,CString strJOBNAME_P,CString strGKname,long &iType)
+void CAESARIIToPHS::ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long node,CString strJOBNAME_P,CString strGKname,long &iType)
 {
 	_RecordsetPtr pRs;
 	pRs.CreateInstance(__uuidof(Recordset));

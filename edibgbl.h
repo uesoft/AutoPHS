@@ -62,11 +62,11 @@ public:
 	static bool ChangeDatabase(_ConnectionPtr dDb,_ConnectionPtr sDb);
 //	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
 	static bool IsExistentQuery(_ConnectionPtr db,CString strQueryName);
-	static bool bFieldExists(_RecordsetPtr &rs, CString sName);
-	static bool DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID);
+	static bool bFieldExists(_RecordsetPtr rs, CString sName);
+	static bool DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long VolumeID);
 	
 	static int FindStr(CString *pStr,int Count, CString sName);
-	static bool VolTabAddRs(_RecordsetPtr &RsVolume, _VolumeDef &VolumeDef);
+	static bool VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef);
 	static bool FindTable(_ConnectionPtr db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
 	static bool UpdateAllPrjDB();
 	static bool UpgradeDatabase();

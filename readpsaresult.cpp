@@ -2,6 +2,7 @@
 #include "user.h"
 #include "ReadPSAResult.h"
 #include <fstream>
+using namespace std;
 #include <math.h>
 #include "EDIBDB.h"
 #include "phsdata.h"
@@ -527,8 +528,6 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 	{
 		e->Delete();
 	}
-		catch(CException *e)
-		{
 		
 			if(rs->State!=adStateClosed)
 				rs->Close();
@@ -536,7 +535,6 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 				FileRs->Close();
 			if(ZaRs->State!=adStateClosed)
 				ZaRs->Close();
-		}
 		
     return EndFileName;
 
@@ -1064,7 +1062,9 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		{
 // 			tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 			tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-			strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprNWEPDI + "\'";
+			strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+				strSQL += strSprNWEPDI;
+				strSQL += "\'";
 			tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 				adOpenDynamic, adLockReadOnly, adCmdText); 
 			if(tmprs->BOF && tmprs->adoEOF)
@@ -1490,7 +1490,9 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 				{
 // 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprNWEPDI + "\'";
+					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+					strSQL += strSprNWEPDI;
+					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
@@ -1873,9 +1875,6 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 	{
 		e->Delete();
 	}
-	catch(CException *e)
-	{
-	}
 }
 
 
@@ -1992,6 +1991,8 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 	//cbl
 
 		f.open(SourceDataFileName);
+
+		CString strSQL;
 		//开始读原始数据
 		while(!f.eof())
 		{			
@@ -2015,7 +2016,9 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 				if( mviSPR == 3 ){
 // 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprNWEPDI + "\'";
+					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+					strSQL += strSprNWEPDI;
+					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
@@ -2023,7 +2026,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					}
 					else
 					{
-						tmprs->get_Collect((_variant_t)0,varTmp);
+						tmprs->get_Collect((_variant_t)0L, &varTmp);
 						strSprTbn=vtos(varTmp);
 					}
 					tmprs->Close();
@@ -2034,7 +2037,9 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 				}else if( mviSPR == 4 ){
 // 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprGB10182 + "\'";
+					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+					strSQL += strSprGB10182;
+					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
@@ -2042,7 +2047,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					}
 					else
 					{
-						tmprs->get_Collect((_variant_t)0,varTmp);
+						tmprs->get_Collect((_variant_t)0L, &varTmp);
 						strSprTbn=vtos(varTmp);
 					}
 					tmprs->Close();
@@ -2333,7 +2338,6 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 //		rs1(&modPHScal::dbZDJcrude);
 		_RecordsetPtr rs1;
 		rs1.CreateInstance(__uuidof(_Recordset));
-		CString strSQL;
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 // 		rs1.Open(dbOpenSnapshot,strSQL);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -2701,6 +2705,8 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 	//cbl
 
 		f.open(SourceDataFileName);
+
+		CString strSQL;
 		//开始读原始数据
 		while(!f.eof())
 		{//4第一次读文本文件循环(start)
@@ -2738,7 +2744,9 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 				{//2
 // 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprNWEPDI + "\'";
+					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+					strSQL += strSprNWEPDI;
+					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
@@ -2759,7 +2767,9 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 				{//2
 // 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprGB10182 + "\'";
+					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+					strSQL += strSprGB10182;
+					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 						adOpenDynamic, adLockReadOnly, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
@@ -3139,9 +3149,11 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 //		 rs1(&modPHScal::dbZDJcrude);
 		_RecordsetPtr rs1;
 		rs1.CreateInstance(__uuidof(_Recordset));
-		CString strSQL;
+
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
-		rs1.Open(dbOpenSnapshot,strSQL);
+//		rs1.Open(dbOpenSnapshot,strSQL);
+		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+			adOpenDynamic, adLockReadOnly, adCmdText); 
 		while(!f.eof())
 		{
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
@@ -4220,7 +4232,8 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_selDlg->JobNameNum = n;
 		m_pstrTempJobname = new CString[n];
 
-		for ( int i=0 ;i<n;i++)
+		int i=0 ;
+		for ( i=0 ;i<n;i++)
 		{
 			m_pstrTempJobname[i] = vtos(m_prsJOBNAME->GetCollect("JOBNAME"));
 			m_prsJOBNAME->MoveNext();
@@ -4266,7 +4279,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB->DefaultDatabase + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + (LPTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);
@@ -4469,7 +4482,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 									}
 									rsData->Filter = "";
 								}
-								m_CAESARIIFile->Close();
+								m_CAESARIIFile.Close();
 							}
 
 						}catch(CFileException *e)
@@ -4574,7 +4587,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 									}
 									rsData->Filter = "";
 								}
-								m_CAESARIIFile->Close();
+								m_CAESARIIFile.Close();
 							}
 
 						}catch(CFileException *e)
@@ -4980,7 +4993,9 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
 // 		tmprs.m_pDatabase=&EDIBgbl::dbSORT;
 // 		tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-		strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'" + strSprNWEPDI + "\'";
+		strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
+		strSQL += strSprNWEPDI;
+		strSQL += "\'";
 		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		if(tmprs->BOF && tmprs->adoEOF)
@@ -5912,9 +5927,6 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(CException *e)
-	{
 	}
 	frmStatus.ShowWindow(SW_HIDE);
 }

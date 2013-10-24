@@ -644,7 +644,7 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
     CMObject obj, tsobj;
     long     i, nCount;
     CString  strtmp;
-    HRESULT  retCode;
+//    HRESULT  retCode;
 
     //进行参数检查和初始化
     strTSName.TrimLeft();

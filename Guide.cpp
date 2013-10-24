@@ -690,7 +690,8 @@ extern void GDataCopyCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData)
 		CString StrText;
 		for(long Row=0;Row<RowNum;)
 		{
-			for(int RowVb=0;RowVb<m_GData.GetVisibleRows();RowVb++)
+			int RowVb=0;
+			for(RowVb=0;RowVb<m_GData.GetVisibleRows();RowVb++)
 			{
 				for(int CCol=StartCol;CCol<=EndCol;CCol++)
 				{
@@ -740,7 +741,8 @@ extern void GDataPasteCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData
 	{
 		for(long Row=0;Row<RowNum;)
 		{
-			for(int RowVb=0;RowVb<m_GData.GetVisibleRows();RowVb++)
+			int RowVb=0;
+			for(RowVb=0;RowVb<m_GData.GetVisibleRows();RowVb++)
 			{
 				m_GData.SetRow(RowVb);	
 				for(int CCol=StartCol;CCol<=EndCol;CCol++)

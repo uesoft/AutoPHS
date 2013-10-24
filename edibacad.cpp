@@ -5933,12 +5933,12 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
       if((long)AcObject.GetPropertyByName(_T("EntityType")) != acBlockReference)
 		  return;
 		sTmp=vtos(AcObject.GetPropertyByName(_T("Name")));
-		tmpObj=objAcadDoc.GetPropertyByName(_T("Blocks"));
-		PAblk=tmpObj.Invoke(_T("Item"),1,&_variant_t(sTmp));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("Blocks")).pdispVal;
+		PAblk=tmpObj.Invoke(_T("Item"),1,&_variant_t(sTmp)).pdispVal;
       PAblkCount = (long)PAblk.GetPropertyByName(_T("Count"));
       for( i = 0 ;i< PAblkCount;i++)
 	  {
-         ent = PAblk.Invoke(_T("Item"),1,&_variant_t((long)i));
+         ent = PAblk.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
          //MsgBox ent.EntityName
 		 sTmp=vtos(ent.GetPropertyByName(_T("EntityName")));
 		 sTmp.MakeUpper();
@@ -5958,7 +5958,7 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
                p2.SetPoint(
 					InsPnt[0] + mvR * cos(mvA),
 					InsPnt[1] + mvR * sin(mvA));
-               ent1 = MoSpace.Invoke(_T("AddDimDiametric"),3,(LPVARIANT)p2, (LPVARIANT)px, &_variant_t((long)1));
+               ent1 = MoSpace.Invoke(_T("AddDimDiametric"),3,(LPVARIANT)p2, (LPVARIANT)px, &_variant_t((long)1)).pdispVal;
                //管径
                ent1.PutPropertyByName((gbACADR14 ? _T("TextString") : _T("TextOverride")),&_variant_t(CString(_T("\%\%C")) + ftos(modPHScal::dj)));
                ent1.Invoke0(_T("Update"));
@@ -6002,7 +6002,7 @@ void EDIBAcad::DrawphsDataEdit()
 		
 		GetActiveAcadDoc();
 		CMObject UtilObj ;
-		UtilObj=objAcadDoc.GetPropertyByName(_T("Utility"));
+		UtilObj=objAcadDoc.GetPropertyByName(_T("Utility")).pdispVal;
 		ShowMessage(GetResStr(IDS_PickAsingleItemOnAutoCADscreen));
 		EDIBAcad::DisplayAcadTop();
 		pnt = UtilObj.Invoke(_T("GetPoint"),2,(LPVARIANT)tempPoint,&_variant_t(GetResStr(IDS_PickAnObjectInACAD)));
@@ -6012,7 +6012,7 @@ void EDIBAcad::DrawphsDataEdit()
    
 		//On Error Resume Next
 
-		sset = SetSelectionSet(_T("SS1"));
+		sset = SetSelectionSet(_T("SS1")).pdispVal;
       
 		iZdjhInDwg = (long)objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("USERI5")));
 		if(iZdjhInDwg <= 0 )
@@ -6052,7 +6052,7 @@ void EDIBAcad::DrawphsDataEdit()
 		CString sTmp;
 		for(i = 0 ;i<c;i++)
 		{
-			tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)i));
+			tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			sHandle = vtos(tmpObj.GetPropertyByName(_T("Handle")));
 			if(!rsY->BOF && !rsY->adoEOF)
 			{
@@ -6157,7 +6157,7 @@ void EDIBAcad::DrawTag(
 		//切换当前层
 		MakeNewLayer(sLayer);
 		
-		MoSpace = objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+		MoSpace = objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
 		
 
 		double txtHeight = modPHScal::gfSeqTxtHeight;//编号文字高度3mm
@@ -6173,7 +6173,7 @@ void EDIBAcad::DrawTag(
 			//编号指向线(斜线)起点p0/终点p1
 			//将编号指向线（斜线）终点坐标p1写入TZG表
 			//（起点坐标p0已经在DrawTagPoint子程序中写入到TZG表）
-			AcObj = MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p0, (LPVARIANT)p1);
+			AcObj = MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p0, (LPVARIANT)p1).pdispVal;
 
 			GetBoundingBox(AcObj,MinPoint,MaxPoint);
 			OrdinateBound();
@@ -6183,7 +6183,7 @@ void EDIBAcad::DrawTag(
 				p1[1],
 				p1[0] + 4 * (p0[0] <= p1[0] ? 1 : -1), //粗短横线长度4mm
 				p1[1]);
-			AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p2);
+			AcObj = MoSpace.Invoke(_T("AddLightWeightPolyline"),1,(LPVARIANT)p2).pdispVal;
 			//第一个线段索引号=0，AutoCAD help介绍错了。
 			AcObj.Invoke(_T("SetWidth"), 3,&_variant_t((long)0), &_variant_t((double)0.5),&_variant_t((double)0.5));
 			
@@ -6195,7 +6195,7 @@ void EDIBAcad::DrawTag(
 				p1[0] + 2 * (p0[0] <= p1[0] ? 1 : -1),
 				p1[1] + 1,
 				0);			
-			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ltos(iSEQ)), (LPVARIANT)txtP, &_variant_t((double)txtHeight));
+			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ltos(iSEQ)), (LPVARIANT)txtP, &_variant_t((double)txtHeight)).pdispVal;
             AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("编号"), _T("BOM"))));
             ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("编号"), _T("BOM")),_T("编号"));
 			GetBoundingBox(AcObj,MinPoint,MaxPoint);
@@ -6226,14 +6226,14 @@ void EDIBAcad::DrawTag(
 				p1[1],
 				0);
 			//画编号圆圈
-			AcObj = MoSpace.Invoke(_T("AddCircle"),2,(LPVARIANT)ptCenter,&_variant_t(modPHScal::gfSeqCircleDiameter/2.0));
+			AcObj = MoSpace.Invoke(_T("AddCircle"),2,(LPVARIANT)ptCenter,&_variant_t(modPHScal::gfSeqCircleDiameter/2.0)).pdispVal;
 
 			GetBoundingBox(AcObj,MinPoint,MaxPoint);
 			OrdinateBound();
 			//编号指向线(斜线)起点p0/终点p11
 			//将编号指向线（斜线）终点坐标p11
 			//（起点坐标p0已经在DrawTagPoint子程序中写入到TZG表）
-			AcObj = MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p0, (LPVARIANT)p11);
+			AcObj = MoSpace.Invoke(_T("AddLine"),2,(LPVARIANT)p0, (LPVARIANT)p11).pdispVal;
 
 			GetBoundingBox(AcObj,MinPoint,MaxPoint);
 			OrdinateBound();
@@ -6245,7 +6245,7 @@ void EDIBAcad::DrawTag(
 				//p1[0] + 2 * (p0[0] <= p1[0] ? 1 : -1),
 				//p1[1] + 1,
 				0);			
-			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ltos(iSEQ)), (LPVARIANT)txtP, &_variant_t((double)txtHeight));
+			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(ltos(iSEQ)), (LPVARIANT)txtP, &_variant_t((double)txtHeight)).pdispVal;
             AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("编号"), _T("BOM"))));
             ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("编号"), _T("BOM")),_T("编号"));
 			GetBoundingBox(AcObj,MinPoint,MaxPoint);
@@ -6592,9 +6592,9 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		CString sCLayer;
 		sCLayer = vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("CLayer"))));
 		MakeNewLayer(sLayer);
-		MoSpace = objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+		MoSpace = objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
 		//编号指向线起点
-		AcObj = MoSpace.Invoke(_T("AddPoint"),1,(LPVARIANT)p0);
+		AcObj = MoSpace.Invoke(_T("AddPoint"),1,(LPVARIANT)p0).pdispVal;
 		
 		//选择记录集rsTZG以便记录图形内容
 		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ucase(trim(Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ucase(trim(FieldName))=\'SEQ\' ORDER BY recno");
@@ -6652,7 +6652,7 @@ bool EDIBAcad::DeleteAllEntitiesInLayers(int Count,...)
 			return false;
 		int count=(long)sset.GetPropertyByName(_T("Count"));
 		sset.Invoke0( _T("Erase"));
-		tmpObj=objAcadDoc.GetPropertyByName(_T("ActiveViewport"));
+		tmpObj=objAcadDoc.GetPropertyByName(_T("ActiveViewport")).pdispVal;
 		tmpObj.Invoke0(_T("ZoomAll"));
 		return true;
 	}
@@ -6673,11 +6673,11 @@ void EDIBAcad::EraseAllEntities()
 			return;
 		}
 		CMObject lagers,lager;
-		lagers=objAcadDoc.GetPropertyByName(_T("Layers"));
+		lagers=objAcadDoc.GetPropertyByName(_T("Layers")).pdispVal;
 		int C=(long)lagers.GetPropertyByName(_T("Count"));
 		for(int i = 0 ;i<C;i++)
 		{
-			lager = lagers.Invoke(_T("Item"),1,&_variant_t((long)i));
+			lager = lagers.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			CString sLayer=vtos(lager.GetPropertyByName(_T("Name")));
 			DeleteAllEntitiesInLayers(1,sLayer);
 		}
@@ -6696,12 +6696,12 @@ _variant_t EDIBAcad::SetSelectionSet(CString /*ByVal*/ ssetName)
 		ssetName.TrimLeft();ssetName.TrimRight();
 		ssetName.MakeUpper();
 		CMObject see,si;
-		see=objAcadDoc.GetPropertyByName(_T("SelectionSets"));
+		see=objAcadDoc.GetPropertyByName(_T("SelectionSets")).pdispVal;
 		int C=(long)see.GetPropertyByName(_T("Count"));
 		CString siN;
 		for (int i = 0 ;i<C;i++)
 		{
-			si=see.Invoke(_T("Item"),1,&_variant_t((long)i));
+			si=see.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			siN=vtos(si.GetPropertyByName(_T("Name")));
 			siN.TrimLeft();siN.TrimRight();
 			siN.MakeUpper();
@@ -7082,7 +7082,7 @@ void EDIBAcad::MoveObj(long Count,...)
 		long C=(long)sset.GetPropertyByName(_T("count"));
 		for( int i = 0 ;i<C;i++)
 		{
-			tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)i));
+			tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 			tmpObj.Invoke(_T("Move"),2,(LPVARIANT)p1, (LPVARIANT)p2);
 		}
 
@@ -7090,7 +7090,7 @@ void EDIBAcad::MoveObj(long Count,...)
 		//在AutoCAD R14版中在Viewport object中，AutoCAD2000却就在Application object中
 		if( EDIBAcad::gbACADR14 )
 		{
-			tmpObj=objAcadDoc.GetPropertyByName(_T("ActiveViewport"));
+			tmpObj=objAcadDoc.GetPropertyByName(_T("ActiveViewport")).pdispVal;
 			tmpObj.Invoke0(_T("ZoomAll"));
 		}
 		else
@@ -7158,7 +7158,7 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 					InsPnt[1],
 					InsPnt[2]);
 
-				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                 AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                 ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 				
@@ -7168,13 +7168,13 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 					{
 						sTmp.Format(IDS_COLE_FORM2,modPHScal::dyl / 1000);
 						p0.SetY(p0[1] + 4);
-						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                         AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                         ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 						
 						sTmp.Format(IDS_HOT_FORM2,modPHScal::dyr / 1000);
 						p0.SetY(p0[1] + 4);
-						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                         AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                         ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 					}
@@ -7190,7 +7190,7 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 					InsPnt[0] + 3,
 					InsPnt[1],
 					InsPnt[2]);
-				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+				AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                 AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                 ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 
@@ -7200,13 +7200,13 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 					{
 						sTmp.Format(IDS_COLE_FORM2,modPHScal::dyl / 1000);
 						p0.SetY(p0[1] + 4);
-						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                         AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                         ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 						
 						sTmp.Format(IDS_HOT_FORM2,modPHScal::dyr / 1000);
 						p0.SetY(p0[1] + 4);
-						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+						AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
                         AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
                         ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 					}
@@ -7224,7 +7224,7 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 				InsPnt[0] + 3,
 				InsPnt[1],
 				InsPnt[2]);
-			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight));
+			AcObj = MoSpace.Invoke(_T("AddText"),3,&_variant_t(sTmp), (LPVARIANT)p0, &_variant_t(txtHeight)).pdispVal;
             AcObj.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("标高"), _T("BOM"))));
             ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 		}
@@ -7237,7 +7237,7 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
 
 bool EDIBAcad::bExistEntityInSelectionSet(COleSafeArray &pPointList)
 {
-	sset = SetSelectionSet(_T("SS1"));
+	sset = SetSelectionSet(_T("SS1")).pdispVal;
 	sset.Invoke0(_T("Clear"));
 	sset.Invoke(_T("SelectByPolygon"),2,&_variant_t((long)acSelectionSetCrossingPolygon), (LPVARIANT)pPointList);
 	long count=(long)sset.GetPropertyByName(_T("count"));
@@ -7305,7 +7305,7 @@ bool EDIBAcad::SelectLayerAllV(long Count, va_list argList)
 	{
 		return SelectLayerV(Count,argList);
 	}
-	sset = SetSelectionSet(_T("SS1"));
+	sset = SetSelectionSet(_T("SS1")).pdispVal;
 	int i=0,j=0;
 	CMObject tmpObj;
 	int sC=Count;
@@ -7322,7 +7322,7 @@ bool EDIBAcad::SelectLayerAllV(long Count, va_list argList)
 				int C=(long)sset.GetPropertyByName(_T("Count"));
 				if(C>0)
 				{
-					tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)0));
+					tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)0)).pdispVal;
 					sLN=vtos(tmpObj.GetPropertyByName(_T("Layer")));
 					//If MsgBox(_T("你真地要添加") & sLN(0) & _T("层上的所有实体到选择集吗?"), vbDefaultButton1 + vbQuestion + vbSystemModal + vbYesNo) = vbNo Then Exit Function
 					if(ShowMessage(GetResStr(IDS_MsgBox_60643)+sLN+GetResStr(IDS_MsgBox_60644),MB_DEFBUTTON1|MB_ICONQUESTION|MB_SYSTEMMODAL|MB_YESNO)==IDNO)
@@ -7435,7 +7435,7 @@ void EDIBAcad::GetActiveAcadDoc()
 //		CString DwgName = basDirectory::PhsBlkDir + (gbACADR14 ? _T("phs.dwg") : _T("Phs2000.dwg"));
 		if(gbACADR14)
 		{
-			objAcadDoc=objAcadApp.GetPropertyByName(_T("ActiveDocument"));
+			objAcadDoc=objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
 			strTmp=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGPREFIX"))));
 			strTmp2=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGNAME"))));
 			strTmp.MakeLower();strTmp2.MakeLower();
@@ -7457,12 +7457,12 @@ void EDIBAcad::GetActiveAcadDoc()
 			int count,i;
 			CMObject acadDocs;
 			CMObject objTmp;
-			acadDocs=objAcadApp.GetPropertyByName(_T("Documents"));
+			acadDocs=objAcadApp.GetPropertyByName(_T("Documents")).pdispVal;
 			count=(long)acadDocs.GetPropertyByName(_T("Count"));
 			bool bf=false;
 			for(i=count-1;i>=0;i--)
 			{
-				objAcadDoc=acadDocs.Invoke(_T("Item"),1,&_variant_t((long)i));
+				objAcadDoc=acadDocs.Invoke(_T("Item"),1,&_variant_t((long)i)).pdispVal;
 				strTmp=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGPREFIX"))));
 				user::AddDirSep(strTmp);
 				strTmp2=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGNAME"))));
@@ -7488,7 +7488,7 @@ void EDIBAcad::GetActiveAcadDoc()
 				//	objAcadDoc.Invoke(_T("Close"),1,&_variant_t(true));
 				}
 			}
-			objAcadDoc=objAcadApp.GetPropertyByName(_T("ActiveDocument"));
+			objAcadDoc=objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
 //			objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("SDI")),&_variant_t((long)1));
 			if(bf==false)
 			{
@@ -7513,7 +7513,7 @@ bool EDIBAcad::SelectLayerV(long Count, va_list argList)
 	int i,c,i1;
 	CString * pLayerName=NULL;
 	bool ret=false;
-	sset = SetSelectionSet(_T("SS1"));
+	sset = SetSelectionSet(_T("SS1")).pdispVal;
 	if(Count<=0)
 	{
 		pLayerName=new CString[1];
@@ -7523,7 +7523,7 @@ bool EDIBAcad::SelectLayerV(long Count, va_list argList)
 			int C=(long)sset.GetPropertyByName(_T("Count"));
 			if(C>0)
 			{
-				tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)0));
+				tmpObj=sset.Invoke(_T("Item"),1,&_variant_t((long)0)).pdispVal;
 				pLayerName[0]=vtos(tmpObj.GetPropertyByName(_T("Layer")));
 				//If MsgBox(_T("你真地要添加") & sLN(0) & _T("层上的所有实体到选择集吗?"), vbDefaultButton1 + vbQuestion + vbSystemModal + vbYesNo) = vbNo Then Exit Function
 				if(ShowMessage(GetResStr(IDS_MsgBox_60643)+pLayerName[0]+GetResStr(IDS_MsgBox_60644),MB_DEFBUTTON1|MB_ICONQUESTION|MB_SYSTEMMODAL|MB_YESNO)==IDNO)
@@ -7553,7 +7553,7 @@ bool EDIBAcad::SelectLayerV(long Count, va_list argList)
 	CString sTmp;
 	try
 	{
-		tmpMods=objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+		tmpMods=objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
 		c=(long)tmpMods.GetPropertyByName(_T("Count"));
 		if(c==0)
 			return ret;
@@ -7564,11 +7564,11 @@ bool EDIBAcad::SelectLayerV(long Count, va_list argList)
 		BOOL bf=FALSE;
 		DISPID pidItem=0,pidLayer=0;
 		tmpMods.GetIDOfName(_T("Item"),&pidItem);
-		tmpObj=tmpMods.Invoke(pidItem,1,&_variant_t((long)0));
+		tmpObj=tmpMods.Invoke(pidItem,1,&_variant_t((long)0)).pdispVal;
 		tmpObj.GetIDOfName(_T("Layer"),&pidLayer);
 		for(i=0;i<c;i++)
 		{
-			tmpObj=tmpMods.Invoke(pidItem,1,&_variant_t((long)i));
+			tmpObj=tmpMods.Invoke(pidItem,1,&_variant_t((long)i)).pdispVal;
 			sTmp=(char*)_bstr_t(tmpObj.GetProperty(pidLayer));
 			sTmp.MakeUpper();
 			bf=FALSE;
@@ -7662,8 +7662,8 @@ double EDIBAcad::GetTextStyleWidthFactor(LPCTSTR lpszStyle)
 	GetActiveAcadDoc();
 	//Dim TS As Object, i As Integer, Found As Boolean
 	CMObject tmpObj,TS;
-	TS=objAcadDoc.GetPropertyByName(_T("TextStyles"));
-	tmpObj=TS.Invoke(_T("Item"),1,&_variant_t(lpszStyle));
+	TS=objAcadDoc.GetPropertyByName(_T("TextStyles")).pdispVal;
+	tmpObj=TS.Invoke(_T("Item"),1,&_variant_t(lpszStyle)).pdispVal;
 	if(tmpObj.p!=NULL)
 	{
 		dResult=(double)tmpObj.GetPropertyByName(_T("Width"));
@@ -7684,8 +7684,8 @@ BOOL EDIBAcad::ApplyTextStyleProperty(CMObject &obj, CString strStyleName,CStrin
     short   iGenFlag;
 	CMObject tmp, tsobj;
 
-	tmp = objAcadDoc.GetPropertyByName(_T("TextStyles"));
-	tsobj = tmp.Invoke(_T("Item"), 1, &_variant_t(strStyleName));
+	tmp = objAcadDoc.GetPropertyByName(_T("TextStyles")).pdispVal;
+	tsobj = tmp.Invoke(_T("Item"), 1, &_variant_t(strStyleName)).pdispVal;
 
 	if(tsobj.p != NULL)
     {
@@ -7781,10 +7781,10 @@ void EDIBAcad::SetACADSupportPath()
 		CMObject ObjPreferences;
 		CMObject ObjFiles;
 		CMObject ObjSupportPath;
-		ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences"));
+		ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences")).pdispVal;
 		_variant_t varStr;
 		varStr.SetString("<<Unnamed Profile>>");
-		ObjFiles=ObjPreferences.GetPropertyByName(_T("Files"));
+		ObjFiles=ObjPreferences.GetPropertyByName(_T("Files")).pdispVal;
 		varStr=ObjFiles.GetPropertyByName(_T("SupportPath"));
 		//从SupportPath 中搜索图形块路径是否存在，如果不存在则应加入图形块路径
 		
@@ -7849,8 +7849,8 @@ void EDIBAcad::AddSupportPath(const CString &strInsPath)
 {
 	CMObject ObjAcadAppPreferencesFiles;
 	CMObject ObjPreferences;
-	ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences"));
-	ObjAcadAppPreferencesFiles=ObjPreferences.GetPropertyByName(_T("Files"));
+	ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences")).pdispVal;
+	ObjAcadAppPreferencesFiles=ObjPreferences.GetPropertyByName(_T("Files")).pdispVal;
 	
 	
 	_variant_t varAllPah;
@@ -7882,8 +7882,8 @@ void EDIBAcad::DeleteSupportPath()
 	{	
 		CMObject ObjAcadAppPreferencesFiles;
 		CMObject ObjPreferences;
-		ObjPreferences=ObjAcadApp.GetPropertyByName(_T("Preferences"));
-		ObjAcadAppPreferencesFiles=ObjPreferences.GetPropertyByName(_T("Files"));
+		ObjPreferences=ObjAcadApp.GetPropertyByName(_T("Preferences")).pdispVal;
+		ObjAcadAppPreferencesFiles=ObjPreferences.GetPropertyByName(_T("Files")).pdispVal;
 		
 		
 		_variant_t varAllPah;

@@ -1950,7 +1950,7 @@ bool EDIBgbl::FindTable(_ConnectionPtr db, CString sTab, CString *pSTabName, CSt
 	return TRUE;
 }
 
-bool EDIBgbl::VolTabAddRs(_RecordsetPtr &RsVolume, _VolumeDef &VolumeDef)
+bool EDIBgbl::VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef)
 {
 	try
 	{
@@ -1988,7 +1988,7 @@ int EDIBgbl::FindStr(CString *pStr, int Count, CString sName)
 	return -1;
 }
 
-bool EDIBgbl::DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long VolumeID)
+bool EDIBgbl::DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long VolumeID)
 {
 	try
 	{
@@ -2039,7 +2039,7 @@ bool EDIBgbl::DataTabAddRs(_RecordsetPtr &dRsData, _RecordsetPtr &sRsData, long 
 	}
 }
 
-bool EDIBgbl::bFieldExists(_RecordsetPtr &rs, CString sName)
+bool EDIBgbl::bFieldExists(_RecordsetPtr rs, CString sName)
 {
 	try
 	{

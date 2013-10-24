@@ -3255,7 +3255,13 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpPhsLoad (duty char(10),design REAL,cool REAL,heat REAL,HydraulicPressure REAL,SafetyValveAction REAL,Tj char(20))"), NULL, adCmdText);
 
-			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat,Tj) VALUES (\'Px\',0,") + (rsza->GetCollect(_T("pxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("pxl1"))))) + _T(",") + (rsza->GetCollect(_T("pxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("pxr1"))))) + _T(",\'") + ftos(t0) + _T("\')");
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat,Tj) VALUES (\'Px\',0,");
+			strExecute += (rsza->GetCollect(_T("pxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pxl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("pxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pxr1")))))); 
+			strExecute += _T(",\'"); 
+			strExecute += ftos(t0); 
+			strExecute += _T("\')");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 			//pfg20050422原代码
 			/*	EDIBgbl::dbPRJ->Execute((_bstr_t) CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',")) + 
@@ -3267,25 +3273,44 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			//pfg20050422原代码
 
 			//pfg20050422
-			strExecute =  CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',")) + 
-				(rsza->GetCollect(_T("pjg1")).vt==VT_NULL ? CString(_T("0")) : ftos((vtof(rsza->GetCollect(_T("pjg1"))) * UnitF))) 
-				+ CString(_T(","))
-				+ (rsza->GetCollect(_T("paz1")).vt==VT_NULL? CString(_T("0")) : ftos((vtof(rsza->GetCollect(_T("paz1"))) * UnitF))) 
-				+ CString(_T(",")) 
-				+ (rsza->GetCollect(_T("pgz1")).vt==VT_NULL ? _T("0") : ftos(vtof(rsza->GetCollect(_T("pgz1"))) * UnitF)) + CString(_T(")"));
+			strExecute =  CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',"));
+			strExecute += (rsza->GetCollect(_T("pjg1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("pjg1"))) * UnitF)));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("paz1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("paz1"))) * UnitF))); 
+			strExecute += _T(",\'"); 
+			strExecute += (rsza->GetCollect(_T("pgz1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("pgz1"))) * UnitF))); 
+			strExecute += _T(",\'"); 
+			strExecute += ftos(t0); 
+			strExecute += _T("\')");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 			//pfg20050422
 
-			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Pz\',0,") + (rsza->GetCollect(_T("pzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzl1"))) * UnitF))) + _T(",") + (rsza->GetCollect(_T("pzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzr1"))) * UnitF))) + _T(")");
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Pz\',0,");
+			strExecute += (rsza->GetCollect(_T("pzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzl1"))) * UnitF)));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("pzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzr1"))) * UnitF))); 
+			strExecute += _T(")");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 
-			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mx\',0,") + (rsza->GetCollect(_T("mxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxl1")))))) + _T(",") + (rsza->GetCollect(_T("mxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("mxr1"))))) + _T(")");
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mx\',0,");
+			strExecute += (rsza->GetCollect(_T("mxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("mxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxr1")))))); 
+			strExecute += _T(")");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 
-			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'My\',0,") + (rsza->GetCollect(_T("myl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myl1")))))) + _T(",") + (rsza->GetCollect(_T("myr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("myr1"))))) + _T(")");
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'My\',0,");
+			strExecute += (rsza->GetCollect(_T("myl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("myr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myr1")))))); 
+			strExecute += _T(")");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 
-			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mz\',0,") + (rsza->GetCollect(_T("mzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzl1")))))) + _T(",") + (rsza->GetCollect(_T("mzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("mzr1"))))) + _T(")");
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mz\',0,");
+			strExecute += (rsza->GetCollect(_T("mzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("mzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzr1")))))); 
+			strExecute += _T(")");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 			
 			//开始绘制表格
@@ -3348,7 +3373,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3359,7 +3384,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					//1.支吊架布置图见x1,支吊架一览表见x2
 					tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 					iNo++;
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3373,7 +3398,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3384,7 +3409,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					//2.本期工程按图制作x套
 					tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 					iNo++;
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3402,7 +3427,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//%d. 管部尺寸已包含偏装值
 						tmpStr.Format(IDS_PZ_D,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3411,7 +3436,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//%d. 根部尺寸已包含偏装值
 						tmpStr.Format(IDS_PZ_G,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3423,7 +3448,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 				{
 					tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3437,26 +3462,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(IDS_WeldingDemandSeeManual,GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);				
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3466,27 +3491,27 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				{
 					//5.焊接要求及焊缝高度见如下手册:
 					tmpStr.Format(IDS_WeldingDemandAsFollow,iNo++);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					
 					p0.SetX(p0[0] + 43);
 					//管部:焊接要求及焊缝高度见xx
 					tmpStr.Format(IDS_WeldingDemandSeeManual,GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
 					//连接件:焊接要求及焊缝高度见xx
 					tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
 					//根部:焊接要求及焊缝高度见xx
 					tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
 					
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3586,7 +3611,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//1.支吊架布置图见x1,支吊架一览表见x2
 							tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3597,7 +3622,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3610,7 +3635,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//2.本期工程按图制作x套
 							tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3621,7 +3646,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3642,7 +3667,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.管部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_D,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3652,7 +3677,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.根部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_G,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3664,7 +3689,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 					{
 						tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3678,26 +3703,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//5.焊接要求及焊缝高度见如下手册:
 							tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 
 							p0.SetX(p0[0] + 43);
 							//管部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//连接件:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//根部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3708,26 +3733,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3808,7 +3833,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//1.支吊架布置图见x1,支吊架一览表见x2
 							tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3819,7 +3844,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3832,7 +3857,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//2.本期工程按图制作x套
 							tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3843,7 +3868,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3862,7 +3887,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.管部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_D,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3872,7 +3897,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.根部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_G,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3883,7 +3908,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 					{
 						tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3898,26 +3923,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//5.焊接要求及焊缝高度见如下手册:
 							tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetX(p0[0] + 43);
 							//管部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//连接件:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
 							
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//根部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3928,26 +3953,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
 						
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -5185,12 +5210,12 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 				 rs->MoveFirst();
 				 if(strOldZdjType!="")
 				 {
-					FindPSAType(strOldZdjType,&rs);//pfg20051101 应力计算的支吊架类型是否存在
+					FindPSAType(strOldZdjType, rs);//pfg20051101 应力计算的支吊架类型是否存在
 				 }
 				 rs->get_Collect((_variant_t)_T("MaxDist"),&v);
 				 iSumDistOfSpring = vtoi(v);//最大总位移，用于编号中。
 				 //设置弹簧计算结果信息
-				 SetSpringPhsInfo(&rs, rss, bLineSPR,strZdjType);
+				 SetSpringPhsInfo(rs, rss, bLineSPR,strZdjType);
 				 rs->get_Collect((_variant_t)_T("OpDist"),&v);
 				if(gbHotStatus2Zero)
 					fTotalInstallCompressValue = vtof(v) + fyr;
@@ -5335,7 +5360,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 							rs->get_Collect((_variant_t)_T("MaxDist"),&v);
 							gSumDistOfSpring = vtoi(v);//最大总位移，用于编号中。
 							//设置弹簧计算结果信息
-							SetSpringPhsInfo(&rs, rss, bLineSPR,strZdjType);
+							SetSpringPhsInfo(rs, rss, bLineSPR,strZdjType);
 							rs->get_Collect((_variant_t)_T("OpDist"),&v);
 							if(gbHotStatus2Zero)
 								fTotalInstallCompressValue = vtof(v) + fyr;
@@ -11020,7 +11045,7 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 				//CMObject tmpObj=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Text"));
 				//int iWidth = vtoi(tmpObj.GetPropertyByName("Width"));
 				//可能会出现 'MText' 对象根据自身 'Width' 属性而换行的动作
-				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText));
+				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText)).pdispVal;
 				objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(strTextStyle));
 				objEnt.PutPropertyByName(_T("Height"),&_variant_t((double)4.0));
 				
@@ -11035,7 +11060,7 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 				strText.Format("%d.%s",iNo++,strReadDesc);
 
 				//可能会出现 'MText' 对象根据自身 'Width' 属性而换行的动作
-				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText));
+				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText)).pdispVal;
 				objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(strTextStyle));
 				objEnt.PutPropertyByName(_T("Height"),&_variant_t((double)4.0));
 				

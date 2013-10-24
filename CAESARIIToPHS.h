@@ -17,13 +17,13 @@ public:
 	virtual ~CAESARIIToPHS();
 	void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,long maxZdjh,long FileNameID,char * strPSAVER);
 private:
-	void ImportHangerRestraints(_RecordsetPtr &rsData,_RecordsetPtr &rsHR,long &ltemp,long &FileNameID,char *strPSAVER,long &node,int flag);//pfg20050615
-	void importUnitsForces(_RecordsetPtr &rsData,long node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,CString m_strLGKname);//pfg20050622
+	void ImportHangerRestraints(_RecordsetPtr rsData,_RecordsetPtr rsHR,long &ltemp,long &FileNameID,char *strPSAVER,long &node,int flag);//pfg20050615
+	void importUnitsForces(_RecordsetPtr rsData,long node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,CString m_strLGKname);//pfg20050622
 	void ImportDisplacements(_RecordsetPtr rsData,long node, CString strLGKname,CString strJOBNAME_P,int flag);
-	void ImportDiameter(_RecordsetPtr &rsData,long node,CString strJOBNAME_A);
+	void ImportDiameter(_RecordsetPtr rsData,long node,CString strJOBNAME_A);
 	//导入弹簧数据
-	void ImportHanger(_RecordsetPtr &rsData,long node,CString strJOBNAME_P);
-	void ConversionTypeCaesarToPhs(_RecordsetPtr &rsData,long node,CString strJOBNAME_P,CString strGKname,long &iType);
+	void ImportHanger(_RecordsetPtr rsData,long node,CString strJOBNAME_P);
+	void ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long node,CString strJOBNAME_P,CString strGKname,long &iType);
 	//单位换算
 	double UnitsToUeUnits(_RecordsetPtr rsData,CString SourceUnits,CString UeUnits,double &dOffset);
 

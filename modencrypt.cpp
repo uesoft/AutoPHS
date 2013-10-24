@@ -531,7 +531,7 @@ void ModEncrypt::EncryptLogout()
 
 DWORD ModEncrypt::GetNHDogNo()
 {
-	DWORD retCode;
+//	DWORD retCode;
 	DWORD CurrentNO=0;
 	DWORD dwReturnCode;
 	if(NetDogHandle)

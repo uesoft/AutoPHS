@@ -77,7 +77,7 @@ BOOL CSelectXYZdlg::OnInitDialog()
 }
 
 #include "user.h"
-void ReadResult_Excel(_RecordsetPtr &pRs)
+void ReadResult_Excel(_RecordsetPtr pRs)
 {
 	CString strSQL=_T("");
 	CString x=_T("");

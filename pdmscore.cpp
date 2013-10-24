@@ -73,11 +73,11 @@ struct CPDMSINFO{
 	float	fLJMB;
 };
 
-CString GetPDMSVal(LPCSTR lpszData)
+CString GetPDMSVal(LPTSTR lpszData)
 {
-	const char szColonEn[]	=	":";
-	const char szColonCHS[]	=	"£º";
-	const char szBlank[]	=	" ";
+	char szColonEn[]	=	":";
+	char szColonCHS[]	=	"£º";
+	char szBlank[]	=	" ";
 	char* pchar;
 	pchar=strstr(lpszData,szColonCHS);
 	if(!pchar)

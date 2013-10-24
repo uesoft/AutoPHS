@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\SelEngineVolume\inc;..\InterfaceAndStruct\inc"
+				AdditionalIncludeDirectories="..\PSADomain\Inc;..\SelEngineVolume\inc;..\InterfaceAndStruct\inc"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -701,6 +701,10 @@
 						PreprocessorDefinitions=""
 					/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\Cphs1.cpp"
+				>
 			</File>
 			<File
 				RelativePath="dataformatdisp.cpp"

@@ -4190,12 +4190,22 @@ spZ1Z2:
 								rsX->get_Collect((_variant_t)_T("CHdist"), &vTmp1);
 								sTmp2.Format(_T("%g"),vtof(vTmp1));
 								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHDist=") +sTmp2), NULL, adCmdText);
-								rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
 
-								sTmp2 = (_T("UPDATE tmpCSLen SET CHHeight=")+(vtos(vTmp1)==_T("") ? _T("0") : vtos(vTmp1)) );
+								rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+								if (vtos(vTmp1)==_T(""))
+								{
+									sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=0");
+								} else {
+									sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=")+vtos(vTmp1);
+								}
 								EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
 
-								sTmp2 = (_T("UPDATE tmpCSLen SET CHLegHeight=")+(vtos(vTmp1)==_T("") ? _T("0") : vtos(vTmp1)) );
+								if (vtos(vTmp1)==_T(""))
+								{
+									sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=0");
+								} else {
+									sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=")+vtos(vTmp1);
+								}
 								EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
 								sTmp2.Format(_T("%g"),modPHScal::gdw);
 								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET GDW1=") +sTmp2), NULL, adCmdText);

@@ -1384,7 +1384,9 @@ void CPhsData::ShowComboBox(long X, long Y)
 	
 	row=m_DBGbill.RowContain(Y);
 	val.vt=VT_I2;//以下取代了ColContaining函数，因为原来的ColContaining是错的
-	for (short i=m_DBGbill.GetLeftCol();posXS<=X;i++)
+
+	short i;
+	for (i=m_DBGbill.GetLeftCol();posXS<=X;i++)
 	{
 		val.iVal=i;
 		if (!SHDlg.bIsVisible[i]) continue;
