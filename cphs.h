@@ -42,6 +42,21 @@ public:
     bool GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNuts, int FirstCal,int MaxCalCount,int nth,float& TmpPaz,float& TmpPgz);
 	void doGetphsBHandSizes();
 	void doGetphsBHandSizes2();
+	bool doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& vTmp1, CString& sTmp, 
+		COleVariant& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+		_RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+		float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+				   float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, COleVariant& vBH, _RecordsetPtr rsSAPart, 
+				   int nth, _variant_t& vnil);
+	bool doiCSPR(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& vTmp1, CString& sTmp, 
+		COleVariant& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+		_RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+		float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+		float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, COleVariant& vBH, _RecordsetPtr rsSAPart, 
+		int nth, _variant_t& vnil,
+		_RecordsetPtr rsDiaOfCSPRFiJ, _RecordsetPtr rsDiaOfCSPRFiK, float& Height_SPRINGsL5, CString& sPartID, CString *Ptype, long& i, float& sngH1xmax,
+				   float& sngDim, float& tmpSelPJG4CSPRFiK);
+
     void GetBoltsNutsAndAttachmentsCLgg(int nth = 1);
     void GetphsBlkRotation();
     long CheckMatchPhs();

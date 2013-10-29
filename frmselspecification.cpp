@@ -124,12 +124,13 @@ HBRUSH CFrmSelSpecification::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CFrmSelSpecification::Option1_Click(int Index)
 {
+	HRESULT hr = S_OK;
 	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
 	_RecordsetPtr rs1;
-	rs1.CreateInstance(__uuidof(_Recordset));
+	rs1.CreateInstance(__uuidof(Recordset));
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	CString strSQL;
 	CString sTmp;
 	COleVariant v,v1;
@@ -137,7 +138,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 	{
 		long i,ix;
 // 		db.Open(basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
-		db->Open(_bstr_t(basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),_T(""), (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
+		db->Open(_bstr_t("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),_T(""), (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
 		m_iSelIndex = Index;
 		m_List2.SetCurSel(m_iSelIndex);
 		for(i=0;i<6;i++)
@@ -151,6 +152,8 @@ void CFrmSelSpecification::Option1_Click(int Index)
 // 		rs1.m_pDatabase=&EDIBgbl::dbSORT;
 		strSQL.Format(_T("SELECT * FROM PhsManu WHERE seq=%d"),Index);
 // 		rs1.Open(dbOpenSnapshot,strSQL);
+		hr = rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		rs1->MoveFirst();
 		rs1->get_Collect((_variant_t)_T("SQL"),&v);
 // 		rs.m_pDatabase=&EDIBgbl::dbSORT;
@@ -371,9 +374,9 @@ void CFrmSelSpecification::SetUseCount()
 	{
 //		rs1(&EDIBgbl::dbSORT),rs2(&EDIBgbl::dbSORT);
 		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(_Recordset));
+		rs1.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs2;
-		rs2.CreateInstance(__uuidof(_Recordset));
+		rs2.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		int i;
 		COleVariant v;

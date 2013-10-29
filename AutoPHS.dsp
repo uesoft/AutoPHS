@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W2 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Fr /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W2 /GX /Zi /O2 /I "..\SelEngineVolume\inc" /I "..\PSADomain\Inc" /I "..\InterfaceAndStruct\INC" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Fr /Yu"stdafx.h" /FD /c
 # SUBTRACT CPP /WX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /debug /machine:I386
+# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002/AutoPHS.exe"
 
 !ELSEIF  "$(CFG)" == "AutoPHS - Win32 Debug"
 
@@ -80,7 +80,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 htmlhelp.lib FillExcelDlld.lib DataFormatDlgd.lib version.lib SelEngineVolumed.lib InterfaceAndStructd.lib PSAPointElevationd.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\shareDLL\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
+# ADD LINK32 htmlhelp.lib FillExcelDlld.lib DataFormatDlgd.lib version.lib SelEngineVolumed.lib InterfaceAndStructd.lib PSAPointElevationd.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

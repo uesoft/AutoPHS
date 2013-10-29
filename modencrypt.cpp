@@ -57,7 +57,10 @@ DWORD glngVersion=0;
 const DWORD glngAppVersion=0x0700;//pfg20050609
 long ModEncrypt::glngMicroDogID = 0;
 long ModEncrypt::gLngSavedMicroDogID =0;
-CString ModEncrypt::gstrDBZdjCrudePassWord="ProductDB888";
+
+// 从测试版本来看，不需要密码
+//CString ModEncrypt::gstrDBZdjCrudePassWord="ProductDB888";
+CString ModEncrypt::gstrDBZdjCrudePassWord="";
 CString ModEncrypt::gstrDBProductPassWord="";
 const char* ModEncrypt::conStrDBPasswordSuffix =  "DB888";
 
@@ -309,7 +312,7 @@ bool ModEncrypt::CheckLegalUser()
 			//VerifyEncryptFile(strPassWord);
 			VerifyEncryptFile();
 			//gstrDBZdjCrudePassWord = strPassWord + conStrDBPasswordSuffix
-			gstrDBProductPassWord =CString( "Product") + conStrDBPasswordSuffix;
+//			gstrDBProductPassWord =CString( "Product") + conStrDBPasswordSuffix;
 			gstrDBZdjCrudePassWord = gstrDBProductPassWord;
 		}
 	}
@@ -317,7 +320,7 @@ bool ModEncrypt::CheckLegalUser()
 	{
 		gbLegalUser=false;
 		NetDogPassword=5602521;
-		dwReturnCode = NetDogLogin();
+//		dwReturnCode = NetDogLogin();
 		if(dwReturnCode!=DOGSUCCESS)
 		{
 			gbLegalUser=false;
@@ -330,13 +333,14 @@ bool ModEncrypt::CheckLegalUser()
 		}
 		else
 		{
-			DWORD CurrentDogNo=GetNHDogNo();
+			DWORD CurrentDogNo;
+			CurrentDogNo=GetNHDogNo();
 			if(gLngVersionID==0 || CurrentDogNo== 0 || gLngSavedMicroDogID ==0 || gLngSavedMicroDogID != CurrentDogNo || glngVersion != glngAppVersion)
 			{
 				gbLegalUser=false;
 				strMsg=GetResStr(IDS_DOG_NO_ERROR);
 				ShowMessage(strMsg);
-				dwReturnCode=NetDogLogout();
+//				dwReturnCode=NetDogLogout();
 				if(dwReturnCode!=0)
 				{
 					strMsg.Format(_T("NetDogLogout function error! code：%d"),dwReturnCode);
@@ -518,7 +522,7 @@ void ModEncrypt::EncryptLogout()
 		//是网络狗
 		if(NetDogHandle!=NULL)
 		{
-			dwReturnCode=NetDogLogout();
+//			dwReturnCode=NetDogLogout();
 			if(dwReturnCode!=0)
 			{
 				strMsg.Format(_T("NetDogLogout function error! code：%d"),dwReturnCode);
@@ -539,7 +543,7 @@ DWORD ModEncrypt::GetNHDogNo()
 		NetDogAddr=0;
 		NetDogBytes=4;
 		NetDogData=&CurrentNO;
-		dwReturnCode=NetDogRead();
+//		dwReturnCode=NetDogRead();
 		if(dwReturnCode!=0)
 		{
 			CString strMsg;

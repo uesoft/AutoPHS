@@ -744,7 +744,7 @@ void CSelTemplate::LoadListName()
 		
 //		rsRef(&EDIBgbl::dbPRJ);
 		_RecordsetPtr rsRef;
-		rsRef.CreateInstance(__uuidof(_Recordset));
+		rsRef.CreateInstance(__uuidof(Recordset));
 		CString strSQL = _T("SELECT max(MaxColNum) AS [MaxCount] FROM [SELECT Count(*) AS MaxColNum FROM PhsStructureREF GROUP BY PhsStructureREF.SampleID]. AS [ColNumTable]");
 		// 计算连接件的最大数目，确定ListCtrl中的列数。
 
@@ -785,7 +785,7 @@ void CSelTemplate::LoadListPA()
 {
 	CString strSQL;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	m_bLoadPA=TRUE;
 	try
 	{
@@ -821,7 +821,7 @@ void CSelTemplate::LoadListSA()
 {
 	CString strSQL;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	m_bLoadSA=TRUE;
 	try
 	{
@@ -1142,7 +1142,7 @@ void CSelTemplate::DataReposition()
 		//if(sBmpName.Find(".dwg",0)==-1)
 		//	sBmpName+=".dwg";
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 //		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 		strSQL.Format(_T("SELECT CustomID FROM phsStructureREF WHERE SampleID=%d ORDER BY SEQ"),
 			this->m_iCurSampleID);
@@ -1568,7 +1568,7 @@ void CSelTemplate::OnOK()
 		
 //			rsTmpZB(&EDIBgbl::dbPRJDB );
 			_RecordsetPtr rsTmpZB;
-			rsTmpZB.CreateInstance(__uuidof(_Recordset));
+			rsTmpZB.CreateInstance(__uuidof(Recordset));
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
 //			rsTmpZB.Open(dbOpenSnapshot,strTemp);
 			rsTmpZB->Open((_bstr_t)strTemp, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
@@ -1801,7 +1801,7 @@ BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
 	try
 	{
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 // 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenDynaset,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -1833,7 +1833,7 @@ BOOL CSelTemplate::IsDefaultFavoriteTemplate(long lSampleID)
 	try 
 	{
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 // 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenDynaset,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 

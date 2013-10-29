@@ -1,23 +1,23 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoPHS", "AutoPHS.vcproj", "{EF057BE9-D500-4114-ADA9-8787F5459C7E}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AutoPHS", "AutoPHS.vcxproj", "{EF057BE9-D500-4114-ADA9-8787F5459C7E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataFormatDlg", "..\DataFormatDlg\DataFormatDlg\DataFormatDlg.vcproj", "{F2E7C344-7F21-4667-889A-0A1CDB0FF2CF}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DataFormatDlg", "..\DataFormatDlg\DataFormatDlg\DataFormatDlg.vcxproj", "{F2E7C344-7F21-4667-889A-0A1CDB0FF2CF}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FillExcelDll", "..\FillExcelDll\FillExcelDll\FillExcelDll.vcproj", "{406ABA74-BD9E-49EF-A8DB-E5641FE9925A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FillExcelDll", "..\FillExcelDll\FillExcelDll\FillExcelDll.vcxproj", "{406ABA74-BD9E-49EF-A8DB-E5641FE9925A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetPropertyofMaterial", "..\GetPropertyofMaterial\GetPropertyofMaterial\GetPropertyofMaterial.vcproj", "{8F7A559F-5DF5-45A7-BEAB-5960E7C676D7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GetPropertyofMaterial", "..\GetPropertyofMaterial\GetPropertyofMaterial\GetPropertyofMaterial.vcxproj", "{8F7A559F-5DF5-45A7-BEAB-5960E7C676D7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InterfaceAndStruct", "..\InterfaceAndStruct\InterfaceAndStruct\InterfaceAndStruct.vcproj", "{15841521-8329-498C-9D1B-40D16F3F37BE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InterfaceAndStruct", "..\InterfaceAndStruct\InterfaceAndStruct\InterfaceAndStruct.vcxproj", "{15841521-8329-498C-9D1B-40D16F3F37BE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSADomain", "..\PSADomain\PSADomain\PSADomain.vcproj", "{1B549C31-C11E-40C1-8130-C0451069FDB2}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSADomain", "..\PSADomain\PSADomain\PSADomain.vcxproj", "{1B549C31-C11E-40C1-8130-C0451069FDB2}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSAPointElevation", "..\PSAPointElevation\PSAPointElevation\PSAPointElevation.vcproj", "{091F81D7-B5FF-4E03-B2D3-43FEF74AD71A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSAPointElevation", "..\PSAPointElevation\PSAPointElevation\PSAPointElevation.vcxproj", "{091F81D7-B5FF-4E03-B2D3-43FEF74AD71A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSIGlobalShare", "..\PSIGlobalShare\PSIGlobalShare\PSIGlobalShare.vcproj", "{A4EB0648-C1DD-431B-8EC9-223CD551AF9E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PSIGlobalShare", "..\PSIGlobalShare\PSIGlobalShare\PSIGlobalShare.vcxproj", "{A4EB0648-C1DD-431B-8EC9-223CD551AF9E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SelEngineVolume", "..\SelEngineVolume\SelEngineVolume\SelEngineVolume.vcproj", "{EFC8533C-C48B-416D-B2D6-BA7555D0D8E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SelEngineVolume", "..\SelEngineVolume\SelEngineVolume\SelEngineVolume.vcxproj", "{EFC8533C-C48B-416D-B2D6-BA7555D0D8E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

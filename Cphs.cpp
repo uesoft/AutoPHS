@@ -1492,9 +1492,9 @@ bool Cphs::GetphsBHandSizesTest()
 		_RecordsetPtr rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
 
 		_RecordsetPtr rsTmp;
-		rsTmp.CreateInstance(__uuidof(_Recordset));
+		rsTmp.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsX;
-		rsX.CreateInstance(__uuidof(_Recordset));
+		rsX.CreateInstance(__uuidof(Recordset));
 //		rsTmp.m_pDatabase=&EDIBgbl::dbSORT;
 //		rsX.m_pDatabase=&modPHScal::dbZDJcrude;
 		
@@ -4543,7 +4543,7 @@ void Cphs::GetMaterial()
 		COleVariant vTmp;
 //		 rs(&EDIBgbl::dbPHScode);//20071018 "dbSORT" 改为 "dbPHScode"
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		//材料规范选择表SpecificationOfMaterial
 		CString SQLx ;
 		SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
@@ -6606,8 +6606,8 @@ Cphs::Cphs()
 //	rsphsStructureREF.m_pDatabase=&EDIBgbl::dbSORT;
 	TZBResultObj=NULL;
 	m_rsObj=NULL;
-	rsID.CreateInstance(__uuidof(_Recordset));
-	m_rsObj.CreateInstance(__uuidof(_Recordset));
+	rsID.CreateInstance(__uuidof(Recordset));
+	m_rsObj.CreateInstance(__uuidof(Recordset));
 }
 
 Cphs::~Cphs()

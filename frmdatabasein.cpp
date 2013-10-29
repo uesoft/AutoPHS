@@ -62,7 +62,7 @@ void CFrmDatabaseIn::getDatabase()
 	try
 	{
 		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
 		CString mytablenameA,mytablenameB;
 		m_bDataSelected=false;
 		CString sqlA;
@@ -187,9 +187,9 @@ void CFrmDatabaseIn::OnDataIn()
 		_RecordsetPtr rs1;
 		rs1.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs2;
-		rs2.CreateInstance(__uuidof(_Recordset));
+		rs2.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsVlm;
-		rsVlm.CreateInstance(__uuidof(_Recordset));
+		rsVlm.CreateInstance(__uuidof(Recordset));
 		long VlmID=0;
 		long VlmID2=0;
 		COleVariant v1,v2;

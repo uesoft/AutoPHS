@@ -222,25 +222,35 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 */
 bool EDIBgbl::InitBillType()
 {
-	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
-	try{
-		if(!::DirExists(basDirectory::ProjectDBDir))
-		{
-			frmFolderLocation.DoModal();
-		}
-		//20071024 10:58 (end) "ProjectDBDir" 改为 "DBShareDir"
-		if(!FileExists(basDirectory::DBShareDir + _T("TableFormat.mdb"))) //2007.10.14 16:00(start) 把"Sort.mdb"改为"TableFormat.mdb"
-      CopyFile(basDirectory::TemplateDir + _T("TableFormat.mdb"), basDirectory::DBShareDir + _T("TableFormat.mdb"),true);
-	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	::CoInitialize(NULL);
 
-	db->Open((_bstr_t)(basDirectory::DBShareDir+_T("TableFormat.mdb")), "", "", adConnectUnspecified);
+	HRESULT hr = S_OK;
+	_RecordsetPtr rs;
+	hr = rs.CreateInstance(__uuidof(Recordset));
+	if(!::DirExists(basDirectory::ProjectDBDir))
+	{
+		frmFolderLocation.DoModal();
+	}
+	//20071024 10:58 (end) "ProjectDBDir" 改为 "DBShareDir"
+	if(!FileExists(basDirectory::DBShareDir + _T("TableFormat.mdb"))) //2007.10.14 16:00(start) 把"Sort.mdb"改为"TableFormat.mdb"
+	CopyFile(basDirectory::TemplateDir + _T("TableFormat.mdb"), basDirectory::DBShareDir + _T("TableFormat.mdb"),true);
+	_ConnectionPtr db;
+	hr = db.CreateInstance(__uuidof(Connection));
+
+	try{
+		hr = db->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("TableFormat.mdb")), "", "", adConnectUnspecified);
 //	db->Open((_bstr_t)(basDirectory::DBShareDir+_T("TableFormat.mdb")); //20071024 10:58 (end) "ProjectDBDir" 改为 "DBShareDir"
 //    rs.m_pDatabase=&db;														//2007.10.14 16:00(end) 把"Sort.mdb"改为"TableFormat.mdb"
 //    rs->Open((_bstr_t)(dbOpenSnapshot,_T("select * from TableINFO"));
-	rs->Open((_bstr_t)_T("select * from TableINFO"), _variant_t((IDispatch*)db,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		hr = rs->Open((_bstr_t)_T("select * from TableINFO"), _variant_t((IDispatch*)db,true), 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	}
+	catch(CException *e)
+	{
+		e->ReportError();
+		e->Delete();
+		return false;
+	}
    COleVariant Var1,Var2;
    int v1;
    while(!rs->adoEOF)
@@ -263,13 +273,6 @@ bool EDIBgbl::InitBillType()
    rs->Close();
    db->Close();
 	return true;
-   }
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-		return false;
-	}
 }
 
 void EDIBgbl::InitCurrWork()
@@ -289,43 +292,51 @@ void EDIBgbl::InitCurrWork()
 	//获取工程名称卷册名称
 	try{
 
-		if(dbPRJDB->State != adStateOpen)
+		if(dbPRJDB == NULL)
 		{
-			dbPRJDB->Open((_bstr_t)(basDirectory::DBShareDir+_T("AllPrjDB.mdb")), "", "", adConnectUnspecified);//20071025 "ProjectDBDir" 改为 "DBShareDir"
+			dbPRJDB.CreateInstance(__uuidof(Connection));
+			dbPRJDB->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("AllPrjDB.mdb")), "", "", adConnectUnspecified);//20071025 "ProjectDBDir" 改为 "DBShareDir"
 		}
-		if(dbPRJ->State != adStateOpen)
+		if(dbPRJ== NULL)
 		{
-			dbPRJ->Open((_bstr_t)(basDirectory::ProjectDir+_T("WorkPrj.mdb")), "", "", adConnectUnspecified);
+			dbPRJ.CreateInstance(__uuidof(Connection));
+			dbPRJ->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDir+_T("WorkPrj.mdb")), "", "", adConnectUnspecified);
 		}
-		if(dbSORT->State != adStateOpen)
+		if(dbSORT== NULL)
 		{
-			dbSORT->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("sort.mdb")), "", "", adConnectUnspecified);
+			dbSORT.CreateInstance(__uuidof(Connection));
+			dbSORT->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb")), "", "", adConnectUnspecified);
 		}
 		//20071015 10:22(start)
-		if(dbTable->State != adStateOpen)
+		if(dbTable== NULL)
 		{
-			dbTable->Open((_bstr_t)(basDirectory::DBShareDir+_T("TableFormat.mdb")), "", "", adConnectUnspecified);
+			dbTable.CreateInstance(__uuidof(Connection));
+			dbTable->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("TableFormat.mdb")), "", "", adConnectUnspecified);
 		}
 		//20071015  10:22(end)
 		//20071018(start)
-		if(dbDSize->State != adStateOpen)
+		if(dbDSize== NULL)
 		{
-			dbDSize->Open((_bstr_t)(basDirectory::DBShareDir+_T("DrawingSize.mdb")), "", "", adConnectUnspecified);
+			dbDSize.CreateInstance(__uuidof(Connection));
+			dbDSize->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("DrawingSize.mdb")), "", "", adConnectUnspecified);
 		}
 
-		if(dbMaterial->State != adStateOpen)
+		if(dbMaterial== NULL)
 		{
-			dbMaterial->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("Material.mdb")), "", "", adConnectUnspecified);
+			dbMaterial.CreateInstance(__uuidof(Connection));
+			dbMaterial->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("Material.mdb")), "", "", adConnectUnspecified);
 		}
 
-		if(dbPHScode->State != adStateOpen)
+		if(dbPHScode== NULL)
 		{
-			dbPHScode->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("PHScode.mdb")), "", "", adConnectUnspecified);
+			dbPHScode.CreateInstance(__uuidof(Connection));
+			dbPHScode->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("PHScode.mdb")), "", "", adConnectUnspecified);
 		}
 
-		if(dbSACal->State != adStateOpen)
+		if(dbSACal== NULL)
 		{
-			dbSACal->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("SAStructureCal.mdb")), "", "", adConnectUnspecified);
+			dbSACal.CreateInstance(__uuidof(Connection));
+			dbSACal->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("SAStructureCal.mdb")), "", "", adConnectUnspecified);
 		}
 		//20071018(end)
 
@@ -359,10 +370,10 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 {
 	CString tbn;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 
 	_RecordsetPtr rs1;
-	rs1.CreateInstance(__uuidof(_Recordset));
+	rs1.CreateInstance(__uuidof(Recordset));
    try
    {
 
@@ -928,15 +939,15 @@ void EDIBgbl::GetSelPrjName()
 	try
 	{
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs2;
-		rs2.CreateInstance(__uuidof(_Recordset));
+		rs2.CreateInstance(__uuidof(Recordset));
 
 		//获得所有含有属性的块的属性值,便于以后输出
 
 		_variant_t tmpVar;
 		//取得工程名
-		if(dbPRJDB->State != adStateOpen)
+// 		if(dbPRJDB->State != adStateOpen)
 		{
 			SQLx = _T("SELECT * FROM engin WHERE ucase(trim(EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND trim(gcmc)<>\'\'");
 // 			rs.m_pDatabase=&dbPRJDB;
@@ -964,7 +975,7 @@ void EDIBgbl::GetSelPrjName()
 		
 		//取得设计阶段
 		COleVariant v;
-		if(dbDSize->State != adStateOpen)//20071018 11:29(start)"dbDSize"改为"dbDSize"
+// 		if(dbDSize->State != adStateOpen)//20071018 11:29(start)"dbDSize"改为"dbDSize"
 		{
 //			rs2.m_pDatabase=&dbDSize;
 			SQLx = _T("SELECT * FROM DesignStage WHERE ucase(trim(sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND trim(sjjddm)<>\'\'") + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
@@ -994,7 +1005,7 @@ void EDIBgbl::GetSelPrjName()
 			rs2->Close();
 		}//20071018 11:29(end)"dbDSize"改为"dbDSize"
 		//取得卷册名称
-		if(dbPRJDB->State != adStateOpen)
+// 		if(dbPRJDB->State != adStateOpen)
 		{
 			SQLx = _T("SELECT * FROM [Volume] WHERE VolumeID=") + ltos(SelVlmID) + _T(" ORDER BY jcdm");
 // 			rs.m_pDatabase=&dbPRJDB;
@@ -1045,7 +1056,7 @@ CString EDIBgbl::GetDBName(_ConnectionPtr db)
 		  return dbName;
 
 }
-
+*/
 bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 {
 	//11/3
@@ -1055,7 +1066,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 		return false;
 	}
 	_RecordsetPtr TempSet;
-	TempSet.CreateInstance(__uuidof(_Recordset));
+	TempSet.CreateInstance(__uuidof(Recordset));
 	CString strSQL;
 	strSQL="select * from "+tbn+"";
 	//11/3
@@ -1076,7 +1087,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 		return false;
 	}	 
 }
-*/
+
 void EDIBgbl::InitWorkTable(_ConnectionPtr db, CString tbn, int type)
 {
 
@@ -1186,8 +1197,8 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 	
 
 	_ConnectionPtr sDB, dDB;
-	sDB.CreateInstance(__uuidof(_Connection));
-	dDB.CreateInstance(__uuidof(_Connection));
+	sDB.CreateInstance(__uuidof(Connection));
+	dDB.CreateInstance(__uuidof(Connection));
 
 // 	sTDef(&sDB), dTDef(&dDB);
 	FieldPtr fieldInfo,fieldInfoS,fieldInfoD;
@@ -1287,8 +1298,8 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 	if(sListTableName->IsEmpty())
 		return;
 	_ConnectionPtr sDB, dDB;
-	sDB.CreateInstance(__uuidof(_Connection));
-	dDB.CreateInstance(__uuidof(_Connection));
+	sDB.CreateInstance(__uuidof(Connection));
+	dDB.CreateInstance(__uuidof(Connection));
 	FieldPtr fieldInfo;
 	try
 	{
@@ -1368,7 +1379,7 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 * 日期：2003-07-18
 */
 	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
 	CStringList *listTableName;
 	CString strTableName;
 	POSITION pos1,pos2;
@@ -1408,8 +1419,8 @@ bool EDIBgbl::UpgradeDatabase()
 		{
 			//复位安装标志
 			_ConnectionPtr sDb , dDb ;
-			sDb.CreateInstance(__uuidof(_Connection));
-			dDb.CreateInstance(__uuidof(_Connection));
+			sDb.CreateInstance(__uuidof(Connection));
+			dDb.CreateInstance(__uuidof(Connection));
 			int i =0;
 			CString sTmp,SQLx;
 			
@@ -1424,7 +1435,7 @@ bool EDIBgbl::UpgradeDatabase()
 			//升级sort.mdb/workprj.mdb的最好办法是拷贝
 			bool sortCrtFd=false;
 			_RecordsetPtr drsTmp;
-			drsTmp.CreateInstance(__uuidof(_Recordset));
+			drsTmp.CreateInstance(__uuidof(Recordset));
 			//20071031 "TemplateDir" 改为 "CommonDir" ; "ProjectDBDir" 改为 "DBShareDir"
 			if ( FileExists(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")) && FileExists(basDirectory::DBShareDir  +  _T("AllPrjDB.mdb")) )  
 			{
@@ -1676,17 +1687,17 @@ bool EDIBgbl::UpdateAllPrjDB()
 	{
 		CString strSQL(_T(""));
 		_ConnectionPtr sDb,dDb;
-		sDb.CreateInstance(__uuidof(_Connection));
-		dDb.CreateInstance(__uuidof(_Connection));
+		sDb.CreateInstance(__uuidof(Connection));
+		dDb.CreateInstance(__uuidof(Connection));
 
 		_RecordsetPtr sRsEngin;
-		sRsEngin.CreateInstance(__uuidof(_Recordset));
+		sRsEngin.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr dRsEngin;
-		dRsEngin.CreateInstance(__uuidof(_Recordset));
+		dRsEngin.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr sRsVolume;
-		sRsVolume.CreateInstance(__uuidof(_Recordset));
+		sRsVolume.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr dRsVolume;
-		dRsVolume.CreateInstance(__uuidof(_Recordset));
+		dRsVolume.CreateInstance(__uuidof(Recordset));
 
 		CString EnginID;
 		COleVariant vTmp1,vTmp,vTmp2;
@@ -1727,16 +1738,16 @@ bool EDIBgbl::UpdateAllPrjDB()
 // 		dRsVolume->Open((_bstr_t)(dbOpenDynaset,_T("Select * From Volume"));
 		dRsVolume->Open(_variant_t(_T("Select * From Volume")),(IDispatch*)dDb,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		_RecordsetPtr sRsData;
-		sRsData.CreateInstance(__uuidof(_Recordset));
+		sRsData.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr dRsData;
-		dRsData.CreateInstance(__uuidof(_Recordset));
+		dRsData.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsJD;
-		rsJD.CreateInstance(__uuidof(_Recordset));
+		rsJD.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsZY;
-		rsZY.CreateInstance(__uuidof(_Recordset));
+		rsZY.CreateInstance(__uuidof(Recordset));
 
 		_ConnectionPtr tmpSort;
-		tmpSort.CreateInstance(__uuidof(_Connection));
+		tmpSort.CreateInstance(__uuidof(Connection));
 		tmpSort->Open((_bstr_t)(basDirectory::DBShareDir + _T("DrawingSize")), "", "", adConnectUnspecified);//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort"改为 "DrawingSize"
 // 		rsJD.m_pDatabase=&tmpSort;
 // 		rsZY.m_pDatabase=&tmpSort;
@@ -1800,7 +1811,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 						VolumeID++;
 
 						_RecordsetPtr tdfs;
-						tdfs.CreateInstance(__uuidof(_Recordset));
+						tdfs.CreateInstance(__uuidof(Recordset));
 						tdfs = dDb->Execute((_bstr_t)"SELECT * FROM sysobjects", NULL, adCmdText);
 						Ctd = tdfs->RecordCount;
 						for(int ii=0;ii< Ctd;ii++)
@@ -2227,9 +2238,9 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 	//典型的例子：将一个有许多字段的表tmpCalFixPhs的一个记录转换成多行，以便输出到Excel打印
 	FieldPtr FdInfo;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	_RecordsetPtr rs1;
-	rs1.CreateInstance(__uuidof(_Recordset));
+	rs1.CreateInstance(__uuidof(Recordset));
 
 	CString SQLx;
 	COleVariant v;
@@ -2371,8 +2382,8 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _Conn
 	FieldPtr DesDBFieldInfo;
 	try
 	{
-		_RecordsetPtr tabSource(__uuidof(_Recordset));
-		_RecordsetPtr tabDes(__uuidof(_Recordset));
+		_RecordsetPtr tabSource(__uuidof(Recordset));
+		_RecordsetPtr tabDes(__uuidof(Recordset));
 
 		CString SQLx;
 		SQLx = _T("SELECT * FROM ") + SourceTBName;

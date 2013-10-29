@@ -28,7 +28,9 @@
 #include <algorithm>
 #include <atlbase.h>
 
-#import "C:\Program Files (x86)\Common Files\SYSTEM\ADO\msado15.dll" no_namespace \
+//#import "C:\\Program Files (x86)\\Common Files\\System\\ado\\msado60_backcompat_i386.tlb" no_namespace 
+//#import "C:\Program Files\Common Files\System\ado\msado60.tlb" no_namespace  
+#import "C:\Program Files\Common Files\System\ado\msado15.dll" no_namespace  \
 rename("EOF","adoEOF") rename("EditModeEnum","adoEditModeEnum")\
 rename("LockTypeEnum","adoLockTypeEnum") rename("FieldAttributeEnum","adoFieldAttributeEnum")\
 rename("DataTypeEnum","adoDataTypeEnum") rename("ParameterDirectionEnum","adoParameterDirectionEnum")\

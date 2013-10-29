@@ -110,7 +110,7 @@ BOOL CDlgEditDB::ListTableName()
 {
 	m_lstTableName.ResetContent();
 	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
 	CInputBox inpBox;
 	inpBox.m_bIsProtected=TRUE;
 	BOOL bIsRet=FALSE;

@@ -160,7 +160,7 @@ void CPreCalPag::SetComboSpringOrder(bool bSaveAction)
 		//只有在此处作，因为数据库初始化已经完成
 //	rs(&EDIBgbl::dbPHScode);//20071022 "dbSORT" 改为 "dbPHScode"
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 
 	COleVariant vTmp;
 //	rs.Open(dbOpenSnapshot,(_T("SELECT * FROM SelSpringRule ORDER BY seq")));

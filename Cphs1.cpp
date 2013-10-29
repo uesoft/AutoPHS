@@ -245,9 +245,9 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	}
 
 //		 rsTmpZB(&EDIBgbl::dbPRJDB);//当前支吊架当前路数零部件表，不含螺栓螺母、根部附件
-		_RecordsetPtr rsTmpZB;
-		strSQL.Format("SELECT CustomID FROM ZB WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [ClassID]<>%d AND [ClassID]<>%d AND [ClassID]<>%d AND [IsSAPart]<>-1 Order By recno",
-				EDIBgbl::SelVlmID,modPHScal::zdjh,nth,iBolts,iNuts,iAttached);
+	_RecordsetPtr rsTmpZB;
+	strSQL.Format("SELECT CustomID FROM ZB WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [ClassID]<>%d AND [ClassID]<>%d AND [ClassID]<>%d AND [IsSAPart]<>-1 Order By recno",
+			EDIBgbl::SelVlmID,modPHScal::zdjh,nth,iBolts,iNuts,iAttached);
 	try
 	{
 //		rsTmpZB.Open(dbOpenDynaset,strSQL);
@@ -258,70 +258,70 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 		ret=false;
 	}
-		int C;
- 		if( rsTmpZB->adoEOF&& rsTmpZB->BOF )
-			throw GetResStr(IDS_Null_rsTmpREF);
-		else
-		{
-			rsTmpZB->MoveLast();
-			rsTmpZB->MoveFirst();
-			Ptype=new CString[rsTmpZB->GetRecordCount()];
-			PtypeID=new CString[rsTmpZB->GetRecordCount()];
-			PtypeIndex=new long[rsTmpZB->GetRecordCount()];
-			PtypeClassID=new long[rsTmpZB->GetRecordCount()];
-			C=rsTmpZB->GetRecordCount();
-			CString strBH = sBHFormat;
-			for( i = 0 ;i < C;i++)
-			{
-				rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-				Ptype[i] = vtos(vTmp1);
-				if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'")), 0, adSearchForward, vTmp))
-				{
-					//出错
-					sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp1));
-					throw sTmp;
-				}
-				else
-				{
-					rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-					PtypeIndex[i] = vtoi(vTmp1);
-					rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
-					PtypeClassID[i] = vtoi(vTmp1);
-					rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
-					PtypeID[i] = vtos(vTmp1);
-					if(i>=1 && PtypeID[i]=="L3" && (PtypeID[i-1]=="D1" ||PtypeID[i-1]=="D1A" || PtypeID[i-1]=="D2" || PtypeID[i-1]=="D2A" || PtypeID[i-1]=="D3" || PtypeID[i-1]=="D3A" || PtypeID[i-1]=="D9" || PtypeID[i-1]=="D9A" || PtypeID[i-1]=="D10")) 
-						m_bFoundL3=true;//如果存在L3吊板，管夹螺栓是不需要换小的
-				}
-				rsTmpZB->MoveNext();
-			}
-			rsTmpZB->MoveFirst();
-		}
-		//上面Ptype数组保留了mvarrsTmpZB的拷贝
-		//以便取得支吊架组合的任意2个相邻零件,进行查找
-		
+	int C;
+	if( rsTmpZB->adoEOF&& rsTmpZB->BOF )
+		throw GetResStr(IDS_Null_rsTmpREF);
+	else
+	{
+		rsTmpZB->MoveLast();
 		rsTmpZB->MoveFirst();
-		if( ! rsTmpZB->adoEOF )
+		Ptype=new CString[rsTmpZB->GetRecordCount()];
+		PtypeID=new CString[rsTmpZB->GetRecordCount()];
+		PtypeIndex=new long[rsTmpZB->GetRecordCount()];
+		PtypeClassID=new long[rsTmpZB->GetRecordCount()];
+		C=rsTmpZB->GetRecordCount();
+		CString strBH = sBHFormat;
+		for( i = 0 ;i < C;i++)
 		{
-			rsTmpZB->MoveLast();
-			//展开sFindTBN，加快速度。
 			rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-			
+			Ptype[i] = vtos(vTmp1);
 			if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'")), 0, adSearchForward, vTmp))
 			{
 				//出错
 				sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp1));
 				throw sTmp;
 			}
-			//假设最后一个零件是根部，保存根部索引码。
-			rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-			mvSA = vtoi(vTmp1);
-			//假设最后一个零件是根部，保存根部索引码。用于统计螺栓螺母时，判断当前零件是恒吊时下一个零件是否为根部。
-			PtypeIndex[rsTmpZB->GetRecordCount()- 1] = mvSA;
-			//以下确定采用单双槽钢
+			else
+			{
+				rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+				PtypeIndex[i] = vtoi(vTmp1);
+				rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
+				PtypeClassID[i] = vtoi(vTmp1);
+				rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
+				PtypeID[i] = vtos(vTmp1);
+				if(i>=1 && PtypeID[i]=="L3" && (PtypeID[i-1]=="D1" ||PtypeID[i-1]=="D1A" || PtypeID[i-1]=="D2" || PtypeID[i-1]=="D2A" || PtypeID[i-1]=="D3" || PtypeID[i-1]=="D3A" || PtypeID[i-1]=="D9" || PtypeID[i-1]=="D9A" || PtypeID[i-1]=="D10")) 
+					m_bFoundL3=true;//如果存在L3吊板，管夹螺栓是不需要换小的
+			}
+			rsTmpZB->MoveNext();
+		}
+		rsTmpZB->MoveFirst();
+	}
+	//上面Ptype数组保留了mvarrsTmpZB的拷贝
+	//以便取得支吊架组合的任意2个相邻零件,进行查找
+
+	rsTmpZB->MoveFirst();
+	if( ! rsTmpZB->adoEOF )
+	{
+		rsTmpZB->MoveLast();
+		//展开sFindTBN，加快速度。
+		rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+		
+		if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'")), 0, adSearchForward, vTmp))
+		{
+			//出错
+			sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp1));
+			throw sTmp;
+		}
+		//假设最后一个零件是根部，保存根部索引码。
+		rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+		mvSA = vtoi(vTmp1);
+		//假设最后一个零件是根部，保存根部索引码。用于统计螺栓螺母时，判断当前零件是恒吊时下一个零件是否为根部。
+		PtypeIndex[rsTmpZB->GetRecordCount()- 1] = mvSA;
+		//以下确定采用单双槽钢
 //			rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
 //			rsTmp.Open(dbOpenSnapshot);
-			CString strSQL = (_T("SELECT DISTINCT PNum1 From ")) + modPHScal::tbnSA + 
-				_T(" WHERE CustomID=\'") + Ptype[C-1] + _T("\' AND PNum1 is not null");
+		CString strSQL = (_T("SELECT DISTINCT PNum1 From ")) + modPHScal::tbnSA + 
+			_T(" WHERE CustomID=\'") + Ptype[C-1] + _T("\' AND PNum1 is not null");
 		try
 		{
 			rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
@@ -331,279 +331,279 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 			ret=false;
 		}
-			if(rsTmp->GetRecordCount()==1)
+		if(rsTmp->GetRecordCount()==1)
+		{
+			//只有一个记录,它的Pnum1字段=1，只能采用单槽钢；Pnum2=2，只能采用双槽钢。
+			rsTmp->get_Collect((_variant_t)0L, &vTmp1);
+			if(vtoi(vTmp1) ==1)
+				strSelNumCS=_T(" AND PNUM1=1 ");
+			if(vtoi(vTmp1) ==2)
+				strSelNumCS=_T(" AND PNUM1=2 ");
+		}
+		else
+		{
+			switch(modPHScal::iNumCSVal)
 			{
-				//只有一个记录,它的Pnum1字段=1，只能采用单槽钢；Pnum2=2，只能采用双槽钢。
-				rsTmp->get_Collect((_variant_t)0L, &vTmp1);
-				if(vtoi(vTmp1) ==1)
-					strSelNumCS=_T(" AND PNUM1=1 ");
-				if(vtoi(vTmp1) ==2)
-					strSelNumCS=_T(" AND PNUM1=2 ");
+			case 1:
+				strSelNumCS=_T(" AND PNum1=1 ");
+				break;
+			case 2:
+				strSelNumCS=_T(" AND PNum1=2 ");
+				break;
+			case 3:
+				strSelNumCS=_T(" AND  ");
+				break;
+			case 0:
+				strSelNumCS=_T("");
+				break;
 			}
-			else
+		}
+		rsTmp->Close();
+		if( rsTmpZB->GetRecordCount() >= 2 )
+		{
+			//零件数量多于或等于2个，则可以取出头尾零件。
+			rsTmpZB->MoveFirst();
+			//展开sFindTBN，加快速度。
+			rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+			
+			if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'")), 0, adSearchForward, vTmp))
 			{
-				switch(modPHScal::iNumCSVal)
-				{
-				case 1:
-					strSelNumCS=_T(" AND PNum1=1 ");
-					break;
-				case 2:
-					strSelNumCS=_T(" AND PNum1=2 ");
-					break;
-				case 3:
-					strSelNumCS=_T(" AND  ");
-					break;
-				case 0:
-					strSelNumCS=_T("");
-					break;
-				}
+				//出错
+				sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp1));
+				throw sTmp;
 			}
-			rsTmp->Close();
-			if( rsTmpZB->GetRecordCount() >= 2 )
+			//假设第一个零件是管部，保存管部类别码。
+			rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+			mvPA = vtoi(vTmp1);
+			
+			//第一个零件是管部,并且最后一个零件是根部。
+			//说明目前处于单个支吊架正式计算模式,而不是选择支吊架模板模式。
+			//因为后者的最后一个零件绝大多数情况下mvSA<>iSA。
+			//以上并不完全正确。
+			
+			
+			//为了加快模板测试计算时的速度，测试计算时要跳出此段程序。
+			
+			//预先查出拉杆的CustomID，供后面计算弹簧或恒吊时选择拉杆直径使用。
+			//因为拉杆可能在弹簧之后出现，故需要先查出与弹簧或恒吊配合的拉杆直径modPHScal::giDiameter。
+			//常州电力机械厂引进美国ITT技术生产的恒吊，拉杆直径大于国内标准。
+			//为了保证规范的统一，AutoPHS采用tbnPART表内的拉杆直径作为选择依据。
+			
+			//下段程序功能已经放到GetBoltsNutsAndAttachmentsCLgg过程中完成。
+			
+			
+			//根部总重量初始值=0
+			mvarSATotalWeight = 0;
+			//开始计算
+			C=rsTmpZB->GetRecordCount();
+			CString strBH = sBHFormat;
+
+			for (i = 0 ;i<C;i++)
 			{
-				//零件数量多于或等于2个，则可以取出头尾零件。
-				rsTmpZB->MoveFirst();
-				//展开sFindTBN，加快速度。
-				rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+				if(i==0) rsTZB->MoveFirst();
+				frmStatus.UpdateStatus((float)(i+1)/C,true);
+				frmStatus.UpdateWindow();
 				
-				if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'")), 0, adSearchForward, vTmp))
+				//获得零件所在的原始数据表tbn1,以便查找
+				//展开sFindTBN，加快速度。
+				
+				if(! rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + Ptype[i] + _T("\'")), 0, adSearchForward, vTmp) )
 				{
-					//出错
-					sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp1));
+					//没有找到表名
+					sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),Ptype[i]);
 					throw sTmp;
 				}
-				//假设第一个零件是管部，保存管部类别码。
+				rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
+				modPHScal::glClassID =vtoi(vTmp1);
 				rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-				mvPA = vtoi(vTmp1);
-				
-				//第一个零件是管部,并且最后一个零件是根部。
-				//说明目前处于单个支吊架正式计算模式,而不是选择支吊架模板模式。
-				//因为后者的最后一个零件绝大多数情况下mvSA<>iSA。
-				//以上并不完全正确。
-				
-				
-				//为了加快模板测试计算时的速度，测试计算时要跳出此段程序。
-				
-				//预先查出拉杆的CustomID，供后面计算弹簧或恒吊时选择拉杆直径使用。
-				//因为拉杆可能在弹簧之后出现，故需要先查出与弹簧或恒吊配合的拉杆直径modPHScal::giDiameter。
-				//常州电力机械厂引进美国ITT技术生产的恒吊，拉杆直径大于国内标准。
-				//为了保证规范的统一，AutoPHS采用tbnPART表内的拉杆直径作为选择依据。
-				
-				//下段程序功能已经放到GetBoltsNutsAndAttachmentsCLgg过程中完成。
-				
-				
-				//根部总重量初始值=0
-				mvarSATotalWeight = 0;
-				//开始计算
-				C=rsTmpZB->GetRecordCount();
-				CString strBH = sBHFormat;
-
-				for (i = 0 ;i<C;i++)
+				modPHScal::glIDIndex = vtoi(vTmp1);
+				rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
+				sPartID = vtos(vTmp1);
+				tmpID0 = sPartID;
+				if( modPHScal::glIDIndex == iSA )
 				{
-					if(i==0) rsTZB->MoveFirst();
-					frmStatus.UpdateStatus((float)(i+1)/C,true);
-					frmStatus.UpdateWindow();
-					
-					//获得零件所在的原始数据表tbn1,以便查找
-					//展开sFindTBN，加快速度。
-					
-					if(! rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + Ptype[i] + _T("\'")), 0, adSearchForward, vTmp) )
+					//给进程显示一点时间
+					//当前零件是根部或最后一个零件
+					if( modPHScal::gbCalSAbyPJG )
 					{
-						//没有找到表名
-						sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),Ptype[i]);
-						throw sTmp;
+						//如果按结构荷载计算根部
+						tmpSelPJG = tmpPJG;
 					}
-					rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
-					modPHScal::glClassID =vtoi(vTmp1);
-					rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-					modPHScal::glIDIndex = vtoi(vTmp1);
-					rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
-					sPartID = vtos(vTmp1);
-					tmpID0 = sPartID;
-					if( modPHScal::glIDIndex == iSA )
+					//否则按前一零件的计算荷载选择根部
+				}
+				else
+				{
+					//显示给用户进度条
+					//如果不是根部或最后一个零件,则要根据连接的下一个零件,查出其尺寸字段和数量
+					//前后紧接的零件ID-->tmpCustomID0,tmpCustomID1
+					tmpCustomID0 = Ptype[i];
+					if( i <C - 1 )
 					{
-						//给进程显示一点时间
-						//当前零件是根部或最后一个零件
-						if( modPHScal::gbCalSAbyPJG )
+						if( rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + Ptype[i + 1] + _T("\'")), 0, adSearchForward, vTmp))
 						{
-							//如果按结构荷载计算根部
-							tmpSelPJG = tmpPJG;
+							rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
+							tmpID1 = vtos(vTmp1);
 						}
-						//否则按前一零件的计算荷载选择根部
-					}
-					else
-					{
-						//显示给用户进度条
-						//如果不是根部或最后一个零件,则要根据连接的下一个零件,查出其尺寸字段和数量
-						//前后紧接的零件ID-->tmpCustomID0,tmpCustomID1
-						tmpCustomID0 = Ptype[i];
-						if( i <C - 1 )
-						{
-							if( rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + Ptype[i + 1] + _T("\'")), 0, adSearchForward, vTmp))
-							{
-								rsID->get_Collect((_variant_t)_T("ID"), &vTmp1);
-								tmpID1 = vtos(vTmp1);
-							}
-							//不是最后一个零件
-							tmpCustomID1 = Ptype[i + 1];
-							//从Connect表中检索其是否存在及其匹配的尺寸信息
-							
-							if( !rsConnect->Find((_bstr_t) (_T("trim(cntb)=\'") + tmpID0 + _T("\' AND trim(cnte)=\'") + tmpID1 + _T("\'")), 0, adSearchForward, vTmp))
-							{
-								//Connect表中不存在这种组合.一般不会发生这情况.
-								sTmp.Format(GetResStr(IDS_PartCanNotMatchOrNotExistInConnect),tmpCustomID0,tmpCustomID1);
-								throw sTmp;
-							}
-							//改用ConnectCondition字段的复杂SQL条件进行连接尺寸检查，这样的适应性更广。速度慢一点。
-							//其语法类似：Cntb.Size2=Cnte.Size2 AND Cntb.size4<=Cnte.Size5
-							rsConnect->get_Collect((_variant_t)_T("ConnectCondition"), &vTmp1);
-							if( vTmp1.vt==VT_NULL)
-								tmpSQL0 = _T("");
-							else
-							{
-								tmpSQL0 = vtos(vTmp1);
-								tmpSQL0.MakeUpper();
-								//如果存在L3吊板，管夹螺栓是不需要换小的
-								if(modPHScal::gbPipeClampBolt && !m_bFoundL3)
-								{
-									//如果要求管夹螺栓可以换小，那么管夹管部的连接尺寸检查就取消
-									if( modPHScal::glIDIndex ==iPA &&( tmpID0 == "D1" || tmpID0 == "D1A" ||tmpID0 == "D2" ||   \
-										tmpID0 == "D2A" || tmpID0 == "D3" ||tmpID0 == "D3A" ||tmpID0 == "D9" ||tmpID0 == "D9A" ||tmpID0 == "D10" ))
-									{
-										modPHScal::g_bPipeClampBoltDiameterChanged=TRUE;
-										//找出管夹螺栓M1的尺寸字段，一般存在于连接字符串cntb.之后=之前
-										int i1=tmpSQL0.Find("<",5);
-										if(i1==-1) 
-										{
-											i1=tmpSQL0.Find(">",5);
-											if(i1==-1) 
-											{
-												i1=tmpSQL0.Find("=",5);
-											} else
-											{
-												//没找到任何逻辑操作符号，一般由于数据库出了错误
-											}
-										}
-										strDiaM1FieldName=tmpSQL0.Mid(5,i1-5);
-										//连接字符串置空，则不检查连接螺栓尺寸，这样管夹螺栓即换小
-										tmpSQL0 = _T("");
-									}
-								}
-							}
-							
-							rsConnect->get_Collect((_variant_t)_T("CnteXfx"), &vTmp1);
-							mlfx0 =vtoi(vTmp1);
-							rsConnect->get_Collect((_variant_t)_T("CnteRotation"), &vTmp1);
-							mlRot0 = vtoi(vTmp1);
-							rsConnect->get_Collect((_variant_t)_T("CntbNum"), &vTmp1);
-							iCntbNum=(vtoi(vTmp1)<=0 ? 1 : vtoi(vTmp1));
-							rsConnect->get_Collect((_variant_t)_T("CnteNum"), &vTmp1);
-							iCnteNum=(vtoi(vTmp1)<=0 ? 1 : vtoi(vTmp1));
-						}
+						//不是最后一个零件
+						tmpCustomID1 = Ptype[i + 1];
+						//从Connect表中检索其是否存在及其匹配的尺寸信息
 						
-						//是最后一个零件
-					}
-					if( i == 0 )
-					{
-						//第一个零件必定是管部
-						mlfx = modPHScal::GetPhsSAfx(_T("P") + modPHScal::df);
-						modPHScal::glPAid = modPHScal::glClassID;
-						//当前零件数量，用于确定是否能够承受荷载。
-						iNum = iCnteNum / iCntbNum;
-						iNumPart = iCntbNum;
-					}
-					else if( i == (C - 1) )
-					{
-						//最后一个零件
-						//只有根部可能出现共用情况,glNumSA=rsza(_T("Gnum"))
-						iNumPart = modPHScal::glNumSA;
-					}
-					else
-					{
-						//其它中间连接件
-						//每个部件的数量iNumPart=其前一个部件的数量iNumPart*iNum*iCntbNum
-						
-						iNumPart = iNumPart * iNum * iCntbNum;
-						iNum = iCnteNum / iCntbNum;
-						if( iNumPart <= 0 ) iNumPart = modPHScal::gintParallelNum;
-						//管部以外的零件的材料，较细致的做法是按照材料规范选择表按不同类别零件分别选择；此处简单地取默认值；
-						SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
-						if(rs3->State == adOpenStatic)
-							rs3->Close();
-					try {
-//						rs3.Open(dbOpenSnapshot,SQLx);
-						rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-							adOpenDynamic, adLockReadOnly, adCmdText); 
-					}
-					catch(_com_error e)
-					{
-						ret=false;
-					}
-						if(rs3->adoEOF && rs3->BOF)
+						if( !rsConnect->Find((_bstr_t) (_T("trim(cntb)=\'") + tmpID0 + _T("\' AND trim(cnte)=\'") + tmpID1 + _T("\'")), 0, adSearchForward, vTmp))
 						{
-							//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
-							sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::dbPHScode->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+							//Connect表中不存在这种组合.一般不会发生这情况.
+							sTmp.Format(GetResStr(IDS_PartCanNotMatchOrNotExistInConnect),tmpCustomID0,tmpCustomID1);
 							throw sTmp;
 						}
+						//改用ConnectCondition字段的复杂SQL条件进行连接尺寸检查，这样的适应性更广。速度慢一点。
+						//其语法类似：Cntb.Size2=Cnte.Size2 AND Cntb.size4<=Cnte.Size5
+						rsConnect->get_Collect((_variant_t)_T("ConnectCondition"), &vTmp1);
+						if( vTmp1.vt==VT_NULL)
+							tmpSQL0 = _T("");
 						else
 						{
-							rs3->get_Collect((_variant_t)_T("Material"), &vTmp);
-							m_strMaterial=vtos(vTmp);
+							tmpSQL0 = vtos(vTmp1);
+							tmpSQL0.MakeUpper();
+							//如果存在L3吊板，管夹螺栓是不需要换小的
+							if(modPHScal::gbPipeClampBolt && !m_bFoundL3)
+							{
+								//如果要求管夹螺栓可以换小，那么管夹管部的连接尺寸检查就取消
+								if( modPHScal::glIDIndex ==iPA &&( tmpID0 == "D1" || tmpID0 == "D1A" ||tmpID0 == "D2" ||   \
+									tmpID0 == "D2A" || tmpID0 == "D3" ||tmpID0 == "D3A" ||tmpID0 == "D9" ||tmpID0 == "D9A" ||tmpID0 == "D10" ))
+								{
+									modPHScal::g_bPipeClampBoltDiameterChanged=TRUE;
+									//找出管夹螺栓M1的尺寸字段，一般存在于连接字符串cntb.之后=之前
+									int i1=tmpSQL0.Find("<",5);
+									if(i1==-1) 
+									{
+										i1=tmpSQL0.Find(">",5);
+										if(i1==-1) 
+										{
+											i1=tmpSQL0.Find("=",5);
+										} else
+										{
+											//没找到任何逻辑操作符号，一般由于数据库出了错误
+										}
+									}
+									strDiaM1FieldName=tmpSQL0.Mid(5,i1-5);
+									//连接字符串置空，则不检查连接螺栓尺寸，这样管夹螺栓即换小
+									tmpSQL0 = _T("");
+								}
+							}
 						}
+						
+						rsConnect->get_Collect((_variant_t)_T("CnteXfx"), &vTmp1);
+						mlfx0 =vtoi(vTmp1);
+						rsConnect->get_Collect((_variant_t)_T("CnteRotation"), &vTmp1);
+						mlRot0 = vtoi(vTmp1);
+						rsConnect->get_Collect((_variant_t)_T("CntbNum"), &vTmp1);
+						iCntbNum=(vtoi(vTmp1)<=0 ? 1 : vtoi(vTmp1));
+						rsConnect->get_Collect((_variant_t)_T("CnteNum"), &vTmp1);
+						iCnteNum=(vtoi(vTmp1)<=0 ? 1 : vtoi(vTmp1));
 					}
-					//显示给用户进度条
-					//下面的字段变化只适合于根部,非根部的荷载字段名称均为SAfDPmax=_T("Pmax")
-					if( modPHScal::glPAid == iPAh || modPHScal::glPAid == iPAD4LA || modPHScal::glPAid == iPAD4LQ || modPHScal::glPAid == iPAD11LD || modPHScal::glPAid == iPADLR  || modPHScal::glPAid == iPALX )
-					{
-						//吊架
-						SAfDPmax = _T("PmaxH");
-					}
-					else if( modPHScal::glPAid == iPAs || modPHScal::glPAid == iPASS|| modPHScal::glPAid == iPAGS  || modPHScal::glPAid == iPAXZ1_XZ3 )
-					{
-						//滑动支架
-						if(giUPxyz==1)
-						{
-							if( fabs(modPHScal::yr1) < 100 && fabs(modPHScal::zr) < 100 )
-								SAfDPmax = _T("PmaxSS100");
-							else
-								SAfDPmax = _T("PmaxSS150");
-						}
-						else if(giUPxyz==2)
-						{
-							if( fabs(modPHScal::zr) < 100 && fabs(modPHScal::xr) < 100 )
-								SAfDPmax = _T("PmaxSS100");
-							else
-								SAfDPmax = _T("PmaxSS150");
-						}
-						else if(giUPxyz==3)
-						{
-							if( fabs(modPHScal::xr) < 100 && fabs(modPHScal::yr1) < 100 )
-								SAfDPmax = _T("PmaxSS100");
-							else
-								SAfDPmax = _T("PmaxSS150");
-						}
-					}
-					else if( modPHScal::glPAid == iPAfixZ1 || modPHScal::glPAid == iPAfixZ2 )
-					{
-						//固定支架
-						SAfDPmax = _T("PmaxSF");
-					}
-					if( tmpSQL != _T("") )
-						tmpSQL = tmpSQL + _T(" AND ");
 					
-					//
-					//如果不需要进行连接孔、杆尺寸自动检查
-					if( ! modPHScal::gbConnectHoleDimMatch ) 
-						tmpSQL = _T("");
+					//是最后一个零件
+				}
+				if( i == 0 )
+				{
+					//第一个零件必定是管部
+					mlfx = modPHScal::GetPhsSAfx(_T("P") + modPHScal::df);
+					modPHScal::glPAid = modPHScal::glClassID;
+					//当前零件数量，用于确定是否能够承受荷载。
+					iNum = iCnteNum / iCntbNum;
+					iNumPart = iCntbNum;
+				}
+				else if( i == (C - 1) )
+				{
+					//最后一个零件
+					//只有根部可能出现共用情况,glNumSA=rsza(_T("Gnum"))
+					iNumPart = modPHScal::glNumSA;
+				}
+				else
+				{
+					//其它中间连接件
+					//每个部件的数量iNumPart=其前一个部件的数量iNumPart*iNum*iCntbNum
+					
+					iNumPart = iNumPart * iNum * iCntbNum;
+					iNum = iCnteNum / iCntbNum;
+					if( iNumPart <= 0 ) iNumPart = modPHScal::gintParallelNum;
+					//管部以外的零件的材料，较细致的做法是按照材料规范选择表按不同类别零件分别选择；此处简单地取默认值；
+					SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
+					if(rs3->State == adOpenStatic)
+						rs3->Close();
+				try {
+//						rs3.Open(dbOpenSnapshot,SQLx);
+					rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+						adOpenDynamic, adLockReadOnly, adCmdText); 
+				}
+				catch(_com_error e)
+				{
+					ret=false;
+				}
+					if(rs3->adoEOF && rs3->BOF)
+					{
+						//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
+						sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::dbPHScode->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+						throw sTmp;
+					}
 					else
 					{
-						//要求孔尺寸匹配
-						if( tmpSQL != _T("") )
-						{
-						}
-						else 
-							tmpSQL = _T("");
+						rs3->get_Collect((_variant_t)_T("Material"), &vTmp);
+						m_strMaterial=vtos(vTmp);
 					}
+				}
+				//显示给用户进度条
+				//下面的字段变化只适合于根部,非根部的荷载字段名称均为SAfDPmax=_T("Pmax")
+				if( modPHScal::glPAid == iPAh || modPHScal::glPAid == iPAD4LA || modPHScal::glPAid == iPAD4LQ || modPHScal::glPAid == iPAD11LD || modPHScal::glPAid == iPADLR  || modPHScal::glPAid == iPALX )
+				{
+					//吊架
+					SAfDPmax = _T("PmaxH");
+				}
+				else if( modPHScal::glPAid == iPAs || modPHScal::glPAid == iPASS|| modPHScal::glPAid == iPAGS  || modPHScal::glPAid == iPAXZ1_XZ3 )
+				{
+					//滑动支架
+					if(giUPxyz==1)
+					{
+						if( fabs(modPHScal::yr1) < 100 && fabs(modPHScal::zr) < 100 )
+							SAfDPmax = _T("PmaxSS100");
+						else
+							SAfDPmax = _T("PmaxSS150");
+					}
+					else if(giUPxyz==2)
+					{
+						if( fabs(modPHScal::zr) < 100 && fabs(modPHScal::xr) < 100 )
+							SAfDPmax = _T("PmaxSS100");
+						else
+							SAfDPmax = _T("PmaxSS150");
+					}
+					else if(giUPxyz==3)
+					{
+						if( fabs(modPHScal::xr) < 100 && fabs(modPHScal::yr1) < 100 )
+							SAfDPmax = _T("PmaxSS100");
+						else
+							SAfDPmax = _T("PmaxSS150");
+					}
+				}
+				else if( modPHScal::glPAid == iPAfixZ1 || modPHScal::glPAid == iPAfixZ2 )
+				{
+					//固定支架
+					SAfDPmax = _T("PmaxSF");
+				}
+				if( tmpSQL != _T("") )
+					tmpSQL = tmpSQL + _T(" AND ");
+				
+				//
+				//如果不需要进行连接孔、杆尺寸自动检查
+				if( ! modPHScal::gbConnectHoleDimMatch ) 
+					tmpSQL = _T("");
+				else
+				{
+					//要求孔尺寸匹配
+					if( tmpSQL != _T("") )
+					{
+					}
+					else 
+						tmpSQL = _T("");
+				}
 					
 	//第一个零件是管部，无需连接匹配字段信息。它的信息仅仅用于其后的零件使用。
 	switch(modPHScal::glClassID)
@@ -3699,597 +3699,11 @@ spZ1Z2:
 	   case iG56:
 	   case iG57:
 	   case iG100://用户自定义根部不计算荷载，而要统计材料
-		   {
-			   rsTZB->put_Collect((_variant_t)_T("CLcl"),STR_VAR(GetResStr(IDS_GROUPWARE)));
-			   j = 1; //主型钢
-			   CString sj;
-			   sj.Format(_T("%d"),j);
-			   rsX->get_Collect((_variant_t)(_T("P")+sj), &vTmp1);
-			   CString sTmp3=vtos(vTmp1);
-			   sTmp3=sTmp3.Mid(1);
-			   sTmp3.Format(_T("%g"),_tcstod(sTmp3,NULL)*10);
-			   rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp2);
-			   sTmp=vtos(vTmp1);
-			   //Pnum1=NULL或0，根部主型钢数量错误
-			   if( sTmp!=_T("") &&  vtoi(vTmp2) > 0 )
-				   //if( sTmp!=_T("") )			
-			   {
-				   if(modPHScal::glClassID == iSAh )
-				   {
-					   //直接吊G11
-					   rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
-					   sTmp=vtos(vTmp1);
-					   if( sTmp!= _T("") )
-					   {
-						   rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET BH=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);
-						   rsTZB->put_Collect((_variant_t)_T("BH"),vTmp1);
-						   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
-						   sTmp2.Format(_T("%g"),vtof(vTmp1));						
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
-						   //G11的公式为sizeH+A,其中sizeH=螺杆长度,长度储存在A01字段。
-						   sTmp2.Format(_T("%g"),modPHScal::WidthA);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET sizeH=") + sTmp2), NULL, adCmdText);
-						   //暂时只要计算主零件的长度
-						   sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
-					   }
-					   rsTZB->put_Collect((_variant_t)_T("sizeH"),COleVariant((float)modPHScal::WidthA));
-					   rsTZB->put_Collect((_variant_t)_T("sizeDIM"),COleVariant((float)modPHScal::WidthA));
-				   }
-				   else
-				   {
-					   //非直接吊G11,即槽钢
-					   rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
-					   sTmp=vtos(vTmp1);
-					   if( sTmp!= _T("") )
-					   {
-						   rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET BH=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);                           
-						   rsTZB->put_Collect((_variant_t)_T("BH"),vTmp1);
-						   //G100自定义根部的主型钢型号P1写入tmpCSLen，以便作为材料规格号.
-						   rsX->get_Collect((_variant_t)_T("P1"), &vTmp1);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET P1=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);                           
-				   
-						   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
-						   double fLenA=0;//记录悬臂端部到拉杆受力点之间的距离值A  Add by luorijin 2008.10.30
-						   fLenA = vtof(vTmp1);
-						   sTmp2.Format(_T("%g"),vtof(vTmp1));
-						   if(modPHScal::glClassID==iG52_55)
-						   {
-							   //G52_55的公式为H+h+100,其中H=板肋高度,长度储存在A01字段。
-							   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHLegHeight=")+sTmp3 ), NULL, adCmdText);
-							   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHheight=") +sTmp3), NULL, adCmdText);					   
-						   }
-						   else
-						   {
-							   //G47的双槽钢间距chdist=300,G48的双槽钢间距=Bwidth(柱子宽度)
-					   
-						   }
-				   
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
-						   rsX->get_Collect((_variant_t)_T("c"), &vTmp1);
-						   sTmp2.Format(_T("%g"),vtof(vTmp1));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET c=") +sTmp2), NULL, adCmdText);
-						   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);
-						   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);
-						   rsTZB->put_Collect((_variant_t)_T("B"),rsza->GetCollect(_T("B01")));
-						   rsTZB->put_Collect((_variant_t)_T("A"),rsza->GetCollect(_T("A01")));
-				   
-						   //H=生根梁的高度
-						   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
-				   
-				   
-						   rsX->get_Collect((_variant_t)_T("m"), &vTmp1);
-						   sTmp2.Format(_T("%g"),vtof(vTmp1));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET m=") +sTmp2), NULL, adCmdText);
-						   rsX->get_Collect((_variant_t)_T("CHdist"), &vTmp1);
-						   sTmp2.Format(_T("%g"),vtof(vTmp1));
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHDist=") +sTmp2), NULL, adCmdText);
-						   sTmp2.Format(_T("%g"),modPHScal::Lspan);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET Lspan=") +sTmp2), NULL, adCmdText);
-						   sTmp2.Format(_T("%g"),modPHScal::gdw);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET GDW1=") +sTmp2), NULL, adCmdText);
-
-						   sTmp2.Format(_T("%g"),modPHScal::Lspan);
-						   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET L1=") +sTmp2), NULL, adCmdText);
-				   
-						   //把简支梁跨度l1写到ZB 表LSpan字段，以方便三维使用，并且便于记录非标根部
-						   rsTZB->put_Collect((_variant_t)_T("LSpan"),COleVariant((float)modPHScal::Lspan));
-						   rsTZB->put_Collect((_variant_t)_T("XBL1"),COleVariant((float)(modPHScal::gdw+fLenA)));//XBL1记录悬臂长度  Add by luorijin 2008.10.30
-						   //暂时只要计算主型钢的长度
-						   sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
-					   }
-					   //槽刚的a值保存到字段T,该值在绘制根部定位尺寸时很重要。如G22~G24,G3x,G6x,G7x类
-					   //if( (sPartID.Left(2) == _T("G3")) || (sPartID.Left(2) ==  _T("G6") ) || (sPartID.Left(2) == _T("G7")) || (sPartID.Left(2) == _T("G5")) && (sPartID.Left(3) != _T("G51"))  && (sPartID.Left(3) != _T("G56"))  && (sPartID.Left(3) != _T("G57")) )
-					   if( (modPHScal::glClassID==iSAbeam) || (modPHScal::glClassID==iG52_55 ) )
-						   rsTZB->put_Collect((_variant_t)_T("T"),COleVariant((float)(modPHScal::Lspan - modPHScal::gdw)));
-					   else
-					   {
-						   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
-						   rsTZB->put_Collect((_variant_t)_T("T"), (vTmp1));
-					   }
-			   
-					   rsTZB->put_Collect((_variant_t)_T("L1"),COleVariant((float)sngCSLen));
-					   rsTZB->put_Collect((_variant_t)_T("GDW1"),COleVariant(modPHScal::gdw));
-					   //更新原始数据表TZA中的根部主槽钢数量
-					   rsX->get_Collect((_variant_t)_T("Pnum1"), &vTmp1);
-					   if( vTmp1.vt==VT_NULL)
-					   {
-						   modPHScal::iCSnum = 1;
-					   }
-					   else
-					   {
-						   modPHScal::iCSnum = vtoi(vTmp1);
-					   }
-					   rsza->PutCollect(_T("iCSnum"),_variant_t((long)modPHScal::iCSnum));
-			   
-				   }
-				   rsTZB->put_Collect((_variant_t)_T("CLgg"),STR_VAR(sBH));
-				   //rsTZB->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
-				   //更新根部主槽钢总长度
-				   rsza->PutCollect(_T("SATotalLength"),_variant_t(sngCSLen));
-				   if(modPHScal::glClassID == iSAbeam )
-				   {
-				   }
-				   else if(modPHScal::glClassID == iSALbrace || modPHScal::glClassID == iSALbraceFixG47 || modPHScal::glClassID == iSALbraceFixG48 || modPHScal::glClassID == iSACantilever )
-				   {
-					   //rsza->PutCollect(_T("SATotalLength"),_variant_t(sngCSLen));
-					   rsza->PutCollect(_T("LC1"),_variant_t(sngCSLen));
-				   }
-		   
-		  }
-		  else
-		  {
-			  //碰到为空的附件，退出，加快速度。
-			  //输入原始数据库时应该注意所有的附件从1开始填写，不要间断。
-			  //由于以前输入的数据并不完全符合上面要求，故要取消退出，否则结果中有些附件不会被统计。
-			  //Exit For
-			  if( j = 1 )
-			  {
-				  if(modPHScal::glClassID == iSAh ||modPHScal::glClassID == iGCement )
-				  {
-					  //直接吊或混凝土梁或支墩
-				  }
-				  else
-				  {
-					  //型钢根部，P1字段必需有值
-					  rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
-					  sTmp2.Format(GetResStr(IDS_SAP1MustBeChannelSteelNo),modPHScal::tbnSA,vtos(vTmp1));
-					  //frmStatus.MessageBox(sTmp2);
-					  ShowMessage(sTmp2);
-				  }
-			  }
-		  }
-  
-		  rsTZB->Update();
-		  //根部附件,j=1是主型钢，统计时,如果在支吊架组装图中
-		  //绘制零件明细表,则只标出根部整体结构;
-		  //而统计材料时,应该拆成型钢.
-		  //首先我们要做一个假定，以便简化此处的编程。
-		  //即：所有附件要么在附件表中，要么在根部附件表中，要么在螺栓螺母表中。
-		  //且根部表中的所有附件规格即Pi(i=1~12)字段的内容即是根部附件表中的BH字段。
-		  //因此，制订支吊架根部规范时： 一定要使用相同标准的根部表和附件表。
-		  //选择规范时则不必考虑，因为根部附件与根部数据表的信息都存放在根部信息管理表PhsManuSA中。
-		  CString strBH;
-  
-		  CString tmpID;
-		  for (j = 1 ;j<= 12;j++)
-		  {
-			  sj.Format(_T("%d"),j);
-			  rsX->get_Collect((_variant_t)(_T("P")+sj), &vTmp1);
-			  rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp2);
-			  sTmp=vtos(vTmp1);
-			  if( sTmp!=_T("") && vtoi(vTmp2)>0 )
-			  {
-				  mvSAattachedCustomID =sTmp;
-				  //看是否是型钢:槽钢、角钢、工字钢、圆钢、扁钢？（钢板作为附件处理）
-				  //扁钢(在根部表和型钢表中)的存放格式应为：-宽x厚，如-90x16。
-				  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSectionSteel + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
-				  if(rsTmp->State == adOpenStatic)
-					  rsTmp->Close();
-	try
-	{
-//				  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
-//				  rsTmp.Open(dbOpenSnapshot,SQL1);
-				  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					  adOpenForwardOnly, adLockReadOnly, adCmdText); 
-			  }
-			  catch(_com_error e)
-			  {
-				  ret=false;
-			  }
-				  if( rsTmp->adoEOF && rsTmp->BOF )
-				  {
-					  //不是型钢
-					  //****************************
-					  //找不到,则是附件,再查附件表
-					  rsTmp->Close();
-					  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnAttachment + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
-					  /*if(rsTmp->State == adOpenStatic)
-					  rsTmp->Close();
-	try
-	{
-					  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;*/
-//					  rsTmp.Open(dbOpenSnapshot,SQL1);
-	try
-	{
-					  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						  adOpenForwardOnly, adLockReadOnly, adCmdText); 
-				  }
-				  catch(_com_error e)
-				  {
-					  ret=false;
-				  }
-					  if( rsTmp->adoEOF && rsTmp->BOF )
-					  {
-						  //不是附件,则是螺栓螺母,再查螺栓螺母表
-						  //螺栓螺母：根部使用的可能是特定标准的螺栓螺母，而配件可能使用其它标准的螺栓螺母，如国家标准螺栓螺母。
-						  //其编号方式为M36x200,或M20
-						  //因此，首先查找根部螺栓螺母表tbnSABoltsnuts，再根据查出的规格从通用螺栓螺母表tbnBoltsNutsID中查找相应的规格。
-						  rsTmp->Close();
-						  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSABoltsNuts + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
-						  /*if(rsTmp->State == adOpenStatic)
-						  rsTmp->Close();
-						  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;*/
-//						  rsTmp.Open(dbOpenSnapshot,SQL1);
-	try
-	{
-						  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-							  adOpenForwardOnly, adLockReadOnly, adCmdText); 
-					  }
-					  catch(_com_error e)
-					  {
-						  ret=false;
-					  }
-						  if( rsTmp->adoEOF && rsTmp->BOF )
-						  {
-							  //没找到螺栓螺母记录
-							  sBH = _T("");
-							  strBH = _T("");
-							  sngWeight = 0;
-							  mviSASSClassID = iSABoltsNutsUnknown;
-							  //rsTmp->Close();
-							  sTmp2.Format(GetResStr(IDS_NotFoundThisSAAttached),mvSAattachedCustomID);
-							  //frmStatus.MessageBox(sTmp2);
-							  ShowMessage(sTmp2);
-							  //Err.Number = iUE_NotFoundThisSAAttached
-							  //Err.Description = ResolveResString(iUE_NotFoundThisSAAttached, _T("|1"), mvSAattachedCustomID)
-							  //Err.Raise iUE_NotFoundThisSAAttached
-							  //报告一个错误，但不要退出。
-							  //MsgBox ResolveResString(iUE_NotFoundThisSAAttached, _T("|1"), mvSAattachedCustomID), vbMsgBoxSetForeground
-						  }
-						  else
-						  {
-							  //找到相应的螺栓或螺母
-							  strBH = _T("");
-							  rsTmp->MoveFirst();
-							  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-							  sBH = vtos(vTmp1);
-							  strBH=sBH;
-							  sTmp=CString(_T("UPDATE tmpCSLen SET BH=\'")) + sBH + _T("\'");
-							  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
-							  rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-							  tmpCustomID = vtos(vTmp1);
-							  sTmp= CString(_T("UPDATE tmpCSLen SET CustomID=\'")) + tmpCustomID + _T("\'");
-							  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
-					  
-							  rsTmp->get_Collect((_variant_t)_T("size2"), &vTmp1);
-							  tmpSize2 =vtof(vTmp1);
-							  rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
-							  tmpSizeH =vtof(vTmp1);
-							  tmpID=modPHScal::sFindID(tmpCustomID);
-							  if(tmpID==_T("F9") || tmpID==_T("F10"))
-							  {
-								  if(modPHScal::glClassID==iG56 || modPHScal::glClassID==iG57 || modPHScal::glClassID==iG52_55 || modPHScal::glClassID==iG51)
-								  {
-									  rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
-									  sTmp=vtos(vTmp1);
-									  if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
-									  {
-										  rsID->get_Collect((_variant_t)_T("BHFormat"), &vTmp1);
-										  sBHFormat = vtos(vTmp1);
-									  }
-									  else
-									  {
-									  }
-									  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-									  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);								
-									  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-									  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
-									  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
-									  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);								
-									  //计算螺栓的长度
-									  sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
-									  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g  ORDER BY bh"),
-										  modPHScal::tbnBoltsNuts,
-										  tmpCustomID,
-										  tmpSize2);
-							  
-								  }
-							  }
-							  else if(tmpID==_T("F14"))
-							  {
-								  //六角头螺栓F14
-								  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
-								  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g AND sizeH=%g ORDER BY bh"),
-									  modPHScal::tbnBoltsNuts,
-									  tmpCustomID,
-									  tmpSize2 ,
-									  tmpSizeH);
-								  sngCSLen=1000;
-							  }
-							  else
-							  {
-								  //六角螺母F1、六角扁螺母F2、球面垫圈F4等
-								  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
-								  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g ORDER BY bh"),
-									  modPHScal::tbnBoltsNuts,
-										  tmpCustomID,
-										  tmpSize2);
-								  }
-								  rsTmp->Close();
-	try
-	{
-	//							  rsTmp.Open(dbOpenSnapshot,SQL1);
-								rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-								  adOpenForwardOnly, adLockReadOnly, adCmdText); 
-						  }
-						  catch(_com_error e)
-						  {
-							  ret=false;
-						  }
-								  if( rsTmp->adoEOF && rsTmp->BOF )
-								  {
-									  //没有记录
-									  sBH = _T("");
-									  sngWeight = 0;
-									  mviSASSClassID = iBoltsNutsUnknown;
-									  sTmp2.Format(GetResStr(IDS_NotFoundThisSAAttached),tmpCustomID);
-									  //frmStatus.MessageBox(sTmp2);
-									  ShowMessage(sTmp2);
-								  }
-								  else
-								  {
-									  //在通用螺栓螺母表中找到相应的螺栓或螺母
-									  rsTmp->MoveFirst();
-									  if(tmpID==_T("F9") || tmpID==_T("F10"))
-									  {
-										  //F9、F10已经查出了直径和长度,只要在通用螺栓螺母表中查出它们的CustomID和BH,再生成CLgg，就可以了。
-										  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-										  sBH = vtos(vTmp1);
-										  sTmp= CString(_T("UPDATE tmpCSLen SET BH=\'")) + sBH + _T("\'");
-										  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
-								  
-										  rsID->get_Collect((_variant_t)_T("BHFormat"), &vTmp1);
-										  sBHFormat = vtos(vTmp1);															    
-										  sngCSLen = modPHScal::CSLength(sBHFormat, ftos(sngCSLen), sBH);
-									  }
-									  else if(tmpID==_T("F14"))
-									  {
-										  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-										  sBH = vtos(vTmp1);
-										  sngCSLen = 1000;  //设置为1000,便于编程.
-									  }						
-									  else
-									  {
-										  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-										  sBH = vtos(vTmp1);
-										  sngCSLen = 1000;  //设置为1000,便于编程.
-									  }
-									  rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
-									  sngWeight =vtof(vTmp1)*sngCSLen/1000;
-									  sngW = sngWeight;
-									  rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-									  tmpCustomID = vtos(vTmp1);                    
-									  if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
-									  {
-										  rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
-										  mviSASSClassID =vtoi(vTmp1);
-										  rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-										  mviSASSIndex =vtoi(vTmp1);
-									  }
-								  }
-						  }
-					   }
-					   else
-					   {
-						   //查附件表找到附件,不是螺栓螺母,
-						   strBH=_T("");
-						   rsTmp->MoveFirst();
-						   rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-						   sBH = vtos(vTmp1);
-						   rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
-						   sngWeight =vtof(vTmp1);
-						   sngW = sngWeight;
-						   rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-						   tmpCustomID = vtos(vTmp1);
-						   tmpID=modPHScal::sFindID(tmpCustomID);
-						   if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
-						   {
-							   rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
-							   mviSASSClassID =vtoi(vTmp1);
-							   rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-							   mviSASSIndex =vtoi(vTmp1);
-						   }
-						   sngCSLen = 1000;  //设置为1000,便于编程.
-					   }
-					   //sngCSLen = 1000;  //设置为1000,便于编程.
-					   //****************************
-					   //结束不是型钢
-					}
-					else
-					{
-						//是型钢
-						//if(modPHScal::glClassID = iSACantilever OrmodPHScal::glClassID = iSAbeam OrmodPHScal::glClassID = iSALbrace )
-						if(modPHScal::glIDIndex == iSA )
-						{
-							//是根部附件中的型钢
-							//查型钢单重
-							if( rsTmp->adoEOF && rsTmp->BOF )
-							{
-								//没有这种型钢规格
-								sTmp.Format(GetResStr(IDS_NothisSectionSteelInZDJcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,mvSAattachedCustomID);
-								throw sTmp;
-							}
-							else
-							{
-								//有这种型钢规格
-								rsTmp->MoveFirst();
-								rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-								tmpCustomID =vtos(vTmp1);
-								rsTmp->get_Collect((_variant_t)_T("Material"), &vTmp1);
-								mvsSASSMaterial = vtos(vTmp1);
-						
-								if( rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
-								{
-									rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
-									mviSASSClassID = vtoi(vTmp1);
-									rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
-									mviSASSIndex =vtoi(vTmp1);
-									//暂时保存根部主型钢高度，用于以后确定恒吊与根部连接的螺栓的高度。
-									if( j == 1 )
-									{
-										rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
-										SACSHeight =vtof(vTmp1);
-									}
-								}
-							}
-							rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
-							sTmp=vtos(vTmp1);
-							if(sTmp!=_T("") )
-							{
-								rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BH=\'") + vtos(vTmp1) + _T("\'")), NULL, adCmdText);
-								vBH = vTmp1;			
-								rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CustomID=\'")+vtos(vTmp1)+_T("\'")), NULL, adCmdText);
-								rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
-								sTmp2.Format(_T("%g"),vtof(vTmp1));
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
-								rsX->get_Collect((_variant_t)_T("c"), &vTmp1);
-								sTmp2.Format(_T("%g"),vtof(vTmp1));
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET c=") +sTmp2), NULL, adCmdText);
-								if( modPHScal::glClassID==iG52_55 || modPHScal::glClassID==iG51)
-								{
-									sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-									EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
-								}
-								else
-								{
-									sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
-									EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);
-								}
-								sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);
-								rsX->get_Collect((_variant_t)_T("m"), &vTmp1);
-								sTmp2.Format(_T("%g"),vtof(vTmp1));
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET m=") +sTmp2), NULL, adCmdText);
-								rsX->get_Collect((_variant_t)_T("CHdist"), &vTmp1);
-								sTmp2.Format(_T("%g"),vtof(vTmp1));
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHDist=") +sTmp2), NULL, adCmdText);
-
-								rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
-								if (vtos(vTmp1)==_T(""))
-								{
-									sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=0");
-								} else {
-									sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=")+vtos(vTmp1);
-								}
-								EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
-
-								if (vtos(vTmp1)==_T(""))
-								{
-									sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=0");
-								} else {
-									sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=")+vtos(vTmp1);
-								}
-								EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
-								sTmp2.Format(_T("%g"),modPHScal::gdw);
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET GDW1=") +sTmp2), NULL, adCmdText);
-								sTmp2.Format(_T("%g"),modPHScal::Lspan);
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET Lspan=") +sTmp2), NULL, adCmdText);
-								sTmp2.Format(_T("%g"),modPHScal::Lspan);
-								EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET [L1]= ") +sTmp2), NULL, adCmdText);
-								sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
-							}
-							//sBH中含有无效值,对于型钢不如将其置为规格更有意义
-							sBH = mvSAattachedCustomID;
-							//型钢重量=每米重量x长度(mm)/1000
-							rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
-							sngWeight =vtof(vTmp1);
-							sngW = sngWeight * sngCSLen / 1000;
-						}
-					}
-			
-					rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
-					//根部整体重量=根部每个附件的重量之和kg
-					mvarSATotalWeight = mvarSATotalWeight + sngW * vtof(vTmp1);
-					rsSAPart->AddNew();
-			
-					rsSAPart->put_Collect((_variant_t)_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
-					rsSAPart->put_Collect((_variant_t)_T("zdjh"),COleVariant((long)modPHScal::zdjh));
-					//2002.05.26以后改写此段代码，以与phs.arx思路一致。
-					//是根部附件,则写记录号,
-					//以便区分根部附件与部件.也便于对零件编号。
-					iSEQofPart++;
-					rsSAPart->put_Collect((_variant_t)_T("recno"),COleVariant((long)iSEQofPart));
-					//因为根部附件与根部的区分标志是IsSAPart字段是否=-1。
-					rsSAPart->put_Collect((_variant_t)_T("IsSAPart"),COleVariant((long)-1));
-					//rsSAPart->put_Collect((_variant_t)_T("Index")) = iSA
-					rsSAPart->put_Collect((_variant_t)_T("nth"),COleVariant((short)nth));//标准支吊架路数=1，包括对称双吊和共用根部双吊
-					rsSAPart->put_Collect((_variant_t)_T("ClassID"),COleVariant((long)mviSASSClassID));
-					rsSAPart->put_Collect((_variant_t)_T("Index"),COleVariant((long)mviSASSIndex));
-					rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
-					rsSAPart->put_Collect((_variant_t)_T("CustomID"),STR_VAR(vtos(vTmp1)));
-					//sBH				
-					rsSAPart->put_Collect((_variant_t)_T("CLgg"),STR_VAR(sBH));
-					if(tmpID=="F9" || tmpID=="F10" || tmpID=="F14")
-					{				
-						rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(strBH));
-						//根部螺栓或螺杆的长度，
-						rsSAPart->put_Collect((_variant_t)_T("L1"),COleVariant( sngCSLen));
-					}
-					else
-					{
-				
-						if(mviSASSIndex==iSectionSteel )
-						{
-							//根部型钢的长度，
-							rsSAPart->put_Collect((_variant_t)_T("L1"),COleVariant( sngCSLen));
-							//rsSAPart->put_Collect((_variant_t)_T("GDW1"),COleVariant(modPHScal::gdw));
-							rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
-						}
-						else
-							rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
-					}
-			
-					rsTmp->get_Collect((_variant_t)_T("Material"), &vTmp1);
-			
-					rsSAPart->put_Collect((_variant_t)_T("CLcl"),STR_VAR(vtos(vTmp1)));
-					rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
-					rsSAPart->put_Collect((_variant_t)_T("CLnum"),vTmp1);
-					rsSAPart->put_Collect((_variant_t)_T("CLbz"),vnil);
-					rsSAPart->put_Collect((_variant_t)_T("CLdz"),COleVariant(sngWeight));
-					rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
-					rsSAPart->put_Collect((_variant_t)_T("CLzz"),COleVariant(sngW * vtof(vTmp1)));
-					rsID->get_Collect((_variant_t)_T("Description"), &vTmp1);
-					rsSAPart->put_Collect((_variant_t)_T("CLmc"),vTmp1);
-					rsSAPart->Update();
-				 }
-				 else
-				 {
-					 //碰到为空的附件，退出，加快速度。
-					 //输入原始数据库时应该注意所有的附件从1开始填写，不要间断。
-					 //由于以前输入的数据并不完全符合上面要求，故要取消退出，否则结果中有些附件不会被统计。
-					 //Exit For
-					 //下句造成死循环
-					 //continue;
-				 }
-			  }
-			  }
+		   doiG100(j, rsTZB, rsX, vTmp1, sTmp, 
+			   vTmp2, sTmp2, sBHFormat, sBH, sngCSLen, 
+			   rsza, mvSAattachedCustomID, rsTmp, SQL1, 
+			   sngWeight, mviSASSClassID, tmpCustomID, tmpSize2, tmpSizeH,
+				   sngW, mviSASSIndex, mvsSASSMaterial, vBH, rsSAPart, nth, vnil);
 			  break;
 		   case iSPR:
 			   {
@@ -4333,225 +3747,15 @@ spZ1Z2:
 			   }
 			   break;
 		   case iCSPR:
-			   {
-				   rsTZB->put_Collect((_variant_t)_T("CLcl"),STR_VAR(GetResStr(IDS_GROUPWARE)));
-				   //记录原始尺寸T，便于过程GetBoltsNutsAndAttachmentsCLgg准确计算与根部连接的螺栓长度
-				   rsX->get_Collect((_variant_t)_T("T"), &vTmp1);
-				   rsTZB->put_Collect((_variant_t)_T("T"),COleVariant((long)vtoi(vTmp1)));
-				   //荷载连接件尺寸x,y,需要的螺纹长度GL保存在恒力弹簧数据表中。
-				   //这是对常州电力机械厂样本而言。该厂sizeH=E +or- fB/2。
-				   //Height_SPRINGsL5 = IIf(IsNull(rsX(_T("x"))), 0, rsX(_T("x"))) * 2
-				   //查表tbnCSPRINGL5Crude，找出松紧螺母的长度、可插入深度
-				   //2005.11.01北京巴威公司金滔高级工程师指出，国标恒吊长度计算不对。
-				   //经ligb检查，是由于恒力弹簧松紧螺母长度计算被简单地处理为随拉杆直径而变化。
-				   //实际上根据样本，无论常州电力还是大连弹簧，恒力弹簧松紧螺母长度都是因恒力弹簧型号、位移值不同而变化，
-				   //现在已经由ligb修改正确。2005.11.01 20:00-23:00。
-				   float tmpMovement=0;//恒力弹簧查表位移tmpMovement，程序使用这个值tmpMovement去查恒力弹簧数据表。这个值一般认为是计算位移或称选型位移，但是UESoft认为它也可以是实际热位移
-				   if(modPHScal::gbCalcCSPRHeight_BySelDisp)
-					   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].SumDisp;
-				   else
-					   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].haz;
-				   SQLx.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND minDH<=%d AND %d<=maxDH AND fBmin<=%g AND fBmax>=%g "),
-					   modPHScal::tbnCSPRINGL5Crude,modPHScal::sFindCustomID(sPartID),modPHScal::sSprInfo[iSEQofSPR].DH,modPHScal::sSprInfo[iSEQofSPR].DH,
-					   tmpMovement,tmpMovement);
-		   
-				   rsDiaOfCSPRFiJ->get_Collect((_variant_t)_T("FiJ"), &vTmp1);
-				   //SQLx.Format(_T("SELECT * FROM [%s] WHERE size2=%g"),modPHScal::tbnCSPRINGL5Crude,vtof(vTmp1));
-				   if(rsTmp->State == adOpenStatic)
-					   rsTmp->Close();
-	try
-	{
-	//			   rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
-	//			   rsTmp.Open(dbOpenSnapshot,SQLx);
-				   rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
-			   }
-			   catch(_com_error e)
-			   {
-				   ret=false;
-			   }
-				   if( rsTmp->adoEOF && rsTmp->BOF )
-				   {
-					   //没有找到直径值
-					   sTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnCSPRINGL5Crude,SQLx);
-					   throw sTmp;
-				   }
-				   else
-				   {
-					   rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
-					   Height_SPRINGsL5 =vtof(vTmp1);
-					   //获取拉杆可插入的最大长度和最小长度
-					   rsTmp->get_Collect((_variant_t)_T("size4"), &vTmp1);
-					   rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt"),COleVariant(vtof(vTmp1)));//保存到数据库，以便CalLugLength函数使用
-					   rsTmp->get_Collect((_variant_t)_T("size5"), &vTmp1);
-					   rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExt"),COleVariant(vtof(vTmp1)));
-				   }
-				   //恒力弹簧上方连接拉杆的下端插入值，保存到ZB表的AllowedMaxLugExtUp、AllowedMinLugExtUp字段里
-				   if( sPartID == _T("LHA") || sPartID == _T("LHB") || sPartID == _T("PHA")|| sPartID == _T("PHB"))
-				   {
-					   rsX->get_Collect((_variant_t)_T("PP"), &vTmp1);//pfg2005.12.23 上端最小插入值应该为PP
-					   rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExtUp"),COleVariant(vtof(vTmp1)));
-					   rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExtUp"),COleVariant(vtof(vTmp1)));
-				   }
-		   
-				   //如果恒力弹簧的选型位移modPHScal::sSprInfo[iSEQofSPR].SumDisp正好等于下限位移字段fBmin的一个值，
-				   //则恒力弹簧的安装高度H1(sngH1xmax)=直接查得这个下限位移字段fBmin的值。
-				   //否则，按插值法计算位移。add by ligb on 2004.11.24
-				   CString tmpSQL;
-				   _RecordsetPtr rsX1;
-				   rsX1.CreateInstance(__uuidof(Recordset));
-		   
-				   tmpSQL = _T("SELECT * FROM [") + modPHScal::tbnHDCrude + _T("] WHERE ") + tmpSQL ;
-				   if(iSEQofSPR < modPHScal::SprInfoIndex)
-					   sTmp.Format(_T(" dh=%d"),modPHScal::sSprInfo[iSEQofSPR].DH);
-				   else sTmp = _T(" ");
-				   tmpSQL+=sTmp;
-				   if(iSEQofSPR < modPHScal::SprInfoIndex)
-				   {
-					   //sTmp.Format(_T(" AND fBmin<=%g AND fBmax>=%g "),modPHScal::sSprInfo[iSEQofSPR].CheckDisp,modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
-					   sTmp.Format(_T(" AND fBmin=%g "),modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
-				   }
-				   else
-				   {
-					   sTmp=_T(" ");
-				   }
-				   tmpSQL += (modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp);
-				   tmpSQL += _T(" AND trim(CustomID)=\'");
-				   tmpSQL += Ptype[i];
-				   tmpSQL += _T("\' ORDER BY dh,Weight");
-	try
-	{
-	//			   rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
-	//			   rsX1.Open(dbOpenSnapshot,tmpSQL);
-				   rsX1->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
-	}
-	catch(_com_error e)
-	{
-		ret=false;
-	}
-				   if(rsX1->BOF && rsX1->adoEOF||1)//当处在临界值时出错(sizeH的高度没有加上实际位移)pfg and lgb 2005.12.15
-				   {
-					   //常州电力机械厂样本数据库字段sizeH存储了正确的高度值。
-					   rsX->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
-					   //rsX->get_Collect((_variant_t)_T("E"),vTmp1);
-					   sngH1xmax =vtof(vTmp1);
-					   if(modPHScal::gCH1distPos == 1 )
-					   {
-						   //E字段给出了中间位置的高度
-						   if(modPHScal::gbCalcCSPRHeight_BySelDisp)
-							   sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:1);
-						   else
-							   sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].SumDisp /(modPHScal::bE_FormulaPlusHalf?2:1);
-					   }
-					   else if(modPHScal::gCH1distPos == 0 )
-					   {
-						   //E字段给出了最小位移位置的高度
-						   rsX->get_Collect((_variant_t)_T("fBmin"), &vTmp1);
-						   if( modPHScal::yr < 0 )
-						   {
-							   //热位移<0
-							   //sngDim = sngH1xmax + (Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:1);
-							   //研究表明，国标恒吊位移计算公式与美国恒吊计算公式相同，无论bE_FormulaPlusHalf为何，都要除2
-							   //
-							   sngDim = sngH1xmax + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:2);
-						   }
-						   else
-						   {
-							   //热位移>=0，国标恒吊H1s=H1x+热位移T
-							   sngDim = sngH1xmax + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:2) + (sPartID == _T("ZHB") ? -1 : 0) * modPHScal::sSprInfo[iSEQofSPR].haz;
-						   }
-						   //按国标恒吊或华东石油局扬州装备制造总厂管架分厂的解释，以上公式可废弃,应该按下列公式
-						   // sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:2);
-					   }
-					   else if(modPHScal::gCH1distPos == 2 )
-					   {
-						   //E字段给出了最大位移位置的高度
-						   rsX->get_Collect((_variant_t)_T("fBmax"), &vTmp1);
-						   rsX->get_Collect((_variant_t)_T("fBmin"), &vTmp2);
-						   sngDim = sngH1xmax + (vtof(vTmp1) - vtof(vTmp2))/2;
-						   if( modPHScal::yr < 0 )
-						   {
-							   //热位移<0
-							   sngDim = sngDim + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp2)) /(modPHScal::bE_FormulaPlusHalf?2:2);
-						   }else
-						   {
-							   //热位移>=0
-							   sngDim = sngDim + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp2)) /(modPHScal::bE_FormulaPlusHalf?2:2) + (sPartID == _T("ZHB")? -1:0) * modPHScal::sSprInfo[iSEQofSPR].haz;
-						   }
-						   //按国标恒吊或华东石油局扬州装备制造总厂管架分厂的解释，以上公式可废弃,应该按下列公式
-						   //sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:0);
-					   }
-					   //常州的可用下列公式
-					   //rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt")) = IIf(IsNull(rsX.Fields(_T("x"))), 0, rsX.Fields(_T("x")))
-					   //rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExt")) = IIf(IsNull(rsX.Fields(_T("y"))), 0, rsX.Fields(_T("y")))+rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt"))
-					   if(modPHScal::gCH1Pos == 1 )
-					   {
-						   //H1在花篮螺丝中间位置的高度
-						   sngDim = sngDim + Height_SPRINGsL5 / 2;
-					   }
-					   else if(modPHScal::gCH1Pos == 2 )
-					   {
-						   //H1在花篮螺丝最高位置的高度
-						   sngDim = sngDim + Height_SPRINGsL5;
-					   }
-					   else if(modPHScal::gCH1Pos == 0 )
-					   {
-						   //H1在花篮螺丝最低位置的高度
-				   
-					   }
-					   //如果没包括花篮螺丝外缘，加上它
-					   //常州的可用下列公式
-					   if( !modPHScal::gbCH1IncludeB )
-					   {
-						   rsTmp->get_Collect((_variant_t)_T("size4"), &vTmp1);
-						   sngDim = sngDim + vtof(vTmp1);
-					   }
-					   if(sPartID == _T("LHD") || sPartID==_T("PHD"))
-					   {
-					   }
-					   else if(sPartID==_T("LHA") ||sPartID==_T("PHA") || sPartID==_T("LHB") || sPartID==_T("PHB"))
-					   {
-						   //立式吊杆连接
-						   //字段A保存拉杆插入长度
-						   //千万不可增加下面这句，否则拉杆尺寸计算错误，并且导致整个尺寸链错误。
-						   //rsTZB->put_Collect((_variant_t)_T("A")) = IIf(IsNull(rsX(_T("PP"))), 0, rsX(_T("PP")))
-					   }
-					   else if(sPartID==_T("LHE") || sPartID==_T("LHE1") || sPartID==_T("PHE") || sPartID==_T("PHE1") || sPartID==_T("PHC") || sPartID==_T("LHC"))
-					   {
-						   //立式吊杆连接，要加上耳板高度T。
-						   if( !modPHScal::gbCH1IncludeT )
-						   {
-							   rsDiaOfCSPRFiK->get_Collect((_variant_t)_T("T"), &vTmp1);
-							   sngDim = sngDim +vtof(vTmp1);
-						   }
-					   }
-					   else if(sPartID==_T("ZHB"))
-					   {
-						   //支座式恒力弹簧
-					   }
-					   else
-					   {
-					   }
-				   }
+			   doiCSPR(j, rsTZB, rsX, vTmp1, sTmp, 
+				   vTmp2, sTmp2, sBHFormat, sBH, sngCSLen, 
+				   rsza, mvSAattachedCustomID, rsTmp, SQL1, sngWeight, 
+				   mviSASSClassID, tmpCustomID, tmpSize2, tmpSizeH,sngW, 
+				   mviSASSIndex, mvsSASSMaterial, vBH, rsSAPart, nth, vnil
+				   ,  rsDiaOfCSPRFiJ, rsDiaOfCSPRFiK, Height_SPRINGsL5, sPartID, Ptype, 
+				   i, sngH1xmax,	   sngDim, tmpSelPJG4CSPRFiK);
+				
 
-				   rsX1->Close();
-
-				   //恒吊松紧螺母长度调节值
-				   rsTZB->put_Collect((_variant_t)_T("SizeH"),COleVariant(sngDim));
-				   rsTZB->put_Collect((_variant_t)_T("sizeDIM"),COleVariant(sngDim));
-				   if( EDIBAcad::g_bBomSprFactory )//newHS->只有选择了标注恒力弹簧厂家才写入数据库
-				   {
-					   rsTZB->put_Collect((_variant_t)_T("CLbz"),STR_VAR(modPHScal::gsCSPRmanufactory));
-				   }
-				   //暂时借用gdw1字段保存计算荷载，供后续过程GetBoltsNutsAndAttachmentsCLgg使用
-				   rsTZB->put_Collect((_variant_t)_T("GDW1"),COleVariant(tmpSelPJG4CSPRFiK / iNumPart));
-				   rsTZB->put_Collect((_variant_t)_T("SpringNo"), COleVariant( (long)modPHScal::sSprInfo[iSEQofSPR].DH) );
-				   rsTZB->put_Collect((_variant_t)_T("LugDia"), COleVariant(modPHScal::sSprInfo[iSEQofSPR].FiJ));
-				   rsTZB->put_Collect((_variant_t)_T("HeatDisp"), COleVariant(modPHScal::sSprInfo[iSEQofSPR].HeatDisp));
-		   
-				   rsTZB->Update();
-			  }
 			  break;
 		default:
 			//其它的零部件类型
@@ -4844,17 +4048,17 @@ spZ1Z2:
 			if(m_rs->State == adOpenStatic)
 				m_rs->Close();
 			
-	try
-	{
-	//		m_rs.m_pDatabase=&modPHScal::dbZDJcrude;
-	//		m_rs.Open(dbOpenDynaset,strSQLTmp);
-			m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
-	}
-	catch(_com_error e)
-	{
-		ret=false;
-	}
+			try
+			{
+			//		m_rs.m_pDatabase=&modPHScal::dbZDJcrude;
+			//		m_rs.Open(dbOpenDynaset,strSQLTmp);
+					m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			}
+			catch(_com_error e)
+			{
+				ret=false;
+			}
 			CString str;
 			int x=0;
 			if((!m_rs->BOF) && !(m_rs->adoEOF))
@@ -4878,16 +4082,16 @@ spZ1Z2:
 					strSQLTmp.Format("SELECT * FROM [%s] WHERE [CUSTOMID]=\'%s\' AND [SIZE2]=%d ORDER BY SIZE2",
 						modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L7")),int(modPHScal::gmiDiameter));
 					m_rs->Close();
-	try
-	{
-	//				m_rs.Open(dbOpenSnapshot,strSQLTmp);
-					m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
-	}
-	catch(_com_error e)
-	{
-		ret=false;
-	}
+					try
+					{
+		//				m_rs.Open(dbOpenSnapshot,strSQLTmp);
+						m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+							adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					}
+					catch(_com_error e)
+					{
+						ret=false;
+					}
 					m_rs->get_Collect((_variant_t)_T("size3"),vT1);
 					int y = vtoi(vT1);
 					if(m_fDiaM1 > y)
@@ -4936,4 +4140,830 @@ spZ1Z2:
 		delete [] PtypeIndex;
 	FrmTxsr.UpdateData(false);
 	return ret;
+}
+bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& vTmp1, CString& sTmp, 
+				   COleVariant& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+				   _RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+				   float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+				   float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, COleVariant& vBH, _RecordsetPtr rsSAPart, 
+				   int nth, _variant_t& vnil)
+{
+	bool ret;
+   rsTZB->put_Collect((_variant_t)_T("CLcl"),STR_VAR(GetResStr(IDS_GROUPWARE)));
+   j = 1; //主型钢
+   CString sj;
+   sj.Format(_T("%d"),j);
+   rsX->get_Collect((_variant_t)(_T("P")+sj), &vTmp1);
+   CString sTmp3=vtos(vTmp1);
+   sTmp3=sTmp3.Mid(1);
+   sTmp3.Format(_T("%g"),_tcstod(sTmp3,NULL)*10);
+   rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp2);
+   sTmp=vtos(vTmp1);
+   //Pnum1=NULL或0，根部主型钢数量错误
+   if( sTmp!=_T("") &&  vtoi(vTmp2) > 0 )
+	   //if( sTmp!=_T("") )			
+   {
+	   if(modPHScal::glClassID == iSAh )
+	   {
+		   //直接吊G11
+		   rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
+		   sTmp=vtos(vTmp1);
+		   if( sTmp!= _T("") )
+		   {
+			   rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET BH=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);
+			   rsTZB->put_Collect((_variant_t)_T("BH"),vTmp1);
+			   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
+			   sTmp2.Format(_T("%g"),vtof(vTmp1));						
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
+			   //G11的公式为sizeH+A,其中sizeH=螺杆长度,长度储存在A01字段。
+			   sTmp2.Format(_T("%g"),modPHScal::WidthA);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET sizeH=") + sTmp2), NULL, adCmdText);
+			   //暂时只要计算主零件的长度
+			   sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
+		   }
+		   rsTZB->put_Collect((_variant_t)_T("sizeH"),COleVariant((float)modPHScal::WidthA));
+		   rsTZB->put_Collect((_variant_t)_T("sizeDIM"),COleVariant((float)modPHScal::WidthA));
+	   }
+	   else
+	   {
+		   //非直接吊G11,即槽钢
+		   rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
+		   sTmp=vtos(vTmp1);
+		   if( sTmp!= _T("") )
+		   {
+			   rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET BH=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);                           
+			   rsTZB->put_Collect((_variant_t)_T("BH"),vTmp1);
+			   //G100自定义根部的主型钢型号P1写入tmpCSLen，以便作为材料规格号.
+			   rsX->get_Collect((_variant_t)_T("P1"), &vTmp1);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(CString(_T("UPDATE tmpCSLen SET P1=\'")) + vtos(vTmp1) + _T("\'")), NULL, adCmdText);                           
+	   
+			   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
+			   double fLenA=0;//记录悬臂端部到拉杆受力点之间的距离值A  Add by luorijin 2008.10.30
+			   fLenA = vtof(vTmp1);
+			   sTmp2.Format(_T("%g"),vtof(vTmp1));
+			   if(modPHScal::glClassID==iG52_55)
+			   {
+				   //G52_55的公式为H+h+100,其中H=板肋高度,长度储存在A01字段。
+				   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHLegHeight=")+sTmp3 ), NULL, adCmdText);
+				   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHheight=") +sTmp3), NULL, adCmdText);					   
+			   }
+			   else
+			   {
+				   //G47的双槽钢间距chdist=300,G48的双槽钢间距=Bwidth(柱子宽度)
+		   
+			   }
+	   
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
+			   rsX->get_Collect((_variant_t)_T("c"), &vTmp1);
+			   sTmp2.Format(_T("%g"),vtof(vTmp1));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET c=") +sTmp2), NULL, adCmdText);
+			   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);
+			   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);
+			   rsTZB->put_Collect((_variant_t)_T("B"),rsza->GetCollect(_T("B01")));
+			   rsTZB->put_Collect((_variant_t)_T("A"),rsza->GetCollect(_T("A01")));
+	   
+			   //H=生根梁的高度
+			   sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
+	   
+	   
+			   rsX->get_Collect((_variant_t)_T("m"), &vTmp1);
+			   sTmp2.Format(_T("%g"),vtof(vTmp1));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET m=") +sTmp2), NULL, adCmdText);
+			   rsX->get_Collect((_variant_t)_T("CHdist"), &vTmp1);
+			   sTmp2.Format(_T("%g"),vtof(vTmp1));
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHDist=") +sTmp2), NULL, adCmdText);
+			   sTmp2.Format(_T("%g"),modPHScal::Lspan);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET Lspan=") +sTmp2), NULL, adCmdText);
+			   sTmp2.Format(_T("%g"),modPHScal::gdw);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET GDW1=") +sTmp2), NULL, adCmdText);
+
+			   sTmp2.Format(_T("%g"),modPHScal::Lspan);
+			   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET L1=") +sTmp2), NULL, adCmdText);
+	   
+			   //把简支梁跨度l1写到ZB 表LSpan字段，以方便三维使用，并且便于记录非标根部
+			   rsTZB->put_Collect((_variant_t)_T("LSpan"),COleVariant((float)modPHScal::Lspan));
+			   rsTZB->put_Collect((_variant_t)_T("XBL1"),COleVariant((float)(modPHScal::gdw+fLenA)));//XBL1记录悬臂长度  Add by luorijin 2008.10.30
+			   //暂时只要计算主型钢的长度
+			   sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
+		   }
+		   //槽刚的a值保存到字段T,该值在绘制根部定位尺寸时很重要。如G22~G24,G3x,G6x,G7x类
+		   //if( (sPartID.Left(2) == _T("G3")) || (sPartID.Left(2) ==  _T("G6") ) || (sPartID.Left(2) == _T("G7")) || (sPartID.Left(2) == _T("G5")) && (sPartID.Left(3) != _T("G51"))  && (sPartID.Left(3) != _T("G56"))  && (sPartID.Left(3) != _T("G57")) )
+		   if( (modPHScal::glClassID==iSAbeam) || (modPHScal::glClassID==iG52_55 ) )
+			   rsTZB->put_Collect((_variant_t)_T("T"),COleVariant((float)(modPHScal::Lspan - modPHScal::gdw)));
+		   else
+		   {
+			   rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
+			   rsTZB->put_Collect((_variant_t)_T("T"), (vTmp1));
+		   }
+   
+		   rsTZB->put_Collect((_variant_t)_T("L1"),COleVariant((float)sngCSLen));
+		   rsTZB->put_Collect((_variant_t)_T("GDW1"),COleVariant(modPHScal::gdw));
+		   //更新原始数据表TZA中的根部主槽钢数量
+		   rsX->get_Collect((_variant_t)_T("Pnum1"), &vTmp1);
+		   if( vTmp1.vt==VT_NULL)
+		   {
+			   modPHScal::iCSnum = 1;
+		   }
+		   else
+		   {
+			   modPHScal::iCSnum = vtoi(vTmp1);
+		   }
+		   rsza->PutCollect(_T("iCSnum"),_variant_t((long)modPHScal::iCSnum));
+   
+	   }
+	   rsTZB->put_Collect((_variant_t)_T("CLgg"),STR_VAR(sBH));
+	   //rsTZB->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
+	   //更新根部主槽钢总长度
+	   rsza->PutCollect(_T("SATotalLength"),_variant_t(sngCSLen));
+	   if(modPHScal::glClassID == iSAbeam )
+	   {
+	   }
+	   else if(modPHScal::glClassID == iSALbrace || modPHScal::glClassID == iSALbraceFixG47 || modPHScal::glClassID == iSALbraceFixG48 || modPHScal::glClassID == iSACantilever )
+	   {
+		   //rsza->PutCollect(_T("SATotalLength"),_variant_t(sngCSLen));
+		   rsza->PutCollect(_T("LC1"),_variant_t(sngCSLen));
+	   }
+
+	}
+	else
+	{
+	  //碰到为空的附件，退出，加快速度。
+	  //输入原始数据库时应该注意所有的附件从1开始填写，不要间断。
+	  //由于以前输入的数据并不完全符合上面要求，故要取消退出，否则结果中有些附件不会被统计。
+	  //Exit For
+	  if( j = 1 )
+	  {
+		  if(modPHScal::glClassID == iSAh ||modPHScal::glClassID == iGCement )
+		  {
+			  //直接吊或混凝土梁或支墩
+		  }
+		  else
+		  {
+			  //型钢根部，P1字段必需有值
+			  rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
+			  sTmp2.Format(GetResStr(IDS_SAP1MustBeChannelSteelNo),modPHScal::tbnSA,vtos(vTmp1));
+			  //frmStatus.MessageBox(sTmp2);
+			  ShowMessage(sTmp2);
+		  }
+	  }
+	}
+
+	rsTZB->Update();
+	//根部附件,j=1是主型钢，统计时,如果在支吊架组装图中
+	//绘制零件明细表,则只标出根部整体结构;
+	//而统计材料时,应该拆成型钢.
+	//首先我们要做一个假定，以便简化此处的编程。
+	//即：所有附件要么在附件表中，要么在根部附件表中，要么在螺栓螺母表中。
+	//且根部表中的所有附件规格即Pi(i=1~12)字段的内容即是根部附件表中的BH字段。
+	//因此，制订支吊架根部规范时： 一定要使用相同标准的根部表和附件表。
+	//选择规范时则不必考虑，因为根部附件与根部数据表的信息都存放在根部信息管理表PhsManuSA中。
+	CString strBH;
+
+	CString tmpID;
+	for (j = 1 ;j<= 12;j++)
+	{
+	  sj.Format(_T("%d"),j);
+	  rsX->get_Collect((_variant_t)(_T("P")+sj), &vTmp1);
+	  rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp2);
+	  sTmp=vtos(vTmp1);
+	  if( sTmp!=_T("") && vtoi(vTmp2)>0 )
+	  {
+		  mvSAattachedCustomID =sTmp;
+		  //看是否是型钢:槽钢、角钢、工字钢、圆钢、扁钢？（钢板作为附件处理）
+		  //扁钢(在根部表和型钢表中)的存放格式应为：-宽x厚，如-90x16。
+		  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSectionSteel + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+		  if(rsTmp->State == adOpenStatic)
+			  rsTmp->Close();
+		try
+		{
+		//				  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
+		//				  rsTmp.Open(dbOpenSnapshot,SQL1);
+			  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		  }
+		  catch(_com_error e)
+		  {
+			  ret=false;
+		  }
+		  if( rsTmp->adoEOF && rsTmp->BOF )
+		  {
+			  //不是型钢
+			  //****************************
+			  //找不到,则是附件,再查附件表
+			  rsTmp->Close();
+			  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnAttachment + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+			try
+			{
+			  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		  }
+		  catch(_com_error e)
+		  {
+			  ret=false;
+		  }
+			  if( rsTmp->adoEOF && rsTmp->BOF )
+			  {
+				  //不是附件,则是螺栓螺母,再查螺栓螺母表
+				  //螺栓螺母：根部使用的可能是特定标准的螺栓螺母，而配件可能使用其它标准的螺栓螺母，如国家标准螺栓螺母。
+				  //其编号方式为M36x200,或M20
+				  //因此，首先查找根部螺栓螺母表tbnSABoltsnuts，再根据查出的规格从通用螺栓螺母表tbnBoltsNutsID中查找相应的规格。
+				  rsTmp->Close();
+				  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSABoltsNuts + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+				  /*if(rsTmp->State == adOpenStatic)
+				  rsTmp->Close();
+				  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;*/
+	//						  rsTmp.Open(dbOpenSnapshot,SQL1);
+				try
+				{
+				  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			  }
+			  catch(_com_error e)
+			  {
+				  ret=false;
+			  }
+				  if( rsTmp->adoEOF && rsTmp->BOF )
+				  {
+					  //没找到螺栓螺母记录
+					  sBH = _T("");
+					  strBH = _T("");
+					  sngWeight = 0;
+					  mviSASSClassID = iSABoltsNutsUnknown;
+					  //rsTmp->Close();
+					  sTmp2.Format(GetResStr(IDS_NotFoundThisSAAttached),mvSAattachedCustomID);
+					  //frmStatus.MessageBox(sTmp2);
+					  ShowMessage(sTmp2);
+					  //Err.Number = iUE_NotFoundThisSAAttached
+					  //Err.Description = ResolveResString(iUE_NotFoundThisSAAttached, _T("|1"), mvSAattachedCustomID)
+					  //Err.Raise iUE_NotFoundThisSAAttached
+					  //报告一个错误，但不要退出。
+					  //MsgBox ResolveResString(iUE_NotFoundThisSAAttached, _T("|1"), mvSAattachedCustomID), vbMsgBoxSetForeground
+				  }
+				  else
+				  {
+					  //找到相应的螺栓或螺母
+					  strBH = _T("");
+					  rsTmp->MoveFirst();
+					  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+					  sBH = vtos(vTmp1);
+					  strBH=sBH;
+					  sTmp=CString(_T("UPDATE tmpCSLen SET BH=\'")) + sBH + _T("\'");
+					  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
+					  rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+					  tmpCustomID = vtos(vTmp1);
+					  sTmp= CString(_T("UPDATE tmpCSLen SET CustomID=\'")) + tmpCustomID + _T("\'");
+					  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
+			  
+					  rsTmp->get_Collect((_variant_t)_T("size2"), &vTmp1);
+					  tmpSize2 =vtof(vTmp1);
+					  rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+					  tmpSizeH =vtof(vTmp1);
+					  tmpID=modPHScal::sFindID(tmpCustomID);
+					  if(tmpID==_T("F9") || tmpID==_T("F10"))
+					  {
+						  if(modPHScal::glClassID==iG56 || modPHScal::glClassID==iG57 || modPHScal::glClassID==iG52_55 || modPHScal::glClassID==iG51)
+						  {
+							  rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
+							  sTmp=vtos(vTmp1);
+							  _variant_t vTmp;
+							  if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
+							  {
+								  rsID->get_Collect((_variant_t)_T("BHFormat"), &vTmp1);
+								  sBHFormat = vtos(vTmp1);
+							  }
+							  else
+							  {
+							  }
+							  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+							  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);								
+							  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+							  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
+							  sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
+							  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);								
+							  //计算螺栓的长度
+							  sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
+							  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g  ORDER BY bh"),
+								  modPHScal::tbnBoltsNuts,
+								  tmpCustomID,
+								  tmpSize2);
+					  
+						  }
+					  }
+					  else if(tmpID==_T("F14"))
+					  {
+						  //六角头螺栓F14
+						  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
+						  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g AND sizeH=%g ORDER BY bh"),
+							  modPHScal::tbnBoltsNuts,
+							  tmpCustomID,
+							  tmpSize2 ,
+							  tmpSizeH);
+						  sngCSLen=1000;
+					  }
+					  else
+					  {
+						  //六角螺母F1、六角扁螺母F2、球面垫圈F4等
+						  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
+						  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g ORDER BY bh"),
+							  modPHScal::tbnBoltsNuts,
+								  tmpCustomID,
+								  tmpSize2);
+						  }
+						  rsTmp->Close();
+							try
+							{
+			//							  rsTmp.Open(dbOpenSnapshot,SQL1);
+								rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+								  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						  }
+						  catch(_com_error e)
+						  {
+							  ret=false;
+						  }
+						  if( rsTmp->adoEOF && rsTmp->BOF )
+						  {
+							  //没有记录
+							  sBH = _T("");
+							  sngWeight = 0;
+							  mviSASSClassID = iBoltsNutsUnknown;
+							  sTmp2.Format(GetResStr(IDS_NotFoundThisSAAttached),tmpCustomID);
+							  //frmStatus.MessageBox(sTmp2);
+							  ShowMessage(sTmp2);
+						  }
+						  else
+						  {
+							  //在通用螺栓螺母表中找到相应的螺栓或螺母
+							  rsTmp->MoveFirst();
+							  if(tmpID==_T("F9") || tmpID==_T("F10"))
+							  {
+								  //F9、F10已经查出了直径和长度,只要在通用螺栓螺母表中查出它们的CustomID和BH,再生成CLgg，就可以了。
+								  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+								  sBH = vtos(vTmp1);
+								  sTmp= CString(_T("UPDATE tmpCSLen SET BH=\'")) + sBH + _T("\'");
+								  EDIBgbl::dbPRJ->Execute((_bstr_t)(sTmp), NULL, adCmdText);
+						  
+								  rsID->get_Collect((_variant_t)_T("BHFormat"), &vTmp1);
+								  sBHFormat = vtos(vTmp1);															    
+								  sngCSLen = modPHScal::CSLength(sBHFormat, ftos(sngCSLen), sBH);
+							  }
+							  else if(tmpID==_T("F14"))
+							  {
+								  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+								  sBH = vtos(vTmp1);
+								  sngCSLen = 1000;  //设置为1000,便于编程.
+							  }						
+							  else
+							  {
+								  rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+								  sBH = vtos(vTmp1);
+								  sngCSLen = 1000;  //设置为1000,便于编程.
+							  }
+							  rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
+							  sngWeight =vtof(vTmp1)*sngCSLen/1000;
+							  sngW = sngWeight;
+							  rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+							  tmpCustomID = vtos(vTmp1);       
+							  
+							  _variant_t vTmp;
+
+							  if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
+							  {
+								  rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
+								  mviSASSClassID =vtoi(vTmp1);
+								  rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+								  mviSASSIndex =vtoi(vTmp1);
+							  }
+						  }
+				  }
+			   }
+			   else
+			   {
+				   //查附件表找到附件,不是螺栓螺母,
+				   strBH=_T("");
+				   rsTmp->MoveFirst();
+				   rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+				   sBH = vtos(vTmp1);
+				   rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
+				   sngWeight =vtof(vTmp1);
+				   sngW = sngWeight;
+				   rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+				   tmpCustomID = vtos(vTmp1);
+				   tmpID=modPHScal::sFindID(tmpCustomID);
+				   _variant_t vTmp;
+				   if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
+				   {
+					   rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
+					   mviSASSClassID =vtoi(vTmp1);
+					   rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+					   mviSASSIndex =vtoi(vTmp1);
+				   }
+				   sngCSLen = 1000;  //设置为1000,便于编程.
+			   }
+			   //sngCSLen = 1000;  //设置为1000,便于编程.
+			   //****************************
+			   //结束不是型钢
+			}
+			else
+			{
+				//是型钢
+				//if(modPHScal::glClassID = iSACantilever OrmodPHScal::glClassID = iSAbeam OrmodPHScal::glClassID = iSALbrace )
+				if(modPHScal::glIDIndex == iSA )
+				{
+					//是根部附件中的型钢
+					//查型钢单重
+					if( rsTmp->adoEOF && rsTmp->BOF )
+					{
+						//没有这种型钢规格
+						sTmp.Format(GetResStr(IDS_NothisSectionSteelInZDJcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,mvSAattachedCustomID);
+						throw sTmp;
+					}
+					else
+					{
+						//有这种型钢规格
+						rsTmp->MoveFirst();
+						rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+						tmpCustomID =vtos(vTmp1);
+						rsTmp->get_Collect((_variant_t)_T("Material"), &vTmp1);
+						mvsSASSMaterial = vtos(vTmp1);
+						_variant_t vTmp;
+						if( rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + tmpCustomID + _T("\'")), 0, adSearchForward, vTmp))
+						{
+							rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp1);
+							mviSASSClassID = vtoi(vTmp1);
+							rsID->get_Collect((_variant_t)_T("Index"), &vTmp1);
+							mviSASSIndex =vtoi(vTmp1);
+							//暂时保存根部主型钢高度，用于以后确定恒吊与根部连接的螺栓的高度。
+							if( j == 1 )
+							{
+								rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+								SACSHeight =vtof(vTmp1);
+							}
+						}
+					}
+					rsX->get_Collect((_variant_t)(_T("PL")+sj), &vTmp1);
+					sTmp=vtos(vTmp1);
+					if(sTmp!=_T("") )
+					{
+						rsTmp->get_Collect((_variant_t)_T("BH"), &vTmp1);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BH=\'") + vtos(vTmp1) + _T("\'")), NULL, adCmdText);
+						vBH = vTmp1;			
+						rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CustomID=\'")+vtos(vTmp1)+_T("\'")), NULL, adCmdText);
+						rsX->get_Collect((_variant_t)_T("A"), &vTmp1);
+						sTmp2.Format(_T("%g"),vtof(vTmp1));
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET a=") +sTmp2), NULL, adCmdText);
+						rsX->get_Collect((_variant_t)_T("c"), &vTmp1);
+						sTmp2.Format(_T("%g"),vtof(vTmp1));
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET c=") +sTmp2), NULL, adCmdText);
+						if( modPHScal::glClassID==iG52_55 || modPHScal::glClassID==iG51)
+						{
+							sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+							EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET H=") +sTmp2), NULL, adCmdText);
+						}
+						else
+						{
+							sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("A01"))));
+							EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET BWidth=") +sTmp2), NULL, adCmdText);
+						}
+						sTmp2.Format(_T("%g"),vtof(rsza->GetCollect(_T("B01"))));
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);
+						rsX->get_Collect((_variant_t)_T("m"), &vTmp1);
+						sTmp2.Format(_T("%g"),vtof(vTmp1));
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET m=") +sTmp2), NULL, adCmdText);
+						rsX->get_Collect((_variant_t)_T("CHdist"), &vTmp1);
+						sTmp2.Format(_T("%g"),vtof(vTmp1));
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET CHDist=") +sTmp2), NULL, adCmdText);
+
+						rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+						if (vtos(vTmp1)==_T(""))
+						{
+							sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=0");
+						} else {
+							sTmp2 = _T("UPDATE tmpCSLen SET CHHeight=")+vtos(vTmp1);
+						}
+						EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
+
+						if (vtos(vTmp1)==_T(""))
+						{
+							sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=0");
+						} else {
+							sTmp2 = _T("UPDATE tmpCSLen SET CHLegHeight=")+vtos(vTmp1);
+						}
+						EDIBgbl::dbPRJ->Execute((_bstr_t)sTmp2, NULL, adCmdText);
+						sTmp2.Format(_T("%g"),modPHScal::gdw);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET GDW1=") +sTmp2), NULL, adCmdText);
+						sTmp2.Format(_T("%g"),modPHScal::Lspan);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET Lspan=") +sTmp2), NULL, adCmdText);
+						sTmp2.Format(_T("%g"),modPHScal::Lspan);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET [L1]= ") +sTmp2), NULL, adCmdText);
+						sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
+					}
+					//sBH中含有无效值,对于型钢不如将其置为规格更有意义
+					sBH = mvSAattachedCustomID;
+					//型钢重量=每米重量x长度(mm)/1000
+					rsTmp->get_Collect((_variant_t)_T("Weight"), &vTmp1);
+					sngWeight =vtof(vTmp1);
+					sngW = sngWeight * sngCSLen / 1000;
+				}
+			}
+
+			rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
+			//根部整体重量=根部每个附件的重量之和kg
+			mvarSATotalWeight = mvarSATotalWeight + sngW * vtof(vTmp1);
+			rsSAPart->AddNew();
+
+			rsSAPart->put_Collect((_variant_t)_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
+			rsSAPart->put_Collect((_variant_t)_T("zdjh"),COleVariant((long)modPHScal::zdjh));
+			//2002.05.26以后改写此段代码，以与phs.arx思路一致。
+			//是根部附件,则写记录号,
+			//以便区分根部附件与部件.也便于对零件编号。
+			iSEQofPart++;
+			rsSAPart->put_Collect((_variant_t)_T("recno"),COleVariant((long)iSEQofPart));
+			//因为根部附件与根部的区分标志是IsSAPart字段是否=-1。
+			rsSAPart->put_Collect((_variant_t)_T("IsSAPart"),COleVariant((long)-1));
+			//rsSAPart->put_Collect((_variant_t)_T("Index")) = iSA
+			rsSAPart->put_Collect((_variant_t)_T("nth"),COleVariant((short)nth));//标准支吊架路数=1，包括对称双吊和共用根部双吊
+			rsSAPart->put_Collect((_variant_t)_T("ClassID"),COleVariant((long)mviSASSClassID));
+			rsSAPart->put_Collect((_variant_t)_T("Index"),COleVariant((long)mviSASSIndex));
+			rsTmp->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
+			rsSAPart->put_Collect((_variant_t)_T("CustomID"),STR_VAR(vtos(vTmp1)));
+			//sBH				
+			rsSAPart->put_Collect((_variant_t)_T("CLgg"),STR_VAR(sBH));
+			if(tmpID=="F9" || tmpID=="F10" || tmpID=="F14")
+			{				
+				rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(strBH));
+				//根部螺栓或螺杆的长度，
+				rsSAPart->put_Collect((_variant_t)_T("L1"),COleVariant( sngCSLen));
+			}
+			else
+			{
+		
+				if(mviSASSIndex==iSectionSteel )
+				{
+					//根部型钢的长度，
+					rsSAPart->put_Collect((_variant_t)_T("L1"),COleVariant( sngCSLen));
+					//rsSAPart->put_Collect((_variant_t)_T("GDW1"),COleVariant(modPHScal::gdw));
+					rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
+				}
+				else
+					rsSAPart->put_Collect((_variant_t)_T("BH"),STR_VAR(sBH));
+			}
+
+			rsTmp->get_Collect((_variant_t)_T("Material"), &vTmp1);
+
+			rsSAPart->put_Collect((_variant_t)_T("CLcl"),STR_VAR(vtos(vTmp1)));
+			rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
+			rsSAPart->put_Collect((_variant_t)_T("CLnum"),vTmp1);
+			rsSAPart->put_Collect((_variant_t)_T("CLbz"),vnil);
+			rsSAPart->put_Collect((_variant_t)_T("CLdz"),COleVariant(sngWeight));
+			rsX->get_Collect((_variant_t)(_T("Pnum")+sj), &vTmp1);
+			rsSAPart->put_Collect((_variant_t)_T("CLzz"),COleVariant(sngW * vtof(vTmp1)));
+			rsID->get_Collect((_variant_t)_T("Description"), &vTmp1);
+			rsSAPart->put_Collect((_variant_t)_T("CLmc"),vTmp1);
+			rsSAPart->Update();
+		 }
+		 else
+		 {
+			 //碰到为空的附件，退出，加快速度。
+			 //输入原始数据库时应该注意所有的附件从1开始填写，不要间断。
+			 //由于以前输入的数据并不完全符合上面要求，故要取消退出，否则结果中有些附件不会被统计。
+			 //Exit For
+			 //下句造成死循环
+			 //continue;
+		 }
+	  }
+	  return ret;
+}
+
+  bool Cphs::doiCSPR(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& vTmp1, CString& sTmp, 
+	  COleVariant& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+	  _RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+	  float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+	  float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, COleVariant& vBH, _RecordsetPtr rsSAPart, 
+				   int nth, _variant_t& vnil,
+				   _RecordsetPtr rsDiaOfCSPRFiJ, _RecordsetPtr rsDiaOfCSPRFiK, float& Height_SPRINGsL5, CString& sPartID, CString *Ptype, long& i, float& sngH1xmax,
+				   float& sngDim, float& tmpSelPJG4CSPRFiK)
+{
+	  bool ret;
+	  CString SQLx;
+   rsTZB->put_Collect((_variant_t)_T("CLcl"),STR_VAR(GetResStr(IDS_GROUPWARE)));
+   //记录原始尺寸T，便于过程GetBoltsNutsAndAttachmentsCLgg准确计算与根部连接的螺栓长度
+   rsX->get_Collect((_variant_t)_T("T"), &vTmp1);
+   rsTZB->put_Collect((_variant_t)_T("T"),COleVariant((long)vtoi(vTmp1)));
+   //荷载连接件尺寸x,y,需要的螺纹长度GL保存在恒力弹簧数据表中。
+   //这是对常州电力机械厂样本而言。该厂sizeH=E +or- fB/2。
+   //Height_SPRINGsL5 = IIf(IsNull(rsX(_T("x"))), 0, rsX(_T("x"))) * 2
+   //查表tbnCSPRINGL5Crude，找出松紧螺母的长度、可插入深度
+   //2005.11.01北京巴威公司金滔高级工程师指出，国标恒吊长度计算不对。
+   //经ligb检查，是由于恒力弹簧松紧螺母长度计算被简单地处理为随拉杆直径而变化。
+   //实际上根据样本，无论常州电力还是大连弹簧，恒力弹簧松紧螺母长度都是因恒力弹簧型号、位移值不同而变化，
+   //现在已经由ligb修改正确。2005.11.01 20:00-23:00。
+   float tmpMovement=0;//恒力弹簧查表位移tmpMovement，程序使用这个值tmpMovement去查恒力弹簧数据表。这个值一般认为是计算位移或称选型位移，但是UESoft认为它也可以是实际热位移
+   if(modPHScal::gbCalcCSPRHeight_BySelDisp)
+	   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].SumDisp;
+   else
+	   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].haz;
+   SQLx.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND minDH<=%d AND %d<=maxDH AND fBmin<=%g AND fBmax>=%g "),
+	   modPHScal::tbnCSPRINGL5Crude,modPHScal::sFindCustomID(sPartID),modPHScal::sSprInfo[iSEQofSPR].DH,modPHScal::sSprInfo[iSEQofSPR].DH,
+	   tmpMovement,tmpMovement);
+
+   rsDiaOfCSPRFiJ->get_Collect((_variant_t)_T("FiJ"), &vTmp1);
+   //SQLx.Format(_T("SELECT * FROM [%s] WHERE size2=%g"),modPHScal::tbnCSPRINGL5Crude,vtof(vTmp1));
+   if(rsTmp->State == adOpenStatic)
+	   rsTmp->Close();
+	try
+	{
+	//			   rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
+	//			   rsTmp.Open(dbOpenSnapshot,SQLx);
+	   rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	}
+	catch(_com_error e)
+	{
+	   ret=false;
+	}
+   if( rsTmp->adoEOF && rsTmp->BOF )
+   {
+	   //没有找到直径值
+	   sTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnCSPRINGL5Crude,SQLx);
+	   throw sTmp;
+   }
+   else
+   {
+	   rsTmp->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+	   Height_SPRINGsL5 =vtof(vTmp1);
+	   //获取拉杆可插入的最大长度和最小长度
+	   rsTmp->get_Collect((_variant_t)_T("size4"), &vTmp1);
+	   rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt"),COleVariant(vtof(vTmp1)));//保存到数据库，以便CalLugLength函数使用
+	   rsTmp->get_Collect((_variant_t)_T("size5"), &vTmp1);
+	   rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExt"),COleVariant(vtof(vTmp1)));
+   }
+   //恒力弹簧上方连接拉杆的下端插入值，保存到ZB表的AllowedMaxLugExtUp、AllowedMinLugExtUp字段里
+   if( sPartID == _T("LHA") || sPartID == _T("LHB") || sPartID == _T("PHA")|| sPartID == _T("PHB"))
+   {
+	   rsX->get_Collect((_variant_t)_T("PP"), &vTmp1);//pfg2005.12.23 上端最小插入值应该为PP
+	   rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExtUp"),COleVariant(vtof(vTmp1)));
+	   rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExtUp"),COleVariant(vtof(vTmp1)));
+   }
+
+   //如果恒力弹簧的选型位移modPHScal::sSprInfo[iSEQofSPR].SumDisp正好等于下限位移字段fBmin的一个值，
+   //则恒力弹簧的安装高度H1(sngH1xmax)=直接查得这个下限位移字段fBmin的值。
+   //否则，按插值法计算位移。add by ligb on 2004.11.24
+   CString tmpSQL;
+   _RecordsetPtr rsX1;
+   rsX1.CreateInstance(__uuidof(Recordset));
+
+   tmpSQL = _T("SELECT * FROM [") + modPHScal::tbnHDCrude + _T("] WHERE ") + tmpSQL ;
+   if(iSEQofSPR < modPHScal::SprInfoIndex)
+	   sTmp.Format(_T(" dh=%d"),modPHScal::sSprInfo[iSEQofSPR].DH);
+   else sTmp = _T(" ");
+   tmpSQL+=sTmp;
+   if(iSEQofSPR < modPHScal::SprInfoIndex)
+   {
+	   //sTmp.Format(_T(" AND fBmin<=%g AND fBmax>=%g "),modPHScal::sSprInfo[iSEQofSPR].CheckDisp,modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
+	   sTmp.Format(_T(" AND fBmin=%g "),modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
+   }
+   else
+   {
+	   sTmp=_T(" ");
+   }
+   tmpSQL += (modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp);
+   tmpSQL += _T(" AND trim(CustomID)=\'");
+   tmpSQL += Ptype[i];
+   tmpSQL += _T("\' ORDER BY dh,Weight");
+	try
+	{
+	//			   rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
+	//			   rsX1.Open(dbOpenSnapshot,tmpSQL);
+	   rsX1->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	}
+	catch(_com_error e)
+	{
+		ret=false;
+	}
+   if(rsX1->BOF && rsX1->adoEOF||1)//当处在临界值时出错(sizeH的高度没有加上实际位移)pfg and lgb 2005.12.15
+   {
+	   //常州电力机械厂样本数据库字段sizeH存储了正确的高度值。
+	   rsX->get_Collect((_variant_t)_T("sizeH"), &vTmp1);
+	   //rsX->get_Collect((_variant_t)_T("E"),vTmp1);
+	   sngH1xmax =vtof(vTmp1);
+	   if(modPHScal::gCH1distPos == 1 )
+	   {
+		   //E字段给出了中间位置的高度
+		   if(modPHScal::gbCalcCSPRHeight_BySelDisp)
+			   sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:1);
+		   else
+			   sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].SumDisp /(modPHScal::bE_FormulaPlusHalf?2:1);
+	   }
+	   else if(modPHScal::gCH1distPos == 0 )
+	   {
+		   //E字段给出了最小位移位置的高度
+		   rsX->get_Collect((_variant_t)_T("fBmin"), &vTmp1);
+		   if( modPHScal::yr < 0 )
+		   {
+			   //热位移<0
+			   //sngDim = sngH1xmax + (Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:1);
+			   //研究表明，国标恒吊位移计算公式与美国恒吊计算公式相同，无论bE_FormulaPlusHalf为何，都要除2
+			   //
+			   sngDim = sngH1xmax + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:2);
+		   }
+		   else
+		   {
+			   //热位移>=0，国标恒吊H1s=H1x+热位移T
+			   sngDim = sngH1xmax + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp1)) /(modPHScal::bE_FormulaPlusHalf?2:2) + (sPartID == _T("ZHB") ? -1 : 0) * modPHScal::sSprInfo[iSEQofSPR].haz;
+		   }
+		   //按国标恒吊或华东石油局扬州装备制造总厂管架分厂的解释，以上公式可废弃,应该按下列公式
+		   // sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:2);
+	   }
+	   else if(modPHScal::gCH1distPos == 2 )
+	   {
+		   //E字段给出了最大位移位置的高度
+		   rsX->get_Collect((_variant_t)_T("fBmax"), &vTmp1);
+		   rsX->get_Collect((_variant_t)_T("fBmin"), &vTmp2);
+		   sngDim = sngH1xmax + (vtof(vTmp1) - vtof(vTmp2))/2;
+		   if( modPHScal::yr < 0 )
+		   {
+			   //热位移<0
+			   sngDim = sngDim + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp2)) /(modPHScal::bE_FormulaPlusHalf?2:2);
+		   }else
+		   {
+			   //热位移>=0
+			   sngDim = sngDim + (Sgn(modPHScal::yr) * (modPHScal::gbCalcCSPRHeight_BySelDisp?modPHScal::sSprInfo[iSEQofSPR].SumDisp:modPHScal::sSprInfo[iSEQofSPR].haz) + vtof(vTmp2)) /(modPHScal::bE_FormulaPlusHalf?2:2) + (sPartID == _T("ZHB")? -1:0) * modPHScal::sSprInfo[iSEQofSPR].haz;
+		   }
+		   //按国标恒吊或华东石油局扬州装备制造总厂管架分厂的解释，以上公式可废弃,应该按下列公式
+		   //sngDim = sngH1xmax + Sgn(modPHScal::yr) * modPHScal::sSprInfo[iSEQofSPR].haz /(modPHScal::bE_FormulaPlusHalf?2:0);
+	   }
+	   //常州的可用下列公式
+	   //rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt")) = IIf(IsNull(rsX.Fields(_T("x"))), 0, rsX.Fields(_T("x")))
+	   //rsTZB->put_Collect((_variant_t)_T("AllowedMaxLugExt")) = IIf(IsNull(rsX.Fields(_T("y"))), 0, rsX.Fields(_T("y")))+rsTZB->put_Collect((_variant_t)_T("AllowedMinLugExt"))
+	   if(modPHScal::gCH1Pos == 1 )
+	   {
+		   //H1在花篮螺丝中间位置的高度
+		   sngDim = sngDim + Height_SPRINGsL5 / 2;
+	   }
+	   else if(modPHScal::gCH1Pos == 2 )
+	   {
+		   //H1在花篮螺丝最高位置的高度
+		   sngDim = sngDim + Height_SPRINGsL5;
+	   }
+	   else if(modPHScal::gCH1Pos == 0 )
+	   {
+		   //H1在花篮螺丝最低位置的高度
+   
+	   }
+	   //如果没包括花篮螺丝外缘，加上它
+	   //常州的可用下列公式
+	   if( !modPHScal::gbCH1IncludeB )
+	   {
+		   rsTmp->get_Collect((_variant_t)_T("size4"), &vTmp1);
+		   sngDim = sngDim + vtof(vTmp1);
+	   }
+	   if(sPartID == _T("LHD") || sPartID==_T("PHD"))
+	   {
+	   }
+	   else if(sPartID==_T("LHA") ||sPartID==_T("PHA") || sPartID==_T("LHB") || sPartID==_T("PHB"))
+	   {
+		   //立式吊杆连接
+		   //字段A保存拉杆插入长度
+		   //千万不可增加下面这句，否则拉杆尺寸计算错误，并且导致整个尺寸链错误。
+		   //rsTZB->put_Collect((_variant_t)_T("A")) = IIf(IsNull(rsX(_T("PP"))), 0, rsX(_T("PP")))
+	   }
+	   else if(sPartID==_T("LHE") || sPartID==_T("LHE1") || sPartID==_T("PHE") || sPartID==_T("PHE1") || sPartID==_T("PHC") || sPartID==_T("LHC"))
+	   {
+		   //立式吊杆连接，要加上耳板高度T。
+		   if( !modPHScal::gbCH1IncludeT )
+		   {
+			   rsDiaOfCSPRFiK->get_Collect((_variant_t)_T("T"), &vTmp1);
+			   sngDim = sngDim +vtof(vTmp1);
+		   }
+	   }
+	   else if(sPartID==_T("ZHB"))
+	   {
+		   //支座式恒力弹簧
+	   }
+   }
+
+   rsX1->Close();
+
+   //恒吊松紧螺母长度调节值
+   rsTZB->put_Collect((_variant_t)_T("SizeH"),COleVariant(sngDim));
+   rsTZB->put_Collect((_variant_t)_T("sizeDIM"),COleVariant(sngDim));
+   if( EDIBAcad::g_bBomSprFactory )//newHS->只有选择了标注恒力弹簧厂家才写入数据库
+   {
+	   rsTZB->put_Collect((_variant_t)_T("CLbz"),STR_VAR(modPHScal::gsCSPRmanufactory));
+   }
+   //暂时借用gdw1字段保存计算荷载，供后续过程GetBoltsNutsAndAttachmentsCLgg使用
+   rsTZB->put_Collect((_variant_t)_T("GDW1"),COleVariant(tmpSelPJG4CSPRFiK / iNumPart));
+   rsTZB->put_Collect((_variant_t)_T("SpringNo"), COleVariant( (long)modPHScal::sSprInfo[iSEQofSPR].DH) );
+   rsTZB->put_Collect((_variant_t)_T("LugDia"), COleVariant(modPHScal::sSprInfo[iSEQofSPR].FiJ));
+   rsTZB->put_Collect((_variant_t)_T("HeatDisp"), COleVariant(modPHScal::sSprInfo[iSEQofSPR].HeatDisp));
+
+   rsTZB->Update();
+   return ret;
 }

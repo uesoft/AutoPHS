@@ -63,7 +63,7 @@ BOOL CDlgExportVolume::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	_RecordsetPtr rsbackup;
-	rsbackup.CreateInstance(__uuidof(_Recordset));
+	rsbackup.CreateInstance(__uuidof(Recordset));
 //	rsbackup.m_pDatabase=&EDIBgbl::dbPRJ;
 	CString strSQL;
 	strSQL = "SELECT * FROM BackupDBTbl";

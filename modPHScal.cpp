@@ -896,8 +896,8 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	CString strTmp;
 	int inttbExist=0;//0表示第一次进入循环，1表示表存在，2表示表不存在
 	_ConnectionPtr db,db1;
-	db.CreateInstance(__uuidof(_Connection));
-	db1.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
+	db1.CreateInstance(__uuidof(Connection));
 	_RecordsetPtr rsX;
 	rsX.CreateInstance(__uuidof(Recordset));
 	//add by lfx 2005.4.20
@@ -963,7 +963,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		
 // 		db1.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
 		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
-		db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+		db1->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 		//正在获取管部信息...
 		frmStatus.UpdateStatus(1.0 /9.0,true);
 		frmStatus.UpdateData(false);
@@ -986,7 +986,8 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		if(	gsPhsPASel != _T("") )
 		{
 			_variant_t vTmp;
-			rsX->Find((_bstr_t)(_T("Trim(standard)=\'")+gsPhsPASel+_T("\'")), 0, adSearchForward, vTmp);
+			strTmp = (_T("standard=\'")+gsPhsPASel+_T("\'"));
+//			rsX->Find((_bstr_t)strTmp, 0, adSearchForward, vTmp);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1118,7 +1119,9 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		{
 // 			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")))
 			_variant_t vTmp;
-			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")), 0, adSearchForward, vTmp);
+			strTmp = (_T("standard=\'")+gsPhsPARTSel+_T("\'"));
+//			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")), 0, adSearchForward, vTmp);
+			rsX->Find((_bstr_t)strTmp, 0, adSearchForward, vTmp);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -2399,7 +2402,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 		long i=0;
 		bool bFound=false;
 		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs1;
@@ -2594,7 +2597,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 		long i=0;
 		bool bFound=false;
 		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs1;
@@ -5406,7 +5409,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 		bool bFoundCSPR=false;
 
 		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs1;

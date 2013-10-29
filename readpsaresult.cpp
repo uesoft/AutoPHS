@@ -990,7 +990,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		long ltemp=maxZdjh;			 
 		_Recordset* rsData;
 		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(_Recordset));
+		tmprs.CreateInstance(__uuidof(Recordset));
 
 		COleVariant varTmp;
 		CString strOldPhsSPRINGSel;
@@ -1095,7 +1095,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
   
 //		 rs1(&modPHScal::dbZDJcrude);
 		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(_Recordset));
+		rs1.CreateInstance(__uuidof(Recordset));
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 //		rs1.Open(dbOpenSnapshot,strSQL);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -1413,7 +1413,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 		const char* strEND_THIS_PIPING = "*THIS PIPING STRUCTURE *CONTAINS*";
 		CString strSprTbn;
 		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(_Recordset));
+		tmprs.CreateInstance(__uuidof(Recordset));
 		COleVariant varTmp;
 //		int fdFlg;
             
@@ -1918,7 +1918,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
    
 		CString strSprTbn;
 		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(_Recordset));
+		tmprs.CreateInstance(__uuidof(Recordset));
 		COleVariant varTmp;
 		CString mvsCASE, mvsCASEcool;
 		int mviSPR=0;
@@ -2337,7 +2337,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		//GLIFV3.x:开始读荷载数据
 //		rs1(&modPHScal::dbZDJcrude);
 		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(_Recordset));
+		rs1.CreateInstance(__uuidof(Recordset));
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 // 		rs1.Open(dbOpenSnapshot,strSQL);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -2628,7 +2628,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		LPCTSTR strEND_THIS_PIPING = "*THIS PIPING STRUCTURE *CONTAINS*";
 		CString strSprTbn;
 		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(_Recordset));
+		tmprs.CreateInstance(__uuidof(Recordset));
 		COleVariant varTmp;
 		int fdFlg;
 		CString mvsCASE, mvsCASEcool;
@@ -3148,7 +3148,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		fdFlg=0;
 //		 rs1(&modPHScal::dbZDJcrude);
 		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(_Recordset));
+		rs1.CreateInstance(__uuidof(Recordset));
 
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 //		rs1.Open(dbOpenSnapshot,strSQL);
@@ -4938,7 +4938,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		CString strSprTbn;
 		CString strSQL;
 		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(_Recordset));
+		tmprs.CreateInstance(__uuidof(Recordset));
 		COleVariant varTmp;
 		tagListSWEDChildNodeInfo ListChildNodeInfo;
 		tagSWEDChildNodeInfo ChildNodeInfo;

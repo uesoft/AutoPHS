@@ -225,7 +225,7 @@ int CDlgFindAutoPSAFile::GetPSARecentFile()
 int CDlgFindAutoPSAFile::GetPHSRecentFile()
 {
 	 _RecordsetPtr pfileroad;
-	 pfileroad.CreateInstance(__uuidof(_Recordset));
+	 pfileroad.CreateInstance(__uuidof(Recordset));
 //	 pfileroad.m_pDatabase = &EDIBgbl::dbPRJDB;
 	 CString fileSQL;
 	

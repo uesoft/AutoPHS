@@ -69,13 +69,13 @@ protected:
 
 private:
 
-    static _ConnectionPtr	db;
-    static COleVariant	*tb;
-    static COleVariant	*Idx;
-    static COleVariant	*FD;
-    static COleVariant	*Qd;
-    static _RecordsetPtr	*rs;
-    static _RecordsetPtr	*rs1;
+	static _ConnectionPtr	db;
+//     static COleVariant	*tb;
+//     static COleVariant	*Idx;
+//     static COleVariant	*FD;
+//     static COleVariant	*Qd;
+//     static _RecordsetPtr	*rs;
+//     static _RecordsetPtr	*rs1;
 
 };
 

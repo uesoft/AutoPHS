@@ -20,7 +20,7 @@ CVirtualListCtrl::CVirtualListCtrl()
 {
 	try
 	{
-		m_prsREF.CreateInstance(__uuidof(_Recordset));
+		m_prsREF.CreateInstance(__uuidof(Recordset));
 		CString strSQL=_T("SELECT [SampleID], [CustomID] FROM PhsStructureREF");
 // 		m_prsREF->m_strSort = _T("[SampleID], [SEQ]");
 // 		m_prsREF->m_strFilter = _T("");

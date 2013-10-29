@@ -265,7 +265,7 @@ void CDlgSARecord::OnOK()
 		{
 			SQLx=_T("SELECT CustomID FROM [") + modPHScal::tbnSA + _T("] WHERE CustomID=\'") + m_strCustomID + _T("\' ");
 			_RecordsetPtr rs;//(&modPHScal::dbZDJcrude);	
-			rs.CreateInstance(__uuidof(_Recordset));
+			rs.CreateInstance(__uuidof(Recordset));
 
 			if(count<=0)			
 				bAllowAlter=false;

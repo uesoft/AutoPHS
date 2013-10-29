@@ -61,7 +61,7 @@ void CDataGridEx::InitToolTipControl()
 
 		try
 		{
-			hr=pUnknown->QueryInterface(__uuidof(_Recordset),(void**)&IRecordset);
+			hr=pUnknown->QueryInterface(__uuidof(Recordset),(void**)&IRecordset);
 
 			pUnknown->Release();
 

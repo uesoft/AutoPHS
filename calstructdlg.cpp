@@ -1747,7 +1747,7 @@ void CCalStructDlg::LoadComGrid()
 			m_lStructID);
 		_RecordsetPtr rs;
 //		rs.m_pDatabase=&EDIBgbl::dbSORT;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
 		CString strTemp;
@@ -1947,7 +1947,7 @@ void CCalStructDlg::LoadComGridGg(int iRow)
 				modPHScal::tbnBoltsNuts,pS->szCustomID);
 		}
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 //		rs.m_pDatabase=&modPHScal::dbZDJcrude;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenDynamic, adLockReadOnly, adCmdText); 
@@ -2435,7 +2435,7 @@ void CCalStructDlg::UpdateComLen()
 		int c=m_ComGrid.GetRowCount()-1;
 		int i;
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		for(i=1;i<=c;i++)
 		{
 			CString strSQL;

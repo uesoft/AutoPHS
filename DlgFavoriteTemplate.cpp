@@ -21,7 +21,7 @@ CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent ,long lSampleID)
 	: CDialog(CDlgFavoriteTemplate::IDD, pParent)
 {
 	m_lSampleID = lSampleID;
-	m_rsFavorite.CreateInstance(__uuidof(_Recordset));
+	m_rsFavorite.CreateInstance(__uuidof(Recordset));
 }
 
 CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent /*=NULL*/)
@@ -31,7 +31,7 @@ CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent /*=NULL*/)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	m_lCurSelSampleID = 0;
-	m_rsFavorite.CreateInstance(__uuidof(_Recordset));
+	m_rsFavorite.CreateInstance(__uuidof(Recordset));
 }
 
 

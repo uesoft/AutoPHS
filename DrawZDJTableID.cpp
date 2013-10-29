@@ -33,10 +33,10 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 		bool Found=false;
 		CCadPoint p0, p1;
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 
 		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(_Recordset));
+		rs1.CreateInstance(__uuidof(Recordset));
 
 		int i=0;
 		int k=0;

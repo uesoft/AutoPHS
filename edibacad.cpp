@@ -6028,7 +6028,7 @@ void EDIBAcad::DrawphsDataEdit()
 		
 		FrmDataEDIT.m_DBGrid1.SetRefDataSource(NULL);
 		if(FrmDataEDIT.m_Data1==NULL)
-			FrmDataEDIT.m_Data1.CreateInstance(__uuidof(_Recordset));
+			FrmDataEDIT.m_Data1.CreateInstance(__uuidof(Recordset));
 		else if(FrmDataEDIT.m_Data1->State==adStateOpen)
 			FrmDataEDIT.m_Data1->Close();
 		FrmDataEDIT.m_Data1->CursorLocation=adUseClient;
@@ -6742,7 +6742,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 	CString sTmpDrawNo, sTmpDrawNa;
 	CString sTmpDrawNaEnglish;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	COleVariant tmpvar;
 	CString strExecute;
 	//在添加目录信息之前，建立一个临时表以便生成图名、图号等信息。

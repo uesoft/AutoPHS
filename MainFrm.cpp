@@ -490,14 +490,14 @@ void CMainFrame::OnSelPDSV()
 		//取行业中的相关信息,设计阶段,专业的相关信息
 
 		_RecordsetPtr DataCurrWork;
-		DataCurrWork.CreateInstance(__uuidof(_Recordset));
+		DataCurrWork.CreateInstance(__uuidof(Recordset));
 
 		_RecordsetPtr DataCategory;//行业
-		DataCategory.CreateInstance(__uuidof(_Recordset));
+		DataCategory.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr DataSpe;//专业
-		DataSpe.CreateInstance(__uuidof(_Recordset));
+		DataSpe.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr DataDsgn;//设计阶段
-		DataDsgn.CreateInstance(__uuidof(_Recordset));
+		DataDsgn.CreateInstance(__uuidof(Recordset));
 		CString str_sjhyid;
 		str_sjhyid.Format("%ld",(EDIBgbl::SelHyID));
 		COleVariant tmpVar;
@@ -540,7 +540,7 @@ void CMainFrame::OnSelPDSV()
 				adOpenDynamic, adLockReadOnly, adCmdText); 
 			
 			_RecordsetPtr m_Rs;
-			m_Rs.CreateInstance(__uuidof(_Recordset));
+			m_Rs.CreateInstance(__uuidof(Recordset));
 			m_Rs=DataCurrWork;
 //			m_Rs->Edit();
 			DataCategory->get_Collect((_variant_t)_T("sjhyid"),&tmpVar);
@@ -989,9 +989,9 @@ void CMainFrame::SumCL(int Index)
 		double X =0;long i=0;
 		CString strTbn, strXls;
 		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs1;
 		CString BOM_Format_phs;
 		if( !ModEncrypt::gbLegalUser )
@@ -1179,7 +1179,7 @@ void CMainFrame::SumCL(int Index)
 				}
 
 				_RecordsetPtr rs1;
-				rs1.CreateInstance(__uuidof(_Recordset));
+				rs1.CreateInstance(__uuidof(Recordset));
 				CString strPaintPathName, strTblName;
 				SQLx = _T("SELECT BomIndex, BomName , BomTable FROM BOMname ORDER BY BomIndex");
 // 				rs.m_pDatabase=&EDIBgbl::dbPHScode;
@@ -1583,7 +1583,7 @@ void CMainFrame::DrawZdjTab(int index)
 	//	bool bIsCom = false; //画图时用COM画为true; arx画为false; 1/12   zsy
 		CCadPoint p0, p1;
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rs1;
 		rs1.CreateInstance(__uuidof(Recordset));
 		int i=0;
@@ -2618,9 +2618,20 @@ BOOL CMainFrame::Start()
 	::AfxGetApp()->LoadCursor(IDC_WAIT);
 	SetMenuEnabled();
 	
+	HRESULT hr = S_OK;
+	if (modPHScal::dbZDJcrude == NULL)
+	{
+		hr = modPHScal::dbZDJcrude.CreateInstance(__uuidof(Connection));
+	}
 	//以下两句打开了所有的数据库连接
-// 	modPHScal::dbZDJcrude->Open((_bstr_t)basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),FALSE,FALSE,_T(";pwd=")+ModEncrypt::gstrDBZdjCrudePassWord);
-	modPHScal::dbZDJcrude->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("zdjcrude.mdb")), "", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
+//	try {
+		// 	modPHScal::dbZDJcrude->Open((_bstr_t)basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),FALSE,FALSE,_T(";pwd=")+ModEncrypt::gstrDBZdjCrudePassWord);
+		hr = modPHScal::dbZDJcrude->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb")), "", 
+			(_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
+// 	} catch (_com_error &e)
+// 	{
+// 
+// 	}
 	EDIBgbl::InitCurrWork();
 
 	modPHScal::InitZdjTxName();

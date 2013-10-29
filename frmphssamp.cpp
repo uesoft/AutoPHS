@@ -1261,7 +1261,7 @@ void CFrmPhsSamp::LoadListPA()
 {
 	CString strSQL;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	m_bLoadPA=true;
 	try
 	{
@@ -1295,7 +1295,7 @@ void CFrmPhsSamp::LoadListSA()
 {
 	CString strSQL;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	m_bLoadSA=true;
 	try
 	{

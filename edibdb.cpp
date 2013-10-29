@@ -44,8 +44,8 @@ CString EDIBDB::DsgnName = CString();
 long EDIBDB::DwgScale =0;
 int EDIBDB::drawinfoFN = (int) _T("DrawInfo.txt");
 CString EDIBDB::SelFileName = CString();
-_RecordsetPtr* EDIBDB::rs = (_RecordsetPtr*) 0;
-_RecordsetPtr* EDIBDB::rs1 = (_RecordsetPtr*) 0;
+_ConnectionPtr EDIBDB::db = NULL;
+// _RecordsetPtr* EDIBDB::rs1 = (_RecordsetPtr*) 0;
 CMObject	EDIBDB::ObjExcelApp;
 CMObject	EDIBDB::ExcWorkBook;
 void EDIBDB::StartEXCEL(CString  FileName)
@@ -446,7 +446,7 @@ void EDIBDB::RefreshGrid(CDataGrid &grid, _RecordsetPtr rs)
 		grid.GetColumns().GetItem(ix).SetCaption(sTmp);
 	}
 	LONG lRowCount;
-	rs->get_RecordCount(&lRowCount);
+	lRowCount = rs->RecordCount;
 	//Modified by Shuli Luo
 	//Modify Date:2003-12-26
 	if(lRowCount <= 0) 
@@ -511,7 +511,7 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 	{
 		CString strOrderBy;
 		_ConnectionPtr db1;
-		db1.CreateInstance(__uuidof(_Connection));
+		db1.CreateInstance(__uuidof(Connection));
 		CString SQLx;
 		if( EDIBgbl::tdfExists(db, sSrcTableName) )
 		{
@@ -561,11 +561,11 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CString remark, double CLzz)
 {
 	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
 	_ConnectionPtr dbExcel;
-	dbExcel.CreateInstance(__uuidof(_Connection));
+	dbExcel.CreateInstance(__uuidof(Connection));
 	_RecordsetPtr pRs;
-	pRs.CreateInstance(__uuidof(_Recordset));
+	pRs.CreateInstance(__uuidof(Recordset));
 	CString strSQL,strFieldTbl,strTmp;
 	try
 	{

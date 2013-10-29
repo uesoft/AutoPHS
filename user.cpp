@@ -702,7 +702,7 @@ CString vtos(COleVariant& v)
 		ret="";
 		break;
 	case VT_BSTR:
-		ret=V_BSTRT(&v);
+		ret= v.bstrVal;
 		break;
 	case VT_R4:
 		ret.Format("%g", (double)V_R4(&v));

@@ -125,10 +125,10 @@ void CFrmPreferences::OnOK()
 		COleVariant tmpvar;
 		int inttbExist=0;//0表示第一次进入循环，1表示表存在，2表示表不存在
 		_RecordsetPtr rsX;
-		rsX.CreateInstance(__uuidof(_Recordset));
+		rsX.CreateInstance(__uuidof(Recordset));
 		_ConnectionPtr db, db1;
-		db.CreateInstance(__uuidof(_Connection));
-		db1.CreateInstance(__uuidof(_Connection));
+		db.CreateInstance(__uuidof(Connection));
+		db1.CreateInstance(__uuidof(Connection));
 
 		long  lngErrNum ;
 		CString sTmp;

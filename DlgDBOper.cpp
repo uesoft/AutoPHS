@@ -992,7 +992,7 @@ int CDlgDBOper::DisplayAllTable()
 {
 	//在数据表列表框中显示所有数据表
 	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(_Connection));
+	db.CreateInstance(__uuidof(Connection));
 	ResetTableList();
 
 	try

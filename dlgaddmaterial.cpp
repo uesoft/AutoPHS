@@ -134,7 +134,7 @@ void CDlgAddMaterial::LoadListClass()
 		m_pstrClassTbn=NULL;
 	}
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -262,7 +262,7 @@ void CDlgAddMaterial::LoadListDesc()
 	}
 	m_strDescTbn=strTbn;
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -383,7 +383,7 @@ void CDlgAddMaterial::LoadListBH()
 		//m_comboBH.EnableWindow(TRUE);
 	}
 	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(_Recordset));
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -690,13 +690,13 @@ void CDlgAddMaterial::OnBtnAdd()
 	{
 //		 rsTZB,rsDesc,rsTmp,rsBH;
 		_RecordsetPtr rsTZB;
-		rsTZB.CreateInstance(__uuidof(_Recordset));
+		rsTZB.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsDesc;
-		rsDesc.CreateInstance(__uuidof(_Recordset));
+		rsDesc.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsTmp;
-		rsTmp.CreateInstance(__uuidof(_Recordset));
+		rsTmp.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsBH;
-		rsBH.CreateInstance(__uuidof(_Recordset));
+		rsBH.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		try
 		{
@@ -1063,7 +1063,7 @@ void CDlgAddMaterial::LoadListMaterial()
 		int iClassIndex=m_piClassIndex[ix];
 
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		COleVariant vTmp;
 		CString SQLx;
 		if(iClassIndex==iPA)
@@ -1099,7 +1099,7 @@ int CDlgAddMaterial::GetMaxSEQ(CString tbn, _ConnectionPtr &db)
 	{
 //		 rs(&db);
 		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(_Recordset));
+		rs.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		strSQL.Format(_T("SELECT MAX(SEQ) FROM %s"),tbn);
 // 		rs.Open(dbOpenSnapshot,strSQL);
