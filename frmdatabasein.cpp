@@ -127,7 +127,7 @@ void CFrmDatabaseIn::getDatabase()
 				//sqlB = _T("SELECT DISTINCT VolumeID FROM[") & mytablenameB & _T("] WHERE NOT IsNull(VolumeID) AND trim(VolumeID)<>'' AND trim(VolumeID)<>'") & SelVlmID & _T("'")
 // 				rsA.m_pDatabase=&db;
 // 				rsA.Open(dbOpenSnapshot,sqlA);
-				rsA->Open(_variant_t(sqlA),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+				rsA->Open(_variant_t(sqlA),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 				COleVariant vTmp;
 				while(!rsA->adoEOF)
 				{
@@ -232,7 +232,7 @@ void CFrmDatabaseIn::OnDataIn()
 // 					rs1.m_pDatabase=&m_db;
 					strSQL.Format(_T("SELECT jcmc FROM Volume WHERE VolumeID=%d"),VlmID2);
 // 					rs1.Open(dbOpenSnapshot,strSQL);
-					rs1->Open(_variant_t(strSQL),(IDispatch*)m_db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+					rs1->Open(_variant_t(strSQL),(IDispatch*)m_db,adOpenKeyset, adLockOptimistic,adCmdText);
 					if(!rs1->BOF && !rs1->adoEOF)
 					{
 						rs1->get_Collect((_variant_t)0L, &varTmp);
@@ -243,7 +243,7 @@ void CFrmDatabaseIn::OnDataIn()
 					strSQL.Format(_T("SELECT * FROM Volume WHERE Enginid=\'%s\' AND jcdm=\'%s\' AND SJHYID=%d AND SJJDID=%d AND ZYID=%d"),
 						EDIBgbl::SelPrjID,strJcdm1,EDIBgbl::SelHyID,EDIBgbl::SelDsgnID,EDIBgbl::SelSpecID);
 // 					rs1.Open(dbOpenDynaset,strSQL);
-					rs1->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+					rs1->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 					if(rs1->adoEOF && rs1->BOF)
 					{
 						VlmID=GetMaxVlmID(EDIBgbl::dbPRJDB)+1;
@@ -290,7 +290,7 @@ void CFrmDatabaseIn::OnDataIn()
 // 					rs2.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 					rs2.Open(dbOpenSnapshot,SQLx,dbReadOnly);
 					rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(!m_bIsNewDB)
 					{
 						SQLx=_T("SELECT count(*) as C1 FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
@@ -298,7 +298,7 @@ void CFrmDatabaseIn::OnDataIn()
 // 					rs1.m_pDatabase=&db;
 // 					rs1.Open(dbOpenSnapshot,SQLx,dbReadOnly);
 					rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)db,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(!rs2->adoEOF && !rs2->BOF && !rs1->adoEOF && !rs1->BOF)
 					{
 						rs2->get_Collect((_variant_t)_T("C1"),v2);
@@ -327,7 +327,7 @@ void CFrmDatabaseIn::OnDataIn()
 // 						rsVlm.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 						rsVlm.Open(dbOpenDynaset,SQLx);
 						rsVlm->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-							adOpenDynamic, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 						if(rsVlm->BOF && rsVlm->adoEOF)
 						{
 							rsVlm->AddNew();
@@ -578,7 +578,7 @@ long inline CFrmDatabaseIn::GetMaxVlmID(_ConnectionPtr & db)
 		CString SQLx;
 		SQLx = _T("Select MAX(VolumeID) From Volume");
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)db,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rs->get_Collect((_variant_t)0L, &vTmp);
 		ret=vtoi(vTmp);
 	}
@@ -607,7 +607,7 @@ void CFrmDatabaseIn::LoadListEngin()
 // 		rs.m_pDatabase=&m_db;
 // 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)m_db,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		COleVariant vartmp;
 		while(!rs->adoEOF)
 		{
@@ -655,7 +655,7 @@ void CFrmDatabaseIn::LoadListVlm()
 // 		rs.m_pDatabase=&m_db;
 // 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)m_db,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int ix;
 		while(!rs->adoEOF)
 		{

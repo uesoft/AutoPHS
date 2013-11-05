@@ -220,7 +220,7 @@ void CPrePointPag::SetBasePoint()
 		CString SQLx = "SELECT * FROM phsDrawPos";
 //		rs.Open(dbOpenDynaset,SQLx);
 		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		CString sTmp;
 		FDp.MakeUpper();
 		COleVariant vTmp;

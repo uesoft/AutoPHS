@@ -154,7 +154,7 @@ void EDIBDB::GetTBsize()
 // 	rs.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize WHERE trim(sjhy)=\'")+EDIBgbl::SelHyName+_T("\'"));
 	CString strSQL;
 	strSQL = "SELECT * FROM DrawSize WHERE trim(sjhy)=\'"+EDIBgbl::SelHyName+_T("\'");
-	rs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+	rs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 	_variant_t vTmp;
 	if(!rs->adoEOF && !rs->BOF)
 	{
@@ -267,8 +267,8 @@ void EDIBDB::SumNumbers()
 // 	rs1.Open(dbOpenDynaset ,_T("SELECT * FROM TMP1"));
 // 	rs2.m_pDatabase=&EDIBgbl::dbPRJ;
 // 	rs2.Open(dbOpenSnapshot ,_T("SELECT * FROM TMP2"));
-	rs1->Open(_variant_t(_T("SELECT * FROM TMP1")),(IDispatch*)EDIBgbl::dbPRJ,adOpenForwardOnly,adLockReadOnly,adCmdText);
-	rs2->Open(_variant_t(_T("SELECT * FROM TMP2")),(IDispatch*)EDIBgbl::dbPRJ,adOpenForwardOnly,adLockReadOnly,adCmdText);
+	rs1->Open(_variant_t(_T("SELECT * FROM TMP1")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+	rs2->Open(_variant_t(_T("SELECT * FROM TMP2")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
     _variant_t v1,v2;
 	COleVariant CLgg,CLmc,CLcl,CLID,CLdz,CLdw,CLnum1;
    while(!rs1->adoEOF)
@@ -348,7 +348,7 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
    {
 // 	   rs.m_pDatabase=&EDIBgbl::dbTable;//20071015 "dbSORT"¸ÄÎª"dbTable"
 // 	   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenForwardOnly,adLockReadOnly,adCmdText);
+	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
 	   CString sTmp;
 	   if(rs->BOF || rs->adoEOF)
 	   {
@@ -365,7 +365,8 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		EDIBgbl::SQLx = CString(_T("SELECT * FROM ") )+ vtos(v) + _T(" WHERE NOT ISNULL(seq) ORDER BY seq");
 	   rs->Close();
 // 		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenForwardOnly,adLockReadOnly,adCmdText);
+	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,
+		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   if(rs->adoEOF && rs->BOF)
 	   {
 		   dbName=(LPTSTR)(LPCTSTR)EDIBgbl::dbSORT->DefaultDatabase;
@@ -384,9 +385,14 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		  sTmp.TrimLeft();
 		  sTmp.TrimRight();
 		  sTmp.MakeUpper();
-		  _variant_t vTmp;
-		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchForward, vTmp);
-		  if(!rs->adoEOF)
+// 		  _variant_t vTmp;
+// 		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchForward, vTmp);
+		  HRESULT hr = S_OK;
+		  rs->MoveFirst();
+		  CString strTmp;
+			strTmp = _T("(FieldName)=\'")+sTmp+_T("\'");
+		  hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward, rs->Bookmark);
+		  if( !rs->adoEOF)
 		  {
 			  rs->get_Collect((_variant_t)_T("[Visible]"),&v);
 			  if(v.vt!=VT_NULL)
@@ -580,7 +586,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 //			pRs.m_pDatabase = &db;
 			strSQL  = "SELECT * FROM TableExcelToAccess WHERE ID = 1";
 //			pRs.Open( dbOpenSnapshot, strSQL );
-			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( pRs->BOF || pRs->adoEOF )
 			{
 			}
@@ -607,7 +613,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			{
 				strSQL = "SELECT * FROM ["+strFieldTbl+"]";
 // 				pRs.Open(dbOpenSnapshot, strSQL);
-				pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenForwardOnly,adLockReadOnly,adCmdText);
+				pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 				//test create
 				strSQL = "CREATE TABLE ["+strTblName+"] ";
 				for(int i=0; !pRs->adoEOF; pRs->MoveNext(), i++)

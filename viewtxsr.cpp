@@ -55,6 +55,9 @@ CViewTxsr::CViewTxsr()
 	m_bIsActiveing=false;
 	m_bAllowUpd=true;
 	m_FrictionFree=0.3;
+
+	m_ActiveRs.CreateInstance(__uuidof(Recordset));
+
 	//{{AFX_DATA_INIT(CViewTxsr)
 	m_txtXZU1 = _T("");
 	m_txtXZU2 = _T("");
@@ -352,7 +355,6 @@ void CViewTxsr::OnInitialUpdate()
 	{
 	//m_Databill.SetRefRecordset(m_ActiveRs);
 	//this->m_pRStEvent=new CRstEvent;
-	m_ActiveRs.CreateInstance(__uuidof(Recordset));
 	EDIBgbl::InitDBTBN( EDIBgbl::SQLx);
 	InitRs();
 
@@ -703,7 +705,9 @@ void CViewTxsr::OnWillMoveDatabill(long adReason, long FAR* adStatus, LPDISPATCH
 	}
 	catch(_com_error e)
 	{
-		//AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	catch(CException *e)
 	{
@@ -743,7 +747,9 @@ void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FA
 	}
 	catch(_com_error e)
 	{
-		//AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	catch(CException *e)
 	{
@@ -1823,7 +1829,7 @@ void CViewTxsr::ShowPicturePASA(int Index)
 		strSQL.Format("SELECT CustomID FROM PhsStructureREF WHERE SampleID=%d ORDER BY SEQ ",vtoi(m_ActiveRs->GetCollect("iSelSampleID")));
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->BOF && rs->adoEOF)
 		{
 			rs->Close();
@@ -2113,7 +2119,9 @@ void CViewTxsr::OnImgXy0()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -2577,7 +2585,9 @@ void CViewTxsr::EditPaste()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 
 	try
@@ -3739,7 +3749,7 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 			EDIBgbl::SQLx = "SELECT COUNT( [" + strFLD + "]) FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL";
 //			rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
 			rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			rs->get_Collect((_variant_t)0L, &tmpvar);
 			if(vtoi(tmpvar)>0)
 				EDIBgbl::SQLx = "SELECT DISTINCT [" + strFLD + "] FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL ORDER BY [" + strFLD + "] ASC";
@@ -3749,7 +3759,7 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 		}
 //		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);	
 		rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF) return;
 		//获得当前选择值
 		CString MyComboBoxCurrent;
@@ -3893,7 +3903,7 @@ void CViewTxsr::OnKillfocusEdtSsid()
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
 //			rsTmpZB.Open(dbOpenSnapshot,strTemp);
 			rsTmpZB->Open((_bstr_t)strTemp,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			int iCount;
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 				iCount=0;
@@ -3947,7 +3957,9 @@ void CViewTxsr::OnPage1EditChange()
 	}
 	catch(_com_error &e)
 	{
-		AfxMessageBox(e.ErrorMessage());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 
 	InitFromReg();
@@ -4027,7 +4039,9 @@ void CViewTxsr::OnPage2EditChange()
 	}
 	catch(_com_error &e)
 	{
-		AfxMessageBox(e.ErrorMessage());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 
 	m_OptPag5->UpdateData();
@@ -4123,7 +4137,7 @@ void CViewTxsr::InitBornSA()
 		m_ComBoBornSA.ResetContent();
 //		rsBornSA.Open(dbOpenDynaset,strSQL);
 		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rsBornSA->adoEOF && rsBornSA->BOF) return;
 
 		CString strComboCur;
@@ -4169,7 +4183,7 @@ void CViewTxsr::GetBornSA(CString &m_strBornSA)
 // 		rsBornSA.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 		rsBornSA.Open(dbOpenDynaset,strSQL);
 		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rsBornSA->adoEOF && rsBornSA->BOF)
 		{
 			m_strBornSAEng="";

@@ -232,7 +232,7 @@ int CDlgFindAutoPSAFile::GetPHSRecentFile()
      fileSQL.Format("SELECT * FROM ZY WHERE [VolumeID]=%d Order by FileNameID DESC",EDIBgbl::SelVlmID);
 //	 pfileroad.Open(dbOpenDynaset,fileSQL);//得到符合条件的记录集
 	 pfileroad->Open((_bstr_t)fileSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			   adOpenDynamic, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 
      CString strValue;//文件路径 
 	 CString strItem;//序号

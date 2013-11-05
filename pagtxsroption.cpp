@@ -207,7 +207,7 @@ void CPagTxsrOption::LoadSAG100()
 // 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
 // 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);

@@ -313,21 +313,26 @@ void CPhsData::InitDBbill()
 			m_DataBillRs=NULL;
 		}*/
 
-	m_DataBillRs=FrmTxsr.m_pViewTxsr->m_ActiveRs;
-   m_DBGbill.SetRefDataSource(m_DataBillRs->GetDataSource());
-   EDIBDB::RefreshGrid(m_DBGbill,m_DataBillRs);
-	//m_DBGbill.SetDataMember(FrmTxsr.m_Databill.GetRecordset().GetDataMember());
-   m_DBGbill.Refresh();
-   m_ActiveRs=m_DataBillRs;
-   EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGbill);
-   EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
-   //DBGBill.ReBind
-   //不能使用rebind,否则前面设置的caption,width均无效.
-   m_DBGbill.Refresh();
+	  if (FrmTxsr.m_pViewTxsr)
+	  {
+		  m_DataBillRs=FrmTxsr.m_pViewTxsr->m_ActiveRs;
+	  }
+		m_DBGbill.SetRefDataSource((LPUNKNOWN)m_DataBillRs);
+		EDIBDB::RefreshGrid(m_DBGbill,m_DataBillRs);
+		//m_DBGbill.SetDataMember(FrmTxsr.m_Databill.GetRecordset().GetDataMember());
+		m_DBGbill.Refresh();
+		m_ActiveRs=m_DataBillRs;
+		EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGbill);
+		EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
+		//DBGBill.ReBind
+		//不能使用rebind,否则前面设置的caption,width均无效.
+		m_DBGbill.Refresh();
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPTSTR)e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -689,7 +694,9 @@ void CPhsData::OnSumDisplay()
    }
    catch(_com_error &e)
    {
-	   AfxMessageBox(e.Description());
+	   CString strErrorMsg;
+	   strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+	   AfxMessageBox(strErrorMsg);
    }
 }
 
@@ -715,6 +722,7 @@ void CPhsData::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			{
 				bOut=true;
 				m_bActive=false;
+/*
 
 				if(!this->m_ActiveRs->adoEOF && !this->m_ActiveRs->BOF)
 				{
@@ -727,6 +735,7 @@ void CPhsData::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 						m_ActiveRs->CancelUpdate();
 					}
 				}
+*/
 				bOut=false;
 			}
 			else
@@ -737,9 +746,11 @@ void CPhsData::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			if(!bIn)
 			{
 				bIn=true;
+/*
 				if(!this->m_ActiveRs->adoEOF && !this->m_ActiveRs->BOF)
 				{
 				}
+*/
 				UpdateLabel();
 				SetWindowText(EDIBgbl::Cbtype[EDIBgbl::SelBillType].MnuCaption + "    " + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + " (" + EDIBgbl::SelJcdm + ")");
 				m_bActive=true;
@@ -751,7 +762,9 @@ void CPhsData::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+// 		CString strErrorMsg;
+// 		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+// 		AfxMessageBox(strErrorMsg);
 	}
 	oldState=nState;
 }
@@ -1738,7 +1751,9 @@ void CPhsData::OnExportToExcel()
 	}
 	catch (_com_error& e) 
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		AfxGetApp()->EndWaitCursor();
 		return;
 	}

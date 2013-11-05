@@ -734,7 +734,9 @@ void ReadYljsResult(_Recordset* rs)
 				}
 				catch(_com_error & e)
 				{
-					AfxMessageBox(e.Description());
+					CString strErrorMsg;
+					strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+					AfxMessageBox(strErrorMsg);
 				}
 			}
 			else			 
@@ -1066,7 +1068,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 				strSQL += strSprNWEPDI;
 				strSQL += "\'";
 			tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(tmprs->BOF && tmprs->adoEOF)
 			{
 			}
@@ -1099,7 +1101,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 //		rs1.Open(dbOpenSnapshot,strSQL);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		iCount = 1;
                     
@@ -1494,7 +1496,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -2020,7 +2022,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -2041,7 +2043,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					strSQL += strSprGB10182;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -2341,7 +2343,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 // 		rs1.Open(dbOpenSnapshot,strSQL);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!f.eof()){
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
 			if( atof(Mid(temp,0, (gbNewGLIFV31 ? 5 : 16))) > 0 ){
@@ -2748,7 +2750,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{//1
 					}//1
@@ -2771,7 +2773,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 					strSQL += strSprGB10182;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{//1
 					}//1
@@ -3153,7 +3155,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 //		rs1.Open(dbOpenSnapshot,strSQL);
 		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!f.eof())
 		{
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
@@ -4997,7 +4999,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strSQL += strSprNWEPDI;
 		strSQL += "\'";
 		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(tmprs->BOF && tmprs->adoEOF)
 		{
 		}
@@ -6052,7 +6054,9 @@ void UpDataZY()
 	}
 	catch(_com_error & e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		RD->Close();
 	}
 	RD->Close();

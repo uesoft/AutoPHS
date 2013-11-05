@@ -137,7 +137,7 @@ BOOL CADORecordset::FindFirst(CString strFind)
 	try
 	{
 		m_pSet->MoveFirst();
-		m_pSet->Find(_bstr_t(strFind),0,adSearchForward);
+		m_pSet->Find(_bstr_t(strFind),0,adSearchForward, m_pSet->Bookmark);
 		if(m_pSet->adoEOF)
 			return FALSE;
 		return TRUE;

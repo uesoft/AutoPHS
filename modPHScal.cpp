@@ -500,7 +500,7 @@ COleVariant modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID
 		SQLx+=_T("\'");
 //    rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
    if(rs->BOF && rs->adoEOF)
    {
 	   ShowMessage(GetResStr(IDS_NosFLDinPhsBlkDimPos));
@@ -537,7 +537,7 @@ COleVariant modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*
 //    rs.Open(dbOpenSnapshot,sTmp);
    //rs=EDIBgbl::dbPRJ->Execute(_bstr_t(sTmp),NULL,adCmdText);
    rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-	   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	   adOpenKeyset, adLockOptimistic, adCmdText); 
    if(rs->BOF)
          return _variant_t((long)0);
      else
@@ -595,7 +595,7 @@ COleVariant modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSource
 // 		rs.m_pDatabase=&db;
 // 		rs.Open(dbOpenSnapshot,sTmp);
 		rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)db,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->BOF)
 			return ret;
 		rs->get_Collect((_variant_t)strDestFLD,&tmpvar);
@@ -636,7 +636,7 @@ CString modPHScal::sFindID(CString CustomID)
 	  CString sTmp;
 	  sTmp = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=")+CustomID;
 	  rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
      if(rs->BOF && rs->adoEOF)
          //MsgBox ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData, _T("|1"), _T("CustomID"), _T("|2"), CustomID), vbMsgBoxSetForeground
          ret = _T("");
@@ -678,7 +678,7 @@ CString modPHScal::sFindCustomID(CString ID)
 // 	rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 	rs.Open(AFX_DAO_USE_DEFAULT_TYPE,SQLx);
 	rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	if(rs->adoEOF || rs->BOF)
 	{
 		rs->Close();
@@ -722,7 +722,7 @@ CString modPHScal::sFindTBN(CString /*ByVal*/ PartCustomID)
 	CString SQLx;
 	SQLx = _T("SELECT * FROM PictureClipData WHERE  trim(CustomID)=\'")+PartCustomID+_T("\'");
 	rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
    if(rs->BOF && rs->adoEOF )
    {
       //MsgBox ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData,_T("|1"),_T("CustomID"), _T("|2"), PartCustomID), vbMsgBoxSetForeground
@@ -974,7 +974,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		CString SQLx;
 		SQLx = _T("SELECT * FROM phsManuPA ORDER BY [Observation],[standard] ASC");
 		rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsPASel.TrimLeft();gsPhsPASel.TrimRight();
 		if( rsX->BOF && rsX->adoEOF )
 		{
@@ -1106,7 +1106,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 // 		rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuPART ORDER BY [Observation],[standard] ASC"));
 		sTmp = _T("SELECT * FROM phsManuPART ORDER BY [Observation],[standard] ASC");
 		rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsPARTSel.TrimLeft();gsPhsPARTSel.TrimRight(); 
 		if( rsX->BOF && rsX->adoEOF )
 		{
@@ -1118,10 +1118,11 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		if(gsPhsPARTSel != _T("") )
 		{
 // 			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")))
-			_variant_t vTmp;
+			HRESULT hr = S_OK;
+			rsX->MoveFirst();
 			strTmp = (_T("standard=\'")+gsPhsPARTSel+_T("\'"));
 //			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")), 0, adSearchForward, vTmp);
-			rsX->Find((_bstr_t)strTmp, 0, adSearchForward, vTmp);
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1260,7 +1261,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 // 		rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuSA ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
 		sTmp = _T("SELECT * FROM phsManuSA ORDER BY [Observation],[standard] ASC");
 		rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsSASel.TrimLeft();gsPhsSASel.TrimRight(); 
 		if( rsX->BOF && rsX->adoEOF )
 		{
@@ -1272,8 +1273,10 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		if(gsPhsSASel != _T("") )
 		{
 // 			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsSASel+_T("\'")))
-			_variant_t vTmp;
-			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsSASel+_T("\'")), 0, adSearchForward, vTmp);
+			HRESULT hr = S_OK;
+			rsX->MoveFirst();
+			strTmp = _T("standard=\'")+gsPhsSASel+_T("\'");
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1479,7 +1482,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 // 	rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuBoltsNuts ORDER BY [Observation],[standard] ASC"));//),(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
 	sTmp = _T("SELECT * FROM phsManuBoltsNuts ORDER BY [Observation],[standard] ASC");
 	rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	gsPhsBoltsNutsSel.TrimLeft();gsPhsBoltsNutsSel.TrimRight(); 
 	if( rsX->BOF && rsX->adoEOF )
 	{
@@ -1491,8 +1494,10 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	if(gsPhsBoltsNutsSel != _T("") )
 	{
 // 		if(!rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsBoltsNutsSel+_T("\'")))
-		_variant_t vTmp;
-		rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsBoltsNutsSel+_T("\'")), 0, adSearchForward, vTmp);
+		HRESULT hr = S_OK;
+		rsX->MoveFirst();
+		strTmp = _T("standard=\'")+gsPhsBoltsNutsSel+_T("\'");
+		hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
 		if( !rsX->adoEOF)
 		{
 			rsX->MoveFirst();
@@ -1591,11 +1596,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 // 	rsX.Open(dbOpenDynaset,_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
 	sTmp = _T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC");
 	rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
-
-	SQLx = _T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC");
-	rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	gsPhsSPRINGSel.TrimLeft();gsPhsSPRINGSel.TrimRight(); 
 	if( rsX->BOF && rsX->adoEOF ){
 		lngErrNum = IDS_NotFoundThisStandardInSortMdb;
@@ -1605,8 +1606,10 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 	if(gsPhsSPRINGSel != _T("") )
 	{
-		  _variant_t vTmp;
-		  rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsSPRINGSel+_T("\'")), 0, adSearchForward, vTmp);
+		  HRESULT hr = S_OK;
+		  rsX->MoveFirst();
+		  strTmp = _T("standard=\'")+gsPhsSPRINGSel+_T("\'");
+		  hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
 		  if( !rsX->adoEOF)
 		{
 			rsX->MoveFirst();
@@ -1804,7 +1807,8 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			   {
 				   gsSPRUnitOfLoad = _T("N");
 // 				   rsX.Edit();
-				   rsX->put_Collect((_variant_t)_T("Unit_Force"),STR_VAR("N"));rsX->Update();
+				   rsX->put_Collect((_variant_t)_T("Unit_Force"),_variant_t("N"));
+				   rsX->Update();
 				   //如果没有导入，只修改模板库下的原始数据库；
 				   //修改方法：
 				   rsX->get_Collect((_variant_t)_T("Folder"),&tmpvar);
@@ -1914,7 +1918,8 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   if(rsX->State == adStateOpen)
 		   rsX->Close();
 //	   rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuConstantSPRING ORDER BY [Observation],[standard] ASC"));//),(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
-	   rsX->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
+	   rsX->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbSORT,
+		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   gsPhsConstantSpringSel.TrimLeft();gsPhsConstantSpringSel.TrimRight(); 
 	   /*if( rsX->BOF && rsX->adoEOF ){
 	   lngErrNum = IDS_NotFoundThisStandardInSortMdb;
@@ -1923,8 +1928,10 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   goto errH;
          }*/
 	   if(gsPhsConstantSpringSel != _T("") ){
-		   _variant_t vTmp;
-		   rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsConstantSpringSel+_T("\'")), 0, adSearchForward, vTmp);
+		   HRESULT hr = S_OK;
+		   rsX->MoveFirst();
+		   strTmp = _T("standard=\'")+gsPhsConstantSpringSel+_T("\'");
+		   hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
 		   if( !rsX->adoEOF)
 		   {			
 			   rsX->MoveFirst();
@@ -1940,7 +1947,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   //如果不存在，则将记录指针移到第一条记录上，从头开始检查每条记录
 	   //如果所有的记录的原始数据表在数据库中都不存在,则报错
 	   //如果遇到原始数据表在数据库中存在的记录,则选用这条记录
-	   while((inttbExist!=1)&&(!rsX->BOF))
+	   while((inttbExist!=1)&&(!rsX->adoEOF))
 	   {
 		   rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
@@ -2432,7 +2439,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 			CString strSql;
 			strSql = _T("SELECT * FROM phsManu ORDER BY seq");
 			rs->Open((_bstr_t)strSql, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( rs->adoEOF && rs->BOF )
 			{
 				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::dbSORT->DefaultDatabase);
@@ -2451,7 +2458,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 // 					rs1.m_pDatabase=&db;
 // 					rs1.Open(dbOpenSnapshot,vtos(vTmp));
 					rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( rs1->adoEOF || rs1->BOF ){
 						strTmp.Format(GetResStr(IDS_NullPhsManuXtableInProductMdb),strTbn);
 						ShowMessage(strTmp);
@@ -2542,7 +2549,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
 // 							rs2.Open(dbOpenSnapshot,SQLx);
 							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-								adOpenForwardOnly, adLockReadOnly, adCmdText); 
+								adOpenKeyset, adLockOptimistic, adCmdText); 
 							//创建一临时表保存将要追加的查询
 							if( rs2->adoEOF && rs2->BOF ){
 							}else{
@@ -2625,7 +2632,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 // 			rs.Open(dbOpenSnapshot,_T("SELECT * FROM phsManu ORDER BY seq"));
 			SQLx = _T("SELECT * FROM phsManu ORDER BY seq");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( rs->adoEOF || rs->BOF )
 			{
 				//MsgBox ResolveResString(iUE_NullPhsManuTableInSortMdb)
@@ -2646,7 +2653,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 // 					rs1.m_pDatabase=&db;
 // 					rs1.Open(dbOpenSnapshot,vtos(vTmp));
 					rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( rs1->adoEOF || rs1->BOF ){
 						strTmp.Format(GetResStr(IDS_NullPhsManuXtableInProductMdb),strTbn);
 						ShowMessage(strTmp);
@@ -2741,7 +2748,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
 // 							rs2.Open(dbOpenSnapshot,SQLx);
 							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-								adOpenForwardOnly, adLockReadOnly, adCmdText); 
+								adOpenKeyset, adLockOptimistic, adCmdText); 
 							if( rs2->adoEOF || rs2->BOF ){
 							}else{
 								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
@@ -2803,7 +2810,7 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenSnapshot,SQL1);
 		rs->Open((_bstr_t)SQL1, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		if(rs->BOF && rs->adoEOF)
 		{
@@ -2825,7 +2832,7 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 			rs->Close();
 // 			rs.Open(dbOpenSnapshot,SQL1);
 			rs->Open((_bstr_t)SQL1, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			
 			if(rs->BOF && rs->adoEOF)
 			{
@@ -3004,7 +3011,7 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 // 		rsTmpZB.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 		rsTmpZB.Open(dbOpenDynaset,SQLx);
 		rsTmpZB->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		EDIBAcad::DrawPhsAssemble(rsTmpZB, iViewXZ) ; //绘制支吊架组装图
 
@@ -3038,7 +3045,7 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 			tmprs.CreateInstance(__uuidof(Recordset));
 			SQLx = _T("SELECT * FROM TMP2");
 			tmprs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			CCadPoint p0(pt2x,pt2y,0);
 			if( EDIBAcad::g_bLJMX_BJBW )
 			{
@@ -3154,7 +3161,7 @@ void modPHScal::PhsMLmake(COleVariant ZDJNo)
 		   SQL1x = _T("SELECT * FROM [") + tbn + _T("] where VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(DrawNo) AND NOT IsNull(DrawNa) AND NOT trim(DrawNo)=\'\' AND NOT trim(DrawNa)=\'\' AND zdjh=") + sZdjh + _T(" ORDER BY SEQ");
 // 		  rsX.Open(dbOpenDynaset,SQL1x);
 		   rsX->Open((_bstr_t)SQL1x, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 		  if( rsX->BOF&& rsX->adoEOF)// Then
 		  {
 			 //MsgBox ResolveResString(iUE_NoRecordInTMLtableInAllPrjDbMdb, _T("|1"), dbPRJDB.Name, _T("|2"), tbn, _T("|3"), SQL1x), vbMsgBoxSetForeground + vbSystemModal
@@ -3320,7 +3327,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			p0.SetPoint(pt3x, pt3y);
 // 			rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPipeDisplacement"));
 			rsText->Open((_bstr_t)_T("SELECT * FROM tmpPipeDisplacement"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzDIST, atan((double)1.0) * 0, rsText, 100, 1.0f , (_T("DLOAD")),lpszTextStyle,(_T("%.f")),iAlign);
 			rsText->Close();
 
@@ -3330,7 +3337,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 // 			rs1.m_pDatabase=&EDIBgbl::dbTable;
 // 			rs1.Open(dbOpenSnapshot,SQLx );
 			rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			CString tmpStr;
 			if(rs1->BOF && rs1->adoEOF)
 			{
@@ -3358,7 +3365,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			p0.SetZ(0.0);
 // 			rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPhsLoad"));
 			rsText->Open((_bstr_t)_T("SELECT * FROM tmpPhsLoad"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzLOAD, atan((double)1.0) * 0, rsText, 100, 1.0f , _T("DLOAD"),lpszTextStyle,(_T("%.f")),iAlign);
 			
 			
@@ -3593,7 +3600,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 // 				rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPipeDisplacement"));
 				SQLx = _T("SELECT * FROM tmpPipeDisplacement");
 				rsText->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzDLOADS, atan((double)1.0) * 0, rsText, 100, 1.0f , _T("DLOAD"),lpszTextStyle,(_T("%.f")),iAlign);
 				rsText->Close();
 				
@@ -3807,7 +3814,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				SQLx = _T("SELECT * FROM tmpDisplacementLoad WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh);
 // 				rsText.Open(dbOpenSnapshot,SQLx);
 				rsText->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//pfg20050519绝对压缩值
 				if(modPHScal::giPhsOutINFOTableType==3)
 				{
@@ -4012,7 +4019,9 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	catch(CException *e)
 	{
@@ -4043,7 +4052,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 // 		rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 		rs1.Open(dbOpenDynaset,SQLx);
 		rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(zdjh!=0)
 		{
 			//生成西北院格式的支吊架明细表
@@ -4107,7 +4116,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND Index=") + ltos(iPA);
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			
 			if( !rs->BOF && !rs->adoEOF ){
 			
@@ -4137,7 +4146,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT ClassID,GDW1,CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND (ClassID=") + ltos(iCSPR) + _T(" OR ClassID=") + ltos(iSPR) + _T(") GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz,GDW1,ClassID");
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !rs->BOF && !rs->adoEOF )
 			{
 				int iSEQofSPR=0;
@@ -4201,7 +4210,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND ClassID=") + ltos(iROD) + _T(" GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !rs->BOF && !rs->adoEOF ){
 				
 				while( !rs->adoEOF){
@@ -4230,7 +4239,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND NOT IsNull(Index) AND Index=") + ltos(iConnectPART) + _T(" AND ClassID<>") + ltos(iROD) + _T(" AND ClassID<>") + ltos(iCSPR) + _T(" AND ClassID<>") + ltos(iSPR) + _T(" AND IsSAPart<>-1 GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !rs->BOF && !rs->adoEOF ){
 				while( !rs->adoEOF){
 					//当循环不止一次时，rs1.EDIT()方法必须在每次设置字段之前使用。否则显示无Edit方法。
@@ -4259,7 +4268,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND (ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) +_T("OR (ID='F3' AND IsSAPart <> -1 )")+ _T(") AND Not IsNull(SEQ) GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !rs->BOF && !rs->adoEOF ){
 				
 				while( !rs->adoEOF){
@@ -4293,7 +4302,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND IsSAPart=-1 AND (ClassID=") + ltos(iAttached) + _T(" OR ClassID=") + ltos(iBolts )+ _T(" OR ClassID=") + ltos(iNuts) + _T(")");
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!( rs->BOF && rs->adoEOF || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) )){
 			
 				//只选择根部材料需要统计的支吊架
@@ -4322,7 +4331,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND IsSAPart=-1 AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts) + _T(" AND ClassID<>") + ltos(iAttached);
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!( rs->BOF && rs->adoEOF || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) ))
 			{							
 				//只选择根部材料需要统计的支吊架
@@ -4366,7 +4375,7 @@ void modPHScal::PhsYLBMake(long zdjh)
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND Index=") + ltos(iSA) + _T(" AND ClassID<>") + ltos(iGCement);
 // 			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !rs->BOF && !rs->adoEOF ){
 				
 				while( !rs->adoEOF){
@@ -4461,7 +4470,7 @@ void modPHScal::CreateTmpIDCustomIDTable()
 // 		Cavphs->rsID.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		Cavphs->rsID.Open(dbOpenDynaset,EDIBgbl::SQLx);
 		Cavphs->rsID->Open((_bstr_t)EDIBgbl::SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		Cavphs->brsIDStatus=TRUE;
 		//此后一般应该检查ID和修改模板名称
 	}
@@ -4537,12 +4546,12 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 // 		   rs.m_pDatabase = &dbZDJcrude;
 // 		   rs.Open(dbOpenDynaset,SQLx);
 		   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-			   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 
 // 		   rs1.m_pDatabase = &EDIBgbl::dbPRJ;
 // 		   rs1.Open(dbOpenDynaset, _T("select * from tmpSPRProperty"));
 		   rs1->Open((_bstr_t)_T("select * from tmpSPRProperty"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		   //根据字段内容确定是否是线性弹簧特性表
 		   //线性弹簧有刚度字段G
@@ -4571,7 +4580,7 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
    
 		   if( bLineSPR) 
 			{
-				while (!rs->BOF)
+				while (!rs->adoEOF)
 				{
 					//先取出值，记录计数
 					rs->get_Collect((_variant_t)_T("HopMax"),&v);
@@ -4589,7 +4598,7 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 			   frmStatus.UpdateData(false);
 			   frmStatus.ShowWindow(SW_SHOW);
 			   rs->MoveFirst();
-				while (!rs->BOF)
+				while (!rs->adoEOF)
 				{
 					//先取出值，加快速度
 					rs->get_Collect((_variant_t)_T("HopMax"),&v);
@@ -4738,7 +4747,7 @@ void modPHScal::SetSpringPhsInfo(_RecordsetPtr rsTmpSelSpring, _RecordsetPtr rsT
 	  _RecordsetPtr rs1;
 	  rs1.CreateInstance(__uuidof(Recordset));
 	  rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-		  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
       if(rs1->BOF && rs1->adoEOF)
          FrmTxsr.m_pViewTxsr->m_PagItem->m_SPRrigid=_T("");
       else
@@ -4861,7 +4870,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 		rs.m_pDatabase=&dbZDJcrude;
 // 		rs.Open(dbOpenSnapshot,SQLx);
 	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 		int CF=rs->Fields->Count;
 		FieldPtr fldInfo;
 		for(i=0;i<CF;i++)
@@ -4936,7 +4945,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 		  rs1.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		  rs1.Open(dbOpenSnapshot,SQLx);
 		  rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
 		  if( rs1->BOF && rs1->adoEOF ){
 			 //找不到符合条件的弹簧号
 			  sTmp.Format(GetResStr(IDS_NotFoundDiscSPRNoInsTmpSPRPROPERTY),SQLx);
@@ -4976,7 +4985,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 					   rs2->Close();
 // 				   rs2.Open(dbOpenSnapshot,SQLx,dbForwardOnly);
 				   rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 				   if(rs2->adoEOF && rs2->BOF)
 				   {//1
 					  //MsgBox iUE_NotFoundDiscSPRNoInsTmpSPRPROPERTY
@@ -5001,7 +5010,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 					   rs->Close();
 // 				   rs.Open(dbOpenSnapshot,SQLx);
 				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(!rs->adoEOF && !rs->BOF)
 				   {//6
 					  rs->MoveLast();
@@ -5190,7 +5199,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 		   rs.m_strSort=_T("");
 // 		   rs.Open(dbOpenSnapshot,SQLx);
 		   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 		   if( rs->BOF && rs->adoEOF )
 		   {//是恒力弹簧(start)
 			  //选择不到需要的弹簧，就选择恒力弹簧
@@ -5245,7 +5254,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 				   rs.m_strSort=_T("");
 // 				   rs.Open(dbOpenSnapshot,SQLx);
 				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 				   //ShowMessage(rs->RecordCount);
 				   if( rs->BOF && rs->adoEOF )
 				   {
@@ -5259,7 +5268,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 						rs.m_strSort=_T("");
 // 						rs.Open(dbOpenSnapshot,SQLx);
 						rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenForwardOnly, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 						//ShowMessage(rs->RecordCount);
 						if( rs->BOF && rs->adoEOF )
 						{
@@ -5297,7 +5306,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 						rs.m_strSort=_T("");
 // 						rs.Open(dbOpenSnapshot,SQLx);
 						rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenForwardOnly, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 						//ShowMessage(rs->RecordCount);
 						if( rs->BOF && rs->adoEOF )
 						{
@@ -5338,7 +5347,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 // 				   rs.m_strSort=_T("");
 // 				   rs.Open(dbOpenSnapshot,SQLx);
 				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 				   //ShowMessage(rs->RecordCount);
 				   if( rs->BOF && rs->adoEOF )
 				   {
@@ -5492,7 +5501,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 // 		rs.m_pDatabase=&dbZDJcrude;
 // 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if( rs->BOF && rs->adoEOF)
 		{
 			//恒吊载荷容量表为空，不可能
@@ -5516,7 +5525,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 // 			rs1.Requery();
 			SQLx = _T("SELECT * FROM [") + strbnDisplacementSerial + _T("]") + _T(" WHERE ") + m_strFilter + _T(" ORDER BY DisplacementSerial");
 			rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( rs1->BOF && rs1->adoEOF);
 			//位移超出系列最大值
 			else
@@ -5717,7 +5726,7 @@ void modPHScal::CalSpringParallelNum(CString& PipeA)
 			  CString SQLx;
 			  SQLx = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'") + PipeA + _T("\'");
 			  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				  adOpenKeyset, adLockOptimistic, adCmdText); 
 			 if (rs->BOF && rs->adoEOF)
 			 {
 				//Err.Raise iUE_NoRecordFLDEqvThisValueInPictureClipData, , ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData, _T("|1"), _T("CustomID"), _T("|2"), PipeA)
@@ -6028,7 +6037,7 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 				rs->Close();
 // 			rs.Open(dbOpenSnapshot,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(rs->adoEOF && rs->BOF)
 			{
 				//当前标准找不到管部
@@ -6087,7 +6096,7 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 				rs->Close();
 // 			rs.Open(dbOpenSnapshot,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(rs->adoEOF && rs->BOF)
 			{
 				//当前标准找不到根部
@@ -6334,7 +6343,7 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 			  rs->Close();
 // 		  rs.Open(dbOpenSnapshot,SQLx);
 		  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-			  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
 		  if( rs->BOF && rs->adoEOF ){
 			 sngWeight = 0;
 			 sngHeight = 0;
@@ -6427,7 +6436,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" ORDER BY DH DESC");
 // 				rs1.Open(dbOpenSnapshot,SQLx);
 				rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//if(!rs1->adoEOF && !rs1->BOF)
 				//{
 				rs1->get_Collect((_variant_t)_T("DH"),&vTmp);
@@ -6446,7 +6455,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" AND int(dh/100)<=") + ltos(k) + _T(" ORDER BY DH DESC");
 // 				rs.Open(dbOpenSnapshot,SQLx);
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//只有从实际的数据库中才能判别这个弹簧的最大串联数,数据表中字段DH=串联数 *100+弹簧号
 				if( rs->BOF && rs->adoEOF ){
 					//数据表没有这种弹簧的数据
@@ -6499,7 +6508,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					  rs->Close();
 // 				  rs.Open(dbOpenSnapshot,SQLx);
 				  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					  adOpenKeyset, adLockOptimistic, adCmdText); 
 				  if( rs->BOF && rs->adoEOF )
 				  {
 					  //没有发现这种弹簧,暂时预设为0
@@ -6516,7 +6525,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + ltos(sSprInfo[i].DH) + _T(" AND trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\'");
 // 					rsw.Open(dbOpenSnapshot,SQLx);
 					rsw->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( rsw->BOF && rsw->adoEOF ){
 						sngWeight = 0;
 						sngHeight = 0;
@@ -6957,7 +6966,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 			strSQL.Format("SELECT * FROM [ZB] WHERE VolumeID = %d AND ZDJH = %d AND NTH = %d ",EDIBgbl::SelVlmID,modPHScal::zdjh,nth);
 // 			rsTmpZB.Open(dbOpenSnapshot,strSQL);
 			rsTmpZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 			{
 			  Cavphs->SavephsAllStructToTZB(zdjh,nth);
@@ -6970,7 +6979,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 			strSQL.Format("SELECT * FROM [ZB] WHERE VolumeID = %d AND ZDJH = %d AND NTH = %d ",EDIBgbl::SelVlmID ,modPHScal::zdjh, nth );
 // 			rsTmpZB.Open(dbOpenSnapshot,strSQL);
 			rsTmpZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 			{
 				Cavphs->SavephsAllStructToTZB (zdjh,nth);
@@ -7014,7 +7023,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 	   strSQL=_T("SELECT zdjh FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND ZDJH=") + ltos(modPHScal::zdjh) + _T(" AND bUserAdd is not null AND bUserAdd=-1");
 // 	   rsTZB.Open(dbOpenDynaset,strSQL);
 	   rsTZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(!(rsTZB->BOF && rsTZB->adoEOF))
 		{
 			if(AfxMessageBox(IDS_YESNODELETEUSERMATERIAL,MB_YESNO)==IDNO)
@@ -7326,7 +7335,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 		rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 		rsTZB.Open(dbOpenDynaset,SQLx);
 		rsTZB->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if( rsTZB->BOF && rsTZB->adoEOF )
 		{
 			sTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),EDIBgbl::dbPRJDB->DefaultDatabase, EDIBgbl::Btype[EDIBgbl::TZB],SQLx);
@@ -7381,7 +7390,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 					SQLx.Format(_T("SELECT SizeH,sizeHH FROM [%s] WHERE size2 = %d AND CustomID = \'%s\'"),modPHScal::tbnBoltsNuts,mlPartDia[i],modPHScal::sFindCustomID("F2"));	
 // 					rsTmp.Open(dbOpenDynaset,SQLx);
 					rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(rsTmp->BOF && rsTmp->adoEOF )
 					{//1
 						sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnBoltsNuts,SQLx);
@@ -7734,7 +7743,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 									rsTmp.m_pDatabase=&dbZDJcrude;
 // 									rsTmp.Open(dbOpenSnapshot,SQLx);
 									rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-										adOpenForwardOnly, adLockReadOnly, adCmdText); 
+										adOpenKeyset, adLockOptimistic, adCmdText); 
 
 									if( rsTmp->BOF && rsTmp->adoEOF )
 									{
@@ -7768,7 +7777,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 										rsTmp.m_pDatabase=&dbZDJcrude;
 // 										rsTmp.Open(dbOpenSnapshot,SQLx);
 										rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-											adOpenForwardOnly, adLockReadOnly, adCmdText); 
+											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->BOF && rsTmp->adoEOF )
 										{
 											sTmp.Format(GetResStr(IDS_NotFoundThisDia),  dbZDJcrude->DefaultDatabase, tbnSPRINGL5Crude,ltos(mlPartDia[i + 1])); ShowMessage(sTmp);
@@ -7990,7 +7999,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 			rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 			rsTmp.Open(dbOpenSnapshot,SQLx);
 			rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			long delta = 0;
 			while(!rsTmp->BOF)
 			{//9
@@ -8278,7 +8287,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 				rs.m_pDatabase=&dbZDJcrude;
 // 				rs.Open(dbOpenDynaset,SQLx);
 				rs->Open((_bstr_t)SQLx, dbZDJcrude.GetInterfacePtr(), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
 				{
 					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO), dbZDJcrude->DefaultDatabase,tbnLugInfo,SQLx);
@@ -8416,7 +8425,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 		rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
 // 		rsTmp.Open(dbOpenSnapshot,SQLx);		
 		rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rsTmp->MoveLast();
 		rsTmp->MoveFirst();
 		iNumRod = 1;
@@ -8428,7 +8437,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 // 				rs.m_pDatabase=&dbZDJcrude;
 // 				rs.Open(dbOpenDynaset,SQLx);
 				rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-					adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
 				{
 					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO),dbZDJcrude->DefaultDatabase,tbnLugInfo,SQLx);
@@ -8671,7 +8680,7 @@ void modPHScal::SetBasePoint()
 	   CString SQLx;
 	   SQLx = _T("SELECT * FROM phsDrawPos");
 	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 	   if (giDrawSIZE_A3A4 == 2)
 	   {
 		  //图幅自动
@@ -9077,7 +9086,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				rsX->Close();
 // 			rsX.Open(dbOpenSnapshot,SQLx);
 			rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
          if( rsX->BOF && rsX->adoEOF )
 			{
          }
@@ -9117,7 +9126,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 //        rsX.m_pDatabase=&dbZDJcrude;
 // 	   rsX.Open(dbOpenSnapshot,SQLx);
 		rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
        if( rsX->BOF && rsX->adoEOF )
 	   {
 		   sTmp.Format(GetResStr(IDS_NoThisZ1orZ2inCrudePAfix),dn);
@@ -9405,7 +9414,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				rsX->Close();
 // 			rsX.Open(dbOpenSnapshot,SQLx);
 		  rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-			  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
           if( rsX->BOF && rsX->adoEOF )
 			{
           }
@@ -9428,7 +9437,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 //        rsX.m_pDatabase=&dbZDJcrude;
 // 	   rsX.Open(dbOpenSnapshot,SQLx);
 	  rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
-		  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
        if( rsX->BOF && rsX->adoEOF )
 	   {
 		   sTmp.Format(GetResStr(IDS_NoThisZ1orZ2inCrudePAfix),dn);
@@ -10689,7 +10698,7 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 // 		rsTmp.Open(dbOpenSnapshot,_T("SELECT * FROM [") + strTbn + _T("] WHERE Trim(material)=\'") + Trim(Material) + _T("\' ORDER BY t"));
 		SQLx = _T("SELECT * FROM [") + strTbn + _T("] WHERE Trim(material)=\'") + Trim(Material) + _T("\' ORDER BY t");
 		rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rsTmp->adoEOF && rsTmp->BOF)
 			;
 		else
@@ -11108,7 +11117,7 @@ int modPHScal::SumLugNum()
 //    rs.m_pDatabase=&dbZDJcrude;
 //    rs.Open(dbOpenDynaset,strSQL);
    rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)dbZDJcrude,true), 
-	   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	   adOpenKeyset, adLockOptimistic, adCmdText); 
    if(!(rs->BOF && rs->adoEOF))
    {	rs->MoveFirst();
 	    rs->get_Collect((_variant_t)_T("maxLength"),&vTmp);

@@ -69,7 +69,7 @@ BOOL CDlgExportVolume::OnInitDialog()
 	strSQL = "SELECT * FROM BackupDBTbl";
 //	rsbackup.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 	rsbackup->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	COleVariant varField;
 	CString str1,str2,strFirst;	
 	while( !rsbackup->adoEOF )

@@ -70,7 +70,7 @@ BOOL CDlgFavoriteTemplate::OnInitDialog()
 // 		dbOpenDynaset,
 // 		"SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]");
 	m_rsFavorite->Open((_bstr_t)_T("SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 
 	InitFavoriteList();
 	return TRUE;

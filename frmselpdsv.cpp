@@ -102,14 +102,14 @@ void CFrmSelPDSV::initPrjDb()
 // 		m_DataCurrWork.Open(dbOpenDynaset,_T("Select * From CurrentWork"));
 		SQLx = _T("Select * From CurrentWork");
 		m_DataCurrWork->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		//首先必须确定行业
 // 		m_DataCategory.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
 // 		m_DataCategory.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize"));
 		SQLx = _T("SELECT * FROM DrawSize");
 		m_DataCategory->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		m_DataCategory->MoveFirst();
 		//设计行业/公司
 		LoadDBComboCategory();
@@ -121,13 +121,13 @@ void CFrmSelPDSV::initPrjDb()
 // 		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
 		SQLx = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataDsgn->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 // 		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
 // 		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
 		SQLx = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataSpe->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		//设计阶段
 		LoadDBComboDsgn();
@@ -841,13 +841,13 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 		CString sTmp;
 		sTmp = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataDsgn->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 // 		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
 // 		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
 		sTmp = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataSpe->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		//设计阶段
 		LoadDBComboDsgn();

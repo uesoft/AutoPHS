@@ -153,13 +153,13 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		strSQL.Format(_T("SELECT * FROM PhsManu WHERE seq=%d"),Index);
 // 		rs1.Open(dbOpenSnapshot,strSQL);
 		hr = rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rs1->MoveFirst();
 		rs1->get_Collect((_variant_t)_T("SQL"),&v);
 // 		rs.m_pDatabase=&EDIBgbl::dbSORT;
 // 		rs.Open(dbOpenSnapshot,vtos(v));
 		rs->Open((_bstr_t)v.bstrVal, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		bool bFound=false;
 		while(!rs->adoEOF)
 		{
@@ -198,7 +198,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 			vtos(v));
 //		rs.Open(dbOpenDynaset,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int iRecCount = rs->RecordCount;
 		for(i=0;i<LIGHT_COUNT && !rs->adoEOF;i++,rs->MoveNext())
 		{
@@ -387,14 +387,14 @@ void CFrmSelSpecification::SetUseCount()
 			strSQL.Format(_T("SELECT * FROM PhsManu WHERE SEQ=%d"),i);
 // 			rs1.Open(dbOpenSnapshot,strSQL);
 			rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			rs1->get_Collect((_variant_t)_T("TableName"),&v);
 			rs1->Close();
 			strSQL.Format(_T("SELECT * FROM [%s] WHERE Standard=\'%s\'"),
 				vtos(v),strTemp);
 // 			rs2.Open(dbOpenDynaset,strSQL);
 			rs2->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			rs2->get_Collect((_variant_t)_T("UseCount"),&v);
 			LONG UseCount=vtoi(v);
 			UseCount++;

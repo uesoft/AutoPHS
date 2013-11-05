@@ -78,7 +78,7 @@ BOOL CFrmAddSArecord::OnInitDialog()
 
 // 		rs.Open(dbOpenSnapshot,SQL);
 		rs->Open((_bstr_t)SQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rs->MovePrevious();
 		COleVariant v;
 		_variant_t vTmp;

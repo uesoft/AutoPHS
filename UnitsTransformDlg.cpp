@@ -105,7 +105,9 @@ void CUnitsTransformDlg::OnSave()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	m_conIdokBut.EnableWindow(true);//保存数据后按钮可用
 	UpdateData(false);
@@ -186,7 +188,9 @@ BOOL CUnitsTransformDlg::OnInitDialog()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		return false;
 	}
 	return true;

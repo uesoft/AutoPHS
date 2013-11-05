@@ -237,7 +237,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 //		rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
 //		rsTZB.Open(dbOpenDynaset,strSQL);
 		rsTZB->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -252,7 +252,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //		rsTmpZB.Open(dbOpenDynaset,strSQL);
 		rsTmpZB->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -325,7 +325,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		try
 		{
 			rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -533,7 +533,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				try {
 //						rs3.Open(dbOpenSnapshot,SQLx);
 					rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 				}
 				catch(_com_error e)
 				{
@@ -627,7 +627,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			try {
 	//							rsX.Open(dbOpenSnapshot,SQLx);
 				rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -666,7 +666,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			try {
 	//							rsX.Open(dbOpenSnapshot,SQLx);
 				rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -695,7 +695,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//								rsX.Open(dbOpenSnapshot,SQLx);
 					rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-						adOpenDynamic, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 				}
 				catch(_com_error e)
 				{
@@ -734,7 +734,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//						rsX.Open(dbOpenSnapshot,SQLx);
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -926,7 +926,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//							rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
 	//							rsTmp.Open(dbOpenDynaset,SQLx);
 				rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -1018,7 +1018,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//		rs.Open(dbOpenSnapshot,SQLx);
 			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1051,7 +1051,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//			rs1.Open(dbOpenSnapshot,_T("SELECT * FROM [") + modPHScal::tbnDisplacementSerial + _T("] WHERE DisplacementSerial>=") + sTmp + _T(" ORDER BY DisplacementSerial"));
 				rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -1304,7 +1304,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//			rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;	
 	//			rsTmp.Open(dbOpenSnapshot,SQLx);
 				rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -1318,7 +1318,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//			rsX.Open(dbOpenSnapshot,SQLx);
 				rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1384,7 +1384,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//			rs3.Open(dbOpenSnapshot,SQLx);
 				rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -1416,7 +1416,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//			rsCal.m_pDatabase=&EDIBgbl::dbSACal;	//20071103 "dbSORT" 改为 "dbSACal"
 	//			rsCal.Open(dbOpenSnapshot,SQLx);
 				rsCal->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1438,7 +1438,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				//rsTmp1需要修改功能
 	//			rsTmp1.Open(dbOpenDynaset,SQLx);
 				rsTmp1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1453,7 +1453,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//			rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;	
 	//			rsTmp.Open(dbOpenSnapshot,SQLx);
 				rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1468,7 +1468,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//			rs1.m_pDatabase=&modPHScal::dbZDJcrude;	
 	//			rs1.Open(dbOpenSnapshot,SQLx);
 				rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1482,7 +1482,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 	//			rsX.Open(dbOpenSnapshot,SQLx);
 				rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenDynamic, adLockReadOnly, adCmdText); 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -1719,7 +1719,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//								rsTmp2.m_pDatabase=&EDIBgbl::dbPRJ;
 	//								rsTmp2.Open(dbOpenDynaset,SQLx);
 									rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-										adOpenDynamic, adLockReadOnly, adCmdText); 
+										adOpenKeyset, adLockOptimistic, adCmdText); 
 								}
 								catch(_com_error e)
 								{
@@ -1770,7 +1770,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//								rs2.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
 	//								rs2.Open(dbOpenSnapshot,SQLx);
 									rs2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-										adOpenDynamic, adLockReadOnly, adCmdText); 
+										adOpenKeyset, adLockOptimistic, adCmdText); 
 							}
 							catch(_com_error e)
 							{
@@ -1925,7 +1925,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//							rsTmp2.m_pDatabase=&EDIBgbl::dbPRJ;
 	//							rsTmp2.Open(dbOpenDynaset,SQLx);
 								rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenDynamic, adLockReadOnly, adCmdText); 
+									adOpenKeyset, adLockOptimistic, adCmdText); 
 							}
 							catch(_com_error e)
 							{
@@ -1956,7 +1956,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	//							rsTmp2.m_pDatabase=&EDIBgbl::dbPRJ;
 	//							rsTmp2.Open(dbOpenDynaset,SQLx);
 								rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenDynamic, adLockReadOnly, adCmdText); 
+									adOpenKeyset, adLockOptimistic, adCmdText); 
 				}
 				catch(_com_error e)
 				{
@@ -2181,7 +2181,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //						rsX.Open(dbOpenSnapshot,SQLx);
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenDynamic, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 					}
 					catch(_com_error e)
 					{
@@ -2243,7 +2243,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //								rsX.Open(dbOpenSnapshot,SQLx);
 								rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenDynamic, adLockReadOnly, adCmdText); 
+									adOpenKeyset, adLockOptimistic, adCmdText); 
 							}
 							catch(_com_error e)
 							{
@@ -2286,7 +2286,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //				  rsX.Open(dbOpenSnapshot,SQLx);
 				  rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					  adOpenDynamic, adLockReadOnly, adCmdText); 
+					  adOpenKeyset, adLockOptimistic, adCmdText); 
 			  }
 			  catch(_com_error e)
 			  {
@@ -2306,7 +2306,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //			   rsX.Open(dbOpenSnapshot,SQLx);
 			   rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				   adOpenDynamic, adLockReadOnly, adCmdText); 
+				   adOpenKeyset, adLockOptimistic, adCmdText); 
 		   }
 		   catch(_com_error e)
 		   {
@@ -2326,7 +2326,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //			rsX.Open(dbOpenSnapshot,SQLx);
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -2342,7 +2342,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	{
 //		rsX.Open(dbOpenSnapshot,SQLx);
 		rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenDynamic, adLockReadOnly, adCmdText); 
+									adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -2361,7 +2361,7 @@ spZ1Z2:
 	{
 //			rsX.Open(dbOpenSnapshot,SQLx);
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -2407,7 +2407,7 @@ spZ1Z2:
 	{
 //			rsX.Open(dbOpenSnapshot,tmpSQL);
 			rsX->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -2480,7 +2480,7 @@ spZ1Z2:
 //		phsAvailableTypeRs.m_pDatabase=rsX.m_pDatabase;
 //		phsAvailableTypeRs.Open(dbOpenDynaset,rsX.GetSQL());
 		phsAvailableTypeRs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenDynamic, adLockReadOnly, adCmdText); 
+									adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -2610,7 +2610,7 @@ spZ1Z2:
 	{
 //			rsDiaOfCSPRFiJ.Open(dbOpenSnapshot,SQLx);
 			rsDiaOfCSPRFiJ->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -2866,7 +2866,7 @@ spZ1Z2:
 	{
 	//		rsDiaOfCSPRFiK.Open(dbOpenSnapshot,SQLx);
 			rsDiaOfCSPRFiK->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		catch(_com_error e)
 		{
@@ -3292,7 +3292,7 @@ spZ1Z2:
 //		   rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
 //		   rsTmp.Open(dbOpenDynaset,SQLx);
 		   rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 	   }
 	   catch(_com_error e)
 	   {
@@ -3335,7 +3335,7 @@ spZ1Z2:
 //			   m_rs.m_pDatabase=&modPHScal::dbZDJcrude;
 //			   m_rs.Open(dbOpenSnapshot,strSQLTmp);
 			   m_rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				   adOpenKeyset, adLockOptimistic, adCmdText); 
 		   }
 		   catch(_com_error e)
 		   {
@@ -3355,7 +3355,7 @@ spZ1Z2:
 	{
 //						m_rs.Open(dbOpenSnapshot,strSQLTmp);
 						m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-							adOpenForwardOnly, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 				   }
 				   catch(_com_error e)
 				   {
@@ -4053,7 +4053,7 @@ spZ1Z2:
 			//		m_rs.m_pDatabase=&modPHScal::dbZDJcrude;
 			//		m_rs.Open(dbOpenDynaset,strSQLTmp);
 					m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						adOpenForwardOnly, adLockReadOnly, adCmdText); 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
 			}
 			catch(_com_error e)
 			{
@@ -4086,7 +4086,7 @@ spZ1Z2:
 					{
 		//				m_rs.Open(dbOpenSnapshot,strSQLTmp);
 						m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-							adOpenForwardOnly, adLockReadOnly, adCmdText); 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 					}
 					catch(_com_error e)
 					{
@@ -4344,7 +4344,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 		//				  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
 		//				  rsTmp.Open(dbOpenSnapshot,SQL1);
 			  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				  adOpenKeyset, adLockOptimistic, adCmdText); 
 		  }
 		  catch(_com_error e)
 		  {
@@ -4360,7 +4360,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 			try
 			{
 			  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				  adOpenKeyset, adLockOptimistic, adCmdText); 
 		  }
 		  catch(_com_error e)
 		  {
@@ -4381,7 +4381,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 				try
 				{
 				  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+					  adOpenKeyset, adLockOptimistic, adCmdText); 
 			  }
 			  catch(_com_error e)
 			  {
@@ -4479,7 +4479,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 							{
 			//							  rsTmp.Open(dbOpenSnapshot,SQL1);
 								rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-								  adOpenForwardOnly, adLockReadOnly, adCmdText); 
+								  adOpenKeyset, adLockOptimistic, adCmdText); 
 						  }
 						  catch(_com_error e)
 						  {
@@ -4781,7 +4781,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 	//			   rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;
 	//			   rsTmp.Open(dbOpenSnapshot,SQLx);
 	   rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{
@@ -4841,7 +4841,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 	//			   rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
 	//			   rsX1.Open(dbOpenSnapshot,tmpSQL);
 	   rsX1->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-		   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(_com_error e)
 	{

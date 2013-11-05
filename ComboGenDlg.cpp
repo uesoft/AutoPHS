@@ -220,7 +220,7 @@ void CComboGenDlg::LoadComboBox(int i)
 		COleVariant vTmp;
 //		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,vTmp);

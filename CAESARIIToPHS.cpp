@@ -206,7 +206,9 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		}
 		catch(_com_error e)
 		{
-			AfxMessageBox(e.Description());
+			CString strErrorMsg;
+			strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+			AfxMessageBox(strErrorMsg);
 		}
 		//取支架数据
 		m_strSQL.Format("select * from input_restraints where jobname='%s'",m_strJOBNAME_A);
@@ -220,7 +222,9 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		}
 		catch(_com_error e)
 		{
-			AfxMessageBox(e.Description());
+			CString strErrorMsg;
+			strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+			AfxMessageBox(strErrorMsg);
 		}
 		//20050624pfg(start)
 		int n=0,m=0;
@@ -339,7 +343,9 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		}
 	}catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -397,7 +403,9 @@ void CAESARIIToPHS::ImportHangerRestraints(_RecordsetPtr rsData,_RecordsetPtr rs
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -695,7 +703,9 @@ void CAESARIIToPHS::importUnitsForces(_RecordsetPtr rsData,long node,CString m_s
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -822,7 +832,9 @@ void CAESARIIToPHS::ImportDisplacements(_RecordsetPtr rsData,long node, CString 
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -895,7 +907,9 @@ void CAESARIIToPHS::ImportDiameter(_RecordsetPtr rsData,long node,CString strJOB
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -967,7 +981,9 @@ void CAESARIIToPHS::ImportHanger(_RecordsetPtr rsData,long node,CString strJOBNA
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	if ( pRs->State == adStateOpen )
 	{
@@ -1130,7 +1146,9 @@ void CAESARIIToPHS::ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long node,CSt
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -1263,7 +1281,9 @@ BOOL CAESARIIToPHS::GetHangerLoad( int iNode,const CString& strFileName, double&
 	}
 	catch ( _com_error e )
 	{
-		AfxMessageBox( e.Description() );
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	if(pHangerRs->State==adStateOpen)
 	{

@@ -301,7 +301,7 @@ void CDlgSARecord::OnOK()
 				rs->Close();
 //			rs.Open(dbOpenSnapshot,SQLx);
 			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs->BOF || !rs->adoEOF)
 			{
 				//有记录,不可加入
@@ -465,7 +465,7 @@ void CDlgSARecord::InitLab()
 			strDesc,modPHScal::sFindID(m_strCustomID));
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->BOF || rs->adoEOF) return;
 		COleVariant vTmp;
 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZEH\'")), 0, adSearchForward, vTmp))

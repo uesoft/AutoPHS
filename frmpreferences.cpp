@@ -146,7 +146,7 @@ void CFrmPreferences::OnOK()
 // 		rsX.m_pDatabase = &EDIBgbl::dbSORT;
 // 		rsX.Open(dbOpenDynaset,_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
 		rsX->Open((_bstr_t)_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		modPHScal::gsPhsSPRINGSel.TrimLeft();modPHScal::gsPhsSPRINGSel.TrimRight(); 
 		if( rsX->adoEOF && rsX->BOF )
 		{

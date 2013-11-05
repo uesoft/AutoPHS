@@ -455,7 +455,7 @@ void CFrmPhsSamp::Data1_Reposition()
    sTmp+=" ORDER BY SEQ";
 //   rs.Open(dbOpenSnapshot,sTmp);
    rs->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-	   adOpenForwardOnly, adLockReadOnly, adCmdText); 
+	   adOpenKeyset, adLockOptimistic, adCmdText); 
    if(IsWindow(FrmListBox.m_hWnd))
    {
 	   FrmListBox.m_ListPhsStruEDIT.ResetContent();
@@ -1275,7 +1275,7 @@ void CFrmPhsSamp::LoadListPA()
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -1308,7 +1308,7 @@ void CFrmPhsSamp::LoadListSA()
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);

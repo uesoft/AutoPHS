@@ -26,7 +26,7 @@ CVirtualListCtrl::CVirtualListCtrl()
 // 		m_prsREF->m_strFilter = _T("");
 // 		m_prsREF->Open(dbOpenSnapshot, strSQL);
 		m_prsREF->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
 	catch(CException * ep)
 	{

@@ -178,7 +178,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 // 			rs.m_pDatabase = &EDIBgbl::dbTable;//20071019 "dbSORT" ¸ÄÎª "dbTable"
 // 			rs.Open( dbOpenSnapshot, strSQL);
 			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbTable,true), 
-				adOpenDynamic, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 			_variant_t ix;
 			ix.ChangeType(VT_I4);

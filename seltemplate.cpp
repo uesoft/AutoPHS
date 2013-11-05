@@ -695,7 +695,7 @@ void CSelTemplate::OpenTemplateRs()
 	}
 //	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
 	m_rsTemplateName->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenForwardOnly, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	if (m_iSaveID == -1)
 		strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	else
@@ -750,7 +750,7 @@ void CSelTemplate::LoadListName()
 
 //		rsRef.Open(dbOpenSnapshot,strSQL);
 		rsRef->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rsRef->get_Collect((_variant_t)_T("MaxCount"), &v);
 		rsRef->Close();
 		int nMaxCol = vtoi(v);
@@ -799,7 +799,7 @@ void CSelTemplate::LoadListPA()
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -834,7 +834,7 @@ void CSelTemplate::LoadListSA()
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -1148,7 +1148,7 @@ void CSelTemplate::DataReposition()
 			this->m_iCurSampleID);
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		m_lstStruct.ResetContent();
 		while(!rs->adoEOF)
 		{
@@ -1533,7 +1533,9 @@ try{	// TODO: Add your control notification handler code here
 }
 	catch(_com_error & e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		return;
 	}
 }
@@ -1572,7 +1574,7 @@ void CSelTemplate::OnOK()
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
 //			rsTmpZB.Open(dbOpenSnapshot,strTemp);
 			rsTmpZB->Open((_bstr_t)strTemp, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenForwardOnly, adLockReadOnly, adCmdText); 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			int iCount;
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 				iCount=0;
@@ -1616,7 +1618,9 @@ void CSelTemplate::OnOK()
 	}
 	catch(_com_error & e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		return;
 	}
 	CDialog::OnOK();
@@ -1805,7 +1809,7 @@ BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
 // 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenDynaset,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if( rs->BOF || rs->adoEOF )
 		{
 			bFavorite = FALSE;
@@ -1837,7 +1841,7 @@ BOOL CSelTemplate::IsDefaultFavoriteTemplate(long lSampleID)
 // 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
 // 		rs.Open(dbOpenDynaset,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenForwardOnly, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if( rs->BOF || rs->adoEOF )
 		{
 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_NOT_DEFAULT_FAVORITE));
@@ -2096,7 +2100,7 @@ void CSelTemplate::initOpenTemplateRs()
 	}
 //	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
 	m_rsTemplateName->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdText); 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward, vTmp);

@@ -143,7 +143,7 @@ void CDlgSpan::LoadListDW()
 		strSQL=_T("SELECT * FROM [PipeDiameter] ORDER BY [DW],[S]");
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0;
 		while(!rs->adoEOF)
 		{
@@ -184,7 +184,7 @@ void CDlgSpan::LoadListMedia()
 		strSQL=_T("SELECT [Media],[Density] FROM [MediaDensity] ORDER BY [SEQ]");
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0,ix;
 		float * pflt;
 		while(!rs->adoEOF)
@@ -225,7 +225,7 @@ void CDlgSpan::LoadListMaterial()
 		strSQL=_T("SELECT DISTINCT [Material] FROM [MechanicalOfMaterialEt] WHERE Material IN ( SELECT DISTINCT Material FROM [MechanicalOfMaterialSIGMAt] ) ");
 //		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0;
 		while(!rs->adoEOF)
 		{
@@ -519,7 +519,7 @@ void CDlgSpan::LoadTemp()
 // 		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" ¸ÄÎª ""
 // 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);

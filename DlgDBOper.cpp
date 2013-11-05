@@ -340,7 +340,9 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 		}
 		catch (_com_error e)
 		{
-			AfxMessageBox(e.ErrorMessage());
+			CString strErrorMsg;
+			strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+			AfxMessageBox(strErrorMsg);
 			return FALSE;
 		}
 

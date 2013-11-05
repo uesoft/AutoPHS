@@ -90,7 +90,7 @@ BOOL CChangMaterilName::OnInitDialog()
 		CString strSql = "SELECT EnginID,gcmc FROM Engin";
 		
 		rsTmpEngin->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		int i;
 		CString strVal;
@@ -150,7 +150,7 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 	try
 	{	
 		rsTmpVolume->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		int i;
 		CString strVal;
@@ -208,7 +208,7 @@ void CChangMaterilName::OnClickListVolume(NMHDR* pNMHDR, LRESULT* pResult)
 	try
 	{
 		rsTmpMateril->Open((_bstr_t)strSql,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenDynamic, adLockReadOnly, adCmdText); 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		int i;
 		CString strVal;
