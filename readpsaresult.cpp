@@ -1255,7 +1255,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 					CString strTmp;
 					strTmp.Format("%d",iPreINT[2]);
 					_variant_t vTmp;
-					rs1->Find((_bstr_t)("SEQ=" + ltos(iSPRSeq)), 0, adSearchBackward, vTmp);
+					rs1->Find((_bstr_t)("SEQ=" + ltos(iSPRSeq)), 0, adSearchBackward);
 					if(!rs1->adoEOF)
 					{
 						rs1->get_Collect((_variant_t)"G",&varTmp);
@@ -1734,7 +1734,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 						if( iJSJDH[i] == iPreINT[1] )break;
 						//Debug.Print i, iPreINT(1),iJSJDH(i), sngDW(i), Tj(i)
 					}
-					//if( IsNull(!PSAver) Or (Not IsNull(!PSAver) And Trim(!PSAver) = "") Or (Not IsNull(!PSAver) And Trim(!PSAver) <> "" And UCase(Trim(!PSAver)) = strPSAVER) ){
+					//if( IsNull(!PSAver) Or (Not IsNull(!PSAver) And Trim(!PSAver) = "") Or (Not IsNull(!PSAver) And Trim(!PSAver) <> "" And ((!PSAver)) = strPSAVER) ){
 					rsData->PutCollect("PSAver",strPSAVER);
 					rsData->PutCollect("JSDBH1",_variant_t((long)iPreINT[1]));
 					rsData->PutCollect("dj1",_variant_t((float)sngDW[i]));
@@ -2487,7 +2487,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
 							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward, vTmp);
+							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
 							if(!rs1->adoEOF)
 							{
 								rs1->get_Collect((_variant_t)"G",varTmp);
@@ -3345,7 +3345,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
 							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward, vTmp);
+							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
 							if(!rs1->adoEOF)
 							{
 								rs1->get_Collect((_variant_t)"G",varTmp);

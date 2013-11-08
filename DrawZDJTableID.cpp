@@ -347,14 +347,22 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				VARIANT vTmp;
-				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward, vTmp))
+// 				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward, vTmp))
+				HRESULT hr = S_OK;
+				CString strFind;
+				strFind = _T("ZDJH <> NULL");
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				if( !rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
 				k = vtoi(varTmp);
 
 				for( i = 1 ;i< k ;i++)
 				{
-					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward, vTmp))
+// 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
+					strFind = _T("SEQ=") + ltos(i);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+					if( !rs->adoEOF)
 					{
 						rs->AddNew();
 						rs->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i));
@@ -402,14 +410,22 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			if(!rs->BOF && !rs->adoEOF)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
-				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward, vTmp))
+// 				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward, vTmp))
+				HRESULT hr = S_OK;
+				CString strFind;
+				strFind = _T("ZDJH <> NULL");
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				if( !rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
 				k = vtoi(varTmp);
 				VARIANT vTmp;
 				for( i = 1 ;i< k ;i++)
 				{
-					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward, vTmp))
+// 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
+					strFind = _T("SEQ=") + ltos(i);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+					if( !rs->adoEOF)
 					{
 						rs->AddNew();
 						rs->put_Collect((_variant_t)_T("SEQ"),COleVariant((long)i));

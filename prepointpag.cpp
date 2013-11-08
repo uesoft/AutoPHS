@@ -228,8 +228,8 @@ void CPrePointPag::SetBasePoint()
 		{
 			sTmp=m_posFld[i].FldName;
 			sTmp.MakeUpper();
-			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
-			if(rs->Find((_bstr_t)(SQLx), 0, adSearchForward, vTmp))
+			SQLx = "((name))=\'" + FDp + sTmp + "\'";
+			if(rs->Find((_bstr_t)(SQLx), 0, adSearchBackward, vTmp))
 			{
 					if(bGetPos)
 					{

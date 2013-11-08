@@ -819,30 +819,30 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			double dFiw=0.0;
 			double h=0.0,b=0.0,t=0.0,xs=0.0,l=0.0;
 
-// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'h\'")), 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'h\'")), 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
 			strTmp = _T("[VarName]=\'h\'");
-			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				h=vtod(vTemp);
 			}
 
-// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'b\'")), 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'b\'")), 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
 			strTmp = _T("[VarName]=\'b\'");
-			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				b=vtod(vTemp);
 			}
 
-// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'t\'")), 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'t\'")), 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
 			strTmp = _T("[VarName]=\'t\'");
-			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
@@ -850,30 +850,30 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			}
 			
 			strFind.Format((_T("[VarName]=\'%s\'")),GetResStr(IDS_XS));
-// 			if(rsVar->Find((_bstr_t)strFind, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strFind, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strFind, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strFind, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				xs=vtod(vTemp);
 			}
 
-// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l\'")), 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l\'")), 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
 			strTmp = _T("[VarName]=\'l\'");
-			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				l=vtod(vTemp);
 			}
 			else 
-//				if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l1\'")), 0, adSearchForward, vTemp))
+//				if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l1\'")), 0, adSearchBackward, vTemp))
 			{
 				rsVar->MoveFirst();
 				strTmp = _T("[VarName]=\'l1\'");
-				hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward, rsVar->Bookmark);
+				hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchBackward, rsVar->Bookmark);
 				if( !rsVar->adoEOF)
 				{
 					rsVar->get_Collect((_variant_t)1L,vTemp);
@@ -911,9 +911,9 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			//计算φ值
 			double l=0.0,Ix=0.0,Iy=0.0,F=0.0,Jmin=0.0f,Lamda=0.0,Fi=0.0,u=0.0;
 			strTemp.Format((_T("[VarName]=\'l%d\'")),pCalInfo->pStrCom->lComNo);
-// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
@@ -921,36 +921,36 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			}
 
 			strTemp.Format((_T("[VarName]=\'Ix%d\'")),pCalInfo->pStrCom->lComNo);
-// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				Ix=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'Iy%d\'")),pCalInfo->pStrCom->lComNo);
-// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				Iy=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'F%d\'")),pCalInfo->pStrCom->lComNo);
-// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
 				F=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'%s%d\'")),GetResStr(IDS_U),pCalInfo->pStrCom->lComNo);
-// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, vTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
 			rsVar->MoveFirst();
-			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward, rsVar->Bookmark);
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, rsVar->Bookmark);
 			if( !rsVar->adoEOF)
 			{
 				rsVar->get_Collect((_variant_t)1L,vTemp);
@@ -1349,10 +1349,10 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 				{
 					strFind.Format((_T("VarName=\'%s\'")),varInfo.szName);
 // 					VARIANT vTmp;
-// 					if(rs->Find((_bstr_t)strFind, 0, adSearchForward, vTmp))
+// 					if(rs->Find((_bstr_t)strFind, 0, adSearchBackward, vTmp))
 					HRESULT hr = S_OK;
 					rs->MoveFirst();
-					hr = rs->Find((_bstr_t)strTemp, 0, adSearchForward, rs->Bookmark);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
 					if( !rs->adoEOF)
 					{
 //						rs.Edit();
@@ -1369,10 +1369,10 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 				//如果要更新带尾数的记录,如 Ix1,Iy1,Ix2,Iy2,...
 				strFind.Format((_T("VarName=\'%s%d\'")),varInfo.szName,pStrCom->lComNo);
 // 				VARIANT vTmp;
-// 				if(rs->Find((_bstr_t)strFind, 0, adSearchForward, vTmp))
+// 				if(rs->Find((_bstr_t)strFind, 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				rs->MoveFirst();
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
 				if( !rs->adoEOF)
 				{
 //					rs.Edit();
@@ -2280,12 +2280,12 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 			{
 				//细长比>=最小值
 // 				VARIANT vTmp;
-// 				if(!rs->Find((_bstr_t)("Lamda>"+ftos(dLamda)), 0, adSearchForward, vTmp))
+// 				if(!rs->Find((_bstr_t)("Lamda>"+ftos(dLamda)), 0, adSearchBackward, vTmp))
 				CString strFind;
 				strFind = "Lamda>"+ftos(dLamda);
 				HRESULT hr = S_OK;
 				rs->MoveFirst();
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
 				if( !rs->adoEOF)
 				{
 					//细长比>最大值

@@ -166,9 +166,11 @@ void CFrmPreferences::OnOK()
 		if(modPHScal::gsPhsSPRINGSel != _T("") ){
 			// rsX->Filter=_variant_t(CString(_T("standard=\'") )+ gsPhsPASel + _T("\'"));
 			//rsX.FindFirst
-			//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsSPRINGSel+_T("\'")),0,adSearchForward);
-			_variant_t vTmp;
-			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+modPHScal::gsPhsSPRINGSel+_T("\'")), 0, adSearchForward, vTmp);
+			//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsSPRINGSel+_T("\'")),0,adSearchBackward);
+			HRESULT hr = S_OK;
+			CString strFind;
+			strFind = _T("standard=\'")+modPHScal::gsPhsSPRINGSel+_T("\'");
+			hr = rsX->Find((_bstr_t)strFind, 0, adSearchBackward, rsX->Bookmark);
 			if( !rsX->adoEOF)	   
 			{
 				rsX->MoveFirst();

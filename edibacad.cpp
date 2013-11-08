@@ -555,7 +555,7 @@ BOOL EDIBAcad::StartAcad(CString /*Optional*/ DwgName)
 		}
 
 	}
-	catch(CException *e)
+	catch(...)
 	{
 		CString str;
 		str.LoadString(IDS_AUTOCAD_INITIALIZE_ERROR);
@@ -1125,9 +1125,13 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		long iPosATTBEGIN=0 ;
 		long i=0 ;
 		EDIBgbl::GetSelPrjName();
-//		bool bf=rs.FindFirst(_T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'"));
-		_variant_t vTmp;
-		rs->Find((_bstr_t)(_T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'")), 0, adSearchForward, vTmp);
+//		bool bf=rs.FindFirst(_T("((LocalCaption))=\'ATTBEGIN\'"));
+// 		_variant_t vTmp;
+// 		rs->Find((_bstr_t)(_T("((LocalCaption))=\'ATTBEGIN\'")), 0, adSearchBackward);
+		HRESULT hr = S_OK;
+		CString strFind;
+		strFind = _T("((LocalCaption))=\'ATTBEGIN\'");
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
 		bool bf = rs->adoEOF;
 
 		iPosATTBEGIN = rs->AbsolutePosition;
@@ -1135,7 +1139,7 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		if(BlkAtt!=NULL)
 			delete [] BlkAtt;
 		BlkAtt=NULL;
-// 		COleVariant vTmp;
+ 		COleVariant vTmp;
 		if(bf)
 		{
 			bATTBEGIN = true;
@@ -1293,12 +1297,12 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 
 			return;	
 		}
-		catch(CException *e)
+		catch(COleException* e)
 		{
 			e->ReportError();
 			e->Delete();
 		}
-		catch(COleException* e)
+		catch(CException *e)
 		{
 			e->ReportError();
 			e->Delete();
@@ -2752,7 +2756,9 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 //				brsFind=rs.FindFirst(_T("Trim(BlkID)=\'")+blkID+_T("\'"));
 				_variant_t vTmp;
 				SQLx = _T("Trim(BlkID)=\'")+blkID+_T("\'");
-				rs->Find((_bstr_t)SQLx, 0, adSearchForward, vTmp);
+// 				rs->Find((_bstr_t)SQLx, 0, adSearchBackward);
+				HRESULT hr = S_OK;
+				hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
 
 				//获得双槽钢间距值xC
 				rs->get_Collect((_variant_t)_T("xC"),&vTmp);
@@ -5320,8 +5326,13 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 										if( mlRot0 == 180 )
 										{
 											_variant_t vTmp;
-											rs->Find((_bstr_t)(_T("Trim(BlkID)=\'") + blkID + _T("0\'")), 0, adSearchForward, vTmp);
-// 											rs.FindFirst();
+// 											rs->Find((_bstr_t)(_T("Trim(BlkID)=\'") + blkID + _T("0\'")), 0, adSearchBackward);
+ 											rs->MoveFirst();
+											HRESULT hr = S_OK;
+											CString strFind;
+											strFind = _T("Trim(BlkID)=\'") + blkID + _T("0\'");
+											hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+
 											rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 											xGDW1=vtof(vTmp);
 											rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
@@ -6057,12 +6068,17 @@ void EDIBAcad::DrawphsDataEdit()
 			if(!rsY->BOF && !rsY->adoEOF)
 			{
 				_variant_t vTmp;
-				CString strSql = CString(_T("ucase(trim(Handle))=\'")) + sHandle + _T("\'");
-				rsY->Find((_bstr_t)strSql, 0, adSearchForward, vTmp);
+				CString strSql = CString(_T("((Handle))=\'")) + sHandle + _T("\'");
+//				rsY->Find((_bstr_t)strSql, 0, adSearchBackward);
+				HRESULT hr = S_OK;
+				hr = rsY->Find((_bstr_t)strSql, 0, adSearchBackward, rsY->Bookmark);
 				if(!rsY->adoEOF)
 				{
 					sTmp=vtos(::GetFields(rsY,_T("recno")));
-					FrmDataEDIT.m_Data1->Find(_bstr_t(CString(_T("recno="))+sTmp),0,adSearchForward);
+// 					FrmDataEDIT.m_Data1->Find(_bstr_t(CString(_T("recno="))+sTmp),0,adSearchBackward);
+					CString strFind;
+					strFind = CString(_T("recno="))+sTmp;
+					hr = FrmDataEDIT.m_Data1->Find((_bstr_t)strSql, 0, adSearchBackward, FrmDataEDIT.m_Data1->Bookmark);
 				}
 			}
 		}
@@ -6305,15 +6321,18 @@ void EDIBAcad::DrawTagAll()
 				{
 					rsRefZB->MoveFirst();
 					str.Format(_T("seq=%d"), i);
-					_variant_t vTmp;
-					rsRefZB->Find((_bstr_t)str, 0, adSearchForward, vTmp);
+// 					_variant_t vTmp;
+// 					rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
+					HRESULT hr = S_OK;
+					hr = rsRefZB->Find((_bstr_t)str, 0, adSearchBackward, rsRefZB->Bookmark);
 					while( !rsRefZB->adoEOF )
 					{
 //							rsRefZB.Edit();
 						rsRefZB->put_Collect((_variant_t)_T("seq"),COleVariant());
 						rsRefZB->Update();
 
-						rsRefZB->Find((_bstr_t)str, 0, adSearchForward, vTmp);
+// 						rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
+						hr = rsRefZB->Find((_bstr_t)str, 0, adSearchBackward, rsRefZB->Bookmark);
 
 					}
 
@@ -6359,7 +6378,7 @@ void EDIBAcad::DrawTagAll()
 			//选择记录集rsTZG以便确定编号指向线起点坐标，同时记录图形内容
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] ;
 			SQLx+=_T("] WHERE zdjh=");
-			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ucase(trim(Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ucase(trim(FieldName))=\'SEQ\' ORDER BY y");
+			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY y");
 // 			rsTZG.Open(dbOpenDynaset,SQLx);
 			rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( rsTZG->adoEOF || rsTZG->BOF )
@@ -6527,7 +6546,11 @@ void EDIBAcad::DrawTagAll()
 					rsTZG->get_Collect((_variant_t)_T("recno"),&vTmp);
 					iRecNo = vtoi(vTmp);
 
-					rsRefZB->Find((_bstr_t)(_T("recno=") + ltos(iRecNo)), 0, adSearchForward, vTmp);
+// 					rsRefZB->Find((_bstr_t)(_T("recno=") + ltos(iRecNo)), 0, adSearchBackward);
+					HRESULT hr = S_OK;
+					CString strFind;
+					strFind = _T("recno=") + ltos(iRecNo);
+					hr = rsRefZB->Find((_bstr_t)strFind, 0, adSearchBackward, rsRefZB->Bookmark);
 					if( !rsRefZB->adoEOF)
 					{
 						rsRefZB->get_Collect((_variant_t)_T("seq"),&vTmp1);
@@ -6597,7 +6620,7 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		AcObj = MoSpace.Invoke(_T("AddPoint"),1,(LPVARIANT)p0).pdispVal;
 		
 		//选择记录集rsTZG以便记录图形内容
-		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ucase(trim(Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ucase(trim(FieldName))=\'SEQ\' ORDER BY recno");
+		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY recno");
 // 		rsTZG.Open(dbOpenDynaset,SQLx);
 		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		

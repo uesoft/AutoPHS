@@ -987,7 +987,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		{
 			_variant_t vTmp;
 			strTmp = (_T("standard=\'")+gsPhsPASel+_T("\'"));
-//			rsX->Find((_bstr_t)strTmp, 0, adSearchForward, vTmp);
+//			rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1121,8 +1121,8 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			HRESULT hr = S_OK;
 			rsX->MoveFirst();
 			strTmp = (_T("standard=\'")+gsPhsPARTSel+_T("\'"));
-//			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")), 0, adSearchForward, vTmp);
-			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
+//			rsX->Find((_bstr_t)(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")), 0, adSearchBackward);
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward, rsX->Bookmark);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1276,7 +1276,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			HRESULT hr = S_OK;
 			rsX->MoveFirst();
 			strTmp = _T("standard=\'")+gsPhsSASel+_T("\'");
-			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward, rsX->Bookmark);
 			if( !rsX->adoEOF)
 			{
 				rsX->MoveFirst();
@@ -1497,7 +1497,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		HRESULT hr = S_OK;
 		rsX->MoveFirst();
 		strTmp = _T("standard=\'")+gsPhsBoltsNutsSel+_T("\'");
-		hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
+		hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward, rsX->Bookmark);
 		if( !rsX->adoEOF)
 		{
 			rsX->MoveFirst();
@@ -1609,7 +1609,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		  HRESULT hr = S_OK;
 		  rsX->MoveFirst();
 		  strTmp = _T("standard=\'")+gsPhsSPRINGSel+_T("\'");
-		  hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
+		  hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward, rsX->Bookmark);
 		  if( !rsX->adoEOF)
 		{
 			rsX->MoveFirst();
@@ -1931,7 +1931,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   HRESULT hr = S_OK;
 		   rsX->MoveFirst();
 		   strTmp = _T("standard=\'")+gsPhsConstantSpringSel+_T("\'");
-		   hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward, rsX->Bookmark);
+		   hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward, rsX->Bookmark);
 		   if( !rsX->adoEOF)
 		   {			
 			   rsX->MoveFirst();
@@ -5027,7 +5027,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 						  else
 							  sTmp.Format(_T("%g"),TmpPaz);					 
 						  _variant_t vTmp;
-						  rs->Find((_bstr_t)(_T("Pgz>=") +sTmp), 0, adSearchForward, vTmp);
+						  rs->Find((_bstr_t)(_T("Pgz>=") +sTmp), 0, adSearchBackward);
 						  if( !rs->adoEOF)
 						  {//4
 							//找到啦，需要插值法确定工作荷载处的弹簧位移
@@ -5076,7 +5076,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 								else
 									sTmp.Format(_T("%g"),(mvD - fyr));
                            
-								rs->Find((_bstr_t)(_T("Dist>=") +sTmp), 0, adSearchForward, vTmp);
+								rs->Find((_bstr_t)(_T("Dist>=") +sTmp), 0, adSearchBackward);
 								if( !rs->adoEOF)
 								{//2
 								  //需要插值法确定安装荷载
@@ -5551,7 +5551,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 					//荷载容量合适
 						sTmp1.Format(_T("%g"),tmpCapacity);
 						_variant_t vTmp;
-						rs->Find((_bstr_t)(_T("Capacity>=")+sTmp1), 0, adSearchForward, vTmp);
+						rs->Find((_bstr_t)(_T("Capacity>=")+sTmp1), 0, adSearchBackward);
 						if( !rs->adoEOF)
 						{
 							//找到了
@@ -8011,7 +8011,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 				}
 //				rsTZB.FindFirst(_T("recno=") + ltos(mlPartRecno[i]));
 				_variant_t vTmp;
-				rs->Find((_bstr_t)(_T("recno=") + ltos(mlPartRecno[i])), 0, adSearchForward, vTmp);
+				rs->Find((_bstr_t)(_T("recno=") + ltos(mlPartRecno[i])), 0, adSearchBackward);
 				if( mlPartClassID[i] == iROD )
 				{//8 //当前是拉杆(start)
 					iNumRod ++;
@@ -8578,7 +8578,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 				rsTmp->get_Collect((_variant_t)_T("recno"),&vTmp);
 				COleVariant vTmp3;
 				_variant_t vTmp;
-				rsTZB->Find((_bstr_t)(_T("recno=") + vtos(vTmp)), 0, adSearchForward, vTmp);
+				rsTZB->Find((_bstr_t)(_T("recno=") + vtos(vTmp)), 0, adSearchBackward);
 				if(!rsTZB->adoEOF)
 				{
 					rsTZB->get_Collect((_variant_t)_T("GDW1"),&vTmp);
@@ -8725,84 +8725,84 @@ void modPHScal::SetBasePoint()
 	   FDp.TrimRight();
 	   COleVariant vTmp;
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("VX_pt0x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VX_pt0x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   VX_pt0x=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("VX_pt0y")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VX_pt0y")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {	   
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 			VX_pt0y=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("VZ_pt0x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VZ_pt0x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   VZ_pt0x=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt1x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt1x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt1x=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt1y")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt1y")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt1y=vtof(vTmp);
 	   }
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt2x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt2x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt2x=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt2y")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt2y")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt2y=vtof(vTmp);
 	   }
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt3x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt3x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt3x=vtof(vTmp);
 	   }
    
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp) + (_T("pt3y")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt3y")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt3y=vtof(vTmp);
 	   }
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'") + (FDp1) + _T("_") + (_T("pt0x")) + _T("\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp1) + _T("_") + (_T("pt0x")) + _T("\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   Pt0X=vtof(vTmp);
 	   }
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'GIDIMOFFSET\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'GIDIMOFFSET\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   giDimOffset=vtof(vTmp);
 	   }
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'GIATTDOFFSETX\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'GIATTDOFFSETX\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
@@ -8810,7 +8810,7 @@ void modPHScal::SetBasePoint()
 	   }
 	   giAttDzOffsetX = giAttDxOffsetX;
 
-	   rs->Find((_bstr_t)(_T("ucase(trim(name))=\'GIATTDOFFSETY\'")), 0, adSearchForward, vTmp);
+	   rs->Find((_bstr_t)(_T("((name))=\'GIATTDOFFSETY\'")), 0, adSearchBackward);
 	   if(!rs->adoEOF)
 	   {
 		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
@@ -9653,7 +9653,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 							//热态根部焊缝需要的抗弯矩最大
 							//wk=wkr2;
 							_variant_t vTmp;
-							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr2)), 0, adSearchForward, vTmp);
+							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr2)), 0, adSearchBackward);
 							if(!rsX->adoEOF)
 							{
 								//%s号支吊架%s热态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
@@ -9668,7 +9668,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 								//冷态根部焊缝需要的抗弯矩最大
 								//wk=wkl;
 								_variant_t vTmp;
-								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchForward, vTmp);
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchBackward);
 								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s冷态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
@@ -9688,7 +9688,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 							//热态管部焊缝需要的抗弯矩最大
 							//wk=wkr1;
 							_variant_t vTmp;
-							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchForward, vTmp);
+							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchBackward);
 							if(!rsX->adoEOF)
 							{
 								//%s号支吊架%s热态时，上焊缝(管部焊缝)需要的抗弯矩%s>允许值%s
@@ -9704,7 +9704,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 								//冷态根部焊缝需要的抗弯矩最大
 								//wk=wkl;
 								_variant_t vTmp;
-								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchForward, vTmp);
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchBackward);
 								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s冷态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
@@ -9717,7 +9717,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 								//wkr2<=wkr1 and wkr2<=wkl and wkr1>=wkl
 								//热态管部焊缝需要的抗弯矩最大
 								_variant_t vTmp;
-								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchForward, vTmp);
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchBackward);
 								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s热态时，上焊缝(管部焊缝)需要的抗弯矩%s>允许值%s
@@ -10706,7 +10706,7 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 			//查找计算温度t0时的许用应力值Sigma1
 			SQLx.Format(_T("t>=%g"),temperature);
 			_variant_t vTmp;
-			rsTmp->Find((_bstr_t)SQLx, 0, adSearchForward, vTmp);
+			rsTmp->Find((_bstr_t)SQLx, 0, adSearchBackward);
 			if(!rsTmp->adoEOF)
 			{
 				rsTmp->get_Collect((_variant_t)strFD,&vTmp);

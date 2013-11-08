@@ -198,8 +198,13 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 					sTmp == _T("nth") )
 					continue;
 
-				VARIANT vTmp;
-				if( rs->Find((_bstr_t)(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")), 0, adSearchForward, vTmp))
+// 				VARIANT vTmp;
+// 				if( rs->Find((_bstr_t)(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")), 0, adSearchBackward, vTmp))
+				HRESULT hr = S_OK;
+				CString strFind;
+				strFind = _T("(FieldName)=\'") + sTmp + _T("\'");
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				if(!rs->adoEOF)
 				{
 					rs->get_Collect((_variant_t)( _T("width")), &v);
 					if( v.vt == VT_NULL )

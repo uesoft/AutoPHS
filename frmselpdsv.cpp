@@ -114,8 +114,11 @@ void CFrmSelPDSV::initPrjDb()
 		//设计行业/公司
 		LoadDBComboCategory();
 // 		m_DataCategory.FindFirst(_T("sjhyid= ") + ltos(m_SelHyID));
-		_variant_t vTmp;
-		m_DataCategory->Find((_bstr_t)(_T("sjhyid= ")+ ltos(m_SelHyID)), 0, adSearchForward, vTmp);
+		m_DataCategory->MoveFirst();
+		HRESULT hr = S_OK;
+		CString strFind;
+		strFind = _T("sjhyid= ") + ltos(m_SelHyID);
+		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
 
 // 		m_DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
 // 		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
@@ -142,7 +145,8 @@ void CFrmSelPDSV::initPrjDb()
 		m_DataDsgn->MoveFirst();
 
 //		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
-		m_DataDsgn->Find((_bstr_t)(_T("sjjdID= ")+ ltos(m_SelDsgnID)), 0, adSearchForward, vTmp);
+		strFind = _T("sjjdID= ")+ ltos(m_SelDsgnID);
+		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
    
 		if(m_SelSpecID <= 0 )
 		{
@@ -151,7 +155,8 @@ void CFrmSelPDSV::initPrjDb()
 		}
 		m_DataSpe->MoveFirst();
 // 		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
-		m_DataDsgn->Find((_bstr_t)(_T("zyid= ")+ ltos(m_SelSpecID)), 0, adSearchForward, vTmp);
+		strFind = _T("zyid= ")+ ltos(m_SelSpecID);
+		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
 
 		this->m_DBComboCategory.RefLst();
 		this->m_DBComboDsgn.RefLst();
@@ -180,7 +185,7 @@ void CFrmSelPDSV::InitENG()
 
 		CString sTmp=CString(_T("EnginID = \'"))+Trim(m_SelPrjID)+_T("\'");
 
-		m_DataEng->Find(_bstr_t(sTmp),0,adSearchForward);
+		m_DataEng->Find(_bstr_t(sTmp),0,adSearchBackward);
 		if(m_DataEng->adoEOF)
 		{
 			m_DataEng->MoveLast();
@@ -216,7 +221,7 @@ void CFrmSelPDSV::InitDBVlm()
 		tmpSQL +=_T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID);
 		tmpSQL +=_T(" ORDER BY jcdm ");
 	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
-		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchForward);
+		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchBackward);
 		if(m_DataVlm->adoEOF)
 		{
 			if(m_DataVlm->BOF)
@@ -237,7 +242,7 @@ void CFrmSelPDSV::InitDBVlm()
 		this->m_SelDsgnID=vtoi(m_DataVlm->GetCollect(_T("SJJDID")));
 		this->m_SelSpecID=vtoi(m_DataVlm->GetCollect(_T("ZYID")));
 		this->m_SelHyID=vtoi(m_DataVlm->GetCollect(_T("SJHYID")));
-		//m_DataVlm.GetRecordset().Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelVlmID) + _T("\'")),0,adSearchForward,_variant_t((long)0));
+		//m_DataVlm.GetRecordset().Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelVlmID) + _T("\'")),0,adSearchBackward,_variant_t((long)0));
       //定位到前次工作的卷册
 		m_DBGvlm.SetRefDataSource(m_DataVlm->GetDataSource());
 		m_DBGvlm.SetAllowAddNew(true);
@@ -642,7 +647,7 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 			m_DataVlm->Close();
 	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 
-	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchForward);
+	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchBackward);
 		
 		if(m_DataVlm->adoEOF)
 		{
@@ -860,8 +865,7 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 			m_SelDsgnID=4;
 		}
 // 		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
-		_variant_t vTmp;
-		m_DataDsgn->Find((_bstr_t)(_T("sjjdID= ")+ ltos(m_SelDsgnID)), 0, adSearchForward, vTmp);
+		m_DataDsgn->Find((_bstr_t)(_T("sjjdID= ")+ ltos(m_SelDsgnID)), 0, adSearchBackward);
   
 		if(m_SelSpecID <= 0 )
 		{
@@ -869,7 +873,7 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 			m_SelSpecID=3;
 		}
 // 		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
-		m_DataSpe->Find((_bstr_t)(_T("zyid= ")+ ltos(m_SelSpecID)), 0, adSearchForward, vTmp);
+		m_DataSpe->Find((_bstr_t)(_T("zyid= ")+ ltos(m_SelSpecID)), 0, adSearchBackward);
 
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();

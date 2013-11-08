@@ -283,9 +283,11 @@ void EDIBDB::SumNumbers()
 		   _T("\' AND Trim(CLID)=\'") + vtos(CLID) + _T("\'");
 	   //EDIBgbl::SQLx = _T(" trim(CLgg)=\'") + Trim((char*)CLgg.bstrVal) + _T("// AND trim(CLmc)=//") + Trim(rs1(_T("CLmc"))) + _T("// AND trim(CLcl)=//") + Trim(rs1(_T("CLcl"))) + _T("// AND trim(CLID)=//") + Trim(rs1(_T("CLID"))) + _T("//")
 	   
-	   _variant_t vTmp;
-	   rs2->Find((_bstr_t)(EDIBgbl::SQLx), 0, adSearchForward, vTmp);
-     if(!rs2->adoEOF)
+// 	   _variant_t vTmp;
+// 	   rs2->Find((_bstr_t)(EDIBgbl::SQLx), 0, adSearchBackward);
+	   HRESULT hr = S_OK;
+	   hr = rs2->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward, rs2->Bookmark);
+	   if( !rs2->adoEOF)
 	  {
 		  rs2->get_Collect((_variant_t)_T("CLdz"),CLdz);
 		  rs2->get_Collect((_variant_t)_T("CLdw"),CLdw);
@@ -386,12 +388,12 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		  sTmp.TrimRight();
 		  sTmp.MakeUpper();
 // 		  _variant_t vTmp;
-// 		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchForward, vTmp);
+// 		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchBackward);
 		  HRESULT hr = S_OK;
 		  rs->MoveFirst();
 		  CString strTmp;
 			strTmp = _T("(FieldName)=\'")+sTmp+_T("\'");
-		  hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward, rs->Bookmark);
+		  hr = rs->Find((_bstr_t)strTmp, 0, adSearchBackward, rs->Bookmark);
 		  if( !rs->adoEOF)
 		  {
 			  rs->get_Collect((_variant_t)_T("[Visible]"),&v);

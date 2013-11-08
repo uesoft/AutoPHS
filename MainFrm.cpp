@@ -1491,7 +1491,7 @@ void CMainFrame::OnCalAllzdj()
 		}
 		n=_ttoi(dlg.m_strValue);
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->MoveFirst();
-		FrmTxsr.m_pViewTxsr->m_ActiveRs->Find(_bstr_t(CString(_T("zdjh="))+ltos(k)),0,adSearchForward);
+		FrmTxsr.m_pViewTxsr->m_ActiveRs->Find(_bstr_t(CString(_T("zdjh="))+ltos(k)),0,adSearchBackward);
 		//FrmTxsr.m_pViewTxsr->m_ActiveRs->Find (_T("zdjh=") + ltos(k));        
 		modPHScal::gbCalAllPhs=true;
 		modPHScal::gbStopCalAllPHS = false;
@@ -1896,7 +1896,7 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 // 				if(!rs.FindFirst(_T("ZDJH <> NULL")))
 				_variant_t vTmp;
-				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward, vTmp);
+				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward);
 				if(!rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
@@ -1905,7 +1905,7 @@ void CMainFrame::DrawZdjTab(int index)
 				{
 // 					if(!rs.FindFirst(_T("SEQ=") + ltos(i)))
 					_variant_t vTmp;
-					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward, vTmp);
+					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward);
 					if(!rs->adoEOF)
 					{
 						rs->AddNew();
@@ -1954,7 +1954,7 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 // 				if(!rs.FindFirst(_T("ZDJH <> NULL")))
 				_variant_t vTmp;
-				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward, vTmp);
+				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward);
 				if(!rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
@@ -1963,7 +1963,7 @@ void CMainFrame::DrawZdjTab(int index)
 				{
 // 					if(!rs.FindFirst(_T("SEQ=") + ltos(i)))
 					_variant_t vTmp;
-					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward, vTmp);
+					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward);
 					if(!rs->adoEOF)
 					{
 						rs->AddNew();

@@ -170,8 +170,12 @@ void CFrmListBox::OnCmdApply()
 				CString sTmp,sTmp2;
 				sTmp.Format("%d",modPHScal::iSelSampleID);
 				COleVariant v;
-				_variant_t vTmp;
-				FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ sTmp), 0, adSearchForward, vTmp);
+//				_variant_t vTmp;
+// 				FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ sTmp), 0, adSearchBackward);
+				HRESULT hr = S_OK;
+				CString strFind;
+				strFind = _T("SampleID= ")+ sTmp;
+				hr = FrmPhsSamp.Data1->Find((_bstr_t)strFind, 0, adSearchBackward, FrmPhsSamp.Data1->Bookmark);
 				if (!FrmPhsSamp.Data1->adoEOF)
 				{
 					  FrmPhsSamp.Data1->get_Collect((_variant_t)"FREQUENCE",&v);
@@ -249,9 +253,14 @@ void CFrmListBox::OnCmdSave()
                FrmPhsSamp.SelectItemMenu = mnuIALLSamp;
 //                FrmPhsSamp.Data1->Requery();
 // 					FrmPhsSamp.Data1->FindFirst("SampleID=" + ltos(m_OldSelSampleID));
-			   _variant_t vTmp;
-			   FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ ltos(m_OldSelSampleID)), 0, adSearchForward, vTmp);
-					FrmPhsSamp.LoadListSelPhs();
+// 			   _variant_t vTmp;
+// 			   FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ ltos(m_OldSelSampleID)), 0, adSearchBackward);
+			   HRESULT hr = S_OK;
+			   CString strFind;
+			   strFind = _T("SampleID= ")+ ltos(m_OldSelSampleID);
+			   FrmPhsSamp.Data1->MoveFirst();
+			   hr = FrmPhsSamp.Data1->Find((_bstr_t)strFind, 0, adSearchBackward, FrmPhsSamp.Data1->Bookmark);
+				FrmPhsSamp.LoadListSelPhs();
                modPHScal::iSelSampleID = m_OldSelSampleID;
 			}
          else

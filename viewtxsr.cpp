@@ -872,9 +872,9 @@ void CViewTxsr::SetOptionPZ()
 /*	if(m_ActiveRs==NULL || m_ActiveRs->
 	If IsNull(Data1.Recordsetm_ActiveRs->PutCollect("DG1")) Then
       Data1.Recordset.Edit: Data1.Recordsetm_ActiveRs->PutCollect("DG1") = "G": Data1.Recordset.Update
-   ElseIf UCase(Trim(Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "D" Then
+   ElseIf ((Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "D" Then
       frmtxsr!OptionPZ(iPZPA) = True
-   ElseIf UCase(Trim(Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "G" Then
+   ElseIf ((Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "G" Then
       frmtxsr!OptionPZ(iPZSA) = True
    End If*/
 }
@@ -2049,7 +2049,7 @@ void CViewTxsr::OnSelchangeList1()
 //DEL 	UpdateData();
 //DEL 	UpdateBoundData();
 //DEL 	m_ActiveRs->MoveFirst();
-//DEL 	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+m_csZDJH),0,adSearchForward);
+//DEL 	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+m_csZDJH),0,adSearchBackward);
 //DEL 	m_bActive=true;
 //DEL 	RefreshBoundData();
 //DEL 	DatabillReposition();
@@ -2069,7 +2069,7 @@ void CViewTxsr::OnSelchangeZdjh()
 		m_comboZDJH1.GetLBText(ix,sZdjh);
 		UpdateBoundData();
 		m_ActiveRs->MoveFirst();
-		m_ActiveRs->Find(_bstr_t(CString("zdjh=")+sZdjh),0,adSearchForward);
+		m_ActiveRs->Find(_bstr_t(CString("zdjh=")+sZdjh),0,adSearchBackward);
 		m_bActive=true;
 		RefreshBoundData();
 		DatabillReposition();
@@ -3079,7 +3079,7 @@ void CViewTxsr::OnSelchangeJSJDH()
 	UpdateData();
 	UpdateBoundData();
 	m_ActiveRs->MoveFirst();
-	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+szdjh),0,adSearchForward);
+	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+szdjh),0,adSearchBackward);
 	m_bActive=true;
 	RefreshBoundData();
 	DatabillReposition();
@@ -3101,7 +3101,7 @@ void CViewTxsr::OnGetPrevoiusPhsData()
 		bkRs->MoveFirst();
 		CString strFind;
 		strFind.Format("zdjh = %d ",(long)m_ActiveRs->GetCollect("zdjh"));
-		bkRs->Find(_bstr_t(strFind),0,adSearchForward);
+		bkRs->Find(_bstr_t(strFind),0,adSearchBackward);
 		bkRs->MovePrevious();
 		if(bkRs->BOF)
 		{

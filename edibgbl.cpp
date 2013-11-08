@@ -640,8 +640,12 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		CString sTmp;
 		sTmp=MyDBGrid.GetColumns().GetItem(ix).GetDataField();
 		sTmp.TrimLeft();sTmp.TrimRight();sTmp.MakeUpper();
-		_variant_t vTmp;
-		rs->Find((_bstr_t)(_T("ucase(trim(FieldName))=\'") + sTmp + _T("\'")), 0, adSearchForward, vTmp);
+// 		_variant_t vTmp;
+// 		rs->Find((_bstr_t)(_T("((FieldName))=\'") + sTmp + _T("\'")), 0, adSearchBackward);
+		HRESULT hr = S_OK;
+		CString strFind;
+		strFind = _T("((FieldName))=\'") + sTmp + _T("\'");
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
 		sngWidth=MyDBGrid.GetColumns().GetItem(ix).GetWidth()*20;
 		//twips/20->pixels
 		ix.ChangeType(VT_R4);
@@ -694,7 +698,7 @@ void EDIBgbl::SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn)
 
 		   rs->MoveFirst();
 		   CString strTmp = _T("FieldName=\'") + sTmp + _T("\'");
-		   hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward, rs->Bookmark);
+		   hr = rs->Find((_bstr_t)strTmp, 0, adSearchBackward, rs->Bookmark);
 			if( !rs->adoEOF)
 			{
 				tmpvar.ChangeType(VT_I4);
@@ -955,7 +959,7 @@ void EDIBgbl::GetSelPrjName()
 		//取得工程名
 // 		if(dbPRJDB->State != adStateOpen)
 		{
-			SQLx = _T("SELECT * FROM engin WHERE ucase(trim(EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND trim(gcmc)<>\'\'");
+			SQLx = _T("SELECT * FROM engin WHERE ((EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND trim(gcmc)<>\'\'");
 // 			rs.m_pDatabase=&dbPRJDB;
 // 			rs->Open((_bstr_t)(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
@@ -984,7 +988,7 @@ void EDIBgbl::GetSelPrjName()
 // 		if(dbDSize->State != adStateOpen)//20071018 11:29(start)"dbDSize"改为"dbDSize"
 		{
 //			rs2.m_pDatabase=&dbDSize;
-			SQLx = _T("SELECT * FROM DesignStage WHERE ucase(trim(sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND trim(sjjddm)<>\'\'") + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
+			SQLx = _T("SELECT * FROM DesignStage WHERE ((sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND trim(sjjddm)<>\'\'") + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs2->adoEOF)
@@ -1778,8 +1782,12 @@ bool EDIBgbl::UpdateAllPrjDB()
 			for(i=0;i<vc;i++)
 			{
 				tc=VoltabName[i].GetAt(VoltabName[i].GetLength()-1);
-				_variant_t vTmp;
-				rsZY->Find((_bstr_t)(CString(_T("zydm=\'")) + tc + _T("\'")), 0, adSearchForward, vTmp);
+//				_variant_t vTmp;
+// 				rsZY->Find((_bstr_t)(CString(_T("zydm=\'")) + tc + _T("\'")), 0, adSearchBackward);
+				HRESULT hr = S_OK;
+				CString strFind;
+				strFind = _T("zydm=\'") + CString(tc) + "\'";
+				hr = rsZY->Find((_bstr_t)strFind, 0, adSearchBackward, rsZY->Bookmark);
 				if(!rsZY->adoEOF)
 				{
 					rsZY->get_Collect((_variant_t)(_T("ZYID")), &vTmp);
@@ -1790,7 +1798,9 @@ bool EDIBgbl::UpdateAllPrjDB()
 				tf=VoltabName[i].Find(_T("-"));
 				tc=VoltabName[i].GetAt(tf-1);
 
-				rsJD->Find((_bstr_t)(CString(_T("sjjddm=\'")) + tc + _T("\'")), 0, adSearchForward, vTmp);
+// 				rsJD->Find((_bstr_t)(CString(_T("sjjddm=\'")) + tc + _T("\'")), 0, adSearchBackward);
+				strFind = _T("sjjddm=\'") + CString(tc) + _T("\'");
+				hr = rsJD->Find((_bstr_t)strFind, 0, adSearchBackward, rsJD->Bookmark);
 				if(!rsJD->adoEOF)
 				{
 					rsJD->get_Collect((_variant_t)(_T("SJJDID")), &vTmp);

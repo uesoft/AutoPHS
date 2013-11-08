@@ -60,7 +60,7 @@ bool Cphs::bFirstPartIsPA()
 {
 	CString sTmp;
 	sTmp.Format(_T("%d"),iPA);
-	CString temp=CString(_T("Index=")) + sTmp + _T(" AND trim(CustomID)=\'") + Trim(Cntb) + _T("\'");
+	CString temp=CString(_T("Index=")) + sTmp + _T(" AND (CustomID)=\'") + Trim(Cntb) + _T("\'");
 	
 	try
 	{
@@ -74,9 +74,9 @@ bool Cphs::bFirstPartIsPA()
 		HRESULT hr = S_OK;
 		rsID->MoveFirst();
 		
-		hr = rsID->Find((_bstr_t)temp, 0, adSearchForward, rsID->Bookmark);
+		hr = rsID->Find((_bstr_t)temp, 0, adSearchBackward, rsID->Bookmark);
 		if( !rsID->adoEOF)
-// 		if(!rsID->Find((_bstr_t)temp, 0, adSearchForward, vTmp))
+// 		if(!rsID->Find((_bstr_t)temp, 0, adSearchBackward, vTmp))
 			return false;
 		else
 			return true;
@@ -250,24 +250,24 @@ long Cphs::SetPhsTypeToListBox()
 		}
 		else
 		{
-			sSQL=CString(_T(" trim(cntb)=\'"))
+			sSQL=CString(_T(" (cntb)=\'"))
 				+modPHScal::sFindID(Trim(CntbP))
-				+_T("\' AND Trim(cnte)=\'")
+				+_T("\' AND (cnte)=\'")
 				+modPHScal::sFindID(Trim(Cntb))
-				+_T("\' AND Trim(Cntn)<>\'\'");
+				+_T("\' AND (Cntn)<>\'\'");
 
 // 			VARIANT vTmp;
-// 			if(!rsConnect->Find((_bstr_t)sSQL, 0, adSearchForward, vTmp))
+// 			if(!rsConnect->Find((_bstr_t)sSQL, 0, adSearchBackward, vTmp))
 			HRESULT hr = S_OK;
 			rsConnect->MoveFirst();
 			
-			hr = rsConnect->Find((_bstr_t)sSQL, 0, adSearchForward, rsConnect->Bookmark);
+			hr = rsConnect->Find((_bstr_t)sSQL, 0, adSearchBackward, rsConnect->Bookmark);
 			if( !rsConnect->adoEOF)
 			{            
 			/*sSQL=CString(_T("SELECT * FROM connect WHERE trim(cntb)=\'"))
 			+modPHScal::sFindID(Trim(Cntb))+_T("\'");
 				rs.Open(dbOpenSnapshot,sSQL,0); */           
-				sSQL=CString(_T(" trim(cntb)=\'"))
+				sSQL=CString(_T(" (cntb)=\'"))
 					+modPHScal::sFindID(Trim(Cntb))+_T("\'");
 				//rsConnect.m_strFilter=sSQL;
 				//rsConnect->Requery(adExecuteRecord);
@@ -281,7 +281,7 @@ long Cphs::SetPhsTypeToListBox()
 		//是否需要弹簧?
 		HRESULT hr = S_OK;
 		rsConnect->MoveFirst();
-		hr = rsConnect->Find((_bstr_t)sSQL, 0, adSearchForward, rsConnect->Bookmark);
+		hr = rsConnect->Find((_bstr_t)sSQL, 0, adSearchBackward, rsConnect->Bookmark);
 		if( !rsConnect->adoEOF)
 		{
 			//ShowMessage(GetResStr(IDS_NoCustomIDinConnect));
@@ -307,9 +307,9 @@ long Cphs::SetPhsTypeToListBox()
 			sSQL = _T("ID=\'")+tmp+_T("\'");
 			HRESULT hr = S_OK;
 			rsID->MoveFirst();
-			hr = rsID->Find((_bstr_t)sSQL, 0, adSearchForward, rsID->Bookmark);
+			hr = rsID->Find((_bstr_t)sSQL, 0, adSearchBackward, rsID->Bookmark);
 			if( !rsID->adoEOF)
-//			if(rsID->Find((_bstr_t)(_T("trim(ID)=\'")+tmp+_T("\'")), 0, adSearchForward, vTmp))
+//			if(rsID->Find((_bstr_t)(_T("trim(ID)=\'")+tmp+_T("\'")), 0, adSearchBackward, vTmp))
 			{
 				//找到相应的ID
 				rsID->get_Collect((_variant_t)_T("CustomID"), &vTmp);
@@ -608,7 +608,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 
 			HRESULT hr = S_OK;
 			rs->MoveFirst();
-			hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward, rs->Bookmark);
+			hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
 			if( !rs->adoEOF)
 			{
 				sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("ID"),Ptype[i]);
@@ -655,10 +655,10 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 			//对CustomID初始化,防止和新选择的规范矛盾。
 			//使用下段程序加快速度。
 			rs->get_Collect((_variant_t)_T("ID"), &vTmp);
-// 			if(rsID->Find((_bstr_t)(_T("trim(ID)=\'") + vtos(vTmp)+_T("\'")), 0, adSearchForward, vTmp))
+// 			if(rsID->Find((_bstr_t)(_T("trim(ID)=\'") + vtos(vTmp)+_T("\'")), 0, adSearchBackward, vTmp))
 			rsID->MoveFirst();
 			SQLx = _T("ID=\'") + vtos(vTmp)+_T("\'");
-			hr = rsID->Find((_bstr_t)SQLx, 0, adSearchForward, rsID->Bookmark);
+			hr = rsID->Find((_bstr_t)SQLx, 0, adSearchBackward, rsID->Bookmark);
 			if( !rsID->adoEOF)
 			{
 				rsID->get_Collect((_variant_t)_T("CustomID"), &vTmp);
@@ -782,9 +782,9 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 				   HRESULT hr = S_OK;
 				   rs->MoveFirst();
 				   SQLx = _T("ID=\'") + Ptype[i] + _T("\'");
-				   hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward, rs->Bookmark);
+				   hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
 				   if( !rs->adoEOF)
-//				   if(rs->Find((_bstr_t)(_T("Trim(ID)=\'") + Ptype[i] + _T("\'")), 0, adSearchForward, vTmp))
+//				   if(rs->Find((_bstr_t)(_T("Trim(ID)=\'") + Ptype[i] + _T("\'")), 0, adSearchBackward, vTmp))
 				   {
 					   rs->get_Collect((_variant_t)_T("ClassID"), &vTmp);
 					   mlPartClassID[i]=vtoi(vTmp);
@@ -876,10 +876,10 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 					if( v.vt!=VT_NULL)
 					{
 						CString strSql = (_T("ID=\'") + vtos(v) + _T("\'"));
-// 						if( rsID->Find((_bstr_t)strSql, 0, adSearchForward, vTmp))
+// 						if( rsID->Find((_bstr_t)strSql, 0, adSearchBackward, vTmp))
 						HRESULT hr = S_OK;
 						rsID->MoveFirst();
-						hr = rsID->Find((_bstr_t)strSql, 0, adSearchForward, rsID->Bookmark);
+						hr = rsID->Find((_bstr_t)strSql, 0, adSearchBackward, rsID->Bookmark);
 						if( !rsID->adoEOF)
 						{
 							rsID->get_Collect((_variant_t)_T("ClassID"),v);
@@ -1308,10 +1308,10 @@ long Cphs::SavephsAllStructToTZB(long& zdjh, int nth, int& /*Optional*/ AttachIn
 				//取得下一次的开头零件
 				CString strSql = (_T("(cntb)=\'") + (SampleArray[i]) + _T("\' AND (cnte)=\'") + (SampleArray[i+1]) + _T("\'"));
 // 				_variant_t vTmp;
-// 				if(!rsConnect->Find((_bstr_t)strSql, 0, adSearchForward, vTmp))
+// 				if(!rsConnect->Find((_bstr_t)strSql, 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				rsConnect->MoveFirst();
-				hr = rsConnect->Find((_bstr_t)strSql, 0, adSearchForward, rsConnect->Bookmark);
+				hr = rsConnect->Find((_bstr_t)strSql, 0, adSearchBackward, rsConnect->Bookmark);
 				if( !rsConnect->adoEOF)
 				{
 					sTmp.Format(GetResStr(IDS_PartCanNotMatchOrNotExistInConnect),SampleArray[i],SampleArray[i+1]);
@@ -1601,12 +1601,12 @@ bool Cphs::GetphsBHandSizesTest()
 			//展开sFindTBN，加快速度。
 			//tbn1 = sFindTBN(Trim(rsTmpREF.Fields(_T("CustomID"))))
 			rsTmpREF->get_Collect((_variant_t)_T("CustomID"),v);
-//			if( !rsID->Find((_bstr_t)(_T("(CustomID)=\'") + vtos(v) + _T("\'")), 0, adSearchForward, vTmp))
+//			if( !rsID->Find((_bstr_t)(_T("(CustomID)=\'") + vtos(v) + _T("\'")), 0, adSearchBackward, vTmp))
 			HRESULT hr = S_OK;
 			rsID->MoveFirst();
 			CString strSql;
 			strSql = _T("(CustomID)=\'") + vtos(v) + _T("\'");
-			hr = rsID->Find((_bstr_t)strSql, 0, adSearchForward, rsConnect->Bookmark);
+			hr = rsID->Find((_bstr_t)strSql, 0, adSearchBackward, rsConnect->Bookmark);
 			if( !rsID->adoEOF)
 			{
 				//出错
@@ -1629,9 +1629,9 @@ bool Cphs::GetphsBHandSizesTest()
 				//展开sFindTBN，加快速度。
 				//tbn1 = sFindTBN(Trim(rsTmpREF.Fields(_T("CustomID"))))
 				rsTmpREF->get_Collect((_variant_t)_T("CustomID"),v);
-				CString strSql = (_T("trim(CustomID)=\'")) + vtos(v) + _T("\'");
+				CString strSql = (_T("(CustomID)=\'")) + vtos(v) + _T("\'");
 				_variant_t vTmp;
-				if( !rsID->Find((_bstr_t)strSql, 0, adSearchForward, vTmp))
+				if( !rsID->Find((_bstr_t)strSql, 0, adSearchBackward, vTmp))
 				{
 					//没找到CustomID,出错
 					sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(v));
@@ -1658,9 +1658,9 @@ bool Cphs::GetphsBHandSizesTest()
 				HRESULT hr = S_OK;
 				rsID->MoveFirst();
 				SQLx = _T("(CustomID)=\'") + sv + _T("\'");
-				hr = rsID->Find((_bstr_t)SQLx, 0, adSearchForward, rsID->Bookmark);
+				hr = rsID->Find((_bstr_t)SQLx, 0, adSearchBackward, rsID->Bookmark);
 				if( !rsID->adoEOF)
-// 				if(!rsID->Find((_bstr_t)CString(_T("trim(CustomID)=\'") + sv + _T("\'")), 0, adSearchForward, vTmp))
+// 				if(!rsID->Find((_bstr_t)CString(_T("trim(CustomID)=\'") + sv + _T("\'")), 0, adSearchBackward, vTmp))
 				{
 					//没有找到表名
 					sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(v));
@@ -1698,7 +1698,7 @@ bool Cphs::GetphsBHandSizesTest()
 						rsID->get_Collect((_variant_t)_T("ID"),v);
 						tmpID1=vtos(v);
 						/*rsID->Find((_bstr_t)CString(_T("trim(CustomID)=\'")) + sv + _T("\'"))*/
-						if( rsID->Find((_bstr_t)CString(_T("trim(CustomID)=\'") + sv + _T("\'")), 0, adSearchForward, vTmp))
+						if( rsID->Find((_bstr_t)CString(_T("(CustomID)=\'") + sv + _T("\'")), 0, adSearchBackward, vTmp))
 						{
 							rsID->get_Collect((_variant_t)_T("ID"),v);
 							tmpID1 = vtos(v);
@@ -1715,7 +1715,13 @@ bool Cphs::GetphsBHandSizesTest()
 							tmpCustomID1=sv1;
 						}
 						rsTmpREF->MovePrevious();
-						if( !rsConnect->Find((_bstr_t)CString(_T("trim(cntb)=\'") + tmpID0 + _T("\' AND trim(cnte)=\'") + tmpID1 + _T("\'")) , 0, adSearchForward, vTmp))
+						CString strFind;
+						strFind = CString(_T("(cntb)=\'") + tmpID0 + _T("\' AND (cnte)=\'") + tmpID1 + _T("\'"));
+						HRESULT hr = S_OK;
+						rsConnect->MoveFirst();
+						hr = rsConnect->Find((_bstr_t)strFind, 0, adSearchBackward, rsConnect->Bookmark);
+						if( !rsConnect->adoEOF)
+// 						if( !rsConnect->Find((_bstr_t)CString(_T("trim(cntb)=\'") + tmpID0 + _T("\' AND trim(cnte)=\'") + tmpID1 + _T("\'")) , 0, adSearchBackward, vTmp))
 						{
 							//Connect表中不存在这种组合.一般不会发生这情况.
 							sTmp.Format(GetResStr(IDS_PartCanNotMatchOrNotExistInConnect),tmpCustomID0,tmpCustomID1);
@@ -2407,7 +2413,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 		{
 			//找出恒力弹簧的CustomID,便于查表
 			
-			rsID->Find((_bstr_t)(_T("trim(ID)=\'") + NewPtypeID[i] + _T("\'")), 0, adSearchForward, vTmp);
+// 			rsID->Find((_bstr_t)(_T("trim(ID)=\'") + NewPtypeID[i] + _T("\'")), 0, adSearchBackward, vTmp);
+			CString strFind;
+			strFind = _T("(ID)=\'") + NewPtypeID[i] + _T("\'");
+			HRESULT hr = S_OK;
+			rsID->MoveFirst();
+			hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+
 			//初始设置重新计算恒吊直径为假：bCalBoltsDiaOfCSPR=False
 			
 			bCalBoltsDiaOfCSPR = false;
@@ -3401,7 +3413,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 		//这就完全排除了对混凝土梁柱的无效材料统计
 		rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
 		
-		if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp) + _T("\'")), 0, adSearchForward, vTmp))
+//		if( !rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") + vtos(vTmp) + _T("\'")), 0, adSearchBackward, vTmp))
+		CString strFind;
+		strFind = _T("(CustomID)=\'") + vtos(vTmp) + _T("\'");
+		HRESULT hr = S_OK;
+		rsID->MoveFirst();
+		hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+		if ( !rsID->adoEOF)
 		{
 			strTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("CustomID"),vtos(vTmp));
 			ShowMessage(strTmp);
@@ -3660,8 +3678,11 @@ void Cphs::CheckDuplicateIndex()
 				sTmp=CString(_T("SampleID="))+sTmp+_T("");
 				//在phsStructureREF中没有发现phsStructureName中
 				//存在的SampleID的数据,则删除phsStructureName中的这个SampleID记录
-				_variant_t vTmp;
-				if(! rs->Find((_bstr_t)sTmp, 0, adSearchForward, vTmp))
+
+				HRESULT hr = S_OK;
+				rs1->MoveFirst();
+				hr = rs1->Find((_bstr_t)sTmp, 0, adSearchBackward, rs1->Bookmark);
+				if (!rs1->adoEOF)
 				{
 					rs1->Delete(adAffectCurrent);
 				}
@@ -4446,7 +4467,11 @@ void Cphs::ChangeNameInphsStructureName()
 
 				EDIBgbl::SQLx=_T("SampleID=")+sTmp1;
 				
-				if(!rs3->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchForward, vTmp))
+// 				if(!rs3->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward, vTmp))
+				HRESULT hr = S_OK;
+				rs3->MoveFirst();
+				hr = rs3->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward, rs3->Bookmark);
+				if (!rs3->adoEOF)
 				{
 					rs3->AddNew();
 
@@ -4478,7 +4503,10 @@ void Cphs::ChangeNameInphsStructureName()
 				{
 //					rs3.Edit();
 
-					rs4->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchForward, vTmp);
+// 					rs4->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward, vTmp);
+					HRESULT hr = S_OK;
+					rs4->MoveFirst();
+					hr = rs4->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward, rs4->Bookmark);
 
 					if(strTmpName.GetLength() > fdL)
 						strTmp=strTmpName.Left(fdL);
@@ -5596,7 +5624,12 @@ void Cphs::GetphsSumBom()
 		else
 		{
 			//有任何拉杆,RS-圆钢
-			this->rsID->Find((_bstr_t)(_T("trim(ID)=\'RS\'")), 0, adSearchForward, vTmp);
+// 			this->rsID->Find((_bstr_t)(_T("trim(ID)=\'RS\'")), 0, adSearchBackward, vTmp);
+			CString strFind;
+			strFind = _T("(ID)=\'RS\'");
+			HRESULT hr = S_OK;
+			rsID->MoveFirst();
+			hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
 			while(!rs->adoEOF)
 			{
 				frmStatus.m_Label1= GetResStr(IDS_SumPhsBomRod);
@@ -5817,7 +5850,13 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if( this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
+// 					if( this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchBackward, vTmp))
+					CString strFind;
+					strFind = _T("(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'");
+					HRESULT hr = S_OK;
+					rsID->MoveFirst();
+					hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+					if (!rsID->adoEOF)
 					{
 						int intIndex=vtoi(GetFields(this->rsID,_T("Index")));
 						if( intIndex==iSectionSteel )
@@ -5925,7 +5964,13 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
+// 					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchBackward, vTmp))
+					CString strFind;
+					strFind = _T("(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'");
+					HRESULT hr = S_OK;
+					rsID->MoveFirst();
+					hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+					if (!rsID->adoEOF)
 					{					
 						if( vtoi(GetFields(this->rsID,_T("Index")))==iSectionSteel )
 						{                  
@@ -6032,7 +6077,13 @@ void Cphs::GetphsSumBom()
 				{
 					rsza->MoveFirst();
 					
-					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchForward, vTmp))
+// 					if(this->rsID->Find((_bstr_t) (_T("trim(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'")), 0, adSearchBackward, vTmp))
+					CString strFind;
+					strFind = _T("(CustomID)=\'") + vtos(GetFields(rs,_T("CustomID"))) + _T("\'");
+					HRESULT hr = S_OK;
+					rsID->MoveFirst();
+					hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+					if (!rsID->adoEOF)
 					{
 						//型钢(自2001.12.31起钢板PS类别从型钢(index=3)改为附件(index=4)
 						if( (vtoi(GetFields(this->rsID,_T("Index")))==iSectionSteel) )
@@ -6363,7 +6414,13 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			//tbn = sFindTBN(rsTmpZB.Fields(_T("CustomID")))
 			rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
 			
-			if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") +vtos(vTmp) + _T("\'")), 0, adSearchForward, vTmp))
+// 			if(rsID->Find((_bstr_t)(_T("trim(CustomID)=\'") +vtos(vTmp) + _T("\'")), 0, adSearchBackward, vTmp))
+			CString strFind;
+			strFind = _T("(CustomID)=\'") +vtos(vTmp) + _T("\'");
+			HRESULT hr = S_OK;
+			rsID->MoveFirst();
+			hr = rsID->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+			if (!rsID->adoEOF)
 			{
 				rsID->get_Collect((_variant_t)_T("Index"), &vTmp);
 				modPHScal::glIDIndex = vtoi(vTmp);
@@ -6389,7 +6446,11 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			}
 			tmpBlkID =tmpID;
 			//首先看表中是否存在ID名称代表的块
-			rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchForward, vTmp);
+// 			rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchBackward, vTmp);
+			strFind = _T("trim(blkID)=\'") + tmpBlkID + _T("\'");
+			rs->MoveFirst();
+			hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+
 			VARIANT_BOOL bm=VARIANT_FALSE;
 			bm= rs->adoEOF;
 			if( modPHScal::glIDIndex == iSA)
@@ -6400,7 +6461,12 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 					//如果没有,则肯定是槽钢组成的根部，加上槽钢数量构成新的块,继续查找
 					if( modPHScal::glClassID != iGCement)
 						tmpBlkID = tmpBlkID +vtos( rsza->GetCollect(_T("iCSnum")));
-					rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchForward, vTmp);
+// 					rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchBackward, vTmp);
+					CString strFind;
+					strFind = _T("(CustomID)=\'") +vtos(vTmp) + _T("\'");
+					HRESULT hr = S_OK;
+					rs->MoveFirst();
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
 					bm=rs->adoEOF;
 				}
 			}

@@ -311,8 +311,13 @@ void CFrmPhsSamp::mnuDWGM_Click(int Index)
 		this->m_popMenu.GetSubMenu(1)->CheckMenuRadioItem(0,7,Index,MF_BYPOSITION);
 	*/
 	this->m_ListSelPhs.ResetContent();
-	VARIANT vTmp;
-	Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)), 0, adSearchForward, vTmp);
+// 	VARIANT vTmp;
+// 	Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)), 0, adSearchBackward);
+	HRESULT hr = S_OK;
+	CString strFind;
+	strFind = "SampleID="+ ltos(modPHScal::iSelSampleID);
+	Data1->MoveFirst();
+	hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward, Data1->Bookmark);
 	if(!Data1->adoEOF && !Data1->BOF)
 		Data1->MoveFirst();
    //this->Data1_Reposition();
@@ -551,8 +556,12 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 		if(ix<0 || ix > m_ListIDCount-1 || m_ListID==NULL)
 			return;
 		sTmp.Format("%d",m_ListID[ix]);
-		VARIANT vTmp;
-		Data1->Find((_bstr_t)(_T("SampleID="+sTmp)), 0, adSearchForward, vTmp);
+// 		VARIANT vTmp;
+// 		Data1->Find((_bstr_t)(_T("SampleID="+sTmp)), 0, adSearchBackward);
+		HRESULT hr = S_OK;
+		CString strFind;
+		strFind = _T("SampleID="+sTmp);
+		hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward, Data1->Bookmark);
 		this->Data1_Reposition();
 	}
 	catch(CException *e)
@@ -1044,6 +1053,12 @@ void CFrmPhsSamp::UpdateRecordset()
 		GetDlgItem(IDC_CHECK_CURRENTPA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvPA);
 		//if(!Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)))
 		//	Data1->MoveFirst();
+		HRESULT hr = S_OK;
+		CString strFind;
+		strFind = "SampleID="+ ltos(modPHScal::iSelSampleID);
+		hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward, Data1->Bookmark);
+		if(!Data1->adoEOF)
+			Data1->MoveFirst();
 	}
 
    //this->Data1_Reposition();
