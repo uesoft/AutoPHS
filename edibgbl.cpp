@@ -593,14 +593,8 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
  		ShowMessage(CString((char*)e.ErrorMessage())+CString((char*)e.Description()));
  	}
  }
-CString EDIBgbl::GetDBName(_ConnectionPtr db)
-{
-	CString str;
 
-	str = (LPTSTR)(LPCTSTR)db->DefaultDatabase;
-	return str;
-}
-void EDIBgbl::LoadMenuSelBill(CMenu* mnuObj)
+ void EDIBgbl::LoadMenuSelBill(CMenu* mnuObj)
 {
 }
 
@@ -645,7 +639,7 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("((FieldName))=\'") + sTmp + _T("\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		sngWidth=MyDBGrid.GetColumns().GetItem(ix).GetWidth()*20;
 		//twips/20->pixels
 		ix.ChangeType(VT_R4);
@@ -698,7 +692,7 @@ void EDIBgbl::SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn)
 
 		   rs->MoveFirst();
 		   CString strTmp = _T("FieldName=\'") + sTmp + _T("\'");
-		   hr = rs->Find((_bstr_t)strTmp, 0, adSearchBackward, rs->Bookmark);
+		   hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward);
 			if( !rs->adoEOF)
 			{
 				tmpvar.ChangeType(VT_I4);
@@ -1054,19 +1048,32 @@ void EDIBgbl::GetSelPrjName()
 }
 
 
-/*
+
 CString EDIBgbl::GetDBName(_ConnectionPtr db)
 {
-	if(db==NULL || db->GetState()==adStateClosed)
-		return _T("");
-		  PropertiesPtr prP;
+	CString strDefaultDatabase;
+	CString strContext;
+	strDefaultDatabase = (LPTSTR)db->ConnectionString;
 
-		  prP=db->GetProperties();
-		  CString dbName=vtos(prP->GetItem( _variant_t(_T("Data Source")))->GetValue());
-		  return dbName;
+	for (int i = 0; i < 10; i++)
+	{
+		AfxExtractSubString(strContext, strDefaultDatabase, i, ';');
+		if (strContext.Find(_T("Data Source")) >= 0)
+		{
+			break;
+		}
+	}
 
+	if (strContext.IsEmpty())
+	{
+		return "";
+	}
+
+	AfxExtractSubString(strDefaultDatabase, strContext, 1, '=');
+	
+	return strDefaultDatabase;
 }
-*/
+
 bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 {
 	//11/3
@@ -1078,7 +1085,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 	_RecordsetPtr TempSet;
 	TempSet.CreateInstance(__uuidof(Recordset));
 	CString strSQL;
-	strSQL="select * from "+tbn+"";
+	strSQL="select * from ["+tbn+"]";
 //	strSQL = "SELECT * FROM from MSysObjects where name=\'"+tbn+"\'";
 	//11/3
 
@@ -1089,6 +1096,8 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 // 		TempSet->Open((_bstr_t)(dbOpenSnapshot,strSQL);
 		TempSet->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
+		TempSet->Close();
+		TempSet.Release();
 		return true;
 		//11/3
 
@@ -1281,7 +1290,7 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 			{
 				CString	SQLx;
 				SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),
-					strTableName,strTableName,sDB->DefaultDatabase);
+					strTableName,strTableName,EDIBgbl::GetDBName(sDB));
 				dDB->Execute((_bstr_t)SQLx, NULL, adCmdText);	
 			}			
 
@@ -1365,7 +1374,7 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 			{
 				CString	SQLx;
 				SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),
-					strTableName,strTableName,sDB->DefaultDatabase);
+					strTableName,strTableName,EDIBgbl::GetDBName(sDB));
 				dDB->Execute((_bstr_t)SQLx, NULL, adCmdText);	
 			}
 		}
@@ -1722,7 +1731,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 		dDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL=CString(_T("DELETE * FROM Engin"));
 		dDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
-		strSQL=CString(_T("INSERT INTO Engin IN \'")) + (LPTSTR)(LPCTSTR)dDb->DefaultDatabase + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
+		strSQL=CString(_T("INSERT INTO Engin IN \'")) + EDIBgbl::GetDBName(dDb) + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
 		sDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 // 		sRsEngin.m_pDatabase=&sDb;
@@ -1851,7 +1860,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 									if(SQL1!=_T(""))
 									{
 										strSQL = _T("INSERT INTO [") + tdDefInfo.m_strName + _T("]  SELECT DISTINCT ") + ltos(VolumeDef.VolumeID) + _T(" AS VolumeID,")
-												+ SQL1 + _T(" FROM [") + DatatabName[item] + _T("] IN \'") + sDb->DefaultDatabase + _T("\' ")  
+												+ SQL1 + _T(" FROM [") + DatatabName[item] + _T("] IN \'") + sDb) + _T("\' ")  
 												+ _T(" WHERE VolumeID =\'") + VolumeDef.jcdm + _T("\' AND  ZDJH IS NOT NULL ") ;
 										//MessageBox(strSQL);
 										try

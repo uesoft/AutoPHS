@@ -153,7 +153,7 @@ void CDlgAddMaterial::LoadListClass()
 		}
 // 		rs.m_pDatabase=&EDIBgbl::dbSORT;
 // 		rs.Open(dbOpenSnapshot,SQLx);
-		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i;
 		int count=rs->RecordCount;
@@ -393,11 +393,13 @@ void CDlgAddMaterial::LoadListBH()
 		{
 			if(iClassIndex==iOtherPART)
 			{
-				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM ") + strTbn + _T(" WHERE CustomID=\'") + strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' WHERE ClassID>=900)");
+				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM ") + strTbn + _T(" WHERE CustomID=\'") + strCustomID + 
+					_T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' WHERE ClassID>=900)");
 			}
 			else
 			{
-				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM [") + strTbn + _T("] AS tmpTb1 WHERE CustomID=\'") + strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' WHERE ClassID<900)");
+				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM [") + strTbn + _T("] AS tmpTb1 WHERE CustomID=\'") + 
+					strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' WHERE ClassID<900)");
 			}			
 		}
 

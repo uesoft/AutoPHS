@@ -151,7 +151,7 @@ void CFrmPreferences::OnOK()
 		if( rsX->adoEOF && rsX->BOF )
 		{
 			lngErrNum = IDS_NotFoundThisStandardInSortMdb;
-			sTmp.Format(GetResStr(lngErrNum),db1->DefaultDatabase,_T("phsManuBoltsNuts"),modPHScal::gsPhsBoltsNutsSel);
+			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuBoltsNuts"),modPHScal::gsPhsBoltsNutsSel);
 			ShowMessage(sTmp);
 			if(rsX->State == adStateOpen)
 				rsX->Close();
@@ -339,7 +339,7 @@ void CFrmPreferences::OnOK()
 	   if(tmpvar.vt==VT_NULL)
 	   {
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
-		   sTmp.Format(GetResStr(lngErrNum),db1->DefaultDatabase,_T("phsManuSPRING"),modPHScal::gsPhsSPRINGSel ,_T("Unit_Force"));
+		   sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuSPRING"),modPHScal::gsPhsSPRINGSel ,_T("Unit_Force"));
 		   ShowMessage(sTmp);
 		   if(rsX->State == adStateOpen)
 			   rsX->Close();
@@ -409,7 +409,7 @@ void CFrmPreferences::OnOK()
 		   else
 			   //没找任何荷载单位制识别字符
 		   {
-			   sTmp.Format(GetResStr(IDS_NotFoundUnitStringInBHFormat),db1->DefaultDatabase,_T("phsManuSPRING"),GetResStr(IDS_SPR),vtos(tmpvar));
+			   sTmp.Format(GetResStr(IDS_NotFoundUnitStringInBHFormat),EDIBgbl::GetDBName(db1),_T("phsManuSPRING"),GetResStr(IDS_SPR),vtos(tmpvar));
 		   ShowMessage(sTmp);
 		   modPHScal::gsSPRUnitOfLoad = _T("daN");
 		   }

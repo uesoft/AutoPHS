@@ -438,9 +438,9 @@ void CSelTemplate::GetFilterStr()
 			//烟风煤粉管道矩形管径=null
 			if(modPHScal::bPAIsHanger())
 			{
-				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
+				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 					"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-									+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+									+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 									+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 									+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 									+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -452,9 +452,9 @@ void CSelTemplate::GetFilterStr()
 				//2007.09.30(start)
 				if( modPHScal::gbPAForceZero )
 				{
-					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
+					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 						"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-										+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE ( ( Pmax IS NULL OR Pmax >=" 
+										+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE ( ( Pmax IS NULL OR Pmax >=" 
 										+ ftos(tmppjg) + " ) AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 										+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 										+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -463,9 +463,9 @@ void CSelTemplate::GetFilterStr()
 				}
 				else
 				{
-					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + 
+					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 						"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-										+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+										+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 										+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 										+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 										+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -502,7 +502,7 @@ void CSelTemplate::GetFilterStr()
 			{
 				if(m_strFilter!="")
 					m_strFilter += " AND ";
-				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\' WHERE " 
+				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\' WHERE " 
 								+ strTmp + ")) ";
 			}
 		}
@@ -568,9 +568,9 @@ void CSelTemplate::GetFilterStr()
 				m_strFilter += " AND ";
 			int Gnum;			
 			Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\'"
+			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\'"
 								+ " WHERE EXISTS ( Select CustomID FROM [" + modPHScal::tbnSA + "] IN \"\" [; DATABASE=" 
-								+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
+								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect("ifLongVertPipe")) ? Gnum : 1))
 								+ " AND (( PictureClipData.ClassID = "
 								+ ltos(iSACantilever) + " OR PictureClipData.ClassID = " + ltos(iSALbrace) + " OR PictureClipData.ClassID = " + ltos(iG51) + " OR PictureClipData.ClassID = " + ltos(iG56) + " OR PictureClipData.ClassID = " + ltos(iG57)  + ") AND GDW1 >="
@@ -613,7 +613,7 @@ void CSelTemplate::GetFilterStr()
 			if(strTmp!="")
 			{
 				if(m_strFilter != "") m_strFilter += " AND ";
-				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ->DefaultDatabase + "\' WHERE " 
+				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\' WHERE " 
 								+ strTmp + ") )";
 			}
 		}

@@ -471,7 +471,7 @@ void CDlgSARecord::InitLab()
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("(FDName)=\'SIZEH\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZEH\'")), 0, adSearchBackward, vTmp))
 		{
@@ -479,7 +479,7 @@ void CDlgSARecord::InitLab()
 			GetDlgItem(IDC_LAB_SIZEH)->SetWindowText(vtos(vTmp));
 		}
 		strFind = _T("(FDName)=\'SIZE2\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZE2\'")), 0, adSearchBackward, vTmp))
 		{
@@ -488,7 +488,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'M\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'M\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -496,7 +496,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'L1\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'L1\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -504,7 +504,7 @@ void CDlgSARecord::InitLab()
 		}
 //		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'GDW1\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'GDW1\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -512,7 +512,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'CHDIST\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'CHDIST\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -520,7 +520,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'C\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'C\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -528,7 +528,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'A\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'A\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -536,7 +536,7 @@ void CDlgSARecord::InitLab()
 		}
 //		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'TJ\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'TJ\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -544,7 +544,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS100\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSS100\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -552,7 +552,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS150\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSS150\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -560,7 +560,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSF\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSF\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -568,7 +568,7 @@ void CDlgSARecord::InitLab()
 		}
 // 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'WEIGHT\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'WEIGHT\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);

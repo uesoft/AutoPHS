@@ -134,7 +134,8 @@ void EDIBDB::MakeTmp2ToBom()
    
    //从tmp2生成一个分组结果TmpCLgroup
    //GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
-   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM tmp2 GROUP BY ") + sGROUPBY), NULL, adCmdText);
+   EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + 
+	   EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM tmp2 GROUP BY ") + sGROUPBY), NULL, adCmdText);
    EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("DROP TABLE Tmp2")), NULL, adCmdText);
    //拷贝tmpCLgroup到tmp2,以便保存分组数据
    EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz INTO Tmp2 FROM tmpCLgroup ORDER BY seq")), NULL, adCmdText);
@@ -354,14 +355,14 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 	   CString sTmp;
 	   if(rs->BOF || rs->adoEOF)
 	   {
-		   sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::dbSORT->DefaultDatabase,_T("tableINFO"),EDIBgbl::SQLx);
+		   sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT),_T("tableINFO"),EDIBgbl::SQLx);
 		   ShowMessage(GetResStr(IDS_NoRecordInXtableInXmdb)+sTmp);
 		   return;
 	   }
-   COleVariant v;
+   _variant_t v;
    _variant_t tmpvar;
    CString dbName;
-	   rs->get_Collect((_variant_t)_T("TableName"),v);
+	   rs->get_Collect((_variant_t)_T("TableName"),&v);
 	   if(vtos(v)==_T(""))
 		   return;
 		EDIBgbl::SQLx = CString(_T("SELECT * FROM ") )+ vtos(v) + _T(" WHERE NOT ISNULL(seq) ORDER BY seq");
@@ -371,7 +372,7 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   if(rs->adoEOF && rs->BOF)
 	   {
-		   dbName=(LPTSTR)(LPCTSTR)EDIBgbl::dbSORT->DefaultDatabase;
+		   dbName=EDIBgbl::GetDBName(EDIBgbl::dbSORT);
 		   sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),dbName,_T("TableName"),EDIBgbl::SQLx);
 		   sTmp=GetResStr(IDS_NoRecordInXtableInXmdb)+sTmp;
 		   ShowMessage(sTmp);
@@ -380,6 +381,8 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 	  _variant_t ix;
 	  ix.ChangeType(VT_I4);
 	  int c=DBGrid1.GetColumns().GetCount();
+
+	  _variant_t v1;
 	  for(int i=0;i < c;i++)
 	  {
 		  ix.intVal=i;
@@ -390,26 +393,25 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 // 		  _variant_t vTmp;
 // 		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchBackward);
 		  HRESULT hr = S_OK;
-		  rs->MoveFirst();
 		  CString strTmp;
 			strTmp = _T("(FieldName)=\'")+sTmp+_T("\'");
-		  hr = rs->Find((_bstr_t)strTmp, 0, adSearchBackward, rs->Bookmark);
+		  hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward);
 		  if( !rs->adoEOF)
 		  {
-			  rs->get_Collect((_variant_t)_T("[Visible]"),&v);
-			  if(v.vt!=VT_NULL)
-			DBGrid1.GetColumns().GetItem(ix).SetVisible(v.boolVal);
-		  rs->get_Collect((_variant_t)_T("[Locked]"),&v);
-		  if(v.vt!=VT_NULL)
-			DBGrid1.GetColumns().GetItem(ix).SetLocked(v.boolVal);
-		  rs->get_Collect((_variant_t)_T("[LocalCaption]"),&v);
-		  if(v.vt!=VT_NULL)
+			  rs->get_Collect((_variant_t)_T("[Visible]"),&v1);
+			  if(v1.vt!=VT_NULL && v1.vt != VT_EMPTY)
+				DBGrid1.GetColumns().GetItem(ix).SetVisible(v1.boolVal);
+		  rs->get_Collect((_variant_t)_T("[Locked]"),&v1);
+		  if(v1.vt!=VT_NULL && v1.vt != VT_EMPTY)
+			DBGrid1.GetColumns().GetItem(ix).SetLocked(v1.boolVal);
+		  rs->get_Collect((_variant_t)_T("[LocalCaption]"),&v1);
+		  if(v1.vt!=VT_NULL && v1.vt != VT_EMPTY)
 		  {
-			DBGrid1.GetColumns().GetItem(ix).SetCaption(vtos(v));
+			DBGrid1.GetColumns().GetItem(ix).SetCaption(vtos(v1));
 		  }
-		  rs->get_Collect((_variant_t)_T("[Width]"),&v);
-		  if(v.vt!=VT_NULL)
-			DBGrid1.GetColumns().GetItem(ix).SetWidth((float)(v.iVal/20));
+		  rs->get_Collect((_variant_t)_T("[Width]"),&v1);
+		  if(v1.vt!=VT_NULL && v1.vt != VT_EMPTY)
+			DBGrid1.GetColumns().GetItem(ix).SetWidth((float)(v1.iVal/20));
 		  }
 	  }
 	  rs->Close();
@@ -447,7 +449,7 @@ void EDIBDB::RefreshGrid(CDataGrid &grid, _RecordsetPtr rs)
 	{
 		ix.intVal=i;
 		sTmp=(char*)rs->Fields->GetItem(ix)->GetName();
-		//sTmp=adodc.GetRecordset().GetFields().GetItem(ix)->DefaultDatabase;
+		//sTmp=adodc.GetRecordset().GetFields().GetItem(ix).GetName();
 		if(i!=0)
 			grid.GetColumns().Add(ix);
 		grid.GetColumns().GetItem(ix).SetDataField(sTmp);

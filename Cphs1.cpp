@@ -571,7 +571,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 					if(rs3->adoEOF && rs3->BOF)
 					{
 						//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
-						sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::dbPHScode->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+						sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::GetDBName(EDIBgbl::dbPHScode),_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
 						throw sTmp;
 					}
 					else
@@ -1056,7 +1056,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			if( rs->adoEOF && rs->BOF )
 			{
 				//恒吊载荷容量表为空，不可能
-				sTmp.Format(GetResStr(IDS_NullTableInXMdb),modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnHDproperty);
+				sTmp.Format(GetResStr(IDS_NullTableInXMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnHDproperty);
 				throw sTmp;
 			}
 			else
@@ -1129,7 +1129,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							HRESULT hr = S_OK;
 							rs->MoveFirst();
 							strTmp = _T("Capacity>=") + sTmp;
-							hr = rs->Find((_bstr_t)strTmp, 0, adSearchBackward, rs->Bookmark);
+							hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward);
 							// 							if(!rs->Find((_bstr_t)(_T("Capacity>=") + sTmp), 0, adSearchBackward, vTmp));
 							if( !rs->adoEOF)
 							{
@@ -1433,7 +1433,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				if(rs3->adoEOF && rs3->BOF)
 				{
 					//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
-					sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,modPHScal::dbZDJcrude->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+					sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::GetDBName(modPHScal::dbZDJcrude),_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
 					throw sTmp;
 				}
 				else
@@ -1465,7 +1465,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				if(rsCal->adoEOF && rsCal->BOF)
 				{
 					//在数据库%s中的根部强度计算公式表%s没有任何记录。
-					sTmp.Format(IDS_NullTableCalFormulaOfFixPASA,EDIBgbl::dbSACal->DefaultDatabase,_T("CalFormulaOfFixPASA"));//20071103 "dbSORT" 改为 "dbSACal"
+					sTmp.Format(IDS_NullTableCalFormulaOfFixPASA,EDIBgbl::GetDBName(EDIBgbl::dbSACal),_T("CalFormulaOfFixPASA"));//20071103 "dbSORT" 改为 "dbSACal"
 					throw sTmp;
 				}
 				//打开根部强度计算公式表，备计算
@@ -1830,7 +1830,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 									if(rs2->adoEOF && rs2->BOF)
 									{
 										//在%s库稳定折减系数表%s中没有%s这种材料。
-										sTmp.Format(IDS_NoMaterialInSteadyDecreaseCoef, EDIBgbl::dbSACal->DefaultDatabase,_T("SteadyDecreaseCoef"),m_strMaterial);
+										sTmp.Format(IDS_NoMaterialInSteadyDecreaseCoef, EDIBgbl::GetDBName(EDIBgbl::dbSACal),_T("SteadyDecreaseCoef"),m_strMaterial);
 										throw sTmp;
 									}
 									else
@@ -1842,7 +1842,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 // 										if(!rs2->Find((_bstr_t)(_T("Lamda>")+ftos(mfLamda1)), 0, adSearchBackward, vTmp))
 										{
 											//计算的细长比%s超过%s库%s表中最大值。
-											sTmp.Format(IDS_LamdaOverMaxValue,ftos(mfLamda1),modPHScal::dbZDJcrude->DefaultDatabase,_T("SteadyDecreaseCoef"));
+											sTmp.Format(IDS_LamdaOverMaxValue,ftos(mfLamda1),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),_T("SteadyDecreaseCoef"));
 											throw sTmp;
 										}
 										else
@@ -1876,7 +1876,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 // 										if(!rs2->Find((_bstr_t)(_T("Lamda>")+ftos(mfLamda2)), 0, adSearchBackward, vTmp))
 										{
 											//计算的细长比%s超过%s库%s表中最大值。
-											sTmp.Format(IDS_LamdaOverMaxValue,ftos(mfLamda2),modPHScal::dbZDJcrude->DefaultDatabase,_T("SteadyDecreaseCoef"));
+											sTmp.Format(IDS_LamdaOverMaxValue,ftos(mfLamda2),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),_T("SteadyDecreaseCoef"));
 											throw sTmp;
 										}
 										else
@@ -2482,7 +2482,7 @@ spZ1Z2:
 			{
 				if( modPHScal::gbAutoApplyCSPRLugDia && (FirstCal == 2) && modPHScal::gbPhsIsCSPR && modPHScal::PtypeDiameter[i] > 0 )
 				{
-					sTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnPART, SQLx);
+					sTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnPART, SQLx);
 					throw sTmp;
 				}
 				else
@@ -4677,7 +4677,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
 					if( rsTmp->adoEOF && rsTmp->BOF )
 					{
 						//没有这种型钢规格
-						sTmp.Format(GetResStr(IDS_NothisSectionSteelInZDJcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,mvSAattachedCustomID);
+						sTmp.Format(GetResStr(IDS_NothisSectionSteelInZDJcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),mvSAattachedCustomID);
 						throw sTmp;
 					}
 					else
@@ -4893,7 +4893,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, COleVariant& v
    if( rsTmp->adoEOF && rsTmp->BOF )
    {
 	   //没有找到直径值
-	   sTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnCSPRINGL5Crude,SQLx);
+	   sTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnCSPRINGL5Crude,SQLx);
 	   throw sTmp;
    }
    else

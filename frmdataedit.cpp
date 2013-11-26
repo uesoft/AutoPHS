@@ -203,7 +203,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("(FieldName)=\'") + sTmp + _T("\'");
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if(!rs->adoEOF)
 				{
 					rs->get_Collect((_variant_t)( _T("width")), &v);

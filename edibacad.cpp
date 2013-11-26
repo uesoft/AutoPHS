@@ -1131,7 +1131,7 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("((LocalCaption))=\'ATTBEGIN\'");
-		hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		bool bf = rs->adoEOF;
 
 		iPosATTBEGIN = rs->AbsolutePosition;
@@ -2718,7 +2718,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 		CString tmpStr1,tmpStr2;
 		if( rsRefZB->adoEOF || rsRefZB->BOF)
 		{
-			tmpStr1.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::dbPRJDB->DefaultDatabase,  EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
+			tmpStr1.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB),  EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
 			throw tmpStr1;
 		}
 		rsRefZB->MoveLast();
@@ -2741,7 +2741,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 			if(vtos(vTmp)==_T(""))
 			{
 				//块名无值
-				tmpStr1.Format(GetResStr(IDS_NullXFieldValueInXtableInXmdb),EDIBgbl::dbPRJDB->DefaultDatabase,EDIBgbl::TBNSelPrjSpec+EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh),ltos(i+1),_T("blkID"));
+				tmpStr1.Format(GetResStr(IDS_NullXFieldValueInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB),EDIBgbl::TBNSelPrjSpec+EDIBgbl::Btype[EDIBgbl::TZB],EDIBgbl::SelJcdm,ltos(modPHScal::zdjh),ltos(i+1),_T("blkID"));
 				ShowMessage(tmpStr1);
 			}
 			else
@@ -2758,7 +2758,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 				SQLx = _T("Trim(BlkID)=\'")+blkID+_T("\'");
 // 				rs->Find((_bstr_t)SQLx, 0, adSearchBackward);
 				HRESULT hr = S_OK;
-				hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
 
 				//获得双槽钢间距值xC
 				rs->get_Collect((_variant_t)_T("xC"),&vTmp);
@@ -5331,7 +5331,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 											HRESULT hr = S_OK;
 											CString strFind;
 											strFind = _T("Trim(BlkID)=\'") + blkID + _T("0\'");
-											hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+											hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 
 											rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 											xGDW1=vtof(vTmp);
@@ -6785,6 +6785,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 
 		if(!EDIBgbl::dbSORT->State != adStateOpen)
 		{
+			EDIBgbl::dbSORT->Close();
 // 			EDIBgbl::dbSORT.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
 			EDIBgbl::dbSORT->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
@@ -6910,11 +6911,22 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 
 			if(sTmpDrawNo.GetLength()>0  && sTmpDrawNa.GetLength()>0 && sTmpDrawNaEnglish.GetLength()>0 && sTmp1.GetLength()>0 && sTmp2.GetLength()>0 && sTmp3.GetLength()>0 && sTmp4.GetLength()>0)
 			{
-				EDIBgbl::SQLx = _T("SELECT ") + sTmpDrawNa + _T(" AS DrawNa,") + sTmpDrawNaEnglish + _T(" AS DrawNaEnglish,") + sTmpDrawNo + _T(" AS DrawNo,") + sTmp1 + _T(" AS APHSCaption,") + sTmp2 + _T(" AS DrawNoPreFmt,") + sTmp3 + _T(" AS VolumeNoFmt,") + sTmp4 + _T(" AS PhsNoFmt FROM tmpDrawNameAndDrawNo");
+				EDIBgbl::SQLx = _T("SELECT ") + sTmpDrawNa + _T(" AS DrawNa,") + sTmpDrawNaEnglish + _T(" AS DrawNaEnglish,") + 
+					sTmpDrawNo + _T(" AS DrawNo,") + sTmp1 + _T(" AS APHSCaption,") + sTmp2 + _T(" AS DrawNoPreFmt,") + 
+					sTmp3 + _T(" AS VolumeNoFmt,") + sTmp4 + _T(" AS PhsNoFmt FROM tmpDrawNameAndDrawNo");
 				//AfxMessageBox(EDIBgbl::SQLx);
 // 				rs.m_pDatabase=&EDIBgbl::dbPRJ;
 // 				rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+				
+//				EDIBgbl::SQLx = "SELECT zdjh & "号" & trim(PhsTypeChineseName) AS DrawNa,'INSTALLATION OF No. ' & zdjh & ' ' & trim(PhsTypeNameEnglish) AS DrawNaEnglish,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) & trim(jcdm) & "-" & Format(SEQ,IIF(seq>99,"000","00")) AS DrawNo,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) AS APHSCaption,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) & trim(jcdm) & "-" AS DrawNoPreFmt,trim(zydm) & trim(jcdm) & "-" & Format(SEQ,IIF(seq>99,"000","00")) AS VolumeNoFmt,zdjh AS PhsNoFmt FROM tmpDrawNameAndDrawNo.
+				_CommandPtr cmd;
+				cmd.CreateInstance(__uuidof(Command));
+				cmd->ActiveConnection = EDIBgbl::dbPRJ;
+				cmd->CommandText = (_bstr_t)EDIBgbl::SQLx;
+				cmd->CommandType = adCmdText;
+
+				rs = cmd->Execute(NULL, NULL, adCmdText);
+//				rs->Open((_variant_t)cmd,(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 				//rs = EDIBgbl::dbPRJ.Execute  (_bstr_t(),&tmpvar,adCmdText);
 				if( rs->BOF || rs->adoEOF)
 				{

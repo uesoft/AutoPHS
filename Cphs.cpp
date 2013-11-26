@@ -608,7 +608,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 
 			HRESULT hr = S_OK;
 			rs->MoveFirst();
-			hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
+			hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
 			if( !rs->adoEOF)
 			{
 				sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("ID"),Ptype[i]);
@@ -782,7 +782,7 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 				   HRESULT hr = S_OK;
 				   rs->MoveFirst();
 				   SQLx = _T("ID=\'") + Ptype[i] + _T("\'");
-				   hr = rs->Find((_bstr_t)SQLx, 0, adSearchBackward, rs->Bookmark);
+				   hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
 				   if( !rs->adoEOF)
 //				   if(rs->Find((_bstr_t)(_T("Trim(ID)=\'") + Ptype[i] + _T("\'")), 0, adSearchBackward, vTmp))
 				   {
@@ -976,7 +976,7 @@ long Cphs::GetphsStructIDsemiAuto()
 		strPA.Format(_T(" (PA=\'%s\') "),PA);
 		strPAexists = _T("( PA IN (Select ID FROM PictureClipData ")
 			_T(" WHERE CustomID IN ( Select CustomID FROM [") + modPHScal::tbnPA + _T("] IN \"\" [\; DATABASE=") 
-			+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("]WHERE Pmax >=") 
+			+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("]WHERE Pmax >=") 
 			+ ftos(tmppjg) + _T(" AND (Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 			+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
 			+ _T(" AND Dw>0 OR Dw Is NULL OR Dw=0) AND tj >= ") + ftos(modPHScal::t0) + _T("))) ");
@@ -986,7 +986,7 @@ long Cphs::GetphsStructIDsemiAuto()
 		Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
 		strSAexists = _T(" ( SA IN ( Select ID FROM PictureClipData ")
 			_T(" WHERE EXISTS ( Select CustomID FROM [") + modPHScal::tbnSA + _T("] IN \"\" [; DATABASE=") 
-			+ (LPTSTR)(LPCTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND ((PictureClipData.ClassID= ") + ltos(iG100) + _T(") OR PMAXH >=") 
+			+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND ((PictureClipData.ClassID= ") + ltos(iG100) + _T(") OR PMAXH >=") 
 			+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("ifLongVertPipe"))) ? Gnum : 1))
 			+_T(" AND ((( PictureClipData.ClassID = ")
 			+ ltos(iSACantilever) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbrace) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG47) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG48) + _T(" OR PictureClipData.ClassID = ") + ltos(iG51) + _T(" OR PictureClipData.ClassID = ") + ltos(iG56) + _T(" OR PictureClipData.ClassID = ") + ltos(iG57)  + _T(") AND GDW1 >=")
@@ -2323,7 +2323,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 //		rsTmpZB.Open(dbOpenDynaset,SQLx);
 		rsTmpZB->Open((_bstr_t)SQLx, EDIBgbl::dbPRJDB.GetInterfacePtr(), adOpenDynamic, adLockOptimistic, adCmdText);
 		if( rsTmpZB->adoEOF && rsTmpZB->BOF ){
-			strTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),  EDIBgbl::dbPRJDB->DefaultDatabase, EDIBgbl::Btype[EDIBgbl::TZB], SQLx);
+			strTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),  EDIBgbl::GetDBName(EDIBgbl::dbPRJDB), EDIBgbl::Btype[EDIBgbl::TZB], SQLx);
 			throw strTmp;
 		}
 		//获得所有零件（包括附件）
@@ -2442,7 +2442,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 					if( rsTmp->adoEOF && rsTmp->BOF )
 					{
 						//没找到螺栓直径，可能数据表数据不全。
-						strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength,SQLx);
+						strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength,SQLx);
 						throw strTmp;
 					}
 //					rsTmpZB.Edit();
@@ -2482,7 +2482,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( rsTmp->adoEOF && rsTmp->BOF ){
 						//没找到螺栓直径，可能数据表数据不全。
-						strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength,SQLx);
+						strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength,SQLx);
 						throw strTmp;
 					}
 //					rsTmpZB.Edit();
@@ -2567,13 +2567,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 												adOpenKeyset, adLockOptimistic, adCmdText); 
 											if( rsTmp->adoEOF && rsTmp->BOF ){
 												//没找到螺栓直径，可能数据表数据不全。
-												strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnBoltsSurplusLength, SQLx);
+												strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnBoltsSurplusLength, SQLx);
 												throw strTmp;
 											}
 										}
 										else
 										{
-											strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength,SQLx);
+											strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength,SQLx);
 											throw strTmp;
 										}
 									}
@@ -2588,7 +2588,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 										adOpenKeyset, adLockOptimistic, adCmdText); 
 									if( rs->adoEOF && rs->BOF ){
 										//没有找到匹配直径系列值
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength, SQLx);
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength, SQLx);
 										throw strTmp;
 									}
 									rs->get_Collect((_variant_t)_T("Diameter"), &vTmp);
@@ -2605,7 +2605,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									if( rsTmp->adoEOF && rsTmp->BOF )
 									{
 										//没找到螺栓直径，可能数据表数据不全。
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength, SQLx);
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength, SQLx);
 										throw strTmp;
 									}
 									if( AttachmentGroupHavingF4[lngCurrentPartNo] )
@@ -2666,13 +2666,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											if( rsTmp->adoEOF && rsTmp->BOF )
 											{
 												//没找到螺栓直径，可能数据表数据不全。
-												strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnBoltsSurplusLength,  SQLx);
+												strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnBoltsSurplusLength,  SQLx);
 												throw strTmp;
 											}
 										}
 										else
 										{
-											strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),modPHScal::dbZDJcrude->DefaultDatabase,modPHScal::tbnBoltsSurplusLength, SQLx);
+											strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal::tbnBoltsSurplusLength, SQLx);
 											throw strTmp;
 										}
 									}
@@ -2688,7 +2688,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									if( rs->adoEOF && rs->BOF )
 									{
 										//没有找到匹配直径系列值
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnBoltsSurplusLength, SQLx);
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnBoltsSurplusLength, SQLx);
 										throw strTmp;
 									}
 									rs->get_Collect((_variant_t)_T("Diameter"), &vTmp);
@@ -2702,7 +2702,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									if( rsTmp->adoEOF && rsTmp->BOF )
 									{
 										//没找到螺栓直径，可能数据表数据不全。
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 										throw strTmp;
 									}
 									if( AttachmentGroupHavingF4[lngCurrentPartNo] ){
@@ -2743,7 +2743,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									if( rsTmp->adoEOF && rsTmp->BOF )
 									{
 										//没找到螺栓直径，可能数据表数据不全。
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 										throw strTmp;
 									}
 									//拉杆直径是标准的，不需要查找系列表
@@ -2757,7 +2757,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 										adOpenKeyset, adLockOptimistic, adCmdText); 
 									if( rsTmp->adoEOF && rsTmp->BOF ){
 										//没找到螺栓直径，可能数据表数据不全。
-										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+										strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 										throw strTmp;
 									}
 									if( AttachmentGroupHavingF4[lngCurrentPartNo] ){
@@ -2806,7 +2806,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									{
 										//如果，在螺栓螺母表里没找到附件或螺栓螺母
 										rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-										strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),modPHScal::dbZDJcrude->DefaultDatabase,SQLx,vtos(vTmp));
+										strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),SQLx,vtos(vTmp));
 										ShowMessage(strTmp);
 									}
 									else
@@ -2940,13 +2940,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 												if( rsTmp->adoEOF && rsTmp->BOF )
 												{
 													//没找到螺栓直径，可能数据表数据不全。
-													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 													throw strTmp;
 												}
 											}
 											else
 											{
-												strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx);
+												strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx);
 												throw strTmp;
 											}
 										}
@@ -2960,7 +2960,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rs->adoEOF && rs->BOF ){
 											//没有找到匹配直径系列值
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										rs->get_Collect((_variant_t)_T("Diameter"), &vTmp);iBoltsNutsDia[i]=vtoi(vTmp);
@@ -2974,7 +2974,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->adoEOF && rsTmp->BOF ){
 											//没找到螺栓直径，可能数据表数据不全。
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										if( AttachmentGroupHavingF4[lngCurrentPartNo] ){
@@ -3027,11 +3027,11 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 													adOpenKeyset, adLockOptimistic, adCmdText); 
 												if( rsTmp->adoEOF && rsTmp->BOF ){
 													//没找到螺栓直径，可能数据表数据不全。
-													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 													throw strTmp;
 												}
 											}else{
-												strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx);
+												strTmp.Format(GetResStr(IDS_NotClearCheckAutoApplyCSPRLugDia), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx);
 												throw strTmp;
 											}
 										}
@@ -3045,7 +3045,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rs->adoEOF && rs->BOF ){
 											//没有找到匹配直径系列值
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										rs->get_Collect((_variant_t)_T("Diameter"), &vTmp);
@@ -3059,7 +3059,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->adoEOF && rsTmp->BOF ){
 											//没找到螺栓直径，可能数据表数据不全。
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										if( AttachmentGroupHavingF4[lngCurrentPartNo] ){
@@ -3098,7 +3098,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->adoEOF && rsTmp->BOF ){
 											//没找到螺栓直径，可能数据表数据不全。
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										rsTmp->get_Collect((_variant_t)_T("FiJ"), &vTmp);
@@ -3112,7 +3112,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->adoEOF && rsTmp->BOF ){
 											//没找到螺栓直径，可能数据表数据不全。
-											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), modPHScal::dbZDJcrude->DefaultDatabase,modPHScal:: tbnBoltsSurplusLength, SQLx); 
+											strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb), EDIBgbl::GetDBName(modPHScal::dbZDJcrude),modPHScal:: tbnBoltsSurplusLength, SQLx); 
 											throw strTmp;
 										}
 										if( AttachmentGroupHavingF4[lngCurrentPartNo] ){
@@ -3158,7 +3158,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 											//Err.Description = ResolveResString(iUE_NoFoundAttachInZDJCrude, _T("|1"), dbZDJcrude.Name, _T("|2"), SQLx, _T("|3"), rsTmpZB.Fields(_T("CustomID")))
 											//Err.Raise iUE_NoFoundAttachInZDJCrude
 											rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-											strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),modPHScal::dbZDJcrude->DefaultDatabase,SQLx,vtos(vTmp));
+											strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),SQLx,vtos(vTmp));
 											ShowMessage(strTmp);
 										}
 										else
@@ -3181,7 +3181,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 													adOpenKeyset, adLockOptimistic, adCmdText); 
 												if( rsTmp->adoEOF && rsTmp->BOF )
 												{
-													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::dbPRJ->DefaultDatabase,_T("tmpCSLen"),SQLx);
+													strTmp.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),_T("tmpCSLen"),SQLx);
 													throw strTmp;
 												}
 												rsTmp->get_Collect((_variant_t)_T("sBH"), &vTmp);
@@ -3257,7 +3257,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 								//Err.Description = ResolveResString(iUE_NoFoundAttachInZDJCrude, _T("|1"), dbZDJcrude.Name, _T("|2"), SQLx, _T("|3"), rsTmpZB.Fields(_T("CustomID")))
 								//Err.Raise iUE_NoFoundAttachInZDJCrude
 								rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-								strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),modPHScal::dbZDJcrude->DefaultDatabase,SQLx,vtos(vTmp));
+								strTmp.Format(GetResStr(IDS_NoFoundAttachInZDJCrude),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),SQLx,vtos(vTmp));
 								ShowMessage(strTmp);
 							}
 							else{
@@ -3893,7 +3893,7 @@ long Cphs::CheckDuplicateREFRecordWhenAppend(int *ipCheckButton)   //LFX  2005.3
 			bool bDefFavTem;   //是否为默认常用模板
 			bool bFavTem;      //是否为常用模板
 
-			sTmp.Format(GetResStr(IDS_ExistsThisSampleIDinSampleREF), EDIBgbl::dbSORT->DefaultDatabase, DupRec);  //原
+			sTmp.Format(GetResStr(IDS_ExistsThisSampleIDinSampleREF), EDIBgbl::GetDBName(EDIBgbl::dbSORT), DupRec);  //原
 
 			SQLx.Format(_T("SELECT * FROM phsStructureName WHERE SampleID = %d"),_ttoi(DupRec));  
 //			rs1.Open(dbOpenDynaset,SQLx);			
@@ -4626,7 +4626,7 @@ void Cphs::GetMaterial()
 		if(rs->adoEOF && rs->BOF)
 		{
 			//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
-			sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::dbPHScode->DefaultDatabase,_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
+			sTmp.Format(IDS_NoDefaultInCustomIDInSpecificationOfMaterial,EDIBgbl::GetDBName(EDIBgbl::dbPHScode),_T("SpecificationOfMaterial"),_T("ID"),_T("default"));
 			throw sTmp;
 		}
 		rs->MoveFirst();
@@ -4694,13 +4694,13 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpCLgroup"), NULL, adCmdText);
 		//生成一个空表
 		sGROUPBY = _T("CLgg,CLcl,CLmc,CLID,CLdw,CLdz");
-		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(" INTO TmpCLgroup IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1")), NULL, adCmdText);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(" INTO TmpCLgroup IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1")), NULL, adCmdText);
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段,
 		//但是seq,CLnum不能被分组,故要另外加入seq,CLnum字段到临时表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("ALTER TABLE TmpCLgroup ADD COLUMN seq short"), NULL, adCmdText);
 		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("ALTER TABLE TmpCLgroup ADD COLUMN CLnum SINGLE"), NULL, adCmdText);
 		//排序、分组统计零件，
-		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("INSERT INTO TmpCLgroup IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' SELECT DISTINCT ") + sGROUPBY + _T(" FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND NOT ISNULL(seq)  GROUP BY ") + sGROUPBY), NULL, adCmdText);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)(_T("INSERT INTO TmpCLgroup IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT DISTINCT ") + sGROUPBY + _T(" FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND NOT ISNULL(seq)  GROUP BY ") + sGROUPBY), NULL, adCmdText);
 		
 		sGROUPBY = _T("seq,CLgg,CLcl,CLmc,CLID,CLdw,CLdz,CLnum,CLzz,CLbz");
 		
@@ -4708,7 +4708,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmp2"), NULL, adCmdText);
 		CString SQLx;
 		//建立空表tmp2
-		SQLx = _T("SELECT ") + sGROUPBY + _T(" INTO tmp2 IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1");
+		SQLx = _T("SELECT ") + sGROUPBY + _T(" INTO tmp2 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=-1");
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		SQLx = _T("DELETE FROM tmp2");
 		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
@@ -4740,7 +4740,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 		if(rsTmpZB->adoEOF && rsTmpZB->BOF)
 		{
 			//如果结构表没有任何零件
-			tmpStr.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::dbPRJDB->DefaultDatabase,EDIBgbl::Btype[EDIBgbl::TZB],
+			tmpStr.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB),EDIBgbl::Btype[EDIBgbl::TZB],
 				EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
 			throw tmpStr;
 		}
@@ -4775,7 +4775,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( rsTmpCLgroup->BOF && rsTmpCLgroup->adoEOF)
 			{
-				tmpStr.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::dbPRJ->DefaultDatabase,_T("tmpCLgroup"),SQLx);
+				tmpStr.Format(GetResStr(IDS_NotMatchDiameterValueInZdjcrudeMdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),_T("tmpCLgroup"),SQLx);
 				throw tmpStr;
 			}
 			rsTmpCLgroup->MoveLast();
@@ -4905,7 +4905,7 @@ void Cphs::GetphsSumBom()
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE TmpTCL"), NULL, adCmdText);
 		}
 		//拷贝TCL到TmpTCL，以便可以删除其中的选择过的材料。
-		SQLx = _T("SELECT * INTO TmpTCL IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE VolumeID=-1");
+		SQLx = _T("SELECT * INTO TmpTCL IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE VolumeID=-1");
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		if(rsID->State != adOpenStatic)
 		{
@@ -4925,7 +4925,7 @@ void Cphs::GetphsSumBom()
 		CString strOrderBy;
 		strOrderBy = sGROUPBY;
 		//生成空的Tmp2表
-		EDIBgbl::dbPRJDB->Execute((_bstr_t)CString(_T("SELECT ") + sGROUPBY + _T(",CLnum,CLnum*CLdz AS CLzz INTO Tmp2 IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE zdjh=0 AND VolumeID=-1")), NULL, adCmdText);
+		EDIBgbl::dbPRJDB->Execute((_bstr_t)CString(_T("SELECT ") + sGROUPBY + _T(",CLnum,CLnum*CLdz AS CLzz INTO Tmp2 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE zdjh=0 AND VolumeID=-1")), NULL, adCmdText);
 // 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
 // 		rs.Open(dbOpenSnapshot,_T("SELECT * FROM BomName ORDER BY BomIndex"));
 		rs->Open((_bstr_t)_T("SELECT * FROM BomName ORDER BY BomIndex"),_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
@@ -5303,11 +5303,11 @@ void Cphs::GetphsSumBom()
 		//rsCL->Close();
 		//从tmp2生成一个分组结果TmpCLgroup
 		//GROUP BY子句的字段必须包含SELECT字句的全部字段(除了聚合函数的字段)
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM TmpTCL GROUP BY ") + sGROUPBY), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("SELECT ") + sGROUPBY + _T(",sum(CLnum) as CLnums,CLnums*CLdz as CLzz INTO TmpCLgroup IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM TmpTCL GROUP BY ") + sGROUPBY), NULL, adCmdText);
 		//拷贝tmpCLgroup到tmp2,以便保存分组数据
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//将恒力弹簧的内容拷贝到TmpCSPR表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpCSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//删除临时表
@@ -5406,7 +5406,7 @@ void Cphs::GetphsSumBom()
 		//将弹簧的内容拷贝到TmpSPR表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSPR SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +  EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +  EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5501,7 +5501,7 @@ void Cphs::GetphsSumBom()
 		//将管部内容拷贝到TmpPA表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpPA SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5596,7 +5596,7 @@ void Cphs::GetphsSumBom()
 		//将非弹性连接件(不包括拉杆)的内容拷贝到TmpConnection表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") +EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5708,7 +5708,7 @@ void Cphs::GetphsSumBom()
 			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpConnection SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		}
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5794,13 +5794,13 @@ void Cphs::GetphsSumBom()
 			//拷贝tmpCLgroup到tmp2,以便保存分组数据,tmp2的数据记录将输出
 			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO Tmp2 SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时材料表的内容拷贝到正式材料表TCL
-			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		}
 		
 		//将拉杆的内容拷贝到TmpLugBom表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpLugBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
+		//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")
 		//删除临时表
 		RsDeleteAll(rsCL);
 		//更新临时材料表数据记对象
@@ -5929,7 +5929,7 @@ void Cphs::GetphsSumBom()
 			//将非螺母,螺栓根部附件的内容拷贝到TmpAttachment表
 			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpAttachment SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
-			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 			//删除临时表
 			RsDeleteAll(rsCL);
 			//更新临时材料表数据记对象
@@ -6042,7 +6042,7 @@ void Cphs::GetphsSumBom()
 			//将型钢的内容拷贝到TmpSSBom表
 			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSSBom SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
-			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")
 			//删除临时表
 			RsDeleteAll(rsCL);
 			//更新临时材料表数据记对象
@@ -6155,7 +6155,7 @@ void Cphs::GetphsSumBom()
 			//将型钢的内容拷贝到TmpSS表
 			EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpSS SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 			//将临时表的内容拷贝到正式材料表TCL
-			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("INSERT INTO [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")
 			//删除临时表
 			RsDeleteAll(rsCL);
 			//更新临时材料表数据记对象
@@ -6365,7 +6365,7 @@ void Cphs::GetphsSumBom()
 		//将螺栓螺母的内容拷贝到TmpBoltsNuts表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO TmpBoltsNuts SELECT ") + sGROUPBY + _T(", CLnums as CLnum, CLzz FROM tmpCLgroup ORDER BY ") + strOrderBy), NULL, adCmdText);
 		//将临时材料表的内容拷贝到正式材料表TCL
-		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + _T("\' SELECT * FROM TmpTCL")), NULL, adCmdText);
 		//删除临时表
 		EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM TmpTCL"), NULL, adCmdText);
 		//更新临时材料表数据记对象
@@ -6404,7 +6404,7 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rsTmpZB->adoEOF && rsTmpZB->BOF)
 		{
-			tmpStr.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::dbPRJDB->DefaultDatabase,EDIBgbl::Btype[EDIBgbl::TZB], EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
+			tmpStr.Format(GetResStr(IDS_NoRecordInTZB),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB),EDIBgbl::Btype[EDIBgbl::TZB], EDIBgbl::SelJcdm,ltos(modPHScal::zdjh));
 			throw tmpStr;
 		}
 		COleVariant vTmp;
@@ -6449,7 +6449,7 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 // 			rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchBackward, vTmp);
 			strFind = _T("trim(blkID)=\'") + tmpBlkID + _T("\'");
 			rs->MoveFirst();
-			hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+			hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 
 			VARIANT_BOOL bm=VARIANT_FALSE;
 			bm= rs->adoEOF;
@@ -6733,18 +6733,20 @@ void Cphs::InitListRs()
 	try
 	{
 		CString sSQL;
-		if(rsConnect->State != adOpenStatic)
+		if(rsConnect == NULL)
 		{
+			rsConnect.CreateInstance(__uuidof(Recordset));
 //			rsConnect.m_pDatabase=&EDIBgbl::dbPRJ;
-			sSQL=(_T("SELECT * FROM connect "));
+			sSQL=(_T("SELECT * FROM [connect] "));
 //			rsConnect.Open(dbOpenDynaset,sSQL);
 			rsConnect->Open((_bstr_t)sSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 		}
 		else
 			rsConnect->Requery(adExecuteRecord);
-		if(rsUnCheckedType->State != adOpenStatic)
+		if(rsUnCheckedType == NULL)
 		{
+			rsUnCheckedType.CreateInstance(__uuidof(Recordset));
 //			rsUnCheckedType.m_pDatabase=&EDIBgbl::dbPRJ;
 			sSQL=(_T("SELECT * FROM rsUnCheckedType "));
 //			rsUnCheckedType.Open(dbOpenDynaset,sSQL);
@@ -6771,9 +6773,9 @@ void Cphs::CloseRecordsets()
 	//关闭rsConnect和rsUnCheckedType
 	try
 	{
-		if(rsConnect->State == adOpenStatic)
+		if((rsConnect != NULL) && (rsConnect->State == adOpenStatic))
 			rsConnect->Close();
-		if(rsUnCheckedType->State == adOpenStatic)
+		if((rsUnCheckedType != NULL) && (rsUnCheckedType->State == adOpenStatic))
 			rsUnCheckedType->Close();
 	}
 	catch(CException *e)

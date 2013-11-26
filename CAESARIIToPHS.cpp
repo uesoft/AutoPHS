@@ -157,7 +157,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + (LPTSTR)(LPCTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);

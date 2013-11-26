@@ -1918,6 +1918,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   if(rsX->State == adStateOpen)
 		   rsX->Close();
 //	   rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuConstantSPRING ORDER BY [Observation],[standard] ASC"));//),(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
+	   SQLx = _T("SELECT * FROM phsManuConstantSPRING ORDER BY [Observation],[standard] ASC");
 	   rsX->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbSORT,
 		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   gsPhsConstantSpringSel.TrimLeft();gsPhsConstantSpringSel.TrimRight(); 
@@ -2127,7 +2128,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 
 	//按照荷载/位移选择恒力弹簧的拉杆直径TRUE/FALSE
 	//以下判断恒力弹簧/碟簧安装尺寸描述字段值是否存在
-	rsX->get_Collect((_variant_t)_T("bByForce"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("bByForce"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		gbByForce = TRUE;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2138,7 +2139,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbByForce = tmpvar.boolVal;
 	}
 	//以下判断恒力弹簧/碟簧安装尺寸描述字段值是否存在
-	rsX->get_Collect((_variant_t)_T("bE_FormulaPlusHalf"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("bE_FormulaPlusHalf"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		bE_FormulaPlusHalf = false;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2150,7 +2151,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 
 
-	rsX->get_Collect((_variant_t)_T("H1IncludeB"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1IncludeB"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gbCH1IncludeB = TRUE;
@@ -2164,7 +2165,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbCH1IncludeB = vtob(tmpvar);//tmpvar.boolVal
 	}
 
-	rsX->get_Collect((_variant_t)_T("bH1IncludeT"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("bH1IncludeT"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gbCH1IncludeT = TRUE;
@@ -2178,7 +2179,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbCH1IncludeT = vtob(tmpvar);//tmpvar.boolVal
 	}
 
-	rsX->get_Collect((_variant_t)_T("H1Pos"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1Pos"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gCH1Pos = 0;
@@ -2191,7 +2192,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	{
 		gCH1Pos = vtoi(tmpvar);
 	}
-	rsX->get_Collect((_variant_t)_T("H1distPos"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1distPos"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		gCH1distPos = 0;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2233,14 +2234,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 	
 	//默认热位移计算裕量为20%
-	rsX->get_Collect((_variant_t)_T("PercentSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("PercentSurplusDist"), &tmpvar);
 	if( tmpvar.vt==VT_NULL){
 		rsX->put_Collect((_variant_t)_T("PercentSurplusDist"),_variant_t((float)0.2));
 		//rsX->PutCollect(_T("PercentSurplusDist"),_variant_t((float)0.2));
 		
 	}
 	//默认热位移计算裕量最小值为15mm
-	rsX->get_Collect((_variant_t)_T("MinSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("MinSurplusDist"), &tmpvar);
 	if( tmpvar.vt==VT_NULL){
 		rsX->put_Collect((_variant_t)_T("MinSurplusDist"),_variant_t((float)15));
 		// rsX->PutCollect(_T("MinSurplusDist"),_variant_t((float)15));
@@ -2286,18 +2287,18 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	CreateTmpConnectTable();
 	//导入厂家数据库中的CONNECTxx表     LFX 2005.4.19添
 	//此操作必须放在 	CreateTmpConnectTable(); 语句之后
+	CString strDBTableName;
+	CString strPRJTableName;
+	CString strSQL;
 	while (true)
 	{
-		CString strDBTableName;
-		CString strPRJTableName;
-		CString strSQL;
 		strDBTableName=tbnCONNECT;
 		if (tbnCONNECT == strStandardConnect)
 		{
 			//如果当前选用连接件没有自带连接表，则使用系统默认连接表
 			//strSQL.Format("DELETE * FROM CONNECT");
 			//EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL);
-			//strSQL.Format("INSERT INTO CONNECT SELECT * FROM %s IN '%s'",strStandardConnect,db->DefaultDatabase);
+			//strSQL.Format("INSERT INTO CONNECT SELECT * FROM %s IN '%s'",strStandardConnect,db));
 			//EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL);
 		}
 		else
@@ -2305,18 +2306,18 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			//当前选用连接件自带了连接表，将系统连接表中与选用连接件自带连接表
 			//的 CNTB,CNTE,CNTN 字段相同的记录删除，并将选用连接件自带连连接表
 			//中的记录复制到系统连接表中
-			strPRJTableName.Format("connect");
+			strPRJTableName.Format("[connect]");
 			if( EDIBgbl::tdfExists(db, strDBTableName) )
 			{
 				strSQL.Format("DELETE * FROM %s AS A WHERE EXISTS (SELECT * FROM %s AS B IN '%s'\
 					where a.cntb = b.cntb and a.cnte = b.cnte and \
 					(a.cntn = b.cntn or (a.cntn is null and b.cntn is null)))",
-					strPRJTableName,strDBTableName,db->DefaultDatabase);
+					strPRJTableName,strDBTableName,EDIBgbl::GetDBName(db));
 				EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 				
 				//导入厂家数据
 				strSQL.Format("INSERT INTO %s IN '%s' Select * FROM %s",
-					strPRJTableName,EDIBgbl::dbPRJ->DefaultDatabase,strDBTableName);
+					strPRJTableName,EDIBgbl::GetDBName(EDIBgbl::dbPRJ),strDBTableName);
 				db->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			}
 		}
@@ -2442,7 +2443,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( rs->adoEOF && rs->BOF )
 			{
-				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::dbSORT->DefaultDatabase);
+				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT));
 				throw strTmp;
 			}
 			while(!rs->BOF)
@@ -2482,7 +2483,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										{
 											if( bReplacement )
 											{
-												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),modPHScal::dbZDJcrude->DefaultDatabase,strCrudeTbn);
+												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),strCrudeTbn);
 												MsgDlg.m_strPrompt=strTmp;
 												if(! bAllYes)
 												{
@@ -2508,7 +2509,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 													SQLx = _T("drop table ") + strCrudeTbn;
 													dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
 
-													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + (LPTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T("\'  FROM ") + strCrudeTbn;
+													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T("\'  FROM ") + strCrudeTbn;
 													db->Execute((_bstr_t)SQLx, NULL, adCmdText);
 													mbSPECchanged = true;
 												}
@@ -2520,7 +2521,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
 												//ADO将检查密码,详见phs.arx
-												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + (LPTSTR)dbZDJcrude->DefaultDatabase + _T("\' FROM ") + strCrudeTbn;
+												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(dbZDJcrude) + _T("\' FROM ") + strCrudeTbn;
 												db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 												mbSPECchanged = true;
 											}
@@ -2536,7 +2537,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										else
 										{
 											//这个表在原始数据库中不存在
-											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),dbZDJcrude->DefaultDatabase,strCrudeTbn);
+											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),EDIBgbl::GetDBName(dbZDJcrude),strCrudeTbn);
 											//这种提示令用户烦恼。
 											//ShowMessage(strTmp);
 										}
@@ -2558,7 +2559,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 							}							
 							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + (LPTSTR)EDIBgbl::dbSORT->DefaultDatabase + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
 							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
 							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
@@ -2637,7 +2638,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 			{
 				//MsgBox ResolveResString(iUE_NullPhsManuTableInSortMdb)
 				//Exit Sub
-				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::dbSORT->DefaultDatabase);
+				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT));
 				throw strTmp;
 			}
 			while(!rs->adoEOF)
@@ -2680,7 +2681,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										{
 											if( bReplacement )
 											{
-												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),modPHScal::dbZDJcrude->DefaultDatabase,strCrudeTbn);
+												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),strCrudeTbn);
 												MsgDlg.m_strPrompt=strTmp;
 												//if(IDYES == ShowMessage(strTmp, MB_DEFBUTTON1|MB_ICONQUESTION|MB_SYSTEMMODAL|MB_YESNO) )
 												if(! bAllYes)
@@ -2707,7 +2708,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 													SQLx = _T("drop table ") + strCrudeTbn;
 													dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
 
-													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + (LPTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T("\'  FROM ") + strCrudeTbn;
+													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T("\'  FROM ") + strCrudeTbn;
 													db->Execute((_bstr_t)SQLx, NULL, adCmdText);
 													mbSPECchanged = true;
 												}
@@ -2719,7 +2720,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
 												//ADO将检查密码,详见phs.arx
-												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + (LPTSTR)dbZDJcrude->DefaultDatabase + _T("\' FROM ") + strCrudeTbn;
+												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(dbZDJcrude) + _T("\' FROM ") + strCrudeTbn;
 												db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 												mbSPECchanged = true;
 											}
@@ -2735,7 +2736,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										else
 										{
 											//这个表在原始数据库中不存在
-											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),dbZDJcrude->DefaultDatabase,strCrudeTbn);
+											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),EDIBgbl::GetDBName(dbZDJcrude),strCrudeTbn);
 											//这种提示令用户烦恼。
 											//ShowMessage(strTmp);
 										}
@@ -2758,7 +2759,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 							//at first close rs2,otherwise to produce a error,because strTbn is still opened.
 							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + (LPTSTR)EDIBgbl::dbSORT->DefaultDatabase + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
 							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
 							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
@@ -2814,7 +2815,7 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 		
 		if(rs->BOF && rs->adoEOF)
 		{
-			sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::dbPRJ->DefaultDatabase,_T("tmpCSLen"),SQL1);
+			sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),_T("tmpCSLen"),SQL1);
 			throw sTmp;
 		}
 		else
@@ -2836,7 +2837,7 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 			
 			if(rs->BOF && rs->adoEOF)
 			{
-				sTmp.Format(GetResStr(IDS_NoRecordAtTmpCSLenTableInWorkprjMdb),EDIBgbl::dbPRJ->DefaultDatabase,SQL1);
+				sTmp.Format(GetResStr(IDS_NoRecordAtTmpCSLenTableInWorkprjMdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),SQL1);
 				ShowMessage(sTmp);
 			}
 			else
@@ -3341,7 +3342,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			CString tmpStr;
 			if(rs1->BOF && rs1->adoEOF)
 			{
-				tmpStr.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::dbSORT->DefaultDatabase,_T("tableINFO"),SQLx);
+				tmpStr.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT),_T("tableINFO"),SQLx);
 				throw tmpStr;
 			}
 			rs1->MoveFirst();
@@ -3798,7 +3799,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpDisplacementLoad"), NULL, adCmdText);
 				MakeZDJ_ZD(zdjh);
 				PhsYLBMake(zdjh);
-				SQLx = _T("SELECT * INTO tmpDisplacementLoad IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh);
+				SQLx = _T("SELECT * INTO tmpDisplacementLoad IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh);
 				EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 				//更新备注字段为温度值
 
@@ -4500,15 +4501,15 @@ void modPHScal::CreateTmpConnectTable()
 	}
     //20071018(start) "dbSORT" 改为 "dbPHScode"
 	EDIBgbl::SQLx = _T("SELECT * INTO [connect] FROM connectPASA IN \'");
-		EDIBgbl::SQLx += (LPTSTR)EDIBgbl::dbPHScode->DefaultDatabase;
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
 		EDIBgbl::SQLx += _T("\'");
 	EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
    EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectCSPR IN \'");
-		EDIBgbl::SQLx += (LPTSTR)EDIBgbl::dbPHScode->DefaultDatabase;
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
 		EDIBgbl::SQLx += _T("\'");
 	EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
    EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectSPR IN \'");
-		EDIBgbl::SQLx += (LPTSTR)EDIBgbl::dbPHScode->DefaultDatabase;
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
 		EDIBgbl::SQLx += _T("\'");
 
    EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
@@ -4649,7 +4650,7 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 			else
 			{
 			  //非线性弹簧特性表的生成，依赖于厂家产品样本的格式，此处针对江阴石化设备厂的蝶簧样本格式编制
-				SQLx = _T("INSERT INTO tmpSPRProperty IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' SELECT SerialNum,seq,Dist,Pgz,Pgzmax,Hopmax,PreCmprs FROM [") + tbnSPRINGproperty + _T("]");
+				SQLx = _T("INSERT INTO tmpSPRProperty IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT SerialNum,seq,Dist,Pgz,Pgzmax,Hopmax,PreCmprs FROM [") + tbnSPRINGproperty + _T("]");
 				dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		   }
 		   
@@ -4837,7 +4838,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 		{
 		  //MsgBox ResolveResString(iUE_NotExistsSelectedSpringTableInWorkPrjMdb)
 		  //Err.Raise iUE_NotExistsSelectedSpringTableInWorkPrjMdb, , ResolveResString(iUE_NotExistsSelectedSpringTableInWorkPrjMdb, _T("|1"), ProjectDir)
-		  SQLx = _T("SELECT * INTO [") + sTmpSelectedSpring.Mid(3) + _T("] IN \'") + (LPTSTR)EDIBgbl::dbPRJ->DefaultDatabase + _T("\' FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
+		  SQLx = _T("SELECT * INTO [") + sTmpSelectedSpring.Mid(3) + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
 		  EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
 	   }
 	   SQLx = _T("DELETE * FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
@@ -5505,7 +5506,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 		if( rs->BOF && rs->adoEOF)
 		{
 			//恒吊载荷容量表为空，不可能
-			sTmp1.Format(GetResStr(IDS_NullTableInXMdb),dbZDJcrude->DefaultDatabase, strbnHDproperty);
+			sTmp1.Format(GetResStr(IDS_NullTableInXMdb),EDIBgbl::GetDBName(dbZDJcrude), strbnHDproperty);
 			throw sTmp1;
 		}
 		rs->get_Collect((_variant_t)_T("Capacity"),&vTmp);
@@ -6026,9 +6027,9 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 	   if(vtos(rstbl->GetCollect(_T("dn1")))==_T(""))
 		{
 			
-		   SQLx = _T("SELECT DISTINCT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + 
+		   SQLx = _T("SELECT DISTINCT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 					_T("\' WHERE CustomID IN (SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] IN \"\" [\; DATABASE=") 
-								+ (LPTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE (Pmax >=") 
+								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE (Pmax >=") 
 								+ ftos(tmppjg) + _T(" AND PictureClipData.ClassID<>") + ltos(iPAfixZ1) + _T(" AND PictureClipData.ClassID<>") + ltos(iPAfixZ2) 
 								+ _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ1) + _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ2) + _T(") AND (Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 								+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -6082,9 +6083,9 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 		{		   
 		   int Gnum;			
 			Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-			SQLx = _T("SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'")
+			SQLx = _T("SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'")
 								+ _T(" WHERE EXISTS ( Select CustomID FROM [") + modPHScal::tbnSA + _T("] IN \"\" [; DATABASE=") 
-								+ (LPTSTR)modPHScal::dbZDJcrude->DefaultDatabase + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= ") + ltos(iG100) + _T(" OR PMAXH >=") 
+								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= ") + ltos(iG100) + _T(" OR PMAXH >=") 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("ifLongVertPipe"))) ? Gnum : 1))
 								+ _T(" AND (( PictureClipData.ClassID = ")
 								+ ltos(iSACantilever) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbrace) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG47) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG48) + _T(" OR PictureClipData.ClassID = ") + ltos(iG51) + _T(" OR PictureClipData.ClassID = ") + ltos(iG56) + _T(" OR PictureClipData.ClassID = ") + ltos(iG57)  + _T(") AND GDW1 >=")
@@ -7338,7 +7339,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if( rsTZB->BOF && rsTZB->adoEOF )
 		{
-			sTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),EDIBgbl::dbPRJDB->DefaultDatabase, EDIBgbl::Btype[EDIBgbl::TZB],SQLx);
+			sTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB), EDIBgbl::Btype[EDIBgbl::TZB],SQLx);
 			throw sTmp;
 		}
 		else 
@@ -7393,7 +7394,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(rsTmp->BOF && rsTmp->adoEOF )
 					{//1
-						sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),modPHScal::dbZDJcrude->DefaultDatabase, modPHScal::tbnBoltsNuts,SQLx);
+						sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnBoltsNuts,SQLx);
 						throw sTmp;
 //						mfNutsHeight = 0;
 					}//1
@@ -7747,7 +7748,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 
 									if( rsTmp->BOF && rsTmp->adoEOF )
 									{
-										sTmp.Format(GetResStr(IDS_NotFoundThisDia),dbZDJcrude->DefaultDatabase,tbnSPRINGL5Crude,ltos(mlPartDia[i-1]));
+										sTmp.Format(GetResStr(IDS_NotFoundThisDia),EDIBgbl::GetDBName(dbZDJcrude),tbnSPRINGL5Crude,ltos(mlPartDia[i-1]));
 										ShowMessage(sTmp);
 									}
 									else
@@ -7780,7 +7781,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 											adOpenKeyset, adLockOptimistic, adCmdText); 
 										if( rsTmp->BOF && rsTmp->adoEOF )
 										{
-											sTmp.Format(GetResStr(IDS_NotFoundThisDia),  dbZDJcrude->DefaultDatabase, tbnSPRINGL5Crude,ltos(mlPartDia[i + 1])); ShowMessage(sTmp);
+											sTmp.Format(GetResStr(IDS_NotFoundThisDia),  EDIBgbl::GetDBName(dbZDJcrude), tbnSPRINGL5Crude,ltos(mlPartDia[i + 1])); ShowMessage(sTmp);
 										}
 										else 
 										{
@@ -8290,7 +8291,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
 				{
-					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO), dbZDJcrude->DefaultDatabase,tbnLugInfo,SQLx);
+					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO), EDIBgbl::GetDBName(dbZDJcrude),tbnLugInfo,SQLx);
 					throw sTmp;
 				}
 				rs->MoveFirst();
@@ -8440,7 +8441,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
 				{
-					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO),dbZDJcrude->DefaultDatabase,tbnLugInfo,SQLx);
+					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO),EDIBgbl::GetDBName(dbZDJcrude),tbnLugInfo,SQLx);
 					throw sTmp;
 				}
 				rs->MoveFirst();
@@ -10312,7 +10313,8 @@ bool modPHScal::tbExists(_ConnectionPtr db/*Zdjcrude.mdb*/,_ConnectionPtr db1/*S
 	}
 	return TRUE;
 }
-bool modPHScal::HStbExists(_ConnectionPtr db/*Zdjcrude.mdb*/,_ConnectionPtr db1/*Sort.mdb*/, CString &tbn, CString s1, CString s2,CString s3,bool bWarn)
+bool modPHScal::HStbExists(_ConnectionPtr db/*Zdjcrude.mdb*/,_ConnectionPtr db1/*Sort.mdb*/, CString &tbn, 
+						   CString s1, CString s2,CString s3,bool bWarn)
 {
 	CString sTmp;
 	UINT lngErrNum;
@@ -10809,78 +10811,89 @@ bool modPHScal::CreateTmpCustomIDForPART()
 {
 	//目的:为加快过滤可用模板的速度，先设置三个临时表，存储PA/PART/SA/SPR/CSPR的CustomID,每次只要找这几个表，即可确定零件是否可用于当前标准
 	CString strSQL;
+	HRESULT hr = S_OK;
 	try
 	{
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPA")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPA"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\' SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
+			strSQL = _T("INSERT INTO tmpCustomIDPA IN \'");
+			strSQL += EDIBgbl::GetDBName(EDIBgbl::dbPRJ);
+			strSQL += _T("\' SELECT DISTINCT CustomID FROM [");
+			strSQL += modPHScal::tbnPA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		else
 		{
 			//不要建立唯一索引，可能冲突
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
+			strSQL = _T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)");
+			try {
+				hr = EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
+			} catch (_com_error &e)
+			{
+				e.Description();
+			}
+
+			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		//建立固定支架数据表tbnPAfix时，绝对不能出现管部数据表tbnPA中已经出现的CustomID，否则出错.
 		if(modPHScal::tbnPAfix!=modPHScal::tbnPA)
 		{
-			//strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] WHERE CustomID NOT IN ( SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] ) ");
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] ");
+			//strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] WHERE CustomID NOT IN ( SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] ) ");
+			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] ");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSA")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSA"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		else
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPART")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPART"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDPART (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSPR")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSPR"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDCSPR")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDCSPR"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDCSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
@@ -10891,13 +10904,13 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDGDW1")))
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDGDW1"), NULL, adCmdText);			
-			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDGDW1 (CustomID Char(20),GDW1 single)"), NULL, adCmdText);
-			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::dbPRJ->DefaultDatabase + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		return true;

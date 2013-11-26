@@ -313,26 +313,23 @@ void CPhsData::InitDBbill()
 			m_DataBillRs=NULL;
 		}*/
 
-	  if (FrmTxsr.m_pViewTxsr)
-	  {
-		  m_DataBillRs=FrmTxsr.m_pViewTxsr->m_ActiveRs;
-	  }
-		m_DBGbill.SetRefDataSource((LPUNKNOWN)m_DataBillRs);
-		EDIBDB::RefreshGrid(m_DBGbill,m_DataBillRs);
-		//m_DBGbill.SetDataMember(FrmTxsr.m_Databill.GetRecordset().GetDataMember());
-		m_DBGbill.Refresh();
-		m_ActiveRs=m_DataBillRs;
-		EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGbill);
-		EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
-		//DBGBill.ReBind
-		//不能使用rebind,否则前面设置的caption,width均无效.
-		m_DBGbill.Refresh();
+	  int nCount;
+	  nCount = FrmTxsr.m_pViewTxsr->m_ActiveRs->RecordCount;
+	m_DataBillRs=FrmTxsr.m_pViewTxsr->m_ActiveRs;
+   m_DBGbill.SetRefDataSource(m_DataBillRs->GetDataSource());
+   EDIBDB::RefreshGrid(m_DBGbill,m_DataBillRs);
+	//m_DBGbill.SetDataMember(FrmTxsr.m_Databill.GetRecordset().GetDataMember());
+   m_DBGbill.Refresh();
+   m_ActiveRs=m_DataBillRs;
+   EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGbill);
+   EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
+   //DBGBill.ReBind
+   //不能使用rebind,否则前面设置的caption,width均无效.
+   m_DBGbill.Refresh();
 	}
 	catch(_com_error e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPTSTR)e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 	}
 }
 

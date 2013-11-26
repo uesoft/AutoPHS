@@ -1352,7 +1352,7 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 // 					if(rs->Find((_bstr_t)strFind, 0, adSearchBackward, vTmp))
 					HRESULT hr = S_OK;
 					rs->MoveFirst();
-					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rs->adoEOF)
 					{
 //						rs.Edit();
@@ -1372,7 +1372,7 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 // 				if(rs->Find((_bstr_t)strFind, 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				rs->MoveFirst();
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if( !rs->adoEOF)
 				{
 //					rs.Edit();
@@ -1447,18 +1447,18 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 
 		strSQL=(_T("DELETE FROM [SSteelIDBH]"));
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-		strSQL.Format(_T("INSERT INTO [SSteelIDBH] SELECT DISTINCT [tb1].[ID],[tb2].[BH],[Weight] As [Weg] FROM [%s] AS [tb1],[%s] AS [tb2]  IN \"\" [;DATABASE=%s;PWD=%s] ")
+		strSQL.Format(_T("INSERT INTO [SSteelIDBH] SELECT DISTINCT [tb1].[ID],[tb2].[BH],[Weight] As [Weg] FROM [%s] AS [tb1],[%s] AS [tb2]  IN \"\" %s ")
 			_T(" WHERE ")
 			_T(" [tb1].[ID] IN (%s) AND ")
 			_T(" [tb1].[CustomID]=[tb2].[CustomID] AND ")
 			_T(" ( ")
-			_T(" ([tb1].[ID]=\'CS\' AND [tb2].[BH] IN (SELECT [BH] FROM [SSteelPropertyCS] IN \"\" [;DATABASE=%s;PWD=%s] )) OR ")
-			_T(" ([tb1].[ID]=\'HS\' AND [tb2].[BH] IN (SELECT [BH] FROM [SSteelPropertyHS] IN \"\" [;DATABASE=%s;PWD=%s] )) OR ")
+			_T(" ([tb1].[ID]=\'CS\' AND [tb2].[BH] IN (SELECT [BH] FROM [SSteelPropertyCS] IN \"\" %s )) OR ")
+			_T(" ([tb1].[ID]=\'HS\' AND [tb2].[BH] IN (SELECT [BH] FROM [SSteelPropertyHS] IN \"\" %s )) OR ")
 			_T(" ( ")
 			_T(" [tb1].[ID]=\'LSS\' AND INSTR(RIGHT([tb2].[BH],LEN([tb2].[BH]) - INSTR([tb2].[BH],\'x\')),\'x\' ) = 0 ")
 			_T(" AND EXISTS ")
 			_T(" ( ")
-			_T(" SELECT * FROM [SSteelPropertyLS]  IN \"\" [;DATABASE=%s;PWD=%s] WHERE ")
+			_T(" SELECT * FROM [SSteelPropertyLS]  IN \"\" %s WHERE ")
 			_T(" [b]= VAL(MID([tb2].[BH],2,INSTR([tb2].[BH],\'x\')-2)) AND ")
 			_T(" [BH]=RIGHT([tb2].[BH],LEN([tb2].[BH]) - INSTR([tb2].[BH],\'x\')))))"),
 			modPHScal::tbnSectionSteelID,modPHScal::tbnSectionSteel,
@@ -2285,7 +2285,7 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 				strFind = "Lamda>"+ftos(dLamda);
 				HRESULT hr = S_OK;
 				rs->MoveFirst();
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if( !rs->adoEOF)
 				{
 					//细长比>最大值

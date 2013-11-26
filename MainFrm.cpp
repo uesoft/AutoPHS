@@ -1086,7 +1086,7 @@ void CMainFrame::SumCL(int Index)
 
 				//传递正确的格式参数
 				BOM_Format_phs = _T(";");
-				EDIBDB::OutPutTable(_T("tmpPhsBOM1"), (LPTSTR)EDIBgbl::dbPRJ->DefaultDatabase, _T(""), EDIBgbl::dbPRJ, _T("tmp2"), BOM_Format_phs);
+				EDIBDB::OutPutTable(_T("tmpPhsBOM1"), EDIBgbl::GetDBName(EDIBgbl::dbPRJ), _T(""), EDIBgbl::dbPRJ, _T("tmp2"), BOM_Format_phs);
 				//对tmpPhsBOM1表编号
 				SQLx = _T("SELECT sum(CLzz) as SumWeight FROM tmpPhsBOM1");
 // 				rs.m_pDatabase=&EDIBgbl::dbPRJ;
@@ -1293,7 +1293,7 @@ void CMainFrame::SumCL(int Index)
 				//生成正规的Excel汇总表
 				BOM_Format_phs = _T(";");
 				EDIBDB::DrawID = EDIBAcad::GetDrawIDAndName(modPHScal::zdjh + modPHScal::glDrawNoStartNumber - 1, EDIBDB::DrawName);
-				EDIBDB::OutPutTable(_T("tmpPhsBOM1"), (LPTSTR)EDIBgbl::dbPRJ->DefaultDatabase, _T(""), EDIBgbl::dbPRJ, _T("tmp2"), BOM_Format_phs);
+				EDIBDB::OutPutTable(_T("tmpPhsBOM1"), EDIBgbl::GetDBName(EDIBgbl::dbPRJ), _T(""), EDIBgbl::dbPRJ, _T("tmp2"), BOM_Format_phs);
 				//对tmpPhsBOM1表编号
 				SQLx = _T("SELECT sum(CLzz) as SumWeight FROM tmpPhsBOM1");
 // 				rs.m_pDatabase=&EDIBgbl::dbPRJ;rs.Open(dbOpenSnapshot,SQLx);

@@ -351,7 +351,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("ZDJH <> NULL");
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if( !rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
@@ -361,7 +361,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				{
 // 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
 					strFind = _T("SEQ=") + ltos(i);
-					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rs->adoEOF)
 					{
 						rs->AddNew();
@@ -414,7 +414,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("ZDJH <> NULL");
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if( !rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"),varTmp);
@@ -424,7 +424,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				{
 // 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
 					strFind = _T("SEQ=") + ltos(i);
-					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rs->Bookmark);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rs->adoEOF)
 					{
 						rs->AddNew();

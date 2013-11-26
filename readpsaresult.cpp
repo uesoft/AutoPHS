@@ -852,7 +852,7 @@ void ReadYljsResult(_Recordset* rs)
       
 /*				frmStatus.ShowWindow(SW_SHOW);
 				frmStatus.m_Label1= "从文件 " + DataFileName;
-				frmStatus.m_Label2= "到数据库 " + EDIBgbl::dbPRJDB->DefaultDatabase + "中的表" + EDIBgbl::TBNRawData;
+				frmStatus.m_Label2= "到数据库 " + EDIBgbl::dbPRJDB) + "中的表" + EDIBgbl::TBNRawData;
 				frmStatus.SetWindowText( "数据转换");
 				frmStatus.UpdateData(false);
 				frmStatus.UpdateStatus(0,true);
@@ -3548,7 +3548,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB->DefaultDatabase + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB) + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);
@@ -4281,7 +4281,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + (LPTSTR)EDIBgbl::dbPRJDB->DefaultDatabase + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);

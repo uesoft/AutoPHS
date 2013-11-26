@@ -55,9 +55,6 @@ CViewTxsr::CViewTxsr()
 	m_bIsActiveing=false;
 	m_bAllowUpd=true;
 	m_FrictionFree=0.3;
-
-	m_ActiveRs.CreateInstance(__uuidof(Recordset));
-
 	//{{AFX_DATA_INIT(CViewTxsr)
 	m_txtXZU1 = _T("");
 	m_txtXZU2 = _T("");
@@ -129,8 +126,8 @@ void CViewTxsr::InitialUndo(void)
 
         try
 		{
-			pRsUndo->Open("SELECT * FROM Undo", conPRJDB.GetInterfacePtr(),
-				adOpenDynamic, adLockOptimistic, adCmdUnknown);
+			pRsUndo->Open("SELECT * FROM [Undo]", _variant_t((IDispatch*)conPRJDB,true),
+				adOpenDynamic, adLockOptimistic, adCmdText);
 		}
 		catch(CException *e)
 		{
@@ -141,7 +138,7 @@ void CViewTxsr::InitialUndo(void)
 		
 	try
 	{		
-		pRsUndo->MoveFirst();		
+//		pRsUndo->MoveFirst();		
 		while (!pRsUndo->adoEOF && !pRsUndo->BOF)
 		{
 			pRsUndo->Delete (adAffectCurrent);
@@ -355,6 +352,7 @@ void CViewTxsr::OnInitialUpdate()
 	{
 	//m_Databill.SetRefRecordset(m_ActiveRs);
 	//this->m_pRStEvent=new CRstEvent;
+	m_ActiveRs.CreateInstance(__uuidof(Recordset));
 	EDIBgbl::InitDBTBN( EDIBgbl::SQLx);
 	InitRs();
 
@@ -2701,13 +2699,13 @@ void CViewTxsr::OnBtnAdd()
 		m_ActiveRs->PutCollect("VolumeID",_variant_t(EDIBgbl::SelVlmID));
 		m_ActiveRs->PutCollect("ZDJH",_variant_t(lno));
 		m_ActiveRs->Update();
-       
 
 		//update cheng  重新打开记录级,      
 	    m_ActiveRs->Requery(-1);
-		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs);
+		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs->GetDataSource());
 		FrmPhsData.m_DBGbill.ReBind();
 		//EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
+//		AfxMessageBox(_T("测试"));
 
 		m_ActiveRs->MoveLast();
 		m_bIsAddNew=false;
@@ -3079,7 +3077,7 @@ void CViewTxsr::OnSelchangeJSJDH()
 	UpdateData();
 	UpdateBoundData();
 	m_ActiveRs->MoveFirst();
-	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+szdjh),0,adSearchBackward);
+	m_ActiveRs->Find(_bstr_t(CString("zdjh=")+szdjh),0,adSearchForward);
 	m_bActive=true;
 	RefreshBoundData();
 	DatabillReposition();
@@ -3101,9 +3099,8 @@ void CViewTxsr::OnGetPrevoiusPhsData()
 		bkRs->MoveFirst();
 		CString strFind;
 		strFind.Format("zdjh = %d ",(long)m_ActiveRs->GetCollect("zdjh"));
-		bkRs->Find(_bstr_t(strFind),0,adSearchBackward);
-		bkRs->MovePrevious();
-		if(bkRs->BOF)
+		bkRs->Find(_bstr_t(strFind),0,adSearchForward);
+		if(bkRs->adoEOF)
 		{
 			bkRs->Close();
 			bkRs=NULL;
@@ -3334,6 +3331,7 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 		rs.CreateInstance(__uuidof(Recordset));
 // 		rs.m_pDatabase=&EDIBgbl::dbPRJ;&modPHScal::dbZDJcrude;
 // 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 		m_comboGDW1.GetWindowText(ComboGDW1Current);
 		m_comboGDW1.ResetContent();
 		COleVariant vTmp;

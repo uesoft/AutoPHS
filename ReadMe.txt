@@ -84,7 +84,7 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
 				}
 				if(!bTDexists)
 				{
-					SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),sTDInfo.m_strName,sTDInfo.m_strName,sDb->DefaultDatabase);
+					SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),sTDInfo.m_strName,sTDInfo.m_strName,sDb));
 					dDb->Execute((_bstr_t)SQLx);
 				}
 			}
