@@ -198,8 +198,6 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 					sTmp == _T("nth") )
 					continue;
 
-// 				VARIANT vTmp;
-// 				if( rs->Find((_bstr_t)(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")), 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("(FieldName)=\'") + sTmp + _T("\'");

@@ -1130,7 +1130,6 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							rs->MoveFirst();
 							strTmp = _T("Capacity>=") + sTmp;
 							hr = rs->Find((_bstr_t)strTmp, 0, adSearchForward);
-							// 							if(!rs->Find((_bstr_t)(_T("Capacity>=") + sTmp), 0, adSearchBackward, vTmp));
 							if( !rs->adoEOF)
 							{
 								//没找到，不可能

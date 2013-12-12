@@ -1162,10 +1162,12 @@ void CPreStylePag::QueryAcadTextStyleCombo()
     CString  strStyleName;
     CComboBox *lpStyle;
     long i, nCount;
+	_variant_t v;
 	try
 	{
         lpStyle = (CComboBox *)GetDlgItem(IDC_COMBO_STYLE);
-        obj = EDIBAcad::objAcadDoc.GetPropertyByName(_T("TextStyles")).pdispVal;
+		v = EDIBAcad::objAcadDoc.GetPropertyByName(_T("TextStyles"));
+        obj = v.pdispVal;
 		nCount =(long)obj.GetPropertyByName(_T("Count"));
 
 		for(i = 0; i < nCount; i++)

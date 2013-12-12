@@ -1126,8 +1126,6 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		long i=0 ;
 		EDIBgbl::GetSelPrjName();
 //		bool bf=rs.FindFirst(_T("((LocalCaption))=\'ATTBEGIN\'"));
-// 		_variant_t vTmp;
-// 		rs->Find((_bstr_t)(_T("((LocalCaption))=\'ATTBEGIN\'")), 0, adSearchBackward);
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("((LocalCaption))=\'ATTBEGIN\'");
@@ -7463,14 +7461,15 @@ void EDIBAcad::FindAllFileToTxt(CString dir,CFile *f)
 
 void EDIBAcad::GetActiveAcadDoc()
 {
+	CString strTmp,strTmp2;
+	_variant_t tmpvar;
 	try
 	{
-		CString strTmp,strTmp2;
-		_variant_t tmpvar;
 //		CString DwgName = basDirectory::PhsBlkDir + (gbACADR14 ? _T("phs.dwg") : _T("Phs2000.dwg"));
 		if(gbACADR14)
 		{
-			objAcadDoc=objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
+			tmpvar=objAcadApp.GetPropertyByName(_T("ActiveDocument"));
+			objAcadDoc=tmpvar.pdispVal;
 			strTmp=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGPREFIX"))));
 			strTmp2=vtos(objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGNAME"))));
 			strTmp.MakeLower();strTmp2.MakeLower();

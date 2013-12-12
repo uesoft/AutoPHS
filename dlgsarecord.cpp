@@ -473,7 +473,6 @@ void CDlgSARecord::InitLab()
 		strFind = _T("(FDName)=\'SIZEH\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZEH\'")), 0, adSearchBackward, vTmp))
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZEH)->SetWindowText(vtos(vTmp));
@@ -481,12 +480,10 @@ void CDlgSARecord::InitLab()
 		strFind = _T("(FDName)=\'SIZE2\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'SIZE2\'")), 0, adSearchBackward, vTmp))
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZE2)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'M\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'M\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -494,7 +491,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_M)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'L1\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'L1\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -502,7 +498,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_L1)->SetWindowText(vtos(vTmp));
 		}
-//		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'GDW1\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'GDW1\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -510,7 +505,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_GDW1)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'CHDIST\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'CHDIST\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -518,7 +512,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_CHDIST)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'C\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'C\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -526,7 +519,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_C)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'A\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'A\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -534,7 +526,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_A)->SetWindowText(vtos(vTmp));
 		}
-//		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'TJ\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'TJ\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -542,7 +533,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_TJ)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS100\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSS100\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -550,7 +540,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSS100)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSS150\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSS150\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -558,7 +547,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSS150)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'PMAXSF\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'PMAXSF\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
@@ -566,7 +554,6 @@ void CDlgSARecord::InitLab()
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_PMAXSF)->SetWindowText(vtos(vTmp));
 		}
-// 		if(rs->Find((_bstr_t)(_T("ucase(FDName)=\'WEIGHT\'")), 0, adSearchBackward, vTmp))
 		strFind = _T("(FDName)=\'WEIGHT\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)

@@ -1159,8 +1159,14 @@ int CDlgDBOper::PromptSaveChange()
 	try
 	{
 		m_TableDG.UpdateData();
-		m_pRs->CancelUpdate();
-		m_pDGCon->RollbackTrans();
+		if (m_pRs != NULL)
+		{
+			m_pRs->CancelUpdate();
+		}
+		if (m_pDGCon != NULL)
+		{
+			m_pDGCon->RollbackTrans();
+		}
 	}
 	catch (CException *e)
 	{

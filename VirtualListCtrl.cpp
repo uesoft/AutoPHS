@@ -38,8 +38,11 @@ CVirtualListCtrl::CVirtualListCtrl()
 
 CVirtualListCtrl::~CVirtualListCtrl()
 {
-	m_prsREF->Close();
-	delete m_prsREF;
+	if (m_prsREF != NULL)
+	{
+		m_prsREF->Close();
+		m_prsREF.Release();
+	}
 }
 
 

@@ -784,7 +784,6 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 				   SQLx = _T("ID=\'") + Ptype[i] + _T("\'");
 				   hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
 				   if( !rs->adoEOF)
-//				   if(rs->Find((_bstr_t)(_T("Trim(ID)=\'") + Ptype[i] + _T("\'")), 0, adSearchBackward, vTmp))
 				   {
 					   rs->get_Collect((_variant_t)_T("ClassID"), &vTmp);
 					   mlPartClassID[i]=vtoi(vTmp);
@@ -6446,7 +6445,6 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			}
 			tmpBlkID =tmpID;
 			//首先看表中是否存在ID名称代表的块
-// 			rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchBackward, vTmp);
 			strFind = _T("trim(blkID)=\'") + tmpBlkID + _T("\'");
 			rs->MoveFirst();
 			hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
@@ -6461,12 +6459,11 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 					//如果没有,则肯定是槽钢组成的根部，加上槽钢数量构成新的块,继续查找
 					if( modPHScal::glClassID != iGCement)
 						tmpBlkID = tmpBlkID +vtos( rsza->GetCollect(_T("iCSnum")));
-// 					rs->Find((_bstr_t) (_T("trim(blkID)=\'") + tmpBlkID + _T("\'")), 0, adSearchBackward, vTmp);
 					CString strFind;
 					strFind = _T("(CustomID)=\'") +vtos(vTmp) + _T("\'");
 					HRESULT hr = S_OK;
 					rs->MoveFirst();
-					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward, rsID->Bookmark);
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchBackward);
 					bm=rs->adoEOF;
 				}
 			}

@@ -347,7 +347,6 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				VARIANT vTmp;
-// 				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("ZDJH <> NULL");
@@ -359,7 +358,6 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 
 				for( i = 1 ;i< k ;i++)
 				{
-// 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
 					strFind = _T("SEQ=") + ltos(i);
 					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rs->adoEOF)
@@ -410,7 +408,6 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			if(!rs->BOF && !rs->adoEOF)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
-// 				if(!rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchBackward, vTmp))
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("ZDJH <> NULL");
@@ -422,7 +419,6 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				VARIANT vTmp;
 				for( i = 1 ;i< k ;i++)
 				{
-// 					if(!rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchBackward, vTmp))
 					strFind = _T("SEQ=") + ltos(i);
 					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rs->adoEOF)
