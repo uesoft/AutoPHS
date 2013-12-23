@@ -134,7 +134,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 				{
 					m_Data1->Update();
 				}
-				catch(CException *e)
+				catch(...)
 				{
 				//	m_Data1->CancelUpdate();//pfg20050227原代码
 				}
@@ -167,18 +167,15 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 		// 根据DataGrid大小调整窗口大小
 		int nWidth = 0, nHeight = 0;
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs;
 		try
 		{
 			_variant_t tmpvar;
 			COleVariant v;
 			CString strSQL;
 			strSQL.Format( "SELECT * FROM tzx WHERE trim(LocalCaption)<>\'\'");
-// 			rs.m_pDatabase = &EDIBgbl::dbTable;//20071019 "dbSORT" 改为 "dbTable"
-// 			rs.Open( dbOpenSnapshot, strSQL);
-			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbTable,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+			rs.m_pDatabase = &EDIBgbl::dbTable;//20071019 "dbSORT" 改为 "dbTable"
+			rs.Open( dbOpenSnapshot, strSQL);
 		
 			_variant_t ix;
 			ix.ChangeType(VT_I4);
@@ -198,13 +195,9 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 					sTmp == _T("nth") )
 					continue;
 
-				HRESULT hr = S_OK;
-				CString strFind;
-				strFind = _T("(FieldName)=\'") + sTmp + _T("\'");
-				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
-				if(!rs->adoEOF)
+				if( rs.FindFirst(CString(_T("Trim(FieldName)=\'")) + sTmp + _T("\'")) )
 				{
-					rs->get_Collect((_variant_t)( _T("width")), &v);
+					rs.GetFieldValue( _T("width"), v);
 					if( v.vt == VT_NULL )
 						continue;
 
@@ -213,7 +206,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			}
 			nWidth = float(nWidth)/15.5;	
 		}
-		catch(CException *e)
+		catch(::CDaoException * e)
 		{
 			e->ReportError();
 			e->Delete();
@@ -288,8 +281,10 @@ void CFrmDataEdit::OnDestroy()
 	{
 		e->Delete();
 	}
-
-	m_Data1=NULL;
+	catch(...)
+	{
+	}
+ 	m_Data1=NULL;
 	user::SavePos( this, "FrmDataEdit");
 }
 
@@ -340,7 +335,7 @@ void CFrmDataEdit::OnBeforeDeleteDatagrid1(short FAR* Cancel)
 				strSQL.Format(_T("DELETE FROM [ZG] WHERE VolumeID=%d AND zdjh=%d AND nth=%d AND recno=%d"),
 					EDIBgbl::SelVlmID,vtoi(m_Data1->GetCollect("zdjh")),vtoi(m_Data1->GetCollect("nth")),
 					vtoi(m_Data1->GetCollect("recno")));
-				EDIBgbl::dbPRJDB->Execute((_bstr_t)strSQL, NULL, adCmdText);
+				EDIBgbl::dbPRJDB.Execute(strSQL);
 
 			}
 		}
@@ -451,6 +446,9 @@ void CFrmDataEdit::OnRowColChangeDatagrid1(VARIANT FAR* LastRow, short LastCol)
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 void CFrmDataEdit::OnBeforeColEditDatagrid1(short ColIndex, short KeyAscii, short FAR* Cancel) 
@@ -464,6 +462,9 @@ void CFrmDataEdit::OnBeforeColEditDatagrid1(short ColIndex, short KeyAscii, shor
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}	
 }
 
 void CFrmDataEdit::OnAfterColEditDatagrid1(short ColIndex) 
@@ -476,6 +477,9 @@ void CFrmDataEdit::OnAfterColEditDatagrid1(short ColIndex)
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 }
 

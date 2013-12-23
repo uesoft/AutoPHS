@@ -135,28 +135,25 @@ void CDlgSpan::LoadListDW()
 {
 	try
 	{
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs;
 		COleVariant vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "Material"
+		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "Material"
 		CString strSQL;
 		strSQL=_T("SELECT * FROM [PipeDiameter] ORDER BY [DW],[S]");
-//		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs.Open(dbOpenSnapshot,strSQL);
 		int i=0;
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)(_T("BH")), &vTmp);
+			rs.GetFieldValue(_T("BH"),vTmp);
 			m_lstDW.AddItem(i,0,vtos(vTmp));
-			rs->get_Collect((_variant_t)(_T("DW")), &vTmp);
+			rs.GetFieldValue(_T("DW"),vTmp);
 			m_lstDW.AddItem(i,1,vtos(vTmp));
-			rs->get_Collect((_variant_t)(_T("S")), &vTmp);
+			rs.GetFieldValue(_T("S"),vTmp);
 			m_lstDW.AddItem(i,2,vtos(vTmp));
-			rs->MoveNext();
+			rs.MoveNext();
 			i++;
 		}
-		rs->Close();
+		rs.Close();
 		if(m_lstDW.GetItemCount()>0)
 		{
 			m_lstDW.SelectItem(0);
@@ -164,7 +161,7 @@ void CDlgSpan::LoadListDW()
 			m_iDWHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -176,29 +173,26 @@ void CDlgSpan::LoadListMedia()
 {
 	try
 	{
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs;
 		COleVariant vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
+		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
 		CString strSQL;
 		strSQL=_T("SELECT [Media],[Density] FROM [MediaDensity] ORDER BY [SEQ]");
-//		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs.Open(dbOpenSnapshot,strSQL);
 		int i=0,ix;
 		float * pflt;
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L, &vTmp);
+			rs.GetFieldValue(0,vTmp);
 			ix=m_lstMedia.InsertItem(i,vtos(vTmp));
-			rs->get_Collect((_variant_t)1L, &vTmp);
+			rs.GetFieldValue(1,vTmp);
 			pflt=new float;
 			*pflt=vtof(vTmp);
 			m_lstMedia.SetItemData(ix,(DWORD)(LPVOID)pflt);
-			rs->MoveNext();
+			rs.MoveNext();
 			i++;
 		}
-		rs->Close();
+		rs.Close();
 		if(m_lstMedia.GetItemCount()>0)
 		{
 			m_lstMedia.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
@@ -206,7 +200,7 @@ void CDlgSpan::LoadListMedia()
 			m_iMediaHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -217,24 +211,21 @@ void CDlgSpan::LoadListMaterial()
 {
 	try
 	{
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs;
 		COleVariant vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
+		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [Material] FROM [MechanicalOfMaterialEt] WHERE Material IN ( SELECT DISTINCT Material FROM [MechanicalOfMaterialSIGMAt] ) ");
-//		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs.Open(dbOpenSnapshot,strSQL);
 		int i=0;
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L, &vTmp);
+			rs.GetFieldValue(0,vTmp);
 			m_lstMaterial.InsertItem(i,vtos(vTmp));
-			rs->MoveNext();
+			rs.MoveNext();
 			i++;
 		}
-		rs->Close();
+		rs.Close();
 		if(m_lstMaterial.GetItemCount()>0)
 		{
 			m_lstMaterial.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
@@ -242,7 +233,7 @@ void CDlgSpan::LoadListMaterial()
 			m_iMaterialHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -373,6 +364,23 @@ void CDlgSpan::OnItemchangedListMedia(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 	*pResult = 0;
 }
+//DEL BOOL CDlgSpan::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult) 
+//DEL {
+//DEL 	// TODO: Add your specialized code here and/or call the base class
+//DEL 	NMHDR* pmh=(NMHDR*)lParam;
+//DEL 	switch(wParam)
+//DEL 	{
+//DEL 	case IDC_LIST_DW:
+//DEL 		
+//DEL 		break;
+//DEL 	case IDC_LIST_MATERIAL:
+//DEL 		break;
+//DEL 	case IDC_LIST_MEDIA:
+//DEL 		switch(pmh->code ==
+//DEL 		break;
+//DEL 	}
+//DEL 	return CDialog::OnNotify(wParam, lParam, pResult);
+//DEL }
 
 void CDlgSpan::OnHottrackListMedia(NMHDR *pNMHDR, LRESULT *pResult)
 {
@@ -431,6 +439,24 @@ void CDlgSpan::OnHottrackListDw(NMHDR *pNMHDR, LRESULT *pResult)
 	*pResult=0;
 }
 
+//DEL void CDlgSpan::OnRadioNew() 
+//DEL {
+//DEL 	// TODO: Add your control notification handler code here
+//DEL 	this->CheckRadioButton(IDC_RADIO_NEW,IDC_RADIO_OLD,IDC_RADIO_NEW);
+//DEL 	//if(this->m_iGS!=0)
+//DEL 	m_iGS=0;
+//DEL 	Cal();
+//DEL }
+
+//DEL void CDlgSpan::OnRadioOld() 
+//DEL {
+//DEL 	// TODO: Add your control notification handler code here
+//DEL 	//UpdateData();
+//DEL 	this->CheckRadioButton(IDC_RADIO_NEW,IDC_RADIO_OLD,IDC_RADIO_OLD);
+//DEL 	m_iGS=1;
+//DEL 	Cal();
+//DEL }
+
 void CDlgSpan::Cal()
 {
 	if(m_iMaterialHotIndex==-1 || m_iDWHotIndex==-1)
@@ -455,13 +481,13 @@ void CDlgSpan::Cal()
 	m_strQ.Format(_T("%g"),fQ);
 	m_strQp.Format(_T("%g"),fQp);
 	float fI;
-	fI=PI/64 * (pow(fDw,4) - pow(fDw-2*fS,4));
+	fI=PI/64 * (pow(fDw,4.0) - pow(fDw-2*fS,4.0));
 	//单位mm4->cm4
 	fI=fI/10000.0;
 
 	float fW;
 
-	fW=PI/32*pow(fDw,3)*(1-pow((fDw-2*fS)/fDw,4));
+	fW=PI/32*pow(fDw,3.0)*(1-pow((fDw-2*fS)/fDw,4.0));
 	//单位mm3->cm3
 	fW=fW/1000.0;
 
@@ -476,7 +502,7 @@ void CDlgSpan::Cal()
 	float LmaxSOld,LmaxSNew;
 	//新管规,fQ:unit=kN/m
 	LmaxSNew=0.4336*sqrt(fW/(fQ*EDIBgbl::kgf2N/1000));
-	LmaxRNew=0.2118*pow((float)(fEt*fI/(fQ*EDIBgbl::kgf2N/1000)),(float)(1.0/4.0));
+	LmaxRNew=0.2118*pow(fEt*fI/(fQ*EDIBgbl::kgf2N/1000),1.0/4.0);
 
 	float fPHI;//高铬钢0.7碳素钢0.9
 	if(m_bHighCrSteel)
@@ -489,7 +515,7 @@ void CDlgSpan::Cal()
 	else
 		LmaxSOld=2.24*sqrt(fW*fPHI*(fSigmat/100)/fQ);//Pg<=40
 	
-	LmaxROld=0.0241*pow((float)(fEt*1000/EDIBgbl::kgf2N*100)*fI/fQ,(float)(1.0/3.0));
+	LmaxROld=0.0241*pow((fEt*1000/EDIBgbl::kgf2N*100)*fI/fQ,1.0/3.0);
 	//m_iGS=this->GetCheckedRadioButton(IDC_RADIO_NEW,IDC_RADIO_OLD)-IDC_RADIO_NEW;
 
 	m_strLMaxR.Format(_T("%.2fm"),LmaxROld);
@@ -511,26 +537,23 @@ void CDlgSpan::LoadTemp()
 		strMaterial=m_lstMaterial.GetItemText(m_iMaterialHotIndex,0);
 
 		m_comboTemp.ResetContent();
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs;
 		COleVariant vTmp;
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [t] FROM [MechanicalOfMaterialEt] WHERE material=\'") + strMaterial + _T("\'ORDER BY [t]"); 
-// 		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 ""
-// 		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		while(!rs->adoEOF)
+		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 ""
+		rs.Open(dbOpenSnapshot,strSQL);
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L, &vTmp);
+			rs.GetFieldValue(0,vTmp);
 			m_comboTemp.AddString(vtos(vTmp));
-			rs->MoveNext();
+			rs.MoveNext();
 		}
-		rs->Close();
+		rs.Close();
 		if(m_comboTemp.GetCount()>0)
 			m_comboTemp.SetCurSel(0);
 	}
-	catch(CException *e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();

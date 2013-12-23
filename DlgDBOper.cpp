@@ -340,9 +340,7 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 		}
 		catch (_com_error e)
 		{
-			CString strErrorMsg;
-			strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-			AfxMessageBox(strErrorMsg);
+			AfxMessageBox(e.ErrorMessage());
 			return FALSE;
 		}
 
@@ -354,7 +352,7 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 			}
 			m_pRs->MoveFirst();
 		}
-		catch (CException *e)
+		catch (...)
 		{
 			m_strTemp.Format("%s表中没有记录且含有关键字段,请在ACCESS中添加记录!!!",m_strCurTbName);
 			m_TableDG.SetWindowText(m_strTemp);
@@ -461,7 +459,7 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 			}
 			//m_TableDG.SetRow(iRow);
 		}
-		catch (CException *e)
+		catch (...)
 		{
 			;
 		}
@@ -993,17 +991,14 @@ int CDlgDBOper::InitDlgWithoutPhs()
 int CDlgDBOper::DisplayAllTable()
 {
 	//在数据表列表框中显示所有数据表
-	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(Connection));
+	CDaoDatabase db;
+	CDaoTableDefInfo tbInfo;
 	ResetTableList();
 
 	try
 	{
-// 		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strDBPassword);
-		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
-		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strDBPassword, adConnectUnspecified);
+		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strDBPassword);
 		int i,c;
-/*
 		c=db.GetTableDefCount();
 		for(i=0;i<c;i++)
 		{
@@ -1013,21 +1008,7 @@ int CDlgDBOper::DisplayAllTable()
 				m_TableList.AddString(tbInfo.m_strName);
 			}
 		}
-*/
-		_bstr_t bt;
-		_RecordsetPtr rs;
-		rs = db->OpenSchema(adSchemaTables);
-		while (!rs->adoEOF)
-		{
-			bt = rs->Fields->GetItem(_T("TABLE_TYPE"))->Value;
-			if (!strcmp((char*)bt, "TABLE"))
-			{
-				bt = rs->Fields->GetItem(_T("TABLE_NAME"))->Value;
-				m_TableList.AddString((char*)bt);
-			}
-			rs->MoveNext();
-		}
-		db->Close();
+		db.Close();
 		if (m_TableList.GetCount() > 0)
 		{
 			m_TableList.SetCurSel(0);
@@ -1040,7 +1021,7 @@ int CDlgDBOper::DisplayAllTable()
 		}
 	}
 
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1159,16 +1140,10 @@ int CDlgDBOper::PromptSaveChange()
 	try
 	{
 		m_TableDG.UpdateData();
-		if (m_pRs != NULL)
-		{
-			m_pRs->CancelUpdate();
-		}
-		if (m_pDGCon != NULL)
-		{
-			m_pDGCon->RollbackTrans();
-		}
+		m_pRs->CancelUpdate();
+		m_pDGCon->RollbackTrans();
 	}
-	catch (CException *e)
+	catch (...)
 	{
 		;
 	}
@@ -1178,7 +1153,7 @@ int CDlgDBOper::PromptSaveChange()
 		//if (m_pRs != NULL && m_pRs->State == adStateOpen)
 		//m_TableDG.Refresh();
 	}
-	catch (CException *e)
+	catch (...)
 	{
 		;
 	}

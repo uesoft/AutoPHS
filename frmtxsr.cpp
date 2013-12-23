@@ -142,7 +142,7 @@ void CFrmTxsr::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 				m_pViewTxsr->RefreshBoundData();
 				m_pViewTxsr->DatabillReposition();
 				//m_pViewTxsr->LoadGDWItem2ComboGDW1();//pfg20050217在m_pViewTxsr->DatabillReposition()已经调用
-				m_pViewTxsr->InitBornSA();
+				m_pViewTxsr->InitBornSA;
 				m_pViewTxsr->LoadDiameterItem2ComboDW();//装入管径数据到组合框
 				m_pViewTxsr->LoadPAMaterialItem2ComboDCL1();//装入管部材料到组合框
 			//LoadGDWItem2ComboGDW1 //放到data1_reposition事件中
@@ -208,7 +208,7 @@ void CFrmTxsr::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 					{
 						m_pViewTxsr->m_ActiveRs->Update();
 					}
-					catch(CException *e)
+					catch(...)
 					{
 						m_pViewTxsr->m_ActiveRs->CancelUpdate();
 					}

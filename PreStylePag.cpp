@@ -575,14 +575,14 @@ BOOL CPreStylePag::CreateTextStyle(
         
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles")).pdispVal;
+                                      _T("TextStyles"));
         
         //SETUP-2: 如果指定样式对象已经存在，则返回
 
 		nCount = (long)obj.GetPropertyByName(_T("Count"));
 		for( i = 0; i < nCount; i++)
 		{
-			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
+			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
 			strtmp = vtos(tsobj.GetPropertyByName(_T("Name")));
 			strtmp.TrimLeft();
             strtmp.TrimRight();
@@ -602,7 +602,7 @@ BOOL CPreStylePag::CreateTextStyle(
         //SETUP-4: 获取新样式对象
         newobj = obj.Invoke(_T("Item"),
                             1,
-                            &_variant_t(strTSName)).pdispVal;
+                            &_variant_t(strTSName));
         
         //SETUP-5: 设定新样式的属性值
         if(newobj.p)//成功获取新对象
@@ -629,6 +629,9 @@ BOOL CPreStylePag::CreateTextStyle(
 	{
 		e->Delete();
 	}
+    catch(...)
+    {
+    }
     return FALSE;
 }
 
@@ -644,7 +647,7 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
     CMObject obj, tsobj;
     long     i, nCount;
     CString  strtmp;
-//    HRESULT  retCode;
+    HRESULT  retCode;
 
     //进行参数检查和初始化
     strTSName.TrimLeft();
@@ -678,14 +681,14 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
         
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles")).pdispVal;
+                                      _T("TextStyles"));
         
         //SETUP-2: 获取样式对象
 
 		nCount = (long)obj.GetPropertyByName(_T("Count"));
 		for( i = 0; i < nCount; i++)
 		{
-			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
+			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
 			strtmp = vtos(tsobj.GetPropertyByName(_T("Name")));
 			strtmp.TrimLeft();
             strtmp.TrimRight();
@@ -715,6 +718,9 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
 	{
 		e->Delete();
 	}
+    catch(...)
+    {
+    }
     return FALSE;
 }
 
@@ -746,14 +752,14 @@ BOOL CPreStylePag::GetTextStyleProperty(
         
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles")).pdispVal;
+                                      _T("TextStyles"));
         
         //SETUP-2: 获取样式对象
 
 		nCount = (long)obj.GetPropertyByName(_T("Count"));
 		for( i = 0; i < nCount; i++)
 		{
-			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
+			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
 			strtmp = vtos(tsobj.GetPropertyByName(_T("Name")));
 			strtmp.TrimLeft();
             strtmp.TrimRight();
@@ -790,6 +796,9 @@ BOOL CPreStylePag::GetTextStyleProperty(
 	{
 		e->Delete();
 	}
+    catch(...)
+    {
+    }
     return FALSE;
 }
 
@@ -814,13 +823,13 @@ BOOL CPreStylePag::DeleteTextStyle(CString strTSName)
         
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles")).pdispVal;
+                                      _T("TextStyles"));
         
         //SETUP-2: 获取样式对象
 		nCount = (long)obj.GetPropertyByName(_T("Count"));
 		for( i = 0; i < nCount; i++)
 		{
-			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
+			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
 			strtmp = vtos(tsobj.GetPropertyByName(_T("Name")));
 			strtmp.TrimLeft();
             strtmp.TrimRight();
@@ -837,6 +846,9 @@ BOOL CPreStylePag::DeleteTextStyle(CString strTSName)
 	{
 		e->Delete();
 	}
+    catch(...)
+    {
+    }
     return FALSE;
 }
 
@@ -871,7 +883,7 @@ void CPreStylePag::OnBtnNewstyle()
         //创建新的字体样式
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles")).pdispVal;
+                                      _T("TextStyles"));
         
         //SETUP-2: 添加新的文本样式
         obj.Invoke(_T("Add"),
@@ -881,7 +893,7 @@ void CPreStylePag::OnBtnNewstyle()
         //SETUP-3: 获取新样式对象
         newobj = obj.Invoke(_T("Item"),
                             1,
-                            &_variant_t(newTextStyleName)).pdispVal;
+                            &_variant_t(newTextStyleName));
         
         //SETUP-4: 设定新样式的属性值
         if(newobj.p)//成功获取新对象
@@ -935,6 +947,9 @@ void CPreStylePag::OnBtnNewstyle()
 	{
 		e->Delete();
 	}
+    catch(...)
+    {
+    }
 }
 
 void CPreStylePag::OnBtnDeletestyle() 
@@ -1162,17 +1177,15 @@ void CPreStylePag::QueryAcadTextStyleCombo()
     CString  strStyleName;
     CComboBox *lpStyle;
     long i, nCount;
-	_variant_t v;
 	try
 	{
         lpStyle = (CComboBox *)GetDlgItem(IDC_COMBO_STYLE);
-		v = EDIBAcad::objAcadDoc.GetPropertyByName(_T("TextStyles"));
-        obj = v.pdispVal;
+        obj = EDIBAcad::objAcadDoc.GetPropertyByName(_T("TextStyles"));
 		nCount =(long)obj.GetPropertyByName(_T("Count"));
 
 		for(i = 0; i < nCount; i++)
 		{
-			sobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
+			sobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
 			strStyleName = vtos(sobj.GetPropertyByName(_T("Name")));
 			strStyleName.TrimLeft();
             strStyleName.TrimRight();
@@ -1184,6 +1197,9 @@ void CPreStylePag::QueryAcadTextStyleCombo()
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 }
 

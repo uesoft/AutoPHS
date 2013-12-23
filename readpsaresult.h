@@ -99,9 +99,9 @@ extern CString Mid(CString& strTmp,int nStart,int nCount=-1);
 double GetParam(CString & strText);
 extern _ConnectionPtr gpconCaesar;//CAESAR源数据文件的连接
 extern void ImportDisplacements(_RecordsetPtr rsData,long node, CString strLGKname,CString strJOBNAME_P,int flag);//pfg20050617
-//extern void importUnitsForces(_RecordsetPtr rsData,long &node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,int flagR);//pfg20050616
+//extern void importUnitsForces(_RecordsetPtr &rsData,long &node,CString m_strJOBNAME_P,CString PSA_OutDataFUnit,CString PSA_OutDataMUnit,CString m_strRGKname,int flagR);//pfg20050616
 extern double UnitsToUeUnits(_RecordsetPtr rsData,CString SourceUnits,CString UeUnits,double &dOffset);//pfg20050620
-extern void ImportDiameter(_RecordsetPtr rsData,long &node,CString strJOBNAME_A);
-extern void ImportHanger(_RecordsetPtr rsData,long &node,CString strJOBNAME_P);//pfg20050621导入弹簧数据
-extern void ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long &node,CString strJOBNAME_P,CString strGKname,long &iType);//pfg20050624增加：long &iType
+extern void ImportDiameter(_RecordsetPtr &rsData,long &node,CString strJOBNAME_A);
+extern void ImportHanger(_RecordsetPtr &rsData,long &node,CString strJOBNAME_P);//pfg20050621导入弹簧数据
+extern void ConversionTypeCaesarToPhs(_RecordsetPtr &rsData,long &node,CString strJOBNAME_P,CString strGKname,long &iType);//pfg20050624增加：long &iType
 #endif

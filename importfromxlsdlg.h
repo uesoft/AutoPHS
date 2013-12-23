@@ -25,7 +25,6 @@ class _Application;
 
 class CImportFromXLSDlg : public CDialog
 {
-public:
 	// 从EXCEL文件导入数据的子结构
 	struct ImportFromXLSElement		
 	{
@@ -117,7 +116,7 @@ private:
 	CString m_strPrecFilePath;
 
 protected:
-	BOOL OpenExcelTable(_RecordsetPtr pRsTbl, CString& strSheetName, CString strExcelFileName);
+	BOOL OpenExcelTable(_RecordsetPtr& pRsTbl, CString& strSheetName, CString strExcelFileName);
 	BOOL ConnectExcelFile(const CString strExcelName, _ConnectionPtr & pConExcel);
 
 	// Generated message map functions

@@ -124,21 +124,16 @@ HBRUSH CFrmSelSpecification::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CFrmSelSpecification::Option1_Click(int Index)
 {
-	HRESULT hr = S_OK;
-	_ConnectionPtr db;
-	db.CreateInstance(__uuidof(Connection));
-	_RecordsetPtr rs1;
-	rs1.CreateInstance(__uuidof(Recordset));
-	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(Recordset));
+	CDaoDatabase db;
+	CDaoRecordset rs1;
+	CDaoRecordset rs;
 	CString strSQL;
 	CString sTmp;
 	COleVariant v,v1;
 	try
 	{
-		long i,ix;
-// 		db.Open(basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
-		db->Open(_bstr_t("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),_T(""), (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
+		int i,ix;
+		db.Open(basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
 		m_iSelIndex = Index;
 		m_List2.SetCurSel(m_iSelIndex);
 		for(i=0;i<6;i++)
@@ -149,70 +144,64 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		}
 		m_List1.ResetContent();
 		//下面要判断是否所有的原始数据表都存在，不存在的要排除，不能写到可用列表框，防止用户误点击。
-// 		rs1.m_pDatabase=&EDIBgbl::dbSORT;
+		rs1.m_pDatabase=&EDIBgbl::dbSORT;
 		strSQL.Format(_T("SELECT * FROM PhsManu WHERE seq=%d"),Index);
-// 		rs1.Open(dbOpenSnapshot,strSQL);
-		hr = rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		rs1->MoveFirst();
-		rs1->get_Collect((_variant_t)_T("SQL"),&v);
-// 		rs.m_pDatabase=&EDIBgbl::dbSORT;
-// 		rs.Open(dbOpenSnapshot,vtos(v));
-		rs->Open((_bstr_t)v.bstrVal, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs1.Open(dbOpenSnapshot,strSQL);
+		rs1.MoveFirst();
+		rs1.GetFieldValue(_T("SQL"),v);
+		rs.m_pDatabase=&EDIBgbl::dbSORT;
+		rs.Open(dbOpenSnapshot,vtos(v));
 		bool bFound=false;
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
 			//假设全部表都存在
 			bFound = true;
-			rs1->get_Collect((_variant_t)_T("CrudeDataTableNum"),v);
+			rs1.GetFieldValue(_T("CrudeDataTableNum"),v);
 			for(i=1;i<=vtoi(v);i++)
 			{
-				rs->get_Collect((_variant_t)i, &v);
+				rs.GetFieldValue(i,v);
 				if(vtos(v) != _T("") )
 				{
 					if(!EDIBgbl::tdfExists(db,vtos(v)))
 					{
 						bFound = false;
 						//删除这个记录，防止它被写入到数据表，导致用户误点击。
-						rs1->get_Collect((_variant_t)_T("TableName"),&v);
-						rs->get_Collect((_variant_t)_T("Standard"),&v1);
+						rs1.GetFieldValue(_T("TableName"),v);
+						rs.GetFieldValue(_T("Standard"),v1);
 						strSQL.Format(_T("DELETE  FROM [%s] WHERE trim(standard)=\'%s\'"),vtos(v),vtos(v1));
-						EDIBgbl::dbSORT->Execute((_bstr_t)strSQL, NULL, adCmdText);
+						EDIBgbl::dbSORT.Execute(strSQL);
 						break;
 					 }
 				}
 			}
 			if( bFound )
 			{
-				rs->get_Collect((_variant_t)_T("standard"),&v);
+				rs.GetFieldValue(_T("standard"),v);
 				ix=m_List1.AddString( vtos(v));
 				m_List1.SetVirtual(ix);
 			}
-			rs->MoveNext();
+			rs.MoveNext();
 		}
-		rs->Close();
-		rs1->get_Collect((_variant_t)_T("TableName"),v);
+		rs.Close();
+		rs1.GetFieldValue(_T("TableName"),v);
 		m_tableName=vtos(v);//pfg20050223
 		strSQL.Format(_T("SELECT * FROM [%s]"),
 			vtos(v));
-//		rs.Open(dbOpenDynaset,strSQL);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		int iRecCount = rs->RecordCount;
-		for(i=0;i<LIGHT_COUNT && !rs->adoEOF;i++,rs->MoveNext())
+		rs.Open(dbOpenDynaset,strSQL);
+		int iRecCount = rs.GetRecordCount();
+		for(i=0;i<LIGHT_COUNT && !rs.IsEOF();i++,rs.MoveNext())
 		{
-			rs->get_Collect((_variant_t)_T("standard"),&v);
+			rs.GetFieldValue(_T("standard"),v);
 			ix=m_List1.FindStringExact(-1,vtos(v));
 			if(ix!=-1)
 				//m_List1.SetVirtual(ix,FALSE);
 				m_List1.SetVirtual(ix,FALSE);
 		}
-		rs->Close();
-		rs1->Close();
-		db->Close();
+		rs.Close();
+		rs1.Close();
+		db.Close();
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -372,11 +361,7 @@ void CFrmSelSpecification::SetUseCount()
 {
 	try
 	{
-//		rs1(&EDIBgbl::dbSORT),rs2(&EDIBgbl::dbSORT);
-		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(Recordset));
-		_RecordsetPtr rs2;
-		rs2.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs1(&EDIBgbl::dbSORT),rs2(&EDIBgbl::dbSORT);
 		CString strSQL;
 		int i;
 		COleVariant v;
@@ -385,27 +370,23 @@ void CFrmSelSpecification::SetUseCount()
 			CString strTemp;
 			m_List2.GetText(i,strTemp);
 			strSQL.Format(_T("SELECT * FROM PhsManu WHERE SEQ=%d"),i);
-// 			rs1.Open(dbOpenSnapshot,strSQL);
-			rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
-			rs1->get_Collect((_variant_t)_T("TableName"),&v);
-			rs1->Close();
+			rs1.Open(dbOpenSnapshot,strSQL);
+			rs1.GetFieldValue(_T("TableName"),v);
+			rs1.Close();
 			strSQL.Format(_T("SELECT * FROM [%s] WHERE Standard=\'%s\'"),
 				vtos(v),strTemp);
-// 			rs2.Open(dbOpenDynaset,strSQL);
-			rs2->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
-			rs2->get_Collect((_variant_t)_T("UseCount"),&v);
-			LONG UseCount=vtoi(v);
+			rs2.Open(dbOpenDynaset,strSQL);
+			rs2.GetFieldValue(_T("UseCount"),v);
+			int UseCount=vtoi(v);
 			UseCount++;
-//			rs2.Edit();
+			rs2.Edit();
 			if(UseCount==1 || m_aSpec[i]!=strTemp)
-				rs2->put_Collect((_variant_t)_T("UseCount"),(_variant_t)UseCount);
-			rs2->Update();
-			rs2->Close();
+				rs2.SetFieldValue(_T("UseCount"),(long)UseCount);
+			rs2.Update();
+			rs2.Close();
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException* e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -418,6 +399,7 @@ void CFrmSelSpecification::OnDroprecord()
 {	// TODO: Add your control notification handler code here
 	int iCurSel;
 	int icount=0;
+	CDaoDatabase db;
 	CString strSQL;
 	CString str;
 	icount=m_List1.GetCount();
@@ -446,12 +428,12 @@ void CFrmSelSpecification::OnDroprecord()
 	strSQL="delete from "+m_tableName+" where standard='"+str+"'";
 	try
 	{
-		EDIBgbl::dbSORT->Execute((_bstr_t)strSQL, NULL, adCmdText);
+		EDIBgbl::dbSORT.Execute(strSQL);
 	}
 	catch(_com_error e)
 	{
 		AfxMessageBox("删除失败!");
-//		db->Close();
+//		db.Close();
 		return;
 	}
 	m_List1.DeleteString(iCurSel);

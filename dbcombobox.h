@@ -19,8 +19,8 @@ public:
 // Attributes
 public:
 	FARPROC SelChange;
-	_RecordsetPtr m_RowRs;
-	_RecordsetPtr m_Rs;
+	CDaoRecordset * m_RowRs;
+	CDaoRecordset * m_Rs;
 	CString m_Field;
 	CString m_BoundField;
 	CString m_ListField;

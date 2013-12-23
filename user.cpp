@@ -625,19 +625,19 @@ double vtod(COleVariant &v)
 	return ret;
 }
 
-void RsDeleteAll(_RecordsetPtr rs)
+void RsDeleteAll(CDaoRecordset& rs)
 {
 	try{
-		if(!rs->adoEOF)// || !rs->CanUpdate())
+		if(!rs.IsOpen() || !rs.CanUpdate())
 			return ;
-		rs->MoveFirst();
-		while(!rs->adoEOF && !rs->BOF)
+		rs.MoveFirst();
+		while(!rs.IsEOF()&&!rs.IsBOF())
 		{
-			rs->Delete(adAffectCurrent);
-			rs->MoveFirst();
+			rs.Delete();
+			rs.MoveFirst();
 		}
 	}
-	catch(CException * e)
+	catch(::CDaoException * e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -702,7 +702,7 @@ CString vtos(COleVariant& v)
 		ret="";
 		break;
 	case VT_BSTR:
-		ret= v.bstrVal;
+		ret=V_BSTRT(&v);
 		break;
 	case VT_R4:
 		ret.Format("%g", (double)V_R4(&v));
@@ -832,10 +832,10 @@ int inline ShowMessage(LPCTSTR lpszText, UINT nType, LPCTSTR lpszTitle,UINT nIDH
 {
 	return ::MessageBox(NULL,lpszText,lpszTitle,nType|MB_TASKMODAL|MB_TOPMOST );
 }
-COleVariant inline GetFields(_RecordsetPtr rs,CString FieldName)
+COleVariant inline GetFields(CDaoRecordset & rs,CString FieldName)
 {
 	COleVariant vTmp;
-	rs->get_Collect((_variant_t)FieldName,&vTmp);
+	rs.GetFieldValue(FieldName,vTmp);
 	return vTmp;
 }
 void SetWindowCenter(HWND hWnd)
@@ -908,7 +908,7 @@ void ModifyControlStyle(HWND &hWnd,DWORD dwRemove,DWORD dwAdd)
 	::GetClassName(hWnd,wndClassName,256);
 	CString strTmp=wndClassName;
 	strTmp.MakeUpper();
-//	int iTmp;
+	int iTmp;
 	if(strTmp=="COMBOBOX")
 	{
 		//iTmp=((CComboBox*)pWnd)->GetDroppedWidth();

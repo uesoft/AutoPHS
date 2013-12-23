@@ -72,14 +72,9 @@ BOOL CFrmAddSArecord::OnInitDialog()
 		CString ConStr=CString(dbConnectionString)+
 			basDirectory::ProjectDBDir+
 			_T("zdjcrude.mdb;Jet OLEDB:Database Password=")+ModEncrypt::gstrDBZdjCrudePassWord;
-//		rs(&modPHScal::dbZDJcrude);
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-
-// 		rs.Open(dbOpenSnapshot,SQL);
-		rs->Open((_bstr_t)SQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		rs->MovePrevious();
+		CDaoRecordset rs(&modPHScal::dbZDJcrude);
+		rs.Open(dbOpenSnapshot,SQL);
+		rs.MoveFirst();
 		COleVariant v;
 		_variant_t vTmp;
 		int i=0;
@@ -87,18 +82,18 @@ BOOL CFrmAddSArecord::OnInitDialog()
 		vTmp=FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("gn1"));
 		sTmp2=vtos(vTmp);
 		sTmp2.MakeUpper();
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)(_T("CustomID")), &v);
+			rs.GetFieldValue(_T("CustomID"),v);
 			sTmp=vtos(v);
 			sTmp.MakeUpper();
 			m_List1.AddString(sTmp);
 			if(sTmp==sTmp2)
 				m_List1.SetCurSel(i);
 			i++;
-			rs->MoveNext();
+			rs.MoveNext();
 		}
-		rs->Close();
+		rs.Close();
 		if(m_List1.FindStringExact(-1,_T("G100"))==-1)
 			m_List1.AddString(_T("G100"));
 		m_DBGrid1.SetAllowDelete(FALSE);
@@ -120,11 +115,21 @@ BOOL CFrmAddSArecord::OnInitDialog()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
 	}
+   /*Left = 0
+   Width = Screen.Width
+   CenterForm Me
+   List1.Top = 0
+   ScaleHeight = List1.Height
+   DBGrid1.Height = List1.Height
+   DBGrid1.Left = List1.Left + List1.Width
+   DBGrid1.Width = ScaleWidth - List1.Width
+   Height = Height - ScaleHeight + List1.Height
+   Data1.Visible = False*/
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }

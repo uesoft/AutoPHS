@@ -3265,7 +3265,7 @@ int CGridCtrl::InsertColumn(LPCTSTR strHeading,
     } 
     else
     {
-        m_arColWidths.InsertAt(nColumn, (UINT)0);
+        m_arColWidths.InsertAt(nColumn, (int)0);
         for (int row = 0; row < m_nRows; row++) 
         {
             GRID_ROW* pRow = m_RowData[row];
@@ -3317,7 +3317,7 @@ int CGridCtrl::InsertRow(LPCTSTR strHeading, int nRow /* = -1 */)
     }
     else
     {
-        m_arRowHeights.InsertAt(nRow, (UINT)0);
+        m_arRowHeights.InsertAt(nRow, (int)0);
         m_RowData.InsertAt(nRow, new GRID_ROW);
     }
 
@@ -6020,8 +6020,7 @@ BOOL CGridCtrl::Save(LPCTSTR filename)
     TRY
     {
         int nNumColumns = GetColumnCount();
-		int i = 0;
-        for (i = 0; i < nNumColumns; i++)
+        for (int i = 0; i < nNumColumns; i++)
         {
             File.WriteString(GetItemText(0,i));
             File.WriteString((i==(nNumColumns-1))? _T("\n"):_T(","));

@@ -167,6 +167,9 @@ void CPagTxsrOption::OnBtnSanum()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 
@@ -202,20 +205,17 @@ void CPagTxsrOption::LoadSAG100()
 		CString strSQL;
 		COleVariant vTmp;
 		strSQL.Format(_T("SELECT [DH] FROM [%s] WHERE [CustomID]=\'G100\'"),modPHScal::tbnSA);
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-// 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-// 		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		while(!rs->adoEOF)
+		CDaoRecordset rs;
+		rs.m_pDatabase=&modPHScal::dbZDJcrude;
+		rs.Open(dbOpenSnapshot,strSQL);
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L,&vTmp);
+			rs.GetFieldValue(0,vTmp);
 			m_comboSAG100.AddString(vtos(vTmp));
-			rs->MoveNext();
+			rs.MoveNext();
 		}
 	}
-	catch(CException * e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -231,6 +231,18 @@ BOOL CPagTxsrOption::OnInitDialog()
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
+
+//DEL void CPagTxsrOption::OnSelchangeComboSAG100No() 
+//DEL {
+//DEL 	// TODO: Add your control notification handler code here
+//DEL 	modPHScal::giSAG100No=atoi(m_csSAG100No);
+//DEL }
+
+//DEL void CPagTxsrOption::OnEditchangeComboSAG100No() 
+//DEL {
+//DEL 	// TODO: Add your control notification handler code here
+//DEL 	modPHScal::giSAG100No=atoi(m_csSAG100No);
+//DEL }
 
 void CPagTxsrOption::OnCancel() 
 {

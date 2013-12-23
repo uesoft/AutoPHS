@@ -153,13 +153,7 @@ void CPhsStart::OnActivateApp(BOOL bActive, DWORD hTask/*HTASK hTask*/)
 #ifdef _AUTOPHS2004
 	CDialog::OnActivateApp(bActive,hTask);
 #else
-
-#if _MSC_VER > 1200
-
-	CDialog::OnActivateApp(bActive, hTask);
-#else
-	CDialog::OnActivateApp(bActive, (HTASK)hTask);
-#endif
+	CDialog::OnActivateApp(bActive,(HTASK)hTask);
 #endif
 }
 

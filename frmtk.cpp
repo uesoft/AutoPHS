@@ -221,6 +221,9 @@ void CFrmTK::OnDeltaposSpin1(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 	return;
 }
 
@@ -241,5 +244,8 @@ void CFrmTK::OnOK()
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 }

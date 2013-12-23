@@ -22,7 +22,7 @@
 //
 // History
 //         10 Apr 1999  Now accepts a LOGFONT pointer and 
-//                      a tracking rect in Show(CException *e)  (Chris Maunder)
+//                      a tracking rect in Show(...)  (Chris Maunder)
 //         18 Apr 1999  Resource leak in Show fixed by Daniel Gehriger
 //          8 Mar 2000  Added double-click fix found on codeguru
 //                      web site but forgot / can't find who contributed it

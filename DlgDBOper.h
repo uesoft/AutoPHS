@@ -54,6 +54,8 @@ public:
 	//CStatusBar m_StatusBar;   //状态栏变量
 
 	
+	//CDaoDatabase m_DAODB;
+	//CDaoTableDefInfo m_DAOTbInfo;    
 	_ConnectionPtr m_pSortCon;  //Sort数据库连接对象指针
 	_ConnectionPtr m_pCon;//工作数据库对象指针
 	//之所以定义 m_pDGCon,是因为在本对话框主界面中的查看到的数据表所在的数据库对象有变化

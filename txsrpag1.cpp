@@ -8,8 +8,7 @@
 #include "modPHScal.h"
 #include "edibgbl.h"
 #include "user.h"
-#include <fstream>
-using namespace std;
+#include "fstream.h"
 #include "basDirectory.h"
 #include "modregistry.h"
 #include "DlgOutDescOpt.h"

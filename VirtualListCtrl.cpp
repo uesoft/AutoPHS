@@ -20,15 +20,13 @@ CVirtualListCtrl::CVirtualListCtrl()
 {
 	try
 	{
-		m_prsREF.CreateInstance(__uuidof(Recordset));
+		m_prsREF = new CDaoRecordset(&EDIBgbl::dbPRJ);
 		CString strSQL=_T("SELECT [SampleID], [CustomID] FROM PhsStructureREF");
-// 		m_prsREF->m_strSort = _T("[SampleID], [SEQ]");
-// 		m_prsREF->m_strFilter = _T("");
-// 		m_prsREF->Open(dbOpenSnapshot, strSQL);
-		m_prsREF->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		m_prsREF->m_strSort = _T("[SampleID], [SEQ]");
+		m_prsREF->m_strFilter = _T("");
+		m_prsREF->Open(dbOpenSnapshot, strSQL);
 	}
-	catch(CException * ep)
+	catch(CDaoException *ep)
 	{
 		ep->ReportError();
 		ep->Delete();
@@ -38,11 +36,8 @@ CVirtualListCtrl::CVirtualListCtrl()
 
 CVirtualListCtrl::~CVirtualListCtrl()
 {
-	if (m_prsREF != NULL)
-	{
-		m_prsREF->Close();
-		m_prsREF.Release();
-	}
+	m_prsREF->Close();
+	delete m_prsREF;
 }
 
 
@@ -75,10 +70,8 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 			{
 				if (subItem < m_lRefRecords + 2)
 				{
-//					m_prsREF->SetAbsolutePosition(subItem - 2);
-					LONG var = subItem - 2;
-					m_prsREF->Index = (_bstr_t)var;
-					m_prsREF->get_Collect((_variant_t)(_T("CustomID")), &varValue);
+					m_prsREF->SetAbsolutePosition(subItem - 2);
+					m_prsREF->GetFieldValue(_T("CustomID"), varValue);
 					str = vtos(varValue);
 				}
 				else
@@ -87,30 +80,28 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 			else
 				if (subItem ==0)
 				{
-					LONG var = index;
-					m_prsNAME->Index = (_bstr_t)var;//Set the file to desired index
-					m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &varValue);
+					m_prsNAME->SetAbsolutePosition(index);//Set the file to desired index
+					m_prsNAME->GetFieldValue(_T("SampleID"), varValue);
 					str = vtos(varValue);
 					CString strFilter;
 					strFilter.Format(_T("SampleID = %s"), str);
-					m_prsREF->put_Filter((_variant_t)strFilter);
-//					if (m_prsREF->CanRestart())
-						m_prsREF->Requery(adExecuteRecord);
+					m_prsREF->m_strFilter = strFilter;
+					if (m_prsREF->CanRestart())
+						m_prsREF->Requery();
 					m_lRefRecords = m_prsREF->GetRecordCount();
 				}
 				else 
 					if (subItem == 1)
 					{
-						LONG var = index;
-						m_prsREF->Index = (_bstr_t)var;
-						m_prsNAME->get_Collect((_variant_t)_T("SampleName"), &varValue);
+						m_prsNAME->SetAbsolutePosition(index);
+						m_prsNAME->GetFieldValue(_T("SampleName"), varValue);
 						str = vtos(varValue);
 					}
 					
 					//			SetItemText(index, 0, str);
 					
 		}
-		catch(CException * ep)
+		catch(CDaoException* ep)
 		{
 			ep->ReportError();
 			ep->Delete();
@@ -141,16 +132,24 @@ DWORD CVirtualListCtrl::GetItemData(int nItem) const
 {
 	try
 	{
-//		m_prsNAME->SetAbsolutePosition(nItem);
-		LONG var = nItem;
-		m_prsREF->Index = (_bstr_t)var;
+		m_prsNAME->SetAbsolutePosition(nItem);
 		COleVariant v;
-		m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &v);
+		m_prsNAME->GetFieldValue(_T("SampleID"), v);
 		return (DWORD)vtoi(v);
 	}
 	catch(CException *e)
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
 		return 0;
+	}
+
+
 }
+
+//DEL int CVirtualListCtrl::DelAllSelectedItem()
+//DEL {
+//DEL 	return 0;
+//DEL }

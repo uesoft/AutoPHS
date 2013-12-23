@@ -188,7 +188,28 @@ END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelTemplate message handlers
-
+//DEL void CSelTemplate::UpdateRS()
+//DEL {
+//DEL 	GetFilterStr();
+//DEL 	OpenTemplateRs();
+//DEL 	if(m_rsTemplateName.IsEOF() && m_rsTemplateName.IsBOF())
+//DEL 	{
+//DEL 		m_bCurrentPA=FALSE;
+//DEL 		m_bCurrentSA=FALSE;
+//DEL 		CheckDlgButton(IDC_CHECK_CURENTSA2,FALSE);
+//DEL 		CheckDlgButton(IDC_CHECK_CURRENTPA,FALSE);
+//DEL 		GetDlgItem(IDC_CHECK_CURENTSA2)->EnableWindow(FALSE);
+//DEL 		GetDlgItem(IDC_CHECK_CURRENTPA)->EnableWindow(FALSE);
+//DEL 		
+//DEL 	}
+//DEL 	else
+//DEL 	{
+//DEL 		UpdateData();
+//DEL 		GetDlgItem(IDC_CHECK_CURENTSA2)->EnableWindow(m_bFilter && m_bCurrentZdjhAvSA);
+//DEL 		GetDlgItem(IDC_CHECK_CURRENTPA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvPA);
+//DEL 		
+//DEL 	}
+//DEL }
 
 void CSelTemplate::UpdateRecordset()
 {
@@ -196,7 +217,7 @@ void CSelTemplate::UpdateRecordset()
 	GetFilterStr();
 	OpenTemplateRs();
 
-	if(m_rsTemplateName->adoEOF && m_rsTemplateName->BOF)
+	if(m_rsTemplateName.IsEOF() && m_rsTemplateName.IsBOF())
 	{
 		m_bCurrentPA=FALSE;
 		m_bCurrentSA=FALSE;
@@ -380,7 +401,7 @@ void CSelTemplate::GetFilterStr()
 		if(m_bCurrentPA)
 		{
 			//按模板列表框中当前管部选择
-			m_rsTemplateName->get_Collect((_variant_t)"PA",vTmp);
+			m_rsTemplateName.GetFieldValue("PA",vTmp);
 			m_strFilter=" PA = \'" + vtos(vTmp) + "\'";
 			m_comboPA.EnableWindow(FALSE);
 		}
@@ -438,9 +459,9 @@ void CSelTemplate::GetFilterStr()
 			//烟风煤粉管道矩形管径=null
 			if(modPHScal::bPAIsHanger())
 			{
-				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+				m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
 					"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-									+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+									+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 									+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 									+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 									+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -452,9 +473,9 @@ void CSelTemplate::GetFilterStr()
 				//2007.09.30(start)
 				if( modPHScal::gbPAForceZero )
 				{
-					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
 						"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-										+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE ( ( Pmax IS NULL OR Pmax >=" 
+										+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE ( ( Pmax IS NULL OR Pmax >=" 
 										+ ftos(tmppjg) + " ) AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 										+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 										+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -463,9 +484,9 @@ void CSelTemplate::GetFilterStr()
 				}
 				else
 				{
-					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+					m_strFilter += "( PA IN (Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + 
 						"\' WHERE CustomID IN ( Select CustomID FROM [" + modPHScal::tbnPA + "] IN \"\" [\; DATABASE=" 
-										+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
+										+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "]WHERE (Pmax >=" 
 										+ ftos(tmppjg) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ1) + " AND PictureClipData.ClassID<>" + ltos(iPAfixZ2) 
 										+") AND (Dw >= " + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 										+ " AND Dw <= " + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
@@ -502,7 +523,7 @@ void CSelTemplate::GetFilterStr()
 			{
 				if(m_strFilter!="")
 					m_strFilter += " AND ";
-				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\' WHERE " 
+				m_strFilter+=" ( PA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\' WHERE " 
 								+ strTmp + ")) ";
 			}
 		}
@@ -516,7 +537,7 @@ void CSelTemplate::GetFilterStr()
 		if(m_bCurrentSA)
 		{
 			//按模板列表框中当前根部选择
-			m_rsTemplateName->get_Collect((_variant_t)"SA",vTmp);
+			m_rsTemplateName.GetFieldValue("SA",vTmp);
 			if(m_strFilter!="")
 				m_strFilter += " AND ";
 			m_strFilter += " ( SA = \'" + vtos(vTmp) + "\' )";
@@ -568,9 +589,9 @@ void CSelTemplate::GetFilterStr()
 				m_strFilter += " AND ";
 			int Gnum;			
 			Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\'"
+			m_strFilter += " ( SA IN ( Select ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\'"
 								+ " WHERE EXISTS ( Select CustomID FROM [" + modPHScal::tbnSA + "] IN \"\" [; DATABASE=" 
-								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
+								+ modPHScal::dbZDJcrude.GetName() + " ;PWD=" + ModEncrypt::gstrDBZdjCrudePassWord + "] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= " + ltos(iG100) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG47) + " OR PictureClipData.ClassID = " + ltos(iSALbraceFixG48) + " OR PMAXH >=" 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect("ifLongVertPipe")) ? Gnum : 1))
 								+ " AND (( PictureClipData.ClassID = "
 								+ ltos(iSACantilever) + " OR PictureClipData.ClassID = " + ltos(iSALbrace) + " OR PictureClipData.ClassID = " + ltos(iG51) + " OR PictureClipData.ClassID = " + ltos(iG56) + " OR PictureClipData.ClassID = " + ltos(iG57)  + ") AND GDW1 >="
@@ -613,7 +634,7 @@ void CSelTemplate::GetFilterStr()
 			if(strTmp!="")
 			{
 				if(m_strFilter != "") m_strFilter += " AND ";
-				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + "\' WHERE " 
+				m_strFilter+="( SA IN (SELECT ID FROM PictureClipData IN \'" + EDIBgbl::dbPRJ.GetName() + "\' WHERE " 
 								+ strTmp + ") )";
 			}
 		}
@@ -657,7 +678,7 @@ void CSelTemplate::GetFilterStr()
 
 		UpdateData(FALSE);
 	}
-	catch(CException * e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -672,11 +693,11 @@ void CSelTemplate::OpenTemplateRs()
 	UpdateData();
 	m_strSortFieldName=theSortName[this->m_iSortType];
 
-	if(m_rsTemplateName->State == adStateOpen)
-		m_rsTemplateName->Close();
-// 	m_rsTemplateName.m_strFilter=_T("");
-// 	m_rsTemplateName.m_strSort=_T("");
-// 	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
+	if(m_rsTemplateName.IsOpen())
+		m_rsTemplateName.Close();
+	m_rsTemplateName.m_strFilter=_T("");
+	m_rsTemplateName.m_strSort=_T("");
+	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
 
 	strSQL=_T("SELECT * FROM phsStructureName ");
 
@@ -693,9 +714,7 @@ void CSelTemplate::OpenTemplateRs()
 		if(this->m_bDesc)
 			strSQL += _T(" DESC ");
 	}
-//	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
-	m_rsTemplateName->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
 	if (m_iSaveID == -1)
 		strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	else
@@ -704,12 +723,11 @@ void CSelTemplate::OpenTemplateRs()
 		m_iSaveID = -1;
 	}
 
-	_variant_t vTmp;
-	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchBackward);
-	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
-		m_rsTemplateName->MoveFirst();
+	if(!m_rsTemplateName.FindFirst(strTemp) &&
+	   !(m_rsTemplateName.IsEOF() && m_rsTemplateName.IsBOF()))
+		m_rsTemplateName.MoveFirst();
 
-	m_listctrlStruct.m_prsNAME = m_rsTemplateName;
+	m_listctrlStruct.m_prsNAME = &m_rsTemplateName;
 
 	LoadListName();
 	DataReposition();
@@ -725,34 +743,30 @@ void CSelTemplate::LoadListName()
 		m_listctrlStruct.SetRedraw(FALSE);
 		m_listctrlStruct.DeleteAllItems();
 		m_listctrlStruct.DeleteAllColumns();
-		if(m_rsTemplateName->State != adStateOpen)
+		if(!m_rsTemplateName.IsOpen())
 			return;
-		if(m_rsTemplateName->BOF && m_rsTemplateName->adoEOF)
+		if(m_rsTemplateName.IsBOF() && m_rsTemplateName.IsEOF())
 			return;
 		COleVariant v;
 		COleVariant book;
 
-		m_rsTemplateName->get_Collect((_variant_t)_T("SampleID"),v);
+		m_rsTemplateName.GetFieldValue(_T("SampleID"),v);
 		long id=vtoi(v);		
-		long iSelItem = m_rsTemplateName->AbsolutePosition;
+		long iSelItem = m_rsTemplateName.GetAbsolutePosition();
 
-		book=m_rsTemplateName->Bookmark;
-		m_rsTemplateName->MoveLast();
-		long count = m_rsTemplateName->RecordCount;
-		//			m_rsTemplateName->MoveFirst();
+		book=m_rsTemplateName.GetBookmark();
+		m_rsTemplateName.MoveLast();
+		long count = m_rsTemplateName.GetRecordCount();
+		//			m_rsTemplateName.MoveFirst();
 //		int iSelItem=0;
 		
-//		rsRef(&EDIBgbl::dbPRJ);
-		_RecordsetPtr rsRef;
-		rsRef.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rsRef(&EDIBgbl::dbPRJ);
 		CString strSQL = _T("SELECT max(MaxColNum) AS [MaxCount] FROM [SELECT Count(*) AS MaxColNum FROM PhsStructureREF GROUP BY PhsStructureREF.SampleID]. AS [ColNumTable]");
 		// 计算连接件的最大数目，确定ListCtrl中的列数。
 
-//		rsRef.Open(dbOpenSnapshot,strSQL);
-		rsRef->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		rsRef->get_Collect((_variant_t)_T("MaxCount"), &v);
-		rsRef->Close();
+		rsRef.Open(dbOpenSnapshot,strSQL);
+		rsRef.GetFieldValue(_T("MaxCount"), v);
+		rsRef.Close();
 		int nMaxCol = vtoi(v);
 		//		m_nFields = nMaxCol;
 		CString s;
@@ -767,25 +781,121 @@ void CSelTemplate::LoadListName()
 		m_listctrlStruct.SetItemCount(count);
 		m_listctrlStruct.SetRedraw();	
 		
-		m_rsTemplateName->Bookmark = (book);
+		m_rsTemplateName.SetBookmark(book);
 		//if(this->m_ListTmpName.GetCount()>0)
 		//	this->m_ListTmpName.SetCurSel(iSelItem);
 		if(m_listctrlStruct.GetItemCount()>0)
 			this->m_listctrlStruct.SetItemState(iSelItem,0xffff,LVIS_SELECTED);
 		
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
 	}
+
+	
+/*
+//		m_listctrlStruct.SetRedraw(FALSE);
+		m_listctrlStruct.DeleteAllItems();
+		m_listctrlStruct.DeleteAllColumns();
+		try{
+			if(!m_rsTemplateName.IsOpen())
+				return;
+			if(m_rsTemplateName.IsBOF() && m_rsTemplateName.IsEOF())
+				return;
+			COleVariant v;
+			COleVariant book;
+			m_rsTemplateName.GetFieldValue(_T("SampleID"),v);
+			long id=vtoi(v);
+			book=m_rsTemplateName.GetBookmark();
+			m_rsTemplateName.MoveLast();
+			m_rsTemplateName.MoveFirst();
+			int iSelItem=0;
+			
+			LVITEM item;
+			item.mask=LVIF_TEXT;
+			item.iItem=0;
+			item.iSubItem=0;
+			
+			LVCOLUMN column;
+			column.mask=LVCF_TEXT|LVCF_WIDTH;
+			column.pszText=_T("");
+			column.cx=200;
+			m_listctrlStruct.InsertColumn(0,&column);
+			
+			column.cx=40;
+			
+			int iColCount=1;
+			CString strSQL;
+			strSQL=_T("SELECT SampleID, CustomID FROM PhsStructureREF ORDER BY SampleID,SEQ");
+			CDaoRecordset rsRef(&EDIBgbl::dbPRJ);
+			rsRef.Open(dbOpenSnapshot,strSQL);
+					int count = rsRef.GetRecordCount();
+			for(;!m_rsTemplateName.IsEOF();m_rsTemplateName.MoveNext())
+			{
+				int iItem;
+				item.iSubItem=0;
+				CString strTemp;
+				m_rsTemplateName.GetFieldValue(_T("SampleName"),v);
+				strTemp=vtos(v);
+				item.pszText=(LPTSTR)(LPCTSTR)strTemp;
+				iItem=m_listctrlStruct.InsertItem(&item);
+				item.iSubItem++;
+				
+				m_rsTemplateName.GetFieldValue(_T("SampleID"),v);
+				
+				int iSID=vtoi(v);
+				m_listctrlStruct.SetItemData(iItem,(DWORD)(long)iSID);
+				
+				if(iSID==id)
+					iSelItem=iItem;
+				
+				CString strFind;
+				strFind.Format(_T("SampleID=%d"),iSID);
+				if(rsRef.FindFirst(strFind))
+				{
+					int count = rsRef.GetRecordCount();
+					while(!rsRef.IsEOF())
+					{
+						rsRef.GetFieldValue(_T("SampleID"),v);
+						int iSempID=vtoi(v);
+						if(iSempID!=iSID)
+							break;
+						rsRef.GetFieldValue(_T("CustomID"),v);
+						CString strPar=vtos(v);
+						if(iColCount<=item.iSubItem)
+						{
+							m_listctrlStruct.InsertColumn(item.iSubItem,&column);
+							iColCount=item.iSubItem+1;
+						}
+						item.pszText=(LPTSTR)(LPCTSTR)strPar;
+						this->m_listctrlStruct.SetItem(&item);
+						item.iSubItem++;
+						rsRef.MoveNext();
+					}
+				}
+				item.iItem++;
+			}
+			m_rsTemplateName.SetBookmark(book);
+			//if(this->m_ListTmpName.GetCount()>0)
+			//	this->m_ListTmpName.SetCurSel(iSelItem);
+			if(m_listctrlStruct.GetItemCount()>0)
+				this->m_listctrlStruct.SetItemState(iSelItem,0xffff,LVIS_SELECTED);
+			
+		}
+		catch(::CDaoException * e)
+		{
+			e->ReportError();
+			e->Delete();
+		}
+*/
 }
 
 void CSelTemplate::LoadListPA()
 {
 	CString strSQL;
-	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(Recordset));
+	CDaoRecordset rs;
 	m_bLoadPA=TRUE;
 	try
 	{
@@ -796,20 +906,18 @@ void CSelTemplate::LoadListPA()
 			strSQL+=" WHERE " + m_strFilter;
 
 		COleVariant vTmp;
-// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-// 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		while(!rs->adoEOF)
+		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L, &vTmp);
+			rs.GetFieldValue(0,vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboPA.AddString(sTmp);
-			rs->MoveNext();
+			rs.MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -820,31 +928,59 @@ void CSelTemplate::LoadListPA()
 void CSelTemplate::LoadListSA()
 {
 	CString strSQL;
-	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(Recordset));
+	CDaoRecordset rs;
 	m_bLoadSA=TRUE;
 	try
 	{
 		m_comboSA.ResetContent();
 		m_comboSA.AddString(GetResStr(IDS_ALL));
+		/*strSQL="Select [CustomID]  FROM [PictureClipData] WHERE [Index]=" + ltos(iSA);
+		CString strTmp;
+		if(m_bSABEAM)
+		{ 
+			strTmp.Format(" ClassID = %d " , iSAbeam);
+		}
+		if(m_bSACANTil)
+		{
+			if(strTmp=="")
+				strTmp.Format(" ClassID = %d " , iSACantilever);
+			else
+				strTmp +=" OR ClassID = " + ltos(iSACantilever);
+		}
+		if(m_bSALBRACE)
+		{
+			if(strTmp=="")
+				strTmp.Format(" ClassID = %d " , iSALbrace);
+			else
+				strTmp +=" OR ClassID = " + ltos(iSALbrace);
+		}
+		if(m_bSAGCEMENT)
+		{
+			if(strTmp=="")
+				strTmp.Format(" ClassID = %d " , iGCement);
+			else
+				strTmp +=" OR ClassID = " + ltos(iGCement);
+		}
+		if(strTmp !="")
+		{
+			strSQL +=" AND (" + strTmp + ")";
+		}*/
 		strSQL="SELECT DISTINCT [SA] FROM [phsStructureName] ";
 		if(m_strFilter!="")
 			strSQL+=" WHERE " + m_strFilter;
 		COleVariant vTmp;
-// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-// 		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		while(!rs->adoEOF)
+		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)0L, &vTmp);
+			rs.GetFieldValue(0,vTmp);
 			CString sTmp=modPHScal::sFindCustomID(vtos(vTmp));
 			if (sTmp!="")
 				m_comboSA.AddString(sTmp);
-			rs->MoveNext();
+			rs.MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1114,7 +1250,7 @@ void CSelTemplate::DataReposition()
 		m_lstPart.ResetContent();  //LFX 2005.3.25	加
 
 		//记录集为空是因为在现有过滤串条件下没有符合的模板可供选择，所以在这直接返回没问题
-		if( m_rsTemplateName->BOF && m_rsTemplateName->adoEOF )
+		if( m_rsTemplateName.IsBOF() && m_rsTemplateName.IsEOF() )
 		{
 			 //LFX 2005.3.25 加   显示正确的当前信息
 			strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,0,0,0,0);    
@@ -1123,46 +1259,43 @@ void CSelTemplate::DataReposition()
 			//END //LFX 2005.3.25 加
 		}
 
-		m_rsTemplateName->get_Collect((_variant_t)"SampleID",v);
+		m_rsTemplateName.GetFieldValue("SampleID",v);
 		//if(vtoi(v) == m_iCurSampleID)  LFX 注掉
 		if (false)    //LFX  不执行下面语句，避免结构框不刷新
 		{
-			m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE",v);   //LFX 2005.3.25   加
-			strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName->AbsolutePosition+1,m_rsTemplateName->RecordCount,vtoi(v)); //LFX 2005.3.25 加
+			m_rsTemplateName.GetFieldValue("FREQUENCE",v);   //LFX 2005.3.25   加
+			strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName.GetAbsolutePosition()+1,m_rsTemplateName.GetRecordCount(),vtoi(v)); //LFX 2005.3.25 加
 			return;   //原
 		}
 		this->m_iCurSampleID = vtoi(v);
 		//FrameSelPhs.Caption = "选择支吊架组装模板" & modPHScal::iSelSampleID & " (第" & (m_rsTemplateName.Recordset.AbsolutePosition + 1) & "项 共" & m_rsTemplateName.Recordset.RecordCount & "项 使用频度" & m_rsTemplateName.Recordset.Fields("FREQUENCE") & ")"
-		m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE",v);
-		strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName->AbsolutePosition+1,m_rsTemplateName->RecordCount,vtoi(v));
+		m_rsTemplateName.GetFieldValue("FREQUENCE",v);
+		strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName.GetAbsolutePosition()+1,m_rsTemplateName.GetRecordCount(),vtoi(v));
 		GetDlgItem(IDC_STATIC_CAPTION)->SetWindowText(strTemp);
-		m_rsTemplateName->get_Collect((_variant_t)"SampleName",v);
+		m_rsTemplateName.GetFieldValue("SampleName",v);
 		//if(v.vt!=VT_NULL)
 		//	sBmpName = basDirectory::TemplateDir + vtos(v);
 		//if(sBmpName.Find(".dwg",0)==-1)
 		//	sBmpName+=".dwg";
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-//		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+		CDaoRecordset rs;
+		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 		strSQL.Format(_T("SELECT CustomID FROM phsStructureREF WHERE SampleID=%d ORDER BY SEQ"),
 			this->m_iCurSampleID);
-//		rs.Open(dbOpenSnapshot,strSQL);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs.Open(dbOpenSnapshot,strSQL);
 		m_lstStruct.ResetContent();
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
-			rs->get_Collect((_variant_t)"CustomID",v);
+			rs.GetFieldValue("CustomID",v);
 			if(vtos(v)!="")
 				m_lstStruct.AddString(vtos(v));
-			rs->MoveNext();
+			rs.MoveNext();
 		}
 		this->m_bSaveChange=TRUE;
 		this->GetDlgItem(IDC_CMD_SAVE)->EnableWindow(FALSE);
-		rs->Close();
+		rs.Close();
 		Cavphs->SourceObj = &m_lstStruct;
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1456,9 +1589,8 @@ try{	// TODO: Add your control notification handler code here
 			//改名称
 			CString X = Cavphs->GetPhsAssembleName(m_iLastSampleID);
 			//下面2句容易造成级联事件，导致死机。
-			m_rsTemplateName->Requery(adExecuteRecord);
-			_variant_t vTmp;
-			m_iSavex = m_rsTemplateName->Find((_bstr_t)("SampleID=" + ltos(m_iLastSampleID)), 0, adSearchBackward);
+			m_rsTemplateName.Requery();
+			m_iSavex = m_rsTemplateName.FindFirst("SampleID=" + ltos(m_iLastSampleID));
 			LoadListName();
 			DataReposition();
 			m_bSaveChange=TRUE;
@@ -1533,9 +1665,7 @@ try{	// TODO: Add your control notification handler code here
 }
 	catch(_com_error & e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 		return;
 	}
 }
@@ -1554,12 +1684,12 @@ void CSelTemplate::OnOK()
 	try
 	{
 		COleVariant v;
-		this->m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE",v);
-//		this->m_rsTemplateName.Edit();
+		this->m_rsTemplateName.GetFieldValue("FREQUENCE",v);
+		this->m_rsTemplateName.Edit();
 		int vi=vtoi(v);
 		v.lVal=vi+1;
-		this->m_rsTemplateName->put_Collect((_variant_t)"FREQUENCE",v);
-		this->m_rsTemplateName->Update();
+		this->m_rsTemplateName.SetFieldValue("FREQUENCE",v);
+		this->m_rsTemplateName.Update();
 		//如果是支吊架原始数据表
 		//MsgBox "支吊架号" & zdjh & " 组装模板号" & iSelSampleID
 		//MsgBox ResolveResString(iUE_ZDJHxAndSampleIDx, "|1", zdjh, "|2", iSelSampleID)
@@ -1568,38 +1698,34 @@ void CSelTemplate::OnOK()
 		if(intSampleID != this->m_iCurSampleID )
 		{		//当标准支吊架的模板改变时，删除支吊架原来模板结构，以便重建支吊架的结构，
 		
-//			rsTmpZB(&EDIBgbl::dbPRJDB );
-			_RecordsetPtr rsTmpZB;
-			rsTmpZB.CreateInstance(__uuidof(Recordset));
+			CDaoRecordset rsTmpZB(&EDIBgbl::dbPRJDB );
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-//			rsTmpZB.Open(dbOpenSnapshot,strTemp);
-			rsTmpZB->Open((_bstr_t)strTemp, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+			rsTmpZB.Open(dbOpenSnapshot,strTemp);
 			int iCount;
-			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
+			if(rsTmpZB.IsBOF() && rsTmpZB.IsEOF())
 				iCount=0;
 			else
 			{
-				rsTmpZB->MoveLast();
-				iCount=rsTmpZB->RecordCount;
+				rsTmpZB.MoveLast();
+				iCount=rsTmpZB.GetRecordCount();
 			}
-			rsTmpZB->Close();
+			rsTmpZB.Close();
 			
 
 			if(iCount <= 1)
 			{
 				strTemp.Format("DELETE * FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-				EDIBgbl::dbPRJDB->Execute((_bstr_t)strTemp, NULL, adCmdText);
+				EDIBgbl::dbPRJDB.Execute(strTemp);
 
 				strTemp.Format("DELETE * FROM Z1 WHERE VolumeID = %d AND ZDJH = %d ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-				//EDIBgbl::dbPRJDB->Execute((_bstr_t)strTemp, NULL, adCmdText);
+				//EDIBgbl::dbPRJDB.Execute(strTemp);
 			}
 			else
 			{
 				if(MessageBox("确认要删除非标准的支吊架吗？","警告",MB_OKCANCEL|MB_ICONEXCLAMATION )==IDOK)
 				{
 					strTemp.Format("DELETE * FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
-					EDIBgbl::dbPRJDB->Execute((_bstr_t)strTemp, NULL, adCmdText);
+					EDIBgbl::dbPRJDB.Execute(strTemp);
 				}
 			}
 			
@@ -1610,7 +1736,7 @@ void CSelTemplate::OnOK()
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("iSelSampleID",_variant_t((long)modPHScal::iSelSampleID));
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 	}
-	catch(CException* e)
+	catch(CDaoException* e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1618,13 +1744,99 @@ void CSelTemplate::OnOK()
 	}
 	catch(_com_error & e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 		return;
 	}
 	CDialog::OnOK();
 }
+
+//DEL void CSelTemplate::OnSelchangeListName() 
+//DEL {
+//DEL 	// TODO: Add your control notification handler code here
+//DEL 	try
+//DEL 	{
+//DEL 	    if(!m_rsTemplateName.IsOpen())
+//DEL 			return;
+//DEL 
+//DEL 		CString sTmp;
+//DEL 		int ix=m_ListTmpName.GetCurSel();
+//DEL 		CString strCurItem;
+//DEL 		m_ListTmpName.GetText(ix,strCurItem);
+//DEL 		if(ix<0 )
+//DEL 			return;
+//DEL 
+//DEL 		sTmp.Format(_T("SampleID=%d"),m_ListTmpName.GetItemData(ix));
+//DEL 
+//DEL 		this->m_rsTemplateName.FindFirst(sTmp);
+//DEL 
+//DEL 		this->DataReposition();
+//DEL 
+//DEL 
+//DEL 		//在点到相应模板时确认其是否“常用模板”
+//DEL 		m_btnFavoriteTemplate.ShowWindow(SW_SHOW);
+//DEL 		if( IsFavoriteTemplate(m_ListTmpName.GetItemData(ix)) )
+//DEL 		{
+//DEL 			m_btnFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_NOT_FAVORITE));
+//DEL 			m_bSetFavorite = FALSE;
+//DEL 		}
+//DEL 		else
+//DEL 		{
+//DEL 			m_btnFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_FAVORITE));
+//DEL 			m_bSetFavorite = TRUE;
+//DEL 		}
+//DEL 
+//DEL 		//在点到相应模板时确认其是否“默认常用模板”
+//DEL 		if( m_bIsOpenDefaultFavoriteTemplate )
+//DEL 			m_btnDefaultFavoriteTemplate.ShowWindow(SW_SHOW);
+//DEL 		else
+//DEL 			m_btnDefaultFavoriteTemplate.ShowWindow(SW_HIDE);
+//DEL 
+//DEL 		if( IsDefaultFavoriteTemplate(m_ListTmpName.GetItemData(ix)) ) 
+//DEL 		{
+//DEL 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_NOT_DEFAULT_FAVORITE));
+//DEL 			m_bSetDefaultFavorite = FALSE;
+//DEL 		}
+//DEL 		else
+//DEL 		{
+//DEL 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_DEFAULT_FAVORITE));
+//DEL 			m_bSetDefaultFavorite = TRUE;
+//DEL 		}
+//DEL 
+//DEL 		//将对应模板名称的所有支吊架组装结构都显示在IDC_LISTCTRL_STRUCT列表中
+//DEL 		m_listctrlStruct.DeleteAllItems();
+//DEL 		m_listctrlStruct.DeleteAllColumns();
+//DEL 
+//DEL 		CDaoRecordset rsPhsSturctureName,rsStructureREF;
+//DEL 		rsPhsSturctureName.m_pDatabase = &EDIBgbl::dbSORT;
+//DEL 		rsStructureREF.m_pDatabase = &EDIBgbl::dbSORT;
+//DEL 		CString strSQL;
+//DEL 		strSQL.Format("SELECT [SampleID] FROM PhsStructureName WHERE [SampleName]=\'%s\' ORDER BY [SampleID]",strCurItem);
+//DEL 		rsPhsSturctureName.Open(dbOpenDynaset,strSQL);
+//DEL 		if( rsPhsSturctureName.IsEOF() || rsPhsSturctureName.IsBOF() )
+//DEL 			return;
+//DEL 		for(int iCol=0; !rsPhsSturctureName.IsEOF(); rsPhsSturctureName.MoveNext(),iCol++)
+//DEL 		{ 
+//DEL 			strSQL.Format("SELECT [CustomID] FROM PhsStructureREF WHERE [SampleID]=%d ORDER BY SEQ",vtoi(rsPhsSturctureName.GetFieldValue("SampleID")));
+//DEL 			if( rsStructureREF.IsOpen() )
+//DEL 				rsStructureREF.Close();
+//DEL 			rsStructureREF.Open(dbOpenDynaset,strSQL);
+//DEL 			
+//DEL 			//以下就往准备好IDC_LISTCTRL_STRUCT中加入支吊架组装结构
+//DEL 			CString strColumn;			
+//DEL 			strColumn.Format("支吊架结构%d",iCol);
+//DEL 			m_listctrlStruct.AddColumn(strColumn,iCol,m_listctrlStruct.GetStringWidth(strColumn.GetBuffer(strColumn.GetLength()))+20);
+//DEL 			for(int i=0; !rsStructureREF.IsEOF(); rsStructureREF.MoveNext(),i++)
+//DEL 			{
+//DEL 				m_listctrlStruct.AddItem(i,iCol,vtos(rsStructureREF.GetFieldValue("CustomID")));
+//DEL 			}
+//DEL 		}
+//DEL 	}
+//DEL 	catch(::CDaoException * e)
+//DEL 	{
+//DEL 		e->ReportError();
+//DEL 		e->Delete();
+//DEL 	}
+//DEL }
 
 void CSelTemplate::OnDestroy() 
 {
@@ -1654,7 +1866,7 @@ void CSelTemplate::OnCheckPa()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(); 
-	if(m_bRePA == TRUE)
+	if(m_bRePA == true)
 	{
 		for(int i=0;i<6;i++)
 			GetDlgItem(m_CheckID[i])->EnableWindow(TRUE);
@@ -1730,9 +1942,9 @@ void CSelTemplate::SetFavoriteTemplate()
 		m_btnFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_FAVORITE));
 	}
 
-	EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
+	EDIBgbl::dbPRJ.Execute(strSQL);
 	//同时更新sort.mdb，保持同步
-	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 dbSORT 改为 "dbPHScode"
+	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 dbSORT 改为 "dbPHScode"
 }
 
 void CSelTemplate::OnRadioFavoriteTemplate() 
@@ -1790,9 +2002,9 @@ void CSelTemplate::SetDefaultFavoriteTemplate()
 		m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_DEFAULT_FAVORITE));
 	}
 
-	EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
+	EDIBgbl::dbPRJ.Execute(strSQL);
 	//同时更新sort.mdb，保持同步
-	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 "dbSORT"改为 "dbPHScode"
+	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 "dbSORT"改为 "dbPHScode"
 }
 
 BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
@@ -1804,13 +2016,10 @@ BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
 
 	try
 	{
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-// 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
-// 		rs.Open(dbOpenDynaset,strSQL);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		if( rs->BOF || rs->adoEOF )
+		CDaoRecordset rs;
+		rs.m_pDatabase = &EDIBgbl::dbPRJ;
+		rs.Open(dbOpenDynaset,strSQL);
+		if( rs.IsBOF() || rs.IsEOF() )
 		{
 			bFavorite = FALSE;
 		}
@@ -1818,8 +2027,8 @@ BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
 		{
 			bFavorite = TRUE;
 		}
-		rs->Close();
-	}catch( CException& e )
+		rs.Close();
+	}catch( CDaoException& e )
 	{
 		e.ReportError();
 		e.Delete();
@@ -1836,13 +2045,10 @@ BOOL CSelTemplate::IsDefaultFavoriteTemplate(long lSampleID)
 	BOOL bDefaultFavorite = FALSE;
 	try 
 	{
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-// 		rs.m_pDatabase = &EDIBgbl::dbPRJ;
-// 		rs.Open(dbOpenDynaset,strSQL);
-		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		if( rs->BOF || rs->adoEOF )
+		CDaoRecordset rs;
+		rs.m_pDatabase = &EDIBgbl::dbPRJ;
+		rs.Open(dbOpenDynaset,strSQL);
+		if( rs.IsBOF() || rs.IsEOF() )
 		{
 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_NOT_DEFAULT_FAVORITE));
 			bDefaultFavorite = FALSE;
@@ -1852,8 +2058,8 @@ BOOL CSelTemplate::IsDefaultFavoriteTemplate(long lSampleID)
 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_DEFAULT_FAVORITE));
 			bDefaultFavorite = TRUE;
 		}
-		rs->Close();
-	}catch( CException &e )
+		rs.Close();
+	}catch( CDaoException &e )
 	{
 		e.ReportError();
 		e.Delete();
@@ -1867,7 +2073,7 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 	// TODO: Add your control notification handler code here
 	try
 	{
-	    if(m_rsTemplateName->State != adStateOpen)
+	    if(!m_rsTemplateName.IsOpen())
 			return;
 
 		CString sTmp;
@@ -1888,8 +2094,7 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 
 		sTmp.Format(_T("SampleID=%d"),iTmpID);
 
-		_variant_t vTmp;
-		this->m_rsTemplateName->Find((_bstr_t)(sTmp), 0, adSearchBackward);
+		this->m_rsTemplateName.FindFirst(sTmp);
 
 		this->DataReposition();
 		
@@ -1926,7 +2131,7 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 
 		//将对应模板名称的所有支吊架组装结构都显示在IDC_LISTCTRL_STRUCT列表中
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1955,7 +2160,7 @@ void CSelTemplate::OnButtonDelTemplate()
 //				for(int i=m_lstStruct.GetCount()-1;i>=0;i--)
 //					m_lstStruct.DeleteString(i);
 				UpdateRecordset();			
-//				m_rsTemplateName->Requery();
+//				m_rsTemplateName.Requery();
 				m_listctrlStruct.SetRedraw();	
 					
 
@@ -1991,11 +2196,11 @@ void CSelTemplate::DeleteItem(POSITION pos)
 
 	CString strSQL;
 	strSQL.Format(_T("DELETE FROM PhsStructureNAME WHERE [SampleID] = %d"), iTmpID);
-	EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
+	EDIBgbl::dbPRJ.Execute(strSQL);
+	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 "dbSORT" 改为 "dbPHScode"
 	strSQL.Format(_T("DELETE FROM PhsStructureREF WHERE [SampleID] = %d"), iTmpID);
-	EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
+	EDIBgbl::dbPRJ.Execute(strSQL);
+	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 "dbSORT" 改为 "dbPHScode"
 	m_listctrlStruct.DeleteItem(nItemPos);
 
 }
@@ -2010,11 +2215,11 @@ void CSelTemplate::OnCmdCancel()
    {
 	   CString strSQL;
 	  strSQL.Format(_T("DELETE FROM PhsStructureNAME WHERE SampleID = %d"),iSaveTmpID);
-	   EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-    	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
+	   EDIBgbl::dbPRJ.Execute(strSQL);
+    	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 "dbSORT" 改为 "dbPHScode"
 	   strSQL.Format(_T("DELETE FROM PhsStructureREF WHERE [SampleID] = %d"), iSaveTmpID);
-	   EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-    	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
+	   EDIBgbl::dbPRJ.Execute(strSQL);
+    	EDIBgbl::dbPHScode.Execute(strSQL);//20071101 "dbSORT" 改为 "dbPHScode"
 		m_iSaveID = -1;
 
 			UpdateRecordset();
@@ -2032,7 +2237,7 @@ void CSelTemplate::initUpdateRecordset()
 	::CWaitCursor curWait;
 	GetFilterStr();
     initOpenTemplateRs();
-	if(m_rsTemplateName->adoEOF && m_rsTemplateName->BOF)
+	if(m_rsTemplateName.IsEOF() && m_rsTemplateName.IsBOF())
 	{
 		m_bCurrentPA=FALSE;
 		m_bCurrentSA=FALSE;
@@ -2077,11 +2282,11 @@ void CSelTemplate::initOpenTemplateRs()
 	UpdateData();
 	m_strSortFieldName=theSortName[this->m_iSortType];
 
-	if(m_rsTemplateName->State == adStateOpen)
-		m_rsTemplateName->Close();
-// 	m_rsTemplateName.m_strFilter=_T("");
-// 	m_rsTemplateName.m_strSort=_T("");
-// 	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
+	if(m_rsTemplateName.IsOpen())
+		m_rsTemplateName.Close();
+	m_rsTemplateName.m_strFilter=_T("");
+	m_rsTemplateName.m_strSort=_T("");
+	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
 
 	strSQL=_T("SELECT * FROM phsStructureName ");
 
@@ -2098,14 +2303,11 @@ void CSelTemplate::initOpenTemplateRs()
 		if(this->m_bDesc)
 			strSQL += _T(" DESC ");
 	}
-//	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
-	m_rsTemplateName->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+	m_rsTemplateName.Open(dbOpenDynaset,strSQL);
 	strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
-	_variant_t vTmp;
-	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchBackward);
-	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
-		m_rsTemplateName->MoveFirst();
+	if(!m_rsTemplateName.FindFirst(strTemp) &&
+	   !(m_rsTemplateName.IsEOF() && m_rsTemplateName.IsBOF()))
+		m_rsTemplateName.MoveFirst();
 	LoadListName();
 	DataReposition();
 

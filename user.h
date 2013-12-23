@@ -157,7 +157,7 @@ extern bool inline IsNull(_variant_t &v);
 #define MINOR(X)   (WORD)X 
 extern CString gObjMainFrm;
 //extern int vtoi( VARIANT & v );
-extern void RsDeleteAll(_RecordsetPtr rs);
+extern void RsDeleteAll(CDaoRecordset& rs);
 extern COleVariant inline STR_VAR( LPCTSTR X );
 #define V_STR( X ) (X.vt!=VT_NULL ? X.pcVal : "") 
 extern _ConnectionPtr conPRJDB;
@@ -173,7 +173,7 @@ extern bool GetAllMenu(HMENU hMenu,long pos);
 extern bool DisabledSystemMenu(HWND hWnd,HMENU hMenu);
 extern CString inline btos(BOOL v);
 extern int inline ShowMessage(LPCTSTR lpszText, UINT nType = MB_OK,LPCTSTR lpszTitle=AfxGetApp()->m_pszAppName, UINT nIDHelp = 0 );
-extern COleVariant inline GetFields(_RecordsetPtr rs,CString FieldName);
+extern COleVariant inline GetFields(CDaoRecordset & rs,CString FieldName);
 extern void SetWindowCenter(HWND hWnd); 
 extern void inline DoEvents();
 extern BOOL MakePath(CString strDirName);

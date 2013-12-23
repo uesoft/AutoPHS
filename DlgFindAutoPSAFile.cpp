@@ -224,25 +224,21 @@ int CDlgFindAutoPSAFile::GetPSARecentFile()
 **************************************************************************/
 int CDlgFindAutoPSAFile::GetPHSRecentFile()
 {
-	 _RecordsetPtr pfileroad;
-	 pfileroad.CreateInstance(__uuidof(Recordset));
-//	 pfileroad.m_pDatabase = &EDIBgbl::dbPRJDB;
+	 CDaoRecordset pfileroad;
+	 pfileroad.m_pDatabase = &EDIBgbl::dbPRJDB;
 	 CString fileSQL;
 	
      fileSQL.Format("SELECT * FROM ZY WHERE [VolumeID]=%d Order by FileNameID DESC",EDIBgbl::SelVlmID);
-//	 pfileroad.Open(dbOpenDynaset,fileSQL);//得到符合条件的记录集
-	 pfileroad->Open((_bstr_t)fileSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			   adOpenKeyset, adLockOptimistic, adCmdText); 
+	 pfileroad.Open(dbOpenDynaset,fileSQL);//得到符合条件的记录集
 
      CString strValue;//文件路径 
 	 CString strItem;//序号
    	 LVITEM  lvItem;
 	 m_nCount = 0;
 	 
-//	 VARIANT vTmp;
-	 while (!pfileroad->adoEOF && m_nCount<8)
+	 while (!pfileroad.IsEOF() && m_nCount<8)
 	 {//有符合条件的记录集且显示的路径没有超过8条
-		strValue = vtos(pfileroad->GetCollect((_variant_t)2L));//得到文件路径
+		strValue = vtos(pfileroad.GetFieldValue(2));//得到文件路径
 
 		if (!strValue.IsEmpty() && FileExists(strValue))
 		{
@@ -257,7 +253,7 @@ int CDlgFindAutoPSAFile::GetPHSRecentFile()
 			m_ctrlFileList.SetItem(&lvItem);
 			m_nCount++;
 		}
-		pfileroad->MoveNext();//得到下一条记录
+		pfileroad.MoveNext();//得到下一条记录
 	 }
 
 	 return m_nCount;

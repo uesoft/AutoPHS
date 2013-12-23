@@ -124,102 +124,88 @@ void CFrmPreferences::OnOK()
 		
 		COleVariant tmpvar;
 		int inttbExist=0;//0表示第一次进入循环，1表示表存在，2表示表不存在
-		_RecordsetPtr rsX;
-		rsX.CreateInstance(__uuidof(Recordset));
-		_ConnectionPtr db, db1;
-		db.CreateInstance(__uuidof(Connection));
-		db1.CreateInstance(__uuidof(Connection));
+		CDaoRecordset rsX;
+		CDaoDatabase db,db1;
+
 
 		long  lngErrNum ;
 		CString sTmp;
 
-// 		db.Open( basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
-		db->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source="+basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),
-			(_bstr_t)"", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
-
-// 		db1.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
-		db1->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source="+basDirectory::ProjectDBDir+_T("sort.mdb")),
-			(_bstr_t)"", (_bstr_t)"",adConnectUnspecified);
-
-		if(rsX->State == adStateOpen)
-			rsX->Close();
-// 		rsX.m_pDatabase = &EDIBgbl::dbSORT;
-// 		rsX.Open(dbOpenDynaset,_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
-		rsX->Open((_bstr_t)_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		db.Open( basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
+		db1.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
+//		if(rsX.IsOpen())
+//			rsX.Close();
+		rsX.m_pDatabase = &EDIBgbl::dbSORT;
+		rsX.Open(dbOpenDynaset,_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
 		modPHScal::gsPhsSPRINGSel.TrimLeft();modPHScal::gsPhsSPRINGSel.TrimRight(); 
-		if( rsX->adoEOF && rsX->BOF )
+		if( rsX.IsEOF() && rsX.IsBOF() )
 		{
 			lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuBoltsNuts"),modPHScal::gsPhsBoltsNutsSel);
 			ShowMessage(sTmp);
-			if(rsX->State == adStateOpen)
-				rsX->Close();
+			if(rsX.IsOpen())
+				rsX.Close();
 			
-			if(db->State == adStateOpen)
-				db->Close();
+			if(db.IsOpen())
+				db.Close();
 			
-			if(db1->State == adStateOpen)
-				db1->Close();
+			if(db1.IsOpen())
+				db1.Close();
 			CPropertySheet::EndDialog(IDOK);
 		}
 		if(modPHScal::gsPhsSPRINGSel != _T("") ){
 			// rsX->Filter=_variant_t(CString(_T("standard=\'") )+ gsPhsPASel + _T("\'"));
 			//rsX.FindFirst
-			//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsSPRINGSel+_T("\'")),0,adSearchBackward);
-			HRESULT hr = S_OK;
-			CString strFind;
-			strFind = _T("standard=\'")+modPHScal::gsPhsSPRINGSel+_T("\'");
-			hr = rsX->Find((_bstr_t)strFind, 0, adSearchBackward, rsX->Bookmark);
-			if( !rsX->adoEOF)	   
+			//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsSPRINGSel+_T("\'")),0,adSearchForward);
+			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+modPHScal::gsPhsSPRINGSel+_T("\'")))	   
 			{
-				rsX->MoveFirst();
+				rsX.MoveFirst();
 				inttbExist=2;
 			}
 		}
 		else
 		{
-			rsX->MoveFirst();
+			rsX.MoveFirst();
 			inttbExist=2;
 		}
-		while((inttbExist!=1)&&(!rsX->adoEOF))
+		while((inttbExist!=1)&&(!rsX.IsEOF()))
 		{
-			rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
+			rsX.GetFieldValue(_T("standard"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::gsPhsSPRINGSel=_T("");
 			else{
 				modPHScal::gsPhsSPRINGSel=vtos(tmpvar);
 				modPHScal::gsPhsSPRINGSel.TrimLeft();modPHScal::gsPhsSPRINGSel.TrimRight();
 			}
-			rsX->get_Collect((_variant_t)_T("Spring_property"),&tmpvar);
+			rsX.GetFieldValue(_T("Spring_property"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnSPRINGproperty=_T("");
 			else{
 				modPHScal::tbnSPRINGproperty=vtos(tmpvar);
 				modPHScal::tbnSPRINGproperty.TrimLeft();modPHScal::tbnSPRINGproperty.TrimRight();
 			}
-			rsX->get_Collect((_variant_t)_T("Spring_propertyMaxDist"),&tmpvar);
+			rsX.GetFieldValue(_T("Spring_propertyMaxDist"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnDiscSPRINGpropertyMaxDist=_T("");
 			else{
 				modPHScal::tbnDiscSPRINGpropertyMaxDist=vtos(tmpvar);
 				modPHScal::tbnDiscSPRINGpropertyMaxDist.TrimLeft();modPHScal::tbnDiscSPRINGpropertyMaxDist.TrimRight();
 			}
-			rsX->get_Collect((_variant_t)_T("Spring_id"),&tmpvar);
+			rsX.GetFieldValue(_T("Spring_id"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnSPRINGid=_T("");
 			else{
 				modPHScal::tbnSPRINGid=vtos(tmpvar);
 				modPHScal::tbnSPRINGid.TrimLeft();modPHScal::tbnSPRINGid.TrimRight();
 			}
-			rsX->get_Collect((_variant_t)_T("Spring_Crude"),&tmpvar);
+			rsX.GetFieldValue(_T("Spring_Crude"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnSPRINGCrude=_T("");
 			else{
 				modPHScal::tbnSPRINGCrude=vtos(tmpvar);
 				modPHScal::tbnSPRINGCrude.TrimLeft();modPHScal::tbnSPRINGCrude.TrimRight();
 			}
-			rsX->get_Collect((_variant_t)_T("CrudeTurnbuckle"),&tmpvar);
+			rsX.GetFieldValue(_T("CrudeTurnbuckle"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnSPRINGL5Crude=_T("");
 			else{
@@ -227,7 +213,7 @@ void CFrmPreferences::OnOK()
 				modPHScal::tbnSPRINGL5Crude.TrimLeft();modPHScal::tbnSPRINGL5Crude.TrimRight();
 			}
 			//以下判断弹簧原始数据表在数据库中是否存在
-			rsX->get_Collect((_variant_t)_T("DiameterSerial"),&tmpvar);
+			rsX.GetFieldValue(_T("DiameterSerial"),tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				modPHScal::tbnSPRDiameterSerial=_T("");
 			else{
@@ -238,91 +224,91 @@ void CFrmPreferences::OnOK()
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			if(!modPHScal::HStbExists(db,db1,modPHScal::tbnSPRINGCrude,_T("phsManuSPRING"),_T("Spring_Crude"),modPHScal::gsPhsSPRINGSel))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			if(!modPHScal::HStbExists(db,db1,modPHScal::tbnSPRINGL5Crude,_T("phsManuSPRING"),_T("CrudeTurnbuckle"),modPHScal::gsPhsSPRINGSel))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			if(!modPHScal::HStbExists(db,db1,modPHScal::tbnSPRINGid,_T("phsManuSPRING"),_T("Spring_id"),modPHScal::gsPhsSPRINGSel))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			if(!modPHScal::HStbExists(db,db1,modPHScal::tbnSPRINGproperty,_T("phsManuSPRING"),_T("Spring_property"),modPHScal::gsPhsSPRINGSel))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			if(!modPHScal::HStbExists(db,db1,modPHScal::tbnDiscSPRINGpropertyMaxDist,_T("phsManuSPRING"),_T("Spring_propertyMaxDist"),modPHScal::gsPhsSPRINGSel))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX->MoveFirst();
+					rsX.MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX->MoveNext();
+					rsX.MoveNext();
 				continue;
 			}
 			inttbExist=1;
 	}
 	if(inttbExist!=1)
 	{
-		if(rsX->State == adStateOpen)
-			rsX->Close();
+		if(rsX.IsOpen())
+			rsX.Close();
 		
-		if(db->State == adStateOpen)
-			db->Close();
+		if(db.IsOpen())
+			db.Close();
 		
-		if(db1->State == adStateOpen)
-			db1->Close();
+		if(db1.IsOpen())
+			db1.Close();
 		CPropertySheet::EndDialog(IDOK);
 	}
 	inttbExist=0;
-	   rsX->get_Collect((_variant_t)_T("SerialNumPerSPR"),&tmpvar);
+	   rsX.GetFieldValue(_T("SerialNumPerSPR"),tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   modPHScal::giAllowedMaxSerialNumPerSPR=0;
 	   else{
 		   modPHScal::giAllowedMaxSerialNumPerSPR=vtoi(tmpvar);
 		   //   giAllowedMaxSerialNumPerSPR.TrimLeft();giAllowedMaxSerialNumPerSPR.TrimRight();
 	   }
-	   rsX->get_Collect((_variant_t)_T("SerialNumSPRs"),&tmpvar);
+	   rsX.GetFieldValue(_T("SerialNumSPRs"),tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   modPHScal::giAllowedMaxSerialNumSPRs=0;
 	   else{
@@ -335,20 +321,20 @@ void CFrmPreferences::OnOK()
 		   modPHScal::CreateTmpSPRPropertyTable(modPHScal::giAllowedMaxSerialNumSPRs);
 	   //获得弹簧或恒力弹簧编号规格的单位制
 	   //以下判断恒力弹簧/碟簧规格编号力单位制描述字段值是否存在
-	   rsX->get_Collect((_variant_t)_T("Unit_Force"),&tmpvar);
+	   rsX.GetFieldValue(_T("Unit_Force"),tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 	   {
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
 		   sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuSPRING"),modPHScal::gsPhsSPRINGSel ,_T("Unit_Force"));
 		   ShowMessage(sTmp);
-		   if(rsX->State == adStateOpen)
-			   rsX->Close();
+		   if(rsX.IsOpen())
+			   rsX.Close();
 		   
-		   if(db->State == adStateOpen)
-			   db->Close();
+		   if(db.IsOpen())
+			   db.Close();
 		   
-		   if(db1->State == adStateOpen)
-			   db1->Close();
+		   if(db1.IsOpen())
+			   db1.Close();
 		   CPropertySheet::EndDialog(IDOK);
 	   }
 	   else{
@@ -359,12 +345,10 @@ void CFrmPreferences::OnOK()
 			   if(!modPHScal::gbSPRBHLOADUNITBYNEWTON)
 			   {
 				   modPHScal::gsSPRUnitOfLoad = _T("kgf");
-//				   rsX.Edit();
-				   rsX->put_Collect((_variant_t)_T("Unit_Force"),STR_VAR("kgf"));
-				   rsX->Update();
+				   rsX.Edit();rsX.SetFieldValue(_T("Unit_Force"),STR_VAR("kgf"));rsX.Update();
 				   //如果没有导入，只修改模板库下的原始数据库；
 				   //修改方法：
-				   rsX->get_Collect((_variant_t)_T("Folder"),tmpvar);
+				   rsX.GetFieldValue(_T("Folder"),tmpvar);
 				   
 				   if(tmpvar.vt==VT_NULL||vtos(tmpvar)=="")
 					   ;
@@ -387,12 +371,10 @@ void CFrmPreferences::OnOK()
 			   if(modPHScal::gbSPRBHLOADUNITBYNEWTON)
 			   {
 				   modPHScal::gsSPRUnitOfLoad = _T("N");
-//				   rsX.Edit();
-				   rsX->put_Collect((_variant_t)_T("Unit_Force"),STR_VAR("N"));
-				   rsX->Update();
+				   rsX.Edit();rsX.SetFieldValue(_T("Unit_Force"),STR_VAR("N"));rsX.Update();
 				   //如果没有导入，只修改模板库下的原始数据库；
 				   //修改方法：
-				   rsX->get_Collect((_variant_t)_T("Folder"),&tmpvar);
+				   rsX.GetFieldValue(_T("Folder"),tmpvar);
 				   
 				   if(tmpvar.vt==VT_NULL||vtos(tmpvar)=="")
 					   ;
@@ -408,8 +390,7 @@ void CFrmPreferences::OnOK()
 		   }
 		   else
 			   //没找任何荷载单位制识别字符
-		   {
-			   sTmp.Format(GetResStr(IDS_NotFoundUnitStringInBHFormat),EDIBgbl::GetDBName(db1),_T("phsManuSPRING"),GetResStr(IDS_SPR),vtos(tmpvar));
+		   {sTmp.Format(GetResStr(IDS_NotFoundUnitStringInBHFormat),EDIBgbl::GetDBName(db1),_T("phsManuSPRING"),GetResStr(IDS_SPR),vtos(tmpvar));
 		   ShowMessage(sTmp);
 		   modPHScal::gsSPRUnitOfLoad = _T("daN");
 		   }

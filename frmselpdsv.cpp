@@ -96,41 +96,23 @@ void CFrmSelPDSV::initPrjDb()
 {
 	_variant_t tmpvar;
 	COleVariant v;
-	CString SQLx;
 	try{
-//   		m_DataCurrWork.m_pDatabase=&EDIBgbl::dbPRJ;
-// 		m_DataCurrWork.Open(dbOpenDynaset,_T("Select * From CurrentWork"));
-		SQLx = _T("Select * From CurrentWork");
-		m_DataCurrWork->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+  		m_DataCurrWork.m_pDatabase=&EDIBgbl::dbPRJ;
+		m_DataCurrWork.Open(dbOpenDynaset,_T("Select * From CurrentWork"));
 		
 		//首先必须确定行业
-// 		m_DataCategory.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
-// 		m_DataCategory.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize"));
-		SQLx = _T("SELECT * FROM DrawSize");
-		m_DataCategory->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		m_DataCategory->MoveFirst();
+		m_DataCategory.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+		m_DataCategory.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize"));
+		m_DataCategory.MoveFirst();
 		//设计行业/公司
 		LoadDBComboCategory();
-// 		m_DataCategory.FindFirst(_T("sjhyid= ") + ltos(m_SelHyID));
-		m_DataCategory->MoveFirst();
-		HRESULT hr = S_OK;
-		CString strFind;
-		strFind = _T("sjhyid= ") + ltos(m_SelHyID);
-		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
+		m_DataCategory.FindFirst(_T("sjhyid= ") + ltos(m_SelHyID));
 
-// 		m_DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
-// 		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
-		SQLx = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
-		m_DataDsgn->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		m_DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
 
-// 		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
-// 		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
-		SQLx = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
-		m_DataSpe->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
 
 		//设计阶段
 		LoadDBComboDsgn();
@@ -142,27 +124,22 @@ void CFrmSelPDSV::initPrjDb()
 			//默认:电力行业施工图设计阶段
 			m_SelDsgnID=4;
 		}
-		m_DataDsgn->MoveFirst();
-
-//		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
-		strFind = _T("sjjdID= ")+ ltos(m_SelDsgnID);
-		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
+		m_DataDsgn.MoveFirst();
+		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
    
 		if(m_SelSpecID <= 0 )
 		{
 			//默认:电力行业热机专业
 			m_SelSpecID=3;
 		}
-		m_DataSpe->MoveFirst();
-// 		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
-		strFind = _T("zyid= ")+ ltos(m_SelSpecID);
-		hr = m_DataCategory->Find((_bstr_t)strFind, 0, adSearchBackward, m_DataCategory->Bookmark);
+		m_DataSpe.MoveFirst();
+		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
 
 		this->m_DBComboCategory.RefLst();
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();
    }
-   catch(CException *e)
+   catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -185,7 +162,7 @@ void CFrmSelPDSV::InitENG()
 
 		CString sTmp=CString(_T("EnginID = \'"))+Trim(m_SelPrjID)+_T("\'");
 
-		m_DataEng->Find(_bstr_t(sTmp),0,adSearchBackward);
+		m_DataEng->Find(_bstr_t(sTmp),0,adSearchForward);
 		if(m_DataEng->adoEOF)
 		{
 			m_DataEng->MoveLast();
@@ -204,6 +181,9 @@ void CFrmSelPDSV::InitENG()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 void CFrmSelPDSV::InitDBVlm()
@@ -221,7 +201,7 @@ void CFrmSelPDSV::InitDBVlm()
 		tmpSQL +=_T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID);
 		tmpSQL +=_T(" ORDER BY jcdm ");
 	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
-		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchBackward);
+		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchForward);
 		if(m_DataVlm->adoEOF)
 		{
 			if(m_DataVlm->BOF)
@@ -242,7 +222,7 @@ void CFrmSelPDSV::InitDBVlm()
 		this->m_SelDsgnID=vtoi(m_DataVlm->GetCollect(_T("SJJDID")));
 		this->m_SelSpecID=vtoi(m_DataVlm->GetCollect(_T("ZYID")));
 		this->m_SelHyID=vtoi(m_DataVlm->GetCollect(_T("SJHYID")));
-		//m_DataVlm.GetRecordset().Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelVlmID) + _T("\'")),0,adSearchBackward,_variant_t((long)0));
+		//m_DataVlm.GetRecordset().Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelVlmID) + _T("\'")),0,adSearchForward,_variant_t((long)0));
       //定位到前次工作的卷册
 		m_DBGvlm.SetRefDataSource(m_DataVlm->GetDataSource());
 		m_DBGvlm.SetAllowAddNew(true);
@@ -262,7 +242,7 @@ void CFrmSelPDSV::InitDBVlm()
 	{
 		ShowMessage(e.Description());
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->Delete();
 	}
@@ -274,8 +254,8 @@ void CFrmSelPDSV::LoadDBComboDsgn()
 //设计阶段
 	try
 	{
-		m_DBComboDsgn.m_Rs=m_DataCurrWork;
-		m_DBComboDsgn.m_RowRs=m_DataDsgn;
+		m_DBComboDsgn.m_Rs=&m_DataCurrWork;
+		m_DBComboDsgn.m_RowRs=&m_DataDsgn;
 		m_DBComboDsgn.m_Field=_T("sjjddm");
 		m_DBComboDsgn.m_BoundField=_T("sjjddm");
 		m_DBComboDsgn.m_ListField=_T("sjjdmc");
@@ -291,8 +271,8 @@ void CFrmSelPDSV::LoadDBComboSpec()
 {
 //设计专业
 	try{
-		m_DBComboSpec.m_Rs=m_DataCurrWork;
-		m_DBComboSpec.m_RowRs=m_DataSpe;
+		m_DBComboSpec.m_Rs=&m_DataCurrWork;
+		m_DBComboSpec.m_RowRs=&m_DataSpe;
 		m_DBComboSpec.m_Field=_T("zydm");
 		m_DBComboSpec.m_BoundField=_T("zydm");
 		m_DBComboSpec.m_ListField=_T("zymc");
@@ -317,8 +297,8 @@ void CFrmSelPDSV::LoadDBComboCategory()
    DBComboCategory.ReFill*/
 	try
 	{
-		m_DBComboCategory.m_Rs=m_DataCurrWork;
-		m_DBComboCategory.m_RowRs=m_DataCategory;
+		m_DBComboCategory.m_Rs=&m_DataCurrWork;
+		m_DBComboCategory.m_RowRs=&m_DataCategory;
 		m_DBComboCategory.m_Field=_T("SJHYINDEX");
 		m_DBComboCategory.m_BoundField=_T("SJHYID");
 		m_DBComboCategory.m_ListField=_T("SJHY");
@@ -398,6 +378,9 @@ void CFrmSelPDSV::OnDblClickDbgvim()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 void CFrmSelPDSV::SelToCurrWork()
@@ -410,19 +393,19 @@ void CFrmSelPDSV::SelToCurrWork()
 		//mnuSelBillType.Enabled = True
 		COleVariant tmpVar;
 
-		m_DataDsgn->get_Collect((_variant_t)_T("SJJDID"),&tmpVar);
+		m_DataDsgn.GetFieldValue(_T("SJJDID"),tmpVar);
 		this->m_SelDsgnID=vtoi(tmpVar);
 		m_DataVlm->PutCollect(_T("SJJDID"),(VARIANT)tmpVar);
 
-		m_DataSpe->get_Collect((_variant_t)_T("ZYID"),&tmpVar);
+		m_DataSpe.GetFieldValue(_T("ZYID"),tmpVar);
 		this->m_SelSpecID=vtoi(tmpVar);
 		m_DataVlm->PutCollect(_T("ZYID"),(VARIANT)tmpVar);
 
-		this->m_DataCategory->get_Collect((_variant_t)_T("SJHYID"),&tmpVar);
+		this->m_DataCategory.GetFieldValue(_T("SJHYID"),tmpVar);
 		this->m_SelHyID=vtoi(tmpVar);
 		m_DataVlm->PutCollect(_T("SJHYID"),(VARIANT)tmpVar);
 		
-		this->m_DataCategory->get_Collect((_variant_t)_T("SJHYIndex"),&tmpVar);
+		this->m_DataCategory.GetFieldValue(_T("SJHYIndex"),tmpVar);
 		EDIBDB::SJHYIndex=vtoi(tmpVar);
 		EDIBgbl::SelHyID=m_SelHyID;
 		EDIBgbl::SelPrjID =m_SelPrjID;
@@ -432,29 +415,29 @@ void CFrmSelPDSV::SelToCurrWork()
 
 		EDIBgbl::SelDsgnID =m_SelDsgnID;
 		COleVariant vTmp;
-		m_DataDsgn->get_Collect((_variant_t)_T("sjjdmc"),&vTmp);
+		m_DataDsgn.GetFieldValue(_T("sjjdmc"),vTmp);
 		EDIBgbl::SelDsgnName =vtos(vTmp);
 		EDIBgbl::SelSpecID = m_SelSpecID;
-		m_DataSpe->get_Collect((_variant_t)_T("ZYMC"),&vTmp);
+		m_DataSpe.GetFieldValue(_T("ZYMC"),vTmp);
 		EDIBgbl::SelSpecName = vtos(vTmp);
 		EDIBgbl::SelJcdm = vtos(m_DataVlm->GetCollect(_T("jcdm")));
 		EDIBgbl::SelVlmID=vtoi(m_DataVlm->GetCollect(_T("VolumeID")));
 		EDIBgbl::SelVlmName = vtos(m_DataVlm->GetCollect(_T("jcmc")));
-		m_DataDsgn->get_Collect((_variant_t)_T("sjjddm"),&vTmp);
+		m_DataDsgn.GetFieldValue(_T("sjjddm"),vTmp);
 		EDIBgbl::strSelDsgn=vtos(vTmp);
-		m_DataSpe->get_Collect((_variant_t)_T("zydm"),&vTmp);
+		m_DataSpe.GetFieldValue(_T("zydm"),vTmp);
 		EDIBgbl::strSelSpec=vtos(vTmp);
 		if( EDIBgbl::SelHyID < 0 ) EDIBgbl::SelHyID = modSelPDSV::defHyID;
 		if( EDIBDB::SJHYIndex < 0 ) EDIBDB::SJHYIndex = modSelPDSV::defSJHYIndex;
 		if( EDIBgbl::CompanyID == _T("") ) EDIBgbl::CompanyID = _T("43");
 		_variant_t tmpvar;
-		m_DataCategory->get_Collect((_variant_t)_T("SJHYID"),&vTmp);
+		m_DataCategory.GetFieldValue(_T("SJHYID"),vTmp);
 		m_DataVlm->PutCollect(_T("SJHYID"),(VARIANT)vTmp);
 
-		m_DataDsgn->get_Collect((_variant_t)_T("SJJDID"),&vTmp);
+		m_DataDsgn.GetFieldValue(_T("SJJDID"),vTmp);
 		m_DataVlm->PutCollect(_T("SJJDID"),(VARIANT)vTmp);
 
-		m_DataSpe->get_Collect((_variant_t)_T("ZYID"),&vTmp);
+		m_DataSpe.GetFieldValue(_T("ZYID"),vTmp);
 		m_DataVlm->PutCollect(_T("ZYID"),(VARIANT)vTmp);
 
 		if(vtoi(m_DataEng->GetCollect(_variant_t(_T("UnitNum"))))==0)
@@ -509,6 +492,9 @@ void CFrmSelPDSV::OnDblClickDbgeng()
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 }
 
@@ -576,9 +562,12 @@ void CFrmSelPDSV::OnRowColChangeDbgvim(VARIANT FAR* LastRow, short LastCol)
 					m_DataEng->Update();
 			}
 		}
-		catch(CException *e)
+	catch(CException *e)
+	{
+		e->Delete();
+	}
+		catch(...)
 		{
-			e->Delete();
 			m_DataEng->CancelUpdate();
 		}
 	}
@@ -618,9 +607,8 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 				m_DataVlm->Update();
 			}
 		}
-		catch (CException *e)
+		catch (...)
 		{
-			e->Delete();
 			//很可能是更新时出错
 			m_DataVlm->CancelUpdate();
 		}
@@ -628,11 +616,11 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 		m_SelPrjID = vtos(m_DataEng->GetCollect(_T("EnginID")));
       m_SelPrjName = vtos(m_DataEng->GetCollect(_T("gcmc")));
 		COleVariant tmpVar;
-		m_DataDsgn->get_Collect((_variant_t)_T("SJJDID"),&tmpVar);
+		m_DataDsgn.GetFieldValue(_T("SJJDID"),tmpVar);
 		m_SelDsgnID=vtoi(tmpVar);
-		m_DataSpe->get_Collect((_variant_t)_T("ZYID"),&tmpVar);
+		m_DataSpe.GetFieldValue(_T("ZYID"),tmpVar);
 		m_SelSpecID=vtoi(tmpVar);
-		m_DataCategory->get_Collect((_variant_t)_T("SJHYID"),&tmpVar);
+		m_DataCategory.GetFieldValue(_T("SJHYID"),tmpVar);
 		m_SelHyID=vtoi(tmpVar);
 		
 		m_DBGvlm.SetRefDataSource(NULL);
@@ -647,7 +635,7 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 			m_DataVlm->Close();
 	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 
-	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchBackward);
+	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchForward);
 		
 		if(m_DataVlm->adoEOF)
 		{
@@ -701,6 +689,9 @@ long CFrmSelPDSV::GetMaxVolumeID()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 	return ret;
 }
 
@@ -711,11 +702,11 @@ void CFrmSelPDSV::OnBeforeUpdateDbgvim(short FAR* Cancel)
 		if(!m_bIsVlmNew)
 			return;
 		COleVariant tmpVar;
-		m_DataDsgn->get_Collect((_variant_t)_T("SJJDID"),&tmpVar);
+		m_DataDsgn.GetFieldValue(_T("SJJDID"),tmpVar);
 		m_SelDsgnID=vtoi(tmpVar);
-		m_DataSpe->get_Collect((_variant_t)_T("ZYID"),&tmpVar);
+		m_DataSpe.GetFieldValue(_T("ZYID"),tmpVar);
 		m_SelSpecID=vtoi(tmpVar);
-		m_DataCategory->get_Collect((_variant_t)_T("SJHYID"),&tmpVar);
+		m_DataCategory.GetFieldValue(_T("SJHYID"),tmpVar);
 		m_SelHyID=vtoi(tmpVar);
 		long maxvid=GetMaxVolumeID()+1;
 		m_SelPrjID = vtos(m_DataEng->GetCollect(_T("EnginID")));
@@ -726,7 +717,7 @@ void CFrmSelPDSV::OnBeforeUpdateDbgvim(short FAR* Cancel)
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJJDID"))).SetText(ltos(m_SelDsgnID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("ZYID"))).SetText(ltos(m_SelSpecID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJHYID"))).SetText(ltos(m_SelHyID));	}
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -820,6 +811,10 @@ void CFrmSelPDSV::OnBeforeDeleteDbgvim(short FAR* Cancel)
 		e->Delete();
 		*Cancel=1;
 	}
+	catch(...)
+	{
+		*Cancel=1;
+	}
 }
 
 void CFrmSelPDSV::OnEditchangeComboHY() 
@@ -835,24 +830,17 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 	try
 	{
 		COleVariant tmpVar;
-		this->m_DataCategory->get_Collect((_variant_t)_T("SJHYID"),&tmpVar);
+		this->m_DataCategory.GetFieldValue(_T("SJHYID"),tmpVar);
 		this->m_SelHyID=vtoi(tmpVar);
-		if(m_DataDsgn->State == adStateOpen)
-			m_DataDsgn->Close();
-		if(m_DataSpe->State == adStateOpen)
-			m_DataSpe->Close();
-// 		m_DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
-// 		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
-		CString sTmp;
-		sTmp = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
-		m_DataDsgn->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(m_DataDsgn.IsOpen())
+			m_DataDsgn.Close();
+		if(m_DataSpe.IsOpen())
+			m_DataSpe.Close();
+		m_DataDsgn.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+		m_DataDsgn.Open(dbOpenDynaset,_T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID));
 
-// 		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
-// 		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
-		sTmp = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
-		m_DataSpe->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		m_DataSpe.m_pDatabase=&EDIBgbl::dbDSize;//20071101 "dbSORT" 改为 "dbDSize"
+		m_DataSpe.Open(dbOpenDynaset,_T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID));
 
 		//设计阶段
 		LoadDBComboDsgn();
@@ -864,16 +852,14 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 			//默认:电力行业施工图设计阶段
 			m_SelDsgnID=4;
 		}
-// 		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
-		m_DataDsgn->Find((_bstr_t)(_T("sjjdID= ")+ ltos(m_SelDsgnID)), 0, adSearchBackward);
-  
+		m_DataDsgn.FindFirst(_T("sjjdID= ")+ ltos(m_SelDsgnID));
+   
 		if(m_SelSpecID <= 0 )
 		{
 			//默认:电力行业热机专业
 			m_SelSpecID=3;
 		}
-// 		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
-		m_DataSpe->Find((_bstr_t)(_T("zyid= ")+ ltos(m_SelSpecID)), 0, adSearchBackward);
+		m_DataSpe.FindFirst(_T("zyid= ")+ ltos(m_SelSpecID));
 
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();

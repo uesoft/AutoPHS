@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include "user.h"
 #include "ReadPSAResult.h"
-#include <fstream>
-using namespace std;
+#include <fstream.h>
 #include <math.h>
 #include "EDIBDB.h"
 #include "phsdata.h"
@@ -528,6 +527,8 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 	{
 		e->Delete();
 	}
+		catch(...)
+		{
 		
 			if(rs->State!=adStateClosed)
 				rs->Close();
@@ -535,6 +536,7 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 				FileRs->Close();
 			if(ZaRs->State!=adStateClosed)
 				ZaRs->Close();
+		}
 		
     return EndFileName;
 
@@ -629,7 +631,7 @@ void ReadYljsResult(_Recordset* rs)
 					{
 						rs->Update();
 					}
-					catch(CException *e)
+					catch(...)
 					{
 						rs->CancelUpdate();
 					}
@@ -638,7 +640,7 @@ void ReadYljsResult(_Recordset* rs)
 				{
 					rs->Close();
 				}
-				catch(CException *e)
+				catch(...)
 				{
 				}
 					
@@ -734,9 +736,7 @@ void ReadYljsResult(_Recordset* rs)
 				}
 				catch(_com_error & e)
 				{
-					CString strErrorMsg;
-					strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-					AfxMessageBox(strErrorMsg);
+					AfxMessageBox(e.Description());
 				}
 			}
 			else			 
@@ -852,7 +852,7 @@ void ReadYljsResult(_Recordset* rs)
       
 /*				frmStatus.ShowWindow(SW_SHOW);
 				frmStatus.m_Label1= "从文件 " + DataFileName;
-				frmStatus.m_Label2= "到数据库 " + EDIBgbl::dbPRJDB) + "中的表" + EDIBgbl::TBNRawData;
+				frmStatus.m_Label2= "到数据库 " + EDIBgbl::dbPRJDB.GetName() + "中的表" + EDIBgbl::TBNRawData;
 				frmStatus.SetWindowText( "数据转换");
 				frmStatus.UpdateData(false);
 				frmStatus.UpdateStatus(0,true);
@@ -922,7 +922,7 @@ void ReadYljsResult(_Recordset* rs)
 			{
 				rs1->Update();
 			}
-			catch(CException *e)
+			catch(...)
 			{
 				rs1->CancelUpdate();
 			}
@@ -991,9 +991,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		int iPreINT[3];//此数组代表记录前面的两个整型数
 		long ltemp=maxZdjh;			 
 		_Recordset* rsData;
-		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(Recordset));
-
+		CDaoRecordset tmprs;
 		COleVariant varTmp;
 		CString strOldPhsSPRINGSel;
 		CString strTemp, temp ;int iTemp=0;
@@ -1062,22 +1060,17 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
 		if( mviSPR == 20 )
 		{
-// 			tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 			tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-			strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-				strSQL += strSprNWEPDI;
-				strSQL += "\'";
-			tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
-			if(tmprs->BOF && tmprs->adoEOF)
+			tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+			tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
+			if(tmprs.IsBOF() && tmprs.IsEOF())
 			{
 			}
 			else
 			{
-				tmprs->get_Collect((_variant_t)"Spring_property",&varTmp);
+				tmprs.GetFieldValue("Spring_property",varTmp);
 				strSprTbn=vtos(varTmp);//获得弹簧属性表
 			}
-			tmprs->Close();
+			tmprs.Close();
 			if( strOldPhsSPRINGSel != strSprNWEPDI )
 			{
 				modPHScal::gsPhsSPRINGSel = strSprNWEPDI;
@@ -1095,13 +1088,9 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		gbHotStatus2Zero=0;
 		::SetRegValue(_T("Settings"),"HotStatus2Zero",(gbHotStatus2Zero));
   
-//		 rs1(&modPHScal::dbZDJcrude);
-		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs1(&modPHScal::dbZDJcrude);
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
-//		rs1.Open(dbOpenSnapshot,strSQL);
-		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs1.Open(dbOpenSnapshot,strSQL);
 
 		iCount = 1;
                     
@@ -1254,11 +1243,9 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 				{
 					CString strTmp;
 					strTmp.Format("%d",iPreINT[2]);
-					_variant_t vTmp;
-					rs1->Find((_bstr_t)("SEQ=" + ltos(iSPRSeq)), 0, adSearchBackward);
-					if(!rs1->adoEOF)
+					if(rs1.FindFirst("SEQ=" + ltos(iSPRSeq)))
 					{
-						rs1->get_Collect((_variant_t)"G",&varTmp);
+						rs1.GetFieldValue("G",varTmp);
 						fG=vtof(varTmp);
 						fR=fabs(fPaz) - fabs(fPgz);
 						fR/=EDIBgbl::kgf2N;
@@ -1338,6 +1325,10 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+		ShowMessage("C++ Exception at readpsaresult.cpp::ReadResult_ZHDYF30()");
+	}
 }
 
 //返加字符串中的数据 //add by cbl
@@ -1414,8 +1405,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
    
 		const char* strEND_THIS_PIPING = "*THIS PIPING STRUCTURE *CONTAINS*";
 		CString strSprTbn;
-		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset tmprs;
 		COleVariant varTmp;
 //		int fdFlg;
             
@@ -1490,22 +1480,17 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 				//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
 				if( mviSPR == 20 )
 				{
-// 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-					strSQL += strSprNWEPDI;
-					strSQL += "\'";
-					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
-					if(tmprs->BOF && tmprs->adoEOF)
+					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
+					if(tmprs.IsBOF() && tmprs.IsEOF())
 					{
 					}
 					else
 					{
-						tmprs->get_Collect((_variant_t)0L, &varTmp);
+						tmprs.GetFieldValue(0,varTmp);
 						strSprTbn=vtos(varTmp);
 					}
-					tmprs->Close();
+					tmprs.Close();
 					if( strOldPhsSPRINGSel != strSprNWEPDI )
 					{
 						modPHScal::gsPhsSPRINGSel = strSprNWEPDI;
@@ -1734,7 +1719,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 						if( iJSJDH[i] == iPreINT[1] )break;
 						//Debug.Print i, iPreINT(1),iJSJDH(i), sngDW(i), Tj(i)
 					}
-					//if( IsNull(!PSAver) Or (Not IsNull(!PSAver) And Trim(!PSAver) = "") Or (Not IsNull(!PSAver) And Trim(!PSAver) <> "" And ((!PSAver)) = strPSAVER) ){
+					//if( IsNull(!PSAver) Or (Not IsNull(!PSAver) And Trim(!PSAver) = "") Or (Not IsNull(!PSAver) And Trim(!PSAver) <> "" And UCase(Trim(!PSAver)) = strPSAVER) ){
 					rsData->PutCollect("PSAver",strPSAVER);
 					rsData->PutCollect("JSDBH1",_variant_t((long)iPreINT[1]));
 					rsData->PutCollect("dj1",_variant_t((float)sngDW[i]));
@@ -1877,6 +1862,9 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 
@@ -1919,8 +1907,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		LPCTSTR strEND_THIS_PIPING = "*THIS PIPING STRUCTURE *CONTAINS*";
    
 		CString strSprTbn;
-		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset tmprs;
 		COleVariant varTmp;
 		CString mvsCASE, mvsCASEcool;
 		int mviSPR=0;
@@ -1993,8 +1980,6 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 	//cbl
 
 		f.open(SourceDataFileName);
-
-		CString strSQL;
 		//开始读原始数据
 		while(!f.eof())
 		{			
@@ -2016,43 +2001,33 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 				//因为应力计算选择的弹簧标准可能不同,故重新更新规范
 				//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
 				if( mviSPR == 3 ){
-// 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-					strSQL += strSprNWEPDI;
-					strSQL += "\'";
-					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
-					if(tmprs->BOF && tmprs->adoEOF)
+					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
+					if(tmprs.IsBOF() && tmprs.IsEOF())
 					{
 					}
 					else
 					{
-						tmprs->get_Collect((_variant_t)0L, &varTmp);
+						tmprs.GetFieldValue(0,varTmp);
 						strSprTbn=vtos(varTmp);
 					}
-					tmprs->Close();
+					tmprs.Close();
 					if( strOldPhsSPRINGSel != strSprNWEPDI ){
 						modPHScal::gsPhsSPRINGSel = strSprNWEPDI;
 						//if( blnSelphsSPEC(False) ) SaveRecentWorkSPEC();
 					}
 				}else if( mviSPR == 4 ){
-// 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-					strSQL += strSprGB10182;
-					strSQL += "\'";
-					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
-					if(tmprs->BOF && tmprs->adoEOF)
+					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
+					if(tmprs.IsBOF() && tmprs.IsEOF())
 					{
 					}
 					else
 					{
-						tmprs->get_Collect((_variant_t)0L, &varTmp);
+						tmprs.GetFieldValue(0,varTmp);
 						strSprTbn=vtos(varTmp);
 					}
-					tmprs->Close();
+					tmprs.Close();
 					if( strOldPhsSPRINGSel != strSprGB10182 ){
 						modPHScal::gsPhsSPRINGSel = strSprGB10182;
 						//if( blnSelphsSPEC(False) ) SaveRecentWorkSPEC();
@@ -2224,6 +2199,145 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
       long ltemp=maxZdjh ;  
 		rsData=rsResult;
    
+		//管道端点初热数据在文件前部
+		//GLIFV3.x:开始查找管道端点初热荷载数据头部
+		/*mvsCASE = strREACTION_ON_ANCHORS_WorkInitial_CASE2;
+		while(!f.eof()){
+			f.getline(strTemp.GetBuffer(255),255); strTemp.ReleaseBuffer();
+
+			if(strTemp.Find(mvsCASE) !=-1){
+				break;
+			}
+		}            
+		//rsResult.Requery
+		//GLIFV3.x:开始读管道端点初热荷载数据
+		while(!f.eof()){
+			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
+			if( atof(Mid(temp, 0, 16)) > 0 ){
+				iPreINT[1] = atoi(Mid(temp, 0, 16));   //节点号
+				iPreINT[2] = atoi(Mid(temp, 16, 10));  //节点类型
+				//此处只能是固定架类型
+				iPreINT[2] = 100 ; //or 177
+				for (j = 1 ;j<= 6;j++) //每行最多6个数据,依次为Fx,Fy,Fz,Mx,My,Mz
+					phsVAL[j][1] = atof(Mid(temp, 26 + (j - 1) * 15-1, 15));
+				
+
+				rsData->Filter = _variant_t(CString("[jsdbh1] = ") + ltos(iPreINT[1]));
+					 if(rsData->BOF && rsData->adoEOF ){
+						  rsData->AddNew();
+						  rsData->PutCollect("UPxyz",_variant_t((long)giUPxyz));
+						  rsData->PutCollect("VolumeID",_variant_t(EDIBgbl::SelVlmID));
+						  rsData->PutCollect("Zdjh",_variant_t((long)(ltemp+1)));
+						 //rsData->PutCollect("Zdjh",_variant_t((long)iPreINT[1]));
+						   rsData->Update();
+						  ltemp++;
+					 }else{
+					 }
+					 for (i = 1 ;i< iCount;i++)
+					 {
+						 if( iJSJDH[i] == iPreINT[1] )break;
+					 }
+					 rsData->PutCollect("PSAver", _variant_t(strPSAVER));
+					 rsData->PutCollect("JSDBH1", _variant_t((long)iPreINT[1]));
+					 rsData->PutCollect("Type", _variant_t((long)iPreINT[2]));
+					 if( EDIBgbl::PSA_OutDataUnit== "NATIONAL" ){
+						rsData->PutCollect("Unit_Force", "N");
+						rsData->PutCollect("Unit_Momental", "N.m");
+					 }else{
+						rsData->PutCollect("Unit_Force", "kgf");
+						rsData->PutCollect("Unit_Momental", "kgf.m");
+					 }
+					 rsData->PutCollect("Unit_Displacement", "mm");
+					 rsData->PutCollect("pxr1", _variant_t(phsVAL[1][1]));
+					 rsData->PutCollect("pyr1", _variant_t(phsVAL[2][1]));
+					 rsData->PutCollect("pgz1", _variant_t(phsVAL[giUPxyz][1]));
+					 rsData->PutCollect("pjg1", _variant_t(phsVAL[giUPxyz][1]));
+					 rsData->PutCollect("pzr1", _variant_t(phsVAL[3][1]));
+					 rsData->PutCollect("mxr1", _variant_t(phsVAL[4][1]));
+					 rsData->PutCollect("myr1", _variant_t(phsVAL[5][1]));
+					 rsData->PutCollect("mzr1", _variant_t(phsVAL[6][1]));
+					 rsData->Filter=_variant_t((long)adFilterNone);
+				iC1++;
+			}else{
+				if( temp.Find(mvsCASE) == -1 ){
+					break;
+				}
+			}
+		}
+		//结束初热工况4管道端点荷载处理
+		f.close();
+   
+		//管道端点工况1冷态数据在文件前部
+		//管道端点工况3/4冷态数据在工况2后
+		//GLIFV3.x:开始查找管道端点冷态荷载数据头部
+		f.open(SourceDataFileName);
+		while(!f.eof()){
+			f.getline(strTemp.GetBuffer(255),255); strTemp.ReleaseBuffer();
+			if( strTemp.Find(mvsCASEcool) !=-1){ //找到管道端点冷态荷载数据头部
+				break;
+			}
+		}
+                     
+		//rsResult.Requery
+		//Set rsData = rsResult
+   
+		//GLIFV3.x:开始读管道端点冷态荷载数据
+		while(!f.eof()){
+			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
+			
+			if( atof(Mid(temp, 0, 16)) > 0 ){
+				iPreINT[1] = atoi(Mid(temp, 0, 16))  ; //节点号
+				iPreINT[2] = atoi(Mid(temp, 16, 10)) ; //节点类型
+				//此处只能是固定架类型
+				iPreINT[2] = 100 ; //or 177
+				for( j = 1 ;j<= 6;j++) //每行最多6个数据,依次为Fx,Fy,Fz,Mx,My,Mz
+					phsVAL[j][1] = atof(Mid(temp, 26 + (j - 1) * 15-1, 15));
+				rsData->Filter = _variant_t(CString("[jsdbh1] = ") + ltos(iPreINT[1]));
+				
+					 if( rsData->BOF && rsData->adoEOF ){
+						  rsData->AddNew();
+						  rsData->PutCollect("UPxyz",_variant_t((long)giUPxyz));
+						  rsData->PutCollect("VolumeID",_variant_t(EDIBgbl::SelVlmID));
+						  rsData->PutCollect("Zdjh",_variant_t((long)(ltemp+1)));
+						 //rsData->PutCollect("Zdjh",_variant_t((long)iPreINT[1]));
+						   rsData->Update();
+						  ltemp++;
+					 }else{
+					 }
+					 for(i = 1;i<iCount;i++)
+					 {
+						 if( iJSJDH[i] == iPreINT[1])
+							 break;
+					 }
+					 rsData->PutCollect("PSAver",_variant_t(strPSAVER));
+					 rsData->PutCollect("JSDBH1",_variant_t((long)iPreINT[1]));
+					 rsData->PutCollect("Type",_variant_t((long)iPreINT[2]));
+					 if( EDIBgbl::PSA_OutDataUnit == "NATIONAL" ){
+						rsData->PutCollect("Unit_Force", "N");
+						rsData->PutCollect("Unit_Momental", "N.m");
+					 }else{
+						rsData->PutCollect("Unit_Force", "kgf");
+						rsData->PutCollect("Unit_Momental", "kgf.m");
+					 }
+					 rsData->PutCollect("Unit_Displacement", "mm");
+					 rsData->PutCollect("pxl1", _variant_t(phsVAL[1][1]));
+					 rsData->PutCollect("pyl1", _variant_t(phsVAL[2][1]));
+					 rsData->PutCollect("paz0", _variant_t(phsVAL[giUPxyz][1]));
+					 rsData->PutCollect("paz1", _variant_t(phsVAL[giUPxyz][1]));
+					 rsData->PutCollect("pzl1", _variant_t(phsVAL[3][1]));
+					 rsData->PutCollect("mxl1", _variant_t(phsVAL[4][1]));
+					 rsData->PutCollect("myl1", _variant_t(phsVAL[5][1]));
+					 rsData->PutCollect("mzl1", _variant_t(phsVAL[6][1]));
+					 rsData->Filter=_variant_t((long)adFilterNone);
+				//管道端点冷态荷载必须与热态荷载在同一个记录，所以记录号不能递增。
+				//iC1 = iC1 + 1
+			}else{
+				if( temp.Find(mvsCASEcool)==-1 ){
+					break;
+				}
+			}
+		}
+		//结束管道端点冷态荷载处理*/
 		f.close();
    
 		f.open(SourceDataFileName);
@@ -2337,13 +2451,10 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
                      
 		//找到"STRUCTURE LOAD OF RESTRAINTS"
 		//GLIFV3.x:开始读荷载数据
-//		rs1(&modPHScal::dbZDJcrude);
-		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset rs1(&modPHScal::dbZDJcrude);
+		CString strSQL;
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
-// 		rs1.Open(dbOpenSnapshot,strSQL);
-		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs1.Open(dbOpenSnapshot,strSQL);
 		while(!f.eof()){
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
 			if( atof(Mid(temp,0, (gbNewGLIFV31 ? 5 : 16))) > 0 ){
@@ -2390,6 +2501,17 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 								mvMultiple+=phsVAL[j][i];
 							}
 						}
+						//如果6个数据不全为0
+						//if( mvMultiple <> 0 ){
+							//sFx代表了支吊架节点受力的方向
+						 //  sFx = Mid(temp, Iif((gbNewGLIFV31, 85, 124), 1)
+						  // Exit For
+						//}else{
+							//湖南电力院1999年5月前使用的GLIFV3.x版本，每个数据行之后空一行
+							//贵州电力院2001年5月前使用的GLIFV3.1版本，辽宁院使用的号称GLIFv3.2版本，每个数据行之后不空行
+							//f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();  //空行
+							//Debug.Print temp
+						//}
 					}
 				}else{
 					//此类支吊架只有1行数据:弹性或刚性吊架
@@ -2486,11 +2608,9 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 							iSerialNum=atoi(strTmp.Left(1));
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
-							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
-							if(!rs1->adoEOF)
+							if(rs1.FindFirst("SEQ=" + ltos(iSEQ)))
 							{
-								rs1->get_Collect((_variant_t)"G",varTmp);
+								rs1.GetFieldValue("G",varTmp);
 								fG=vtof(varTmp);
 								fR=fabs(phsVAL[2][1]) - fabs(phsVAL[3][1]);
 								if(EDIBgbl::PSA_OutDataUnit== "NATIONAL")
@@ -2571,6 +2691,9 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 
@@ -2629,8 +2752,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
    
 		LPCTSTR strEND_THIS_PIPING = "*THIS PIPING STRUCTURE *CONTAINS*";
 		CString strSprTbn;
-		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset tmprs;
 		COleVariant varTmp;
 		int fdFlg;
 		CString mvsCASE, mvsCASEcool;
@@ -2707,8 +2829,6 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 	//cbl
 
 		f.open(SourceDataFileName);
-
-		CString strSQL;
 		//开始读原始数据
 		while(!f.eof())
 		{//4第一次读文本文件循环(start)
@@ -2744,22 +2864,17 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 				//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
 				if( mviSPR == 3 )
 				{//2
-// 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-					strSQL += strSprNWEPDI;
-					strSQL += "\'";
-					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
-					if(tmprs->BOF && tmprs->adoEOF)
+					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
+					if(tmprs.IsBOF() && tmprs.IsEOF())
 					{//1
 					}//1
 					else
 					{//1
-						tmprs->get_Collect((_variant_t)0L, &varTmp);
+						tmprs.GetFieldValue(0,varTmp);
 						strSprTbn=vtos(varTmp);
 					}//1
-					tmprs->Close();
+					tmprs.Close();
 					if( strOldPhsSPRINGSel != strSprNWEPDI )
 					{//1
 						modPHScal::gsPhsSPRINGSel = strSprNWEPDI;
@@ -2767,22 +2882,17 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 				}//2
 				else if( mviSPR == 4 )
 				{//2
-// 					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
-					strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-					strSQL += strSprGB10182;
-					strSQL += "\'";
-					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
-					if(tmprs->BOF && tmprs->adoEOF)
+					tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+					tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprGB10182 + "\'");
+					if(tmprs.IsBOF() && tmprs.IsEOF())
 					{//1
 					}//1
 					else
 					{//1
-						tmprs->get_Collect((_variant_t)0L, &varTmp);
+						tmprs.GetFieldValue(0,varTmp);
 						strSprTbn=vtos(varTmp);
 					}//1
-					tmprs->Close();
+					tmprs.Close();
 					if( strOldPhsSPRINGSel != strSprGB10182 )
 					{//1
 						modPHScal::gsPhsSPRINGSel = strSprGB10182;
@@ -3148,14 +3258,10 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		//找到"STRUCTURE LOAD OF RESTRAINTS"
 		//GLIFV3.x:开始读荷载数据
 		fdFlg=0;
-//		 rs1(&modPHScal::dbZDJcrude);
-		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(Recordset));
-
+		CDaoRecordset rs1(&modPHScal::dbZDJcrude);
+		CString strSQL;
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
-//		rs1.Open(dbOpenSnapshot,strSQL);
-		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs1.Open(dbOpenSnapshot,strSQL);
 		while(!f.eof())
 		{
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
@@ -3344,11 +3450,9 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 							iSerialNum=atoi(strTmp.Left(1));
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
-							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
-							if(!rs1->adoEOF)
+							if(rs1.FindFirst("SEQ=" + ltos(iSEQ)))
 							{
-								rs1->get_Collect((_variant_t)"G",varTmp);
+								rs1.GetFieldValue("G",varTmp);
 								fG=vtof(varTmp);
 								fR=fabs(phsVAL[2][1]) - fabs(phsVAL[3][1]);
 								if(EDIBgbl::PSA_OutDataUnit== "NATIONAL")
@@ -3548,7 +3652,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB) + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB.GetName() + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);
@@ -3749,7 +3853,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 									}
 									rsData->Filter = "";
 								}
-								m_CAESARIIFile->Close();
+								m_CAESARIIFile.Close();
 							}
 
 						}catch(CFileException *e)
@@ -3854,7 +3958,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 									}
 									rsData->Filter = "";
 								}
-								m_CAESARIIFile->Close();
+								m_CAESARIIFile.Close();
 							}
 
 						}catch(CFileException *e)
@@ -4151,7 +4255,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4234,8 +4338,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_selDlg->JobNameNum = n;
 		m_pstrTempJobname = new CString[n];
 
-		int i=0 ;
-		for ( i=0 ;i<n;i++)
+		for ( int i=0 ;i<n;i++)
 		{
 			m_pstrTempJobname[i] = vtos(m_prsJOBNAME->GetCollect("JOBNAME"));
 			m_prsJOBNAME->MoveNext();
@@ -4281,7 +4384,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		//显示进度条
 		frmStatus.ShowWindow(SW_SHOW);
 		frmStatus.m_Label1= GetResStr(IDS_FROMFILE) + SourceDataFileName;
-		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::GetDBName(EDIBgbl::dbPRJDB) + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
+		frmStatus.m_Label2= GetResStr(IDS_TODATABASE) + EDIBgbl::dbPRJDB.GetName() + GetResStr(IDS_InTable) + EDIBgbl::TBNRawData;
 		frmStatus.SetWindowText( GetResStr(IDS_DATASWITCH));
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateStatus(0,true);
@@ -4887,7 +4990,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch(CDaoException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4939,8 +5042,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		CString strTemp, temp ;int iTemp=0;
 		CString strSprTbn;
 		CString strSQL;
-		_RecordsetPtr tmprs;
-		tmprs.CreateInstance(__uuidof(Recordset));
+		CDaoRecordset tmprs;
 		COleVariant varTmp;
 		tagListSWEDChildNodeInfo ListChildNodeInfo;
 		tagSWEDChildNodeInfo ChildNodeInfo;
@@ -4993,22 +5095,17 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strOldPhsSPRINGSel = modPHScal::gsPhsSPRINGSel;
 		//因为应力计算选择的弹簧标准可能不同,故重新更新规范
 		//由于生成规范花费时间较长，所以只有当规范变化时，才需要重新更新
-// 		tmprs.m_pDatabase=&EDIBgbl::dbSORT;
-// 		tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
-		strSQL = "SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'";
-		strSQL += strSprNWEPDI;
-		strSQL += "\'";
-		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		if(tmprs->BOF && tmprs->adoEOF)
+		tmprs.m_pDatabase=&EDIBgbl::dbSORT;
+		tmprs.Open(dbOpenSnapshot,CString("SELECT Spring_property FROM phsManuSPRING WHERE StandardDesc=\'") + strSprNWEPDI + "\'");
+		if(tmprs.IsBOF() && tmprs.IsEOF())
 		{
 		}
 		else
 		{
-			tmprs->get_Collect((_variant_t)0L, &varTmp);
+			tmprs.GetFieldValue(0,varTmp);
 			strSprTbn=vtos(varTmp);
 		}
-		tmprs->Close();
+		tmprs.Close();
 		if( strOldPhsSPRINGSel != strSprNWEPDI )
 		{
 			modPHScal::gsPhsSPRINGSel = strSprNWEPDI;					
@@ -5930,6 +6027,9 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 	frmStatus.ShowWindow(SW_HIDE);
 }
 
@@ -6001,7 +6101,7 @@ void Delete1()
 
 			//AfxMessageBox("aa");
 	}
-	catch(CException *e)
+	catch(::CDaoException * e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6054,9 +6154,7 @@ void UpDataZY()
 	}
 	catch(_com_error & e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 		RD->Close();
 	}
 	RD->Close();
@@ -6076,7 +6174,7 @@ void ReadPSAData(_Recordset* rsResult ,CString SourceDataFileName,long maxZdjh,l
 		WritePHSDataToTable(pRefInfoCon,rsResult,SourceDataFileName,maxZdjh,FileNameID,EDIBgbl::SelVlmID,modPHScal::gsngRatioOfPjg2Pgz);
 
 	}
-	catch(CException *e)
+	catch(CDaoException * e)
 	{
 		e->ReportError();
 	    e->Delete();

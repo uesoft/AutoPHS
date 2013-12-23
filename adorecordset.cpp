@@ -70,6 +70,15 @@ void CADORecordset::Close()
 	{
 		if(m_pSet->State != adStateClosed)
 		{
+			try
+			{
+
+//				m_pSet->Update();
+			}
+			catch(...)
+			{
+				m_pSet->CancelUpdate();
+			}
 			m_pSet->Close();
 		}
 	}
@@ -137,7 +146,7 @@ BOOL CADORecordset::FindFirst(CString strFind)
 	try
 	{
 		m_pSet->MoveFirst();
-		m_pSet->Find(_bstr_t(strFind),0,adSearchBackward, m_pSet->Bookmark);
+		m_pSet->Find(_bstr_t(strFind),0,adSearchForward);
 		if(m_pSet->adoEOF)
 			return FALSE;
 		return TRUE;
@@ -146,6 +155,10 @@ BOOL CADORecordset::FindFirst(CString strFind)
 	catch(CException *e)
 	{
 		e->Delete();
+		return FALSE;
+	}
+	catch(...)
+	{
 		return FALSE;
 	}
 }
@@ -176,5 +189,8 @@ void CADORecordset::SetCursorLocation(int val)
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 }

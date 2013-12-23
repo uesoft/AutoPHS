@@ -381,7 +381,7 @@ void CFrmBmpSe::OnSize(UINT nType, int cx, int cy)
 	// TODO: Add your message handler code here
 	CRect rc;
 	CRect rc1,rc2,rc3;
-//	int height,width;
+	int height,width;
 	/*if(IsWindow(m_pDlgImgLst->m_hWnd) && IsWindow(m_pDlgImgLst->m_pDlgImgLst->m_hWnd))
 	{
 		GetWindowRect(&rc1);

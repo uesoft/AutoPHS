@@ -112,9 +112,7 @@ void CImportPlantVision::BeginImport()
 		this->m_HintInformation=_T("数据导入失败");
 		this->UpdateData(FALSE);
 
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 
 		return;
 	}

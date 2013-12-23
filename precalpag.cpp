@@ -158,41 +158,36 @@ void CPreCalPag::SetComboSpringOrder(bool bSaveAction)
 {
 	//目的:设置弹簧选择规则的组合框
 		//只有在此处作，因为数据库初始化已经完成
-//	rs(&EDIBgbl::dbPHScode);//20071022 "dbSORT" 改为 "dbPHScode"
-	_RecordsetPtr rs;
-	rs.CreateInstance(__uuidof(Recordset));
-
+	CDaoRecordset rs(&EDIBgbl::dbPHScode);//20071022 "dbSORT" 改为 "dbPHScode"
 	COleVariant vTmp;
-//	rs.Open(dbOpenSnapshot,(_T("SELECT * FROM SelSpringRule ORDER BY seq")));
-	rs->Open((_bstr_t)(_T("SELECT * FROM SelSpringRule ORDER BY seq")),_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+	rs.Open(dbOpenSnapshot,(_T("SELECT * FROM SelSpringRule ORDER BY seq")));
 	if(bSaveAction)
 		modPHScal::gstrSpringOrder = (_T(""));
 	if( bSaveAction) modPHScal::giSpringOrder = m_ComboSpringOrder.GetCurSel();
 	if(!bSaveAction) m_ComboSpringOrder.ResetContent();
 
-	if( rs->adoEOF && rs->BOF);
+	if( rs.IsEOF() && rs.IsBOF());
 	else
 	{
-		while(!rs->adoEOF)
+		while(!rs.IsEOF())
 		{
 			if(!bSaveAction)
 			{
-				rs->get_Collect((_variant_t)_T("LocalRuleDescription"),vTmp);
+				rs.GetFieldValue(_T("LocalRuleDescription"),vTmp);
 				m_ComboSpringOrder.AddString(vtos(vTmp));
 			}
 			else
 			{
-				rs->get_Collect((_variant_t)_T("seq"),vTmp);
+				rs.GetFieldValue(_T("seq"),vTmp);
 				if (modPHScal::giSpringOrder == vtoi(vTmp))
 				{
-					rs->get_Collect((_variant_t)_T("LocalRuleDescription"),vTmp);
+					rs.GetFieldValue(_T("LocalRuleDescription"),vTmp);
 					modPHScal::gstrSpringOrder =vtos(vTmp);
-					rs->get_Collect((_variant_t)_T("RuleSQL"),vTmp);
+					rs.GetFieldValue(_T("RuleSQL"),vTmp);
 					modPHScal::gstrSpringOrderSQL=vtos(vTmp);
 					if(vtos(vTmp)==_T(""))
 					{
-						rs->get_Collect((_variant_t)_T("defRuleSQL"),vTmp);
+						rs.GetFieldValue(_T("defRuleSQL"),vTmp);
 						modPHScal::gstrSpringOrderSQL = vtos(vTmp);
 						if(vtos(vTmp)==_T(""))
 							MessageBox(GetResStr(IDS_NullDefRuleSQLfieldInSelSpringRuleInSortMdb));
@@ -200,7 +195,7 @@ void CPreCalPag::SetComboSpringOrder(bool bSaveAction)
 						break;
 				}
 			}
-			rs->MoveNext();
+			rs.MoveNext();
 		}
 		if(!bSaveAction)
 		{

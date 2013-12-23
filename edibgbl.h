@@ -51,29 +51,29 @@ public:
 public:
 	static double MaxLGLong;
 	static void UpdateDBForUpdate();
-//	static bool bFieldExists(CDaoTableDef *rd, CString sName);
-//	static bool bIndexExists(_TablePtr* pTd,CString strIndex);
-	static void UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _ConnectionPtr DesDB, CString DesTBName);
+	static bool bFieldExists(CDaoTableDef *rd, CString sName);
+	static bool bIndexExists(CDaoTableDef* pTd,CString strIndex);
+	static void UpdateDBTable(CDaoDatabase &SourceDB, CString SourceTBName, CDaoDatabase &DesDB, CString DesTBName);
 	static void CloseAll_ConnectionPtr();
 	static BOOL UpdateSortDB();
 	static CString VolumeNo;
 	static CString PhsNo;
-	static bool ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
-	static bool ChangeDatabase(_ConnectionPtr dDb,_ConnectionPtr sDb);
-//	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
-	static bool IsExistentQuery(_ConnectionPtr db,CString strQueryName);
-	static bool bFieldExists(_RecordsetPtr rs, CString sName);
-	static bool DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long VolumeID);
+	static bool ChangeColumnsToRows(CDaoDatabase &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
+	static bool ChangeDatabase(CDaoDatabase& dDb,CDaoDatabase &sDb);
+	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
+	static bool IsExistentQuery(CDaoDatabase &db,CString strQueryName);
+	static bool bFieldExists(CDaoRecordset &rs, CString sName);
+	static bool DataTabAddRs(CDaoRecordset &dRsData, CDaoRecordset &sRsData, long VolumeID);
 	
 	static int FindStr(CString *pStr,int Count, CString sName);
-	static bool VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef);
-	static bool FindTable(_ConnectionPtr db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
+	static bool VolTabAddRs(CDaoRecordset &RsVolume, _VolumeDef &VolumeDef);
+	static bool FindTable(CDaoDatabase &db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
 	static bool UpdateAllPrjDB();
 	static bool UpgradeDatabase();
-	static void InitWorkTable(_ConnectionPtr db,CString tbn,int type);
+	static void InitWorkTable(CDaoDatabase& db,CString tbn,int type);
+	static CString GetDBName(CDaoDatabase& db);
+	static bool tdfExists(CDaoDatabase & db,CString tbn);
 	static CString GetDBName(_ConnectionPtr db);
-	static bool tdfExists(_ConnectionPtr  db,CString tbn);
-//	static CString GetDBName(_ConnectionPtr db);
 	static const int PrjNw;
 	static const int GDLJB;
 	static const int GDZDJ270;
@@ -120,7 +120,7 @@ public:
 	static const int TZD800HBYJ;    //华冶建支吊架明细一览表
 
     static bool FdExists(_RecordsetPtr  rs, CString  strFieldName);
-//    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
+    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
     static bool InitBillType();
     static void InitCurrWork();
     static void ConVertDB(CString  sDBN, CString  dDBN, COleVariant dVer, COleVariant  Pwd);
@@ -233,8 +233,8 @@ public:
      */
     static const _TCHAR*	YLJSBAT;
     static CString	PSA_OutDataUnit;
-    static const double	kgf2N;
-    static const double	kgf2MPa;
+    static const float	kgf2N;
+    static const float	kgf2MPa;
     static const int	cm2mm;
     /*
      * 以下为TK窗体使用的变量和常数
@@ -263,16 +263,16 @@ public:
 	static long SelHyID;
 	 static CString SelJcdm;//卷册代号
 	 static CString SelZyID;
-	static _ConnectionPtr dbPRJ;
-	static _ConnectionPtr dbSORT;
-    static _ConnectionPtr	dbTable;//20071015
+	static CDaoDatabase dbPRJ;
+	static CDaoDatabase dbSORT;
+    static CDaoDatabase	dbTable;//20071015
 
-	static _ConnectionPtr dbDSize;//20071018
-	static _ConnectionPtr dbMaterial;//20071018
-	static _ConnectionPtr dbPHScode;//20071018
-	static _ConnectionPtr dbSACal;//20071018
+	static CDaoDatabase dbDSize;//20071018
+	static CDaoDatabase dbMaterial;//20071018
+	static CDaoDatabase dbPHScode;//20071018
+	static CDaoDatabase dbSACal;//20071018
 
-    static _ConnectionPtr	dbPRJDB;
+    static CDaoDatabase	dbPRJDB;
 	static CString		strExportPaint;
 	static bool IsCalc;//pfg20051021是否正在计算
 	static BOOL bSymbol;

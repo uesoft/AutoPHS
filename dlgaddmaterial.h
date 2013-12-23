@@ -20,7 +20,7 @@ class CDlgAddMaterial : public CDialog
 // Construction
 public:
 	stMaterial m_stMaterial;
-	int GetMaxSEQ(CString tbn,_ConnectionPtr & db);
+	int GetMaxSEQ(CString tbn,CDaoDatabase & db);
 	void LoadListMaterial();
 	CString* m_pstrDescID;
 	void GetLWT(CString strBH,int & L,int& W,int &T);

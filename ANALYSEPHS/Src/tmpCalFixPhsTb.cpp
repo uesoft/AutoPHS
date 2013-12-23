@@ -25,7 +25,7 @@ tmpCalFixPhsTb::~tmpCalFixPhsTb()
 
 }
 
-BOOL tmpCalFixPhsTb::SetData( _RecordsetPtr pRs, _RecordsetPtr pOtherRs )
+BOOL tmpCalFixPhsTb::SetData( CDaoRecordset* pRs,CDaoRecordset* pOtherRs )
 {
 	CString sTmp = _T( "" );
 	rsTmp1.Edit();

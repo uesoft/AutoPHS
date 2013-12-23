@@ -24,7 +24,7 @@ public:
 	CString GetFieldValue(CString strFieldName);
 	void Update();
 protected:
-	_RecordsetPtr m_pRs;
+	CDaoRecordset m_pRs;
 
 };
 

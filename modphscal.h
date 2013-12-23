@@ -208,7 +208,7 @@ private:
 	static float fltTmp;
 public:	
 	static void UpdatePipeDimHeight(); // 更新Z8表管部的标高（冷态，热态）
-	static int FindPSAType(CString strPSAType, _RecordsetPtr rs);
+	static int FindPSAType(CString strPSAType,CDaoRecordset *rs);
 	static int SpringTypeCompare(CString strType);
 	//LFX 2005.6.30 焊缝绘制选项
 	static bool gbDrawWeldSymbol;   //是否绘制焊缝符号  
@@ -271,13 +271,13 @@ public:
 	static void StressOfMaterial(CString Material,float temperature,float& Sigmat,int iMODE=0,float& Density=vf7850);
 	static BOOL CalOffset(_RecordsetPtr rsZA);
 	static int SprInfoIndex;
-	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1, CString &tbn, CString s1, CString s2,CString s3);
+	static bool tbExists(CDaoDatabase& db,CDaoDatabase& db1, CString &tbn, CString s1, CString s2,CString s3);
 	// LFX 加 bool bWarn 以此标此来确定在表未找到时是否提出警告  2005.2.21
-	static bool HStbExists(_ConnectionPtr db,_ConnectionPtr db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
-	static COleVariant sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
-// 	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
+	static bool HStbExists(CDaoDatabase& db,CDaoDatabase& db1, CString &tbn, CString s1, CString s2,CString s3,bool bWarn = false);  
+	static COleVariant sFindAnyTableField(CDaoDatabase&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
+	static bool tbExists(_ConnectionPtr db,_ConnectionPtr db1,CString& tbn,CString s1,CString s2,CString s3);
 	static CString GetPhsSAfx(int  SAfx);
-	static _ConnectionPtr dbZDJcrude;
+	static CDaoDatabase dbZDJcrude;
 //	static int gbTbOS;
 //	static long glCurRecordNo;
     static void InitZdjTxName();
@@ -287,7 +287,7 @@ public:
     static int iBOMStartNo(int SN=10);
     static COleVariant sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID);
     static COleVariant sFindFLD(CString  strSourceFLD, CString  strDestFLD, CString strSourceFLDvalue);
-//    static _variant_t sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
+    static _variant_t sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue);
     static CString sFindID(CString  CustomID);
     static CString sFindCustomID(CString  ID);
     static CString sFindTBN(CString  PartCustomID);
@@ -319,7 +319,7 @@ public:
     static void CreateTmpConnectTable();
     static void CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum);
     static void CreateTmpSPRPropertyTableUnfinish(int /*Optional*/ SprMaxSerialNum);
-    static void SetSpringPhsInfo(_RecordsetPtr rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType);
+    static void SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType);
     static void AutoSelSpringNo(_RecordsetPtr rss,float fpgz ,float fpaz,float fyr,float fSPR_CHZBH,float& fTotalInstallCompressValue,
 						long lSelSampleID, int nRepZdjType,int iSumDistOfSpring,bool BHintRepZdjType,CString strSpringOrder,
 						CString strZdjType,bool bAutoApplyChzbh,CString strbnSPRINGproperty,CString strbnDiscSPRINGpropertyMaxDist);
@@ -338,11 +338,11 @@ public:
     static float CalUnitCovertCoef(_RecordsetPtr rstbl, int /*Optional*/ iUNIT=0);
     static void UpdateTZB4zdjh(CString FieldName,_variant_t FieldValue);
     static void VB_Cal(_RecordsetPtr  rs, long  zdjh,CFrmStatus &frmStatus,int nth = 1);
-    static bool CalRodLength(_RecordsetPtr  rstbl, long  zdjh);
+    static bool CalRodLength(_Recordset*  rstbl, long  zdjh);
     static void SetBasePoint();
     static void ReadAutoPHSiniValue();
     static void InitializeCrudeData(_RecordsetPtr rs, bool  bFrmTxsrLoaded);
-    static void CalPAfixZ1Z2(CString /*ByVal*/ dn, float /*ByVal*/ tmpSelPJG, float /*ByVal*/ tmpT0, int /*ByVal*/ mvariNumPart, _RecordsetPtr rsX);
+    static void CalPAfixZ1Z2(CString /*ByVal*/ dn, float /*ByVal*/ tmpSelPJG, float /*ByVal*/ tmpT0, int /*ByVal*/ mvariNumPart, CDaoRecordset& rsX);
     /*
      * 当查找connect数据表时使用的字段名称,
      * 默认字段是ID,此时只需要在connect表中增加用户特殊的匹配准则,工作量很小

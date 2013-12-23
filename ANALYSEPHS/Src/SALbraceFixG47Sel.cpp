@@ -185,7 +185,7 @@ bool SALbraceFixG47Sel::SelSALbraceFixG47(CString &Ptype)
 				CString SIGMA2sa,SIGMA2saMax,TAO2sa,TAO2saMax,TAOx2sa,TAOy2sa,TAOz2sa,lamda2;
 				float mfSIGMA1sa,mfSIGMA1saMax,mfTAO1sa,mfTAO1saMax,mfLamda1,mfFi1;
 				float mfSIGMA2sa,mfSIGMA2saMax,mfTAO2sa,mfTAO2saMax,mfLamda2,mfFi2;
-				_RecordsetPtr rs2;
+				CDaoRecordset rs2;
 				
 				//modPHScal::PAfixH=320.0;//本句可测试华东院例题
 				

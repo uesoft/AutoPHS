@@ -10,7 +10,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define _CRT_SECURE_NO_WARNINGS
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #include <afxwin.h>         // MFC core and standard components
@@ -26,17 +25,21 @@
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <atlbase.h>
 
-//#import "C:\\Program Files (x86)\\Common Files\\System\\ado\\msado60_backcompat_i386.tlb" no_namespace 
-//#import "C:\Program Files\Common Files\System\ado\msado60.tlb" no_namespace  
-#import "C:\Program Files\Common Files\System\ado\msado15.dll" no_namespace  \
+#import "C:\Program Files\Common Files\SYSTEM\ADO\msado15.dll" no_namespace \
 rename("EOF","adoEOF") rename("EditModeEnum","adoEditModeEnum")\
 rename("LockTypeEnum","adoLockTypeEnum") rename("FieldAttributeEnum","adoFieldAttributeEnum")\
 rename("DataTypeEnum","adoDataTypeEnum") rename("ParameterDirectionEnum","adoParameterDirectionEnum")\
 rename("RecordStatusEnum","adoRecordStatusEnum") 
+//#include <icrsint.h>
+#include <afxdao.h>
 
-
+ /* #import "D:\Program Files\Microsoft Office\Office\MSO9.DLL" no_namespace
+  #import "C:\Program Files\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB" no_namespace
+#import "excel9.olb" no_namespace \
+rename("EOF","eceEOF")*/
+//#include "user.h"
+//#include <dbdaoint.h>
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

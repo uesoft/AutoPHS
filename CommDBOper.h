@@ -4,7 +4,7 @@
 
 //类名		  CCommDBOper   (通用数据库操作)
 //说明		  本类中的成员函数均为静态成员函数
-//			  用来对诸如ADO等数据库编程方式打开,修改,查询,删除等操作进行包装,以简化工作
+//			  用来对诸如ADO,DAO等数据库编程方式打开,修改,查询,删除等操作进行包装,以简化工作
 //作者		  刘丰喜
 //建立日期    2005.2.25
 
@@ -26,10 +26,10 @@ public:
 	static int ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDBPathName,const CString strDBFileName,CString &strPassword,int iWarn = 1);
 	static int ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &strPassword,int iWarn = 1);
 	static int ADOConExec(_ConnectionPtr &pCon,const CString strCmdSql,CString strDcrCmd = "",int iWarn = 1);
-	static int ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr pRs,CString strOpenSql,CString strDcrOpen = "",int iWarn = 1);
+	static int ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr &pRs,CString strOpenSql,CString strDcrOpen = "",int iWarn = 1);
 	static int ADOConIsOpened(_ConnectionPtr &pCon,int iWarn = 1);
 	static int ADOCloseConnectDB(_ConnectionPtr &pCon,int iWarn = 1);
-	static int ADOCloseRecordset(_RecordsetPtr pRs,int iWarn = 1);
+	static int ADOCloseRecordset(_RecordsetPtr &pRs,int iWarn = 1);
 	static int ADOTestTable(_ConnectionPtr &pCon,const CString strTableName,int iWarn = 1);
 	static int ADODelRecord(_ConnectionPtr pCon,const CString strTableName,const CString strDelCond,int iWarn = 1);
 	static int ADODropTable(_ConnectionPtr &pCon,const CString tableName,int iWarn = 1);

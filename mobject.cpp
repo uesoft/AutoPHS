@@ -32,7 +32,9 @@ IUnknown* MAtlComQIPtrAssign(IUnknown** pp, IUnknown* lp, REFIID riid)
 	{
 		e->Delete();
 	}
-
+	catch(...)
+	{
+	}
 	return *pp;
 }
 
@@ -47,7 +49,9 @@ IDispatch* CMObject::operator=(IDispatch* lp)
 	{
 		e->Delete();
 	}
-
+	catch(...)
+	{
+	}
 	p=lp;
 	if(p!=NULL)
 		p->AddRef();
@@ -232,7 +236,9 @@ IDispatch* CMObject::operator =(_variant_t& newVar)
 	{
 		e->Delete();
 	}
-
+	catch(...)
+	{
+	}
 	p=NULL;
 	if(newVar.vt==VT_DISPATCH)
 	{

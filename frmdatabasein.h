@@ -17,9 +17,9 @@ public:
 	bool m_bIsCurDB;
 	CString m_strEnginID;
 	void LoadListVlm();
-	_ConnectionPtr m_db;
+	CDaoDatabase m_db;
 	void LoadListEngin();
-	long inline GetMaxVlmID(_ConnectionPtr & db);
+	long inline GetMaxVlmID(CDaoDatabase & db);
 	bool m_bDataSelected;
 	CString m_strFileName;
 	void getDatabase();

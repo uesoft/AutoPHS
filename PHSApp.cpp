@@ -39,9 +39,7 @@ const _ConnectionPtr& CPHSApp::GetAllPrjDBConnection()
 	}
 	catch(_com_error e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 	}
 	return m_pConAllPrj;
 }
