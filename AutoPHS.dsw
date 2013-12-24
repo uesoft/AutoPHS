@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "APGlobalShare"=..\APGlobalShare\APGlobalShare\APGlobalShare.dsp - Package Owner=<4>
+Project: "APGlobalShare"="..\APGlobalShare\APGlobalShare\APGlobalShare.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "AutoPHS"=.\AutoPHS.dsp - Package Owner=<4>
+Project: "AutoPHS"=".\AutoPHS.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -27,7 +27,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "DataFormatDlg"=..\DataFormatDlg\DataFormatDlg\DataFormatDlg.dsp - Package Owner=<4>
+Project: "DataFormatDlg"="..\DataFormatDlg\DataFormatDlg\DataFormatDlg.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -39,7 +39,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "DataFormatDlgRes"=..\DataFormatDlgRes\DataFormatDlgRes.dsp - Package Owner=<4>
+Project: "DataFormatDlgRes"="..\DataFormatDlgRes\DataFormatDlgRes.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -51,7 +51,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "FillExcelDll"=..\FillExcelDll\FillExcelDll\FillExcelDll.dsp - Package Owner=<4>
+Project: "FillExcelDll"="..\FillExcelDll\FillExcelDll\FillExcelDll.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -63,7 +63,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "GetPropertyofMaterial"=..\GetPropertyofMaterial\GetPropertyofMaterial\GetPropertyofMaterial.dsp - Package Owner=<4>
+Project: "GetPropertyofMaterial"="..\GetPropertyofMaterial\GetPropertyofMaterial\GetPropertyofMaterial.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -75,7 +75,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "InterfaceAndStruct"=..\InterfaceAndStruct\InterfaceAndStruct\InterfaceAndStruct.dsp - Package Owner=<4>
+Project: "InterfaceAndStruct"="..\InterfaceAndStruct\InterfaceAndStruct\InterfaceAndStruct.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -93,7 +93,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PSADomain"=..\PSADomain\PSADomain\PSADomain.dsp - Package Owner=<4>
+Project: "PSADomain"="..\PSADomain\PSADomain\PSADomain.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -105,7 +105,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PSAPointElevation"=..\PSAPointElevation\PSAPointElevation\PSAPointElevation.dsp - Package Owner=<4>
+Project: "PSAPointElevation"="..\PSAPointElevation\PSAPointElevation\PSAPointElevation.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -117,7 +117,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "PSIGlobalShare"=..\PSIGlobalShare\PSIGlobalShare\PSIGlobalShare.dsp - Package Owner=<4>
+Project: "PSIGlobalShare"="..\PSIGlobalShare\PSIGlobalShare\PSIGlobalShare.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -129,7 +129,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "SelEngineVolume"=..\SelEngineVolume\SelEngineVolume\SelEngineVolume.dsp - Package Owner=<4>
+Project: "SelEngineVolume"="..\SelEngineVolume\SelEngineVolume\SelEngineVolume.dsp" - Package Owner=<4>
 
 Package=<5>
 {{{

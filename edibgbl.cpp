@@ -220,8 +220,16 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 	}
 }
 
+
+//----delete by xulin 2013-12-22 begin
+/*
 bool EDIBgbl::InitBillType()
 {
+	//----insert by xulin 2013-12-22 begin
+#ifdef DEFLOG
+  AfxMessageBox(LOGSTR);
+#endif
+ //----insert by xulin 2013-12-22 end
    CDaoRecordset rs;
 	try{
 		if(!::DirExists(basDirectory::ProjectDBDir))
@@ -265,6 +273,138 @@ bool EDIBgbl::InitBillType()
 		return false;
 	}
 }
+*/
+//----delete by xulin 2013-12-22 end
+
+bool EDIBgbl::InitBillType()
+{
+  //----update by xulin 2012-12-23 begin
+  //CDaoRecordset rs;
+  	HRESULT hr = S_OK;
+ 	_RecordsetPtr rs;
+	hr = rs.CreateInstance(__uuidof(Recordset));
+  //----update by xulin 2013-12-23 end
+	try{
+		if(!::DirExists(basDirectory::ProjectDBDir))
+		{
+			frmFolderLocation.DoModal();
+		}
+		//20071024 10:58 (end) "ProjectDBDir" 改为 "DBShareDir"
+		if(!FileExists(basDirectory::DBShareDir + _T("TableFormat.mdb"))) //2007.10.14 16:00(start) 把"Sort.mdb"改为"TableFormat.mdb"
+      CopyFile(basDirectory::TemplateDir + _T("TableFormat.mdb"), basDirectory::DBShareDir + _T("TableFormat.mdb"),true);
+	
+  //----update by xulin 2012-12-23 begin
+	//delete by xulin 2013-12-23 begin
+   //CDaoDatabase db;
+   //	db.Open(basDirectory::DBShareDir+_T("TableFormat.mdb")); //20071024 10:58 (end) "ProjectDBDir" 改为 "DBShareDir"
+	//delete by xulin 2013-12-23 end
+  _ConnectionPtr db;
+   hr = db.CreateInstance(__uuidof(Connection));
+   hr = db->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("TableFormat.mdb")), "", "", adConnectUnspecified);
+
+	//delete by xulin 2013-12-23 begin
+   //rs.m_pDatabase=&db;														//2007.10.14 16:00(end) 把"Sort.mdb"改为"TableFormat.mdb"
+   //rs.Open(dbOpenSnapshot,_T("select * from TableINFO"));
+   	//delete by xulin 2013-12-23 end
+   		hr = rs->Open((_bstr_t)_T("select * from TableINFO"), _variant_t((IDispatch*)db,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+  //----update by xulin 2012-12-23 end
+   COleVariant Var1,Var2;
+   int v1;
+
+   /*	//delete by xulin 2013-12-23 begin
+   while(!rs.IsEOF())
+   {
+	   rs.GetFieldValue(_T("ID"),Var1);
+	   v1=vtoi(Var1);
+		if( v1 < 0) //20071026 "v1>50 ||" 删除
+			continue;
+		rs.GetFieldValue(_T("TableNameSuffix"),Var2);
+		Btype[v1]=vtos(Var2);
+		rs.GetFieldValue(_T("TableCaption"),Var2);
+		Cbtype[v1].MnuCaption=vtos(Var2);
+		rs.GetFieldValue(_T("menuItemVisible"),Var2);
+		Cbtype[v1].MnuVisible=Var2.boolVal;
+		rs.GetFieldValue(_T("menuItemEnabled"),Var2);
+		Cbtype[v1].MnuEnabled=Var2.boolVal;
+
+        rs.MoveNext();
+	}
+   rs.Close();
+   db.Close();*/   	//delete by xulin 2013-12-23 end
+     //----update by xulin 2012-12-23 begin
+	 
+   while(!rs->adoEOF)
+   {
+	   rs->get_Collect((_variant_t)(_T("ID")),&Var1);
+	   v1=vtoi(Var1);
+		if( v1 < 0) //20071026 "v1>50 ||" 删除
+			continue;
+
+	    Var2 = rs->GetCollect("TableNameSuffix");
+        if(Var2.vt != VT_NULL)
+		{
+           Btype[v1] = (LPCSTR)_bstr_t(Var2);
+		}
+		else
+		{
+           Btype[v1] = "";
+		}
+
+	    Var2 = rs->GetCollect("TableCaption");
+        if(Var2.vt != VT_NULL)
+		{
+           Cbtype[v1].MnuCaption = (LPCSTR)_bstr_t(Var2);
+		}
+		else
+		{
+           Btype[v1] = "";
+		}
+
+	    Var2 = rs->GetCollect("menuItemVisible");
+        if(Var2.vt != VT_NULL)
+		{
+          Cbtype[v1].MnuVisible = Var2.boolVal;
+		}
+		else
+		{
+			Cbtype[v1].MnuVisible =false;
+		}
+
+	    Var2 = rs->GetCollect("menuItemEnabled");
+        if(Var2.vt != VT_NULL)
+		{
+           Cbtype[v1].MnuEnabled = Var2.boolVal;
+		}
+		else
+		{
+		   Cbtype[v1].MnuEnabled =false;
+		}
+
+        rs->MoveNext();
+	}
+   rs->Close();
+   db->Close();
+	return true;
+   }
+	  //----update by xulin 2012-12-23 end
+	/*///delete by xulin 2013-12-23 begin
+	/*
+	catch(::CDaoException * e)
+	{
+		e->ReportError();
+		e->Delete();
+		return false;
+	}*///delete by xulin 2013-12-23 end
+	    //----update by xulin 2012-12-23 begin
+	catch(CException *e)
+	{
+		e->ReportError();
+		e->Delete();
+	}
+	    //----update by xulin 2012-12-23 end
+}
+
 
 void EDIBgbl::InitCurrWork()
 {
