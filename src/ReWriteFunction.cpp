@@ -27,7 +27,7 @@ BOOL GetPHSCompRs(CString TableName ,long zdjh,long SelVlmID, int nth,CDaoRecord
 	strSQL.Format(_T("SELECT CustomID FROM ZB WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [ClassID]<>%d AND [ClassID]<>%d AND [ClassID]<>%d AND [IsSAPart]<>-1 Order By recno"),
 		SelVlmID,zdjh,nth,iBolts,iNuts,iAttached);
 	rsTmpZB.Open(dbOpenDynaset,strSQL);
-	if( rsTmpZB.IsEOF()&& rsTmpZB.IsBOF() )
+	if( rsTmpZB->adoEOF&& rsTmpZB->BOF )
 		return FALSE;
 	return TRUE;
 }
@@ -71,12 +71,12 @@ void ReplaceCNTB(CString &tmpSQL0,CDaoRecordset &rsDiaOfCSPRFiK,CDaoRecordset &r
 						if( modPHScal::glClassID == iCSPR )
 						{
 							//恒吊的连接信息在另外一个记录集rsDiaOfCSPRFiK，不在rsX里面。
-							rsDiaOfCSPRFiK.GetFieldValue(tmpFD0,vTmp1);
+							rsDiaOfCSPRFiK->get_Collect((_variant)tmpFD0, &vTmp1);
 							tmpSQL0 =tmpSQL0.Left(n) + (vTmp1.vt==VT_NULL || vTmp1.vt==VT_EMPTY ? _T("0") : vtos(vTmp1)) + tmpSQL0.Mid( m);
 						}
 						else
 						{
-							rsX.GetFieldValue(tmpFD0,vTmp1);
+							rsX->get_Collect((_variant)tmpFD0, &vTmp1);
 							tmpSQL0 =tmpSQL0.Left(n) + (vTmp1.vt==VT_NULL || vTmp1.vt==VT_EMPTY ? _T("0") : vtos(vTmp1)) + tmpSQL0.Mid( m);
 						}
 						bFound = true;
@@ -98,7 +98,7 @@ void ReplaceCNTB(CString &tmpSQL0,CDaoRecordset &rsDiaOfCSPRFiK,CDaoRecordset &r
 void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CDaoRecordset &rsConnect,CDaoRecordset &rsX,CDaoRecordset &rsTZB,CDaoRecordset &rsDiaOfCSPRFiK,CString &tmpExtLenFD)
 {
 	COleVariant vTmp2,vTmp1;
-	rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp1);
+	rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp1);
 	if( vTmp1.vt==VT_NULL || vtos(vTmp1) == _T("") )
 	{
 		if( pstrPartID[i]==_T("L7") || pstrPartID[i]==_T("G12") || pstrPartID[i]==_T("L7Dd") || pstrPartID[i]==_T("G12Lc") )
@@ -109,7 +109,7 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 				//前一个是L8
 				//先查数据
 				//以后在计算拉杆长度函数CalLugLength中只要处理这种特殊情况即可。
-				rsX.GetFieldValue(tmpExtLenFD,vTmp2);
+				rsX->get_Collect((_variant)tmpExtLenFD, &vTmp2);
 				rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)vtoi(vTmp2)));
 			}
 			////////////////////////////////////////////
@@ -117,7 +117,7 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 			{
 				rsX.GetFieldValue (tmpExtLenFD,vTmp2);
 				rsTZB.SetFieldValue (_T("PreviousPartInsertLen"),COleVariant((long)vtoi(vTmp2)));
-				rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp2);
+				rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp2);
 				tmpExtLenFD = vtos(vTmp2);
 			}
 			////////////////////////////////////////
@@ -127,7 +127,7 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 	{
 		if( pstrPartID[i].Left(2) == _T("L7")||pstrPartID[i].Left(2) == _T("G12")||pstrPartID[i] == _T("L3")||pstrPartID[i] == _T("L4")||pstrPartID[i] == _T("T1")||pstrPartID[i] == _T("D4")||pstrPartID[i] == _T("D5")||pstrPartID[i] == _T("D11"))
 		{
-			rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp2);
+			rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp2);
 			tmpExtLenFD = vtos(vTmp2);
 			
 			//因为管部不可能有前一个，所以只需要判断它的后一个
@@ -139,10 +139,10 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 					//前一个是L8
 					//先查数据
 					//以后在计算拉杆长度函数CalLugLength中只要处理这种特殊情况即可。
-					rsX.GetFieldValue(tmpExtLenFD,vTmp2);
+					rsX->get_Collect((_variant)tmpExtLenFD, &vTmp2);
 					rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)vtoi(vTmp2)));
 					//再查字段名称
-					rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp2);
+					rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp2);
 					tmpExtLenFD = vtos(vTmp2);
 				}
 				else
@@ -155,15 +155,15 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 						//这几种恒力弹簧都采用耳子连接
 						if( pstrPartID[i-1] == _T("PHE1") || pstrPartID[i-1] == _T("PHE") || pstrPartID[i-1] == _T("LHE") || pstrPartID[i-1] == _T("LHE1") )
 						{
-							rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp2);
+							rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp2);
 							tmpExtLenFD = vtos(vTmp2);
-							rsDiaOfCSPRFiK.GetFieldValue(tmpExtLenFD,vTmp2);
+							rsDiaOfCSPRFiK->get_Collect((_variant)tmpExtLenFD, &vTmp2);
 							rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)vtoi(vTmp2)));
 						}
 					}
 					else
 					{
-						rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp2);
+						rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp2);
 						tmpExtLenFD = vtos(vTmp2);
 						rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)0));
 					}
@@ -172,7 +172,7 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 			//////////////////////////////////////////////////////////////////////
 			if( pstrPartID[i+1] == _T("L8") || pstrPartID[i+1] == _T("L8Dd") )
 			{
-				rsX.GetFieldValue(tmpExtLenFD,vTmp2);
+				rsX->get_Collect((_variant)tmpExtLenFD, &vTmp2);
 				rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)vtoi(vTmp2)));
 			}
 			//////////////////////////////////////////////////////////////////////////
@@ -185,13 +185,13 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 				if( pstrPartID[i+1] == _T("L7") || pstrPartID[i+1] == _T("G12") || pstrPartID[i+1] == _T("L7Dd") || pstrPartID[i+1] == _T("G12Lc") )
 				{
 					//保留查出的字段值，下次查表
-					rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp1);
+					rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp1);
 					tmpExtLenFD = vtos(vTmp1);
 				}
 				else
 				{
 					//根据查出的字段值直接查表
-					rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp1);
+					rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp1);
 					tmpExtLenFD = vtos(vTmp1);
 					rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)0));
 				}
@@ -212,15 +212,15 @@ void SetPrePartInsertLen(int i,CString* pstrPartID,CString mviPreviousClassID,CD
 						//需要查找另外一个表（恒吊松紧螺母直径表）去查找连接处一个直径(字段R)
 						if( pstrPartID[i-1] == _T("PHE1") || pstrPartID[i-1] == _T("PHE") || pstrPartID[i-1] == _T("LHE") || pstrPartID[i-1] == _T("LHE1") )
 						{
-							rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp1);
+							rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp1);
 							tmpExtLenFD = vtos(vTmp1);
-							rsDiaOfCSPRFiK.GetFieldValue(tmpExtLenFD,vTmp1);
+							rsDiaOfCSPRFiK->get_Collect((_variant)tmpExtLenFD, &vTmp1);
 							rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),vTmp1);
 						}
 					}
 					else
 					{
-						rsConnect.GetFieldValue(_T("CNTBExtLenFLD"),vTmp1);
+						rsConnect->get_Collect((_variant)_T("CNTBExtLenFLD"), &vTmp1);
 						tmpExtLenFD = vtos(vTmp1);
 						rsTZB.SetFieldValue(_T("PreviousPartInsertLen"),COleVariant((long)0));
 					}
@@ -239,22 +239,22 @@ double GetPartSizeH(int i,CDaoRecordset &rsX,const CString& strPartID,const CStr
 	{
 		//矩形管道，高度值要加modPHScal::dwB/2
 		//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
-		rsX.GetFieldValue( _T("sizeH"),vTmp1 );
+		rsX->get_Collect((_variant) _T("sizeH"), &vTmp1 );
 		dbSizeH = -(vtof(vTmp1) + modPHScal::dwB / 2);
 	}
 	else if( strPartID == _T("D4LQ") )
 	{
 		//矩形管道，高度值要加modPHScal::dwB/2
 		//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
-		rsX.GetFieldValue(_T("sizeH"),vTmp1);
+		rsX->get_Collect((_variant)_T("sizeH"), &vTmp1);
 		dbSizeH = vtof(vTmp1) + modPHScal::dwB / 2;
 		}
 	else if( strPartID == _T("DLR") )
 	{
 		//矩形管道，高度值要加modPHScal::dwB/2
 		//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
-		rsX.GetFieldValue(_T("sizeH"),vTmp1);
-		rsX.GetFieldValue(_T("size4"),vTmp2);
+		rsX->get_Collect((_variant)_T("sizeH"), &vTmp1);
+		rsX->get_Collect((_variant)_T("size4"), &vTmp2);
 		dbSizeH = vtof(vTmp1)+ modPHScal::dwB / 2 - vtof(vTmp2);
 	}
 	else if( strPartID == _T("LM2") || strPartID == _T("LM3") || strPartID == _T("LM4") )
@@ -262,14 +262,14 @@ double GetPartSizeH(int i,CDaoRecordset &rsX,const CString& strPartID,const CStr
 		//水平圆形管道连环吊架，高度值要加槽钢横担高度
 		//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
 		//rsTZB.SetFieldValue(_T("sizeDIM")) = -(IIf(IsNull(rsX.Fields(_T("size5"))), 0, rsX.Fields(_T("size5"))) + rsX.Fields(_T("size7")) * 10)
-		rsX.GetFieldValue(_T("sizeH"),vTmp1);
+		rsX->get_Collect((_variant)_T("sizeH"), &vTmp1);
 		dbSizeH = vtof(vTmp1);
 	}
 	else if( strPartID == _T("LN2") || strPartID == _T("LN3") )
 	{
 		//水平圆形管道槽钢焊接连环吊架，高度值要加
 		//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
-		rsX.GetFieldValue(_T("sizeH"),vTmp1);
+		rsX->get_Collect((_variant)_T("sizeH"), &vTmp1);
 		dbSizeH = vtof(vTmp1);
 	}
 	else if(strPartID==_T("L15"))
@@ -299,7 +299,7 @@ double GetPartSizeH(int i,CDaoRecordset &rsX,const CString& strPartID,const CStr
 		else
 		{
 			//零件标注尺寸，先将sizeDIM也暂时置为零件实际尺寸
-			rsX.GetFieldValue(_T("sizeH"),vTmp1);
+			rsX->get_Collect((_variant)_T("sizeH"), &vTmp1);
 			dbSizeH = vtof(vTmp1);
 			//零件实际尺寸
 		}
@@ -315,7 +315,9 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 	//否则，按插值法计算位移。add by ligb on 2004.11.24
 	CString sTmp;
 	CString tmpSQL;
-	CDaoRecordset rsX1;			   
+
+	_RecordsetPtr rsX1;
+	rsX1.CreateInstance(__uuidof(_Recordset));
 	tmpSQL = _T("SELECT * FROM [") + modPHScal::tbnHDCrude + _T("] WHERE ") + tmpSQL ;
 	if(iSEQofSPR < modPHScal::SprInfoIndex)
 		sTmp.Format(_T(" dh=%d"),modPHScal::sSprInfo[iSEQofSPR].DH);
@@ -331,11 +333,13 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 		sTmp=_T(" ");
 	}
 	tmpSQL+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND trim(CustomID)=\'") + PType + _T("\' ORDER BY dh,Weight");
-	rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
-	rsX1.Open(dbOpenSnapshot,tmpSQL);
+// 	rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
+// 	rsX1.Open(dbOpenSnapshot,tmpSQL);
+	rsX1->Open((_bstr_t)tmpSQL, _variant_t((IDispatch*)EDIBgbl::dbZDJcrude,true), 
+		adOpenForwardOnly, adLockReadOnly, adCmdText); 
 	double sngDim = 0;
 	COleVariant vTmp1,vTmp2;
-	if(rsX1.IsBOF() && rsX1.IsEOF()||1)//当处在临界值时出错(sizeH的高度没有加上实际位移)pfg and lgb 2005.12.15
+	if(rsX1->BOF && rsX1->adoEOF||1)//当处在临界值时出错(sizeH的高度没有加上实际位移)pfg and lgb 2005.12.15
 	{
 		if(modPHScal::gCH1distPos == 1 )
 		{
@@ -348,7 +352,7 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 		else if(modPHScal::gCH1distPos == 0 )
 		{
 			//E字段给出了最小位移位置的高度
-			rsX.GetFieldValue(_T("fBmin"),vTmp1);
+			rsX->get_Collect((_variant)_T("fBmin"), &vTmp1);
 			if( modPHScal::yr < 0 )
 			{
 				//热位移<0
@@ -368,8 +372,8 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 		else if(modPHScal::gCH1distPos == 2 )
 		{
 			//E字段给出了最大位移位置的高度
-			rsX.GetFieldValue(_T("fBmax"),vTmp1);
-			rsX.GetFieldValue(_T("fBmin"),vTmp2);
+			rsX->get_Collect((_variant)_T("fBmax"), &vTmp1);
+			rsX->get_Collect((_variant)_T("fBmin"), &vTmp2);
 			sngDim = sngH1xmax + (vtof(vTmp1) - vtof(vTmp2))/2;
 			if( modPHScal::yr < 0 )
 			{
@@ -405,7 +409,7 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 		//常州的可用下列公式
 		if( !modPHScal::gbCH1IncludeB )
 		{
-			rsTmp.GetFieldValue(_T("size4"),vTmp1);
+			rsTmp->get_Collect((_variant)_T("size4"), &vTmp1);
 			sngDim = sngDim + vtof(vTmp1);
 		}
 		if(sPartID==_T("LHE") || sPartID==_T("LHE1") || sPartID==_T("PHE") || sPartID==_T("PHE1") || sPartID==_T("PHC") || sPartID==_T("LHC"))
@@ -413,7 +417,7 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 			//立式吊杆连接，要加上耳板高度T。
 			if( !modPHScal::gbCH1IncludeT )
 			{
-				rsDiaOfCSPRFiK.GetFieldValue(_T("T"),vTmp1);
+				rsDiaOfCSPRFiK->get_Collect((_variant)_T("T"), &vTmp1);
 				sngDim = sngDim +vtof(vTmp1);
 			}
 		}

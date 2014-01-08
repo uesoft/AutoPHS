@@ -585,7 +585,7 @@ void CCalStructDlg::InitVar(int iComNo,BOOL bCurComNo,BOOL bOther,BOOL bUpdMater
 	try
 	{
 		
-		EDIBgbl::dbSACal.Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")));//20071103 "dbSORT"改为 "dbSACal"
+		EDIBgbl::dbSACal->Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")), NULL, adCmdText);
 		m_rsVariable.CreateInstance(__uuidof(Recordset));
 		m_rsVariable->CursorLocation=adUseClient;
 		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSASCal,adOpenStatic,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
@@ -615,11 +615,6 @@ void CCalStructDlg::InitVar(int iComNo,BOOL bCurComNo,BOOL bOther,BOOL bUpdMater
 		m_gridMainDim.GetColumns().GetItem(_variant_t(2L)).SetWidth(60.0f);
 		m_gridMainDim.GetColumns().GetItem(_variant_t(3L)).SetWidth(240.0f);
 		m_gridMainDim.GetColumns().GetItem(_variant_t(5L)).SetWidth(90.0f);
-	}
-	catch(CDaoException * e)
-	{
-		e->ReportError();
-		e->Delete();
 	}
 	catch(_com_error & e)
 	{
@@ -714,7 +709,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			//临时表必须放在本地数据库workprj.mdb,不能放在可能共享的数据库sort.mdb中。
 			//否则共享时将会混乱其他用户。
 			strSQL.Format((_T("DROP TABLE [%s]")),strTmpTabName);
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		catch(...)
 		{
@@ -722,13 +717,17 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 	}
 	try
 	{
-		CDaoRecordset rsVar;
-		CDaoRecordset rsLreal;
-		COleVariant vTemp;
+		HRESULT hr = S_OK;
+		_RecordsetPtr rsVar;
+		hr = rsVar.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsLreal;
+		hr = rsLreal.CreateInstance(__uuidof(Recordset));
+		_variant_t vTemp;
 		
-		rsVar.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
+//		rsVar.m_pDatabase=&EDIBgbl::dbSORT;
 		strSQL.Format((_T("SELECT [VarName],[VarValue] FROM [SAStructVariable] WHERE [StructID]=%d")),pCalInfo->pStrCom->lStructID);
-		rsVar.Open(dbOpenSnapshot,strSQL);
+		rsVar->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		strSQL.Format(_T("CREATE TABLE [%s] ("),strTmpTabName);
 		CString strTemp,strTemp2,strFields;
@@ -736,9 +735,9 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 		strSQL+=strTemp;
 		int i=0;
 		CString strVarName;
-		for(;!rsVar.IsEOF();rsVar.MoveNext(),i++)
+		for(;!rsVar->adoEOF;rsVar->MoveNext(),i++)
 		{
-			rsVar.GetFieldValue(0,vTemp);
+			rsVar->get_Collect((_variant_t)0L, &vTemp);
 			strVarName=vtos(vTemp);
 			if(i==0)
 			{
@@ -775,20 +774,20 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 
 		strSQL+=_T(")");
 		if(bMakeTab)
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		if(!bMakeTab)
 		{
 			strSQL.Format((_T("DELETE FROM [%s]")),strTmpTabName);
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		strSQL.Format((_T("INSERT INTO [%s] ( %s ) VALUES (")),strTmpTabName,strFields);
 		
-		rsVar.MoveFirst();
+		rsVar->MoveFirst();
 		float fVarValue;
-		for(i=0;!rsVar.IsEOF();rsVar.MoveNext(),i++)
+		for(i=0;!rsVar->adoEOF;rsVar->MoveNext(),i++)
 		{
-			rsVar.GetFieldValue(1,vTemp);
+			rsVar->get_Collect((_variant_t)1L, &vTemp);
 			fVarValue=vtof(vTemp);
 			if(i==0)
 				strTemp.Format((_T(" %f")),fVarValue);
@@ -798,7 +797,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 		}
 		strSQL+=_T(")");
 
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		//以上已经获得所有原始数据的值，但是l1/l2/l3...的值尚未计算出来
 		
@@ -806,6 +805,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 
 		//获取l1/l2/l3的计算公式
 
+		CString strTmp;
 		CString strFind;
 		//构件 1,2,3,4 的 φw 由程序计算
 		if(1 <= m_lStructID && m_lStructID <= 4)
@@ -813,41 +813,66 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			double dFiw=0.0;
 			double h=0.0,b=0.0,t=0.0,xs=0.0,l=0.0;
 
-			rsVar.MoveFirst();
-			if(rsVar.FindFirst((_T("[VarName]=\'h\'"))))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'h\'")), 0, adSearchBackward, vTemp))
+			rsVar->MoveFirst();
+			strTmp = _T("[VarName]=\'h\'");
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				h=vtod(vTemp);
 			}
 
-			if(rsVar.FindFirst((_T("[VarName]=\'b\'"))))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'b\'")), 0, adSearchBackward, vTemp))
+			rsVar->MoveFirst();
+			strTmp = _T("[VarName]=\'b\'");
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				b=vtod(vTemp);
 			}
 
-			if(rsVar.FindFirst((_T("[VarName]=\'t\'"))))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'t\'")), 0, adSearchBackward, vTemp))
+			rsVar->MoveFirst();
+			strTmp = _T("[VarName]=\'t\'");
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				t=vtod(vTemp);
 			}
 			
 			strFind.Format((_T("[VarName]=\'%s\'")),GetResStr(IDS_XS));
-			if(rsVar.FindFirst(strFind))
+// 			if(rsVar->Find((_bstr_t)strFind, 0, adSearchForward, vTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strFind, 0, adSearchBackward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				xs=vtod(vTemp);
 			}
 
-			if(rsVar.FindFirst((_T("[VarName]=\'l\'"))))
+// 			if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l\'")), 0, adSearchBackward, vTemp))
+			rsVar->MoveFirst();
+			strTmp = _T("[VarName]=\'l\'");
+			hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				l=vtod(vTemp);
 			}
-			else if(rsVar.FindFirst((_T("[VarName]=\'l1\'"))))
+			else 
+//				if(rsVar->Find((_bstr_t)(_T("[VarName]=\'l1\'")), 0, adSearchBackward, vTemp))
 			{
-				rsVar.GetFieldValue(1,vTemp);
-				l=vtod(vTemp);
+				rsVar->MoveFirst();
+				strTmp = _T("[VarName]=\'l1\'");
+				hr = rsVar->Find((_bstr_t)strTmp, 0, adSearchForward);
+				if( !rsVar->adoEOF)
+				{
+					rsVar->get_Collect((_variant_t)1L, &vTemp);
+					l=vtod(vTemp);
+				}
 			}
 
 			if(m_lClassID==iSAbeam)
@@ -868,11 +893,11 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 				}
 			}
 			strSQL.Format((_T("UPDATE [%s] SET %s=%g ")),strTmpTabName,GetResStr(IDS_FD_FI_W),dFiw);
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL.Format("UPDATE [SAStructVariable] SET [VarValue]=%f WHERE StructID=%d AND VarName=\'%s\'",dFiw,pCalInfo->pStrCom->lStructID,GetResStr(IDS_FD_FI_W));
-			EDIBgbl::dbSACal.Execute(strSQL);//20071103 "dbSORT" 改为 "dbSACal"
+			EDIBgbl::dbSACal->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL.Format("UPDATE [SAStructVariable] SET [VarValue]=%f WHERE StructID=%d AND VarName=\'%s%d\'",dFiw,pCalInfo->pStrCom->lStructID,GetResStr(IDS_FD_FI_W),pCalInfo->pStrCom->lComNo);
-			EDIBgbl::dbSACal.Execute(strSQL);//20071103 "dbSORT" 改为 "dbSACal"
+			EDIBgbl::dbSACal->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 
 		if(bCalFi)
@@ -880,34 +905,45 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			//计算φ值
 			double l=0.0,Ix=0.0,Iy=0.0,F=0.0,Jmin=0.0f,Lamda=0.0,Fi=0.0,u=0.0;
 			strTemp.Format((_T("[VarName]=\'l%d\'")),pCalInfo->pStrCom->lComNo);
-			if(rsVar.FindFirst(strTemp))
+// 			if(rsVar->Find((_bstr_t)strTemp, 0, adSearchBackward, vTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				l=vtod(vTemp);
 			}
 
 			strTemp.Format((_T("[VarName]=\'Ix%d\'")),pCalInfo->pStrCom->lComNo);
-			if(rsVar.FindFirst(strTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				Ix=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'Iy%d\'")),pCalInfo->pStrCom->lComNo);
-			if(rsVar.FindFirst(strTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				Iy=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'F%d\'")),pCalInfo->pStrCom->lComNo);
-			if(rsVar.FindFirst(strTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				F=vtod(vTemp);
 			}
 			strTemp.Format((_T("[VarName]=\'%s%d\'")),GetResStr(IDS_U),pCalInfo->pStrCom->lComNo);
-			if(rsVar.FindFirst(strTemp))
+			rsVar->MoveFirst();
+			hr = rsVar->Find((_bstr_t)strTemp, 0, adSearchForward);
+			if( !rsVar->adoEOF)
 			{
-				rsVar.GetFieldValue(1,vTemp);
+				rsVar->get_Collect((_variant_t)1L, &vTemp);
 				u=vtod(vTemp);
 			}
 			Jmin=(Ix<=Iy ? Ix : Iy);
@@ -917,36 +953,40 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			Fi=this->GetFiOfLamda(Lamda,pCalInfo->pComPt->strMaterial);
 			strSQL.Format((_T("UPDATE [%s] SET [%s]=%g ")),strTmpTabName,GetResStr(IDS_FI),Fi);
 
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL.Format("UPDATE [SAStructVariable] SET [VarValue]=%f WHERE StructID=%d AND VarName=\'%s\'",Fi,pCalInfo->pStrCom->lStructID,GetResStr(IDS_FI));
-			EDIBgbl::dbSACal.Execute(strSQL);//20071103 "dbSORT" 改为 "dbSACal"
+			EDIBgbl::dbSACal->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL.Format("UPDATE [SAStructVariable] SET [VarValue]=%f WHERE StructID=%d AND VarName=\'%s%d\'",Fi,pCalInfo->pStrCom->lStructID,GetResStr(IDS_FI),pCalInfo->pStrCom->lComNo);
-			EDIBgbl::dbSACal.Execute(strSQL);//20071103 "dbSORT" 改为 "dbSACal"
+			EDIBgbl::dbSACal->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 
-		rsVar.Close();
+		rsVar->Close();
 		strSQL.Format((_T("UPDATE [%s] SET [%s]=%s")),strTmpTabName,pCalInfo->strResult,pCalInfo->strFormula);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL.Format((_T("SELECT [%s] FROM [%s]")),pCalInfo->strResult,strTmpTabName);
 
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,strSQL);
+		_RecordsetPtr rs;
+		hr = rs.CreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&EDIBgbl::dbPRJ;
+//		rs.Open(dbOpenSnapshot,strSQL);
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
-		if(rs.IsEOF())
+		if(rs->adoEOF)
 			res = CAL_RESULT_NULL;
 		else
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			*pResult=vtof(vTemp);
-			rs.Close();
+			rs->Close();
 			strSQL.Format((_T("SELECT [%s] FROM [%s] WHERE %s%s")),
 				pCalInfo->strResult,
 				strTmpTabName,
 				pCalInfo->strResult,pCalInfo->strWhere);
-			rs.Open(dbOpenSnapshot,strSQL);
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			CString strMsg;
-			if(rs.IsEOF())
+			if(rs->adoEOF)
 			{
 				res = CAL_NOT_REGULAR;
 			}
@@ -955,7 +995,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 				res = CAL_REGULAR;
 			}
 		}
-		rs.Close();
+		rs->Close();
 		CString strWVal;
 		if((i=pCalInfo->strWhere.Find((_T('='))))!=-1)
 		{
@@ -968,36 +1008,23 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 			pCalInfo->strCPT=pCalInfo->strWhere.Left(1);
 		}
 		strSQL.Format((_T("SELECT %s FROM [%s]")),strWVal,strTmpTabName);
-		rs.Open(dbOpenSnapshot,strSQL);
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		pCalInfo->fWhereVal=0.0f;
-		if(!rs.IsEOF())
+		if(!rs->adoEOF)
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			pCalInfo->fWhereVal=vtof(vTemp);
 		}
-		rs.Close();
+		rs->Close();
 	}
-	catch(CDaoException *e)
+	catch(_com_error e)
 	{
-#ifdef _DEBUG
-		e->ReportError();
-#endif
-		e->Delete();
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		res=CAL_ERROR;
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		ReportError( "Exception", __FILE__, __LINE__ );
-	}
-	/*catch(_com_error e)
-	{
-		AfxMessageBox(e.Description());
-		res=CAL_ERROR;
-	}*/
 	return res;
 }
 
@@ -1010,65 +1037,69 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 	const TCHAR szError1[]=_T("找不到指定零件的特性数据!");
 	CList < VarInfo , VarInfo& > lstVarInfo;
 	VarInfo sVarInfo;
-	DAORecordset *pRs=NULL;
+	_RecordsetPtr pRs;
+	pRs.CreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
+	_variant_t vTemp;
 	try
 	{
-		CDaoRecordset rs;
-		COleVariant vTemp;
 		if(bUpdCom)
 		{
 			//要更新构件数据
-			rs.m_pDatabase=(&modPHScal::dbZDJcrude);
+//			rs.m_pDatabase=(&modPHScal::dbZDJcrude);
 			if(_tcscmp(pComPt->strID,(_T("CS")))==0)
 			{
 				//槽钢
 				strSQL.Format((_T("SELECT * FROM [SSteelPropertyCS] WHERE [BH]=\'%s\'")),pComPt->strClgg);
-				rs.Open(dbOpenSnapshot,strSQL);
-				if(rs.IsEOF())
+//				rs.Open(dbOpenSnapshot,strSQL);
+				rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rs->adoEOF)
 					throw szError1;
 				
-				rs.GetFieldValue((_T("h")),vTemp);
+				rs->get_Collect((_variant_t)(_T("h")), &vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("h")));
 				lstVarInfo.AddTail(sVarInfo);
 
 				
-				rs.GetFieldValue((_T("b")),vTemp);
+				rs->get_Collect((_variant_t)(_T("b")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("b")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("d")),vTemp);
+				rs->get_Collect((_variant_t)(_T("d")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("d")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("t")),vTemp);
+				rs->get_Collect((_variant_t)(_T("t")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("t")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Wx")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Wx")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Wx")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Wy")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Wy")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Wy")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Ix")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Ix")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Ix")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Iy")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Iy")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Iy")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("s")),vTemp);
+				rs->get_Collect((_variant_t)(_T("s")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("F")));
 				lstVarInfo.AddTail(sVarInfo);
@@ -1081,32 +1112,33 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 				CString strBH1=pComPt->strClgg.Mid(pComPt->strClgg.Find(_T("x"))+1);
 				int ib=_ttoi(pComPt->strClgg.Mid(1));
 				strSQL.Format((_T("SELECT * FROM [SSteelPropertyLS] WHERE [BH]=\'%s\' AND [b]=%d ")),strBH1,ib);
-				rs.Open(dbOpenSnapshot,strSQL);
-				if(rs.IsEOF())
+				rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rs->adoEOF)
 					throw szError1;
 
-				rs.GetFieldValue((_T("b")),vTemp);
+				rs->get_Collect((_variant_t)(_T("b")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("b")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("d")),vTemp);
+				rs->get_Collect((_variant_t)(_T("d")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("d")));
 				lstVarInfo.AddTail(sVarInfo);
 
 
-				rs.GetFieldValue((_T("Wx")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Wx")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Wx")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Ix")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Ix")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Ix")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("s")),vTemp);
+				rs->get_Collect((_variant_t)(_T("s")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("F")));
 				lstVarInfo.AddTail(sVarInfo);
@@ -1116,51 +1148,52 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 			{
 				//工字钢
 				strSQL.Format((_T("SELECT * FROM [SSteelPropertyHS] WHERE [BH]=\'%s\'")),pComPt->strClgg);
-				rs.Open(dbOpenSnapshot,strSQL);
-				if(rs.IsEOF())
+				rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rs->adoEOF)
 					throw szError1;
 				
-				rs.GetFieldValue((_T("h")),vTemp);
+				rs->get_Collect((_variant_t)(_T("h")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("h")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("b")),vTemp);
+				rs->get_Collect((_variant_t)(_T("b")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("b")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("d")),vTemp);
+				rs->get_Collect((_variant_t)(_T("d")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("d")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("t")),vTemp);
+				rs->get_Collect((_variant_t)(_T("t")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("t")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Wx")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Wx")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Wx")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Wy")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Wy")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Wy")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Ix")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Ix")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Ix")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("Iy")),vTemp);
+				rs->get_Collect((_variant_t)(_T("Iy")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("Iy")));
 				lstVarInfo.AddTail(sVarInfo);
 
-				rs.GetFieldValue((_T("s")),vTemp);
+				rs->get_Collect((_variant_t)(_T("s")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp);
 				_tcscpy(sVarInfo.szName,(_T("F")));
 				lstVarInfo.AddTail(sVarInfo);
@@ -1169,22 +1202,23 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 			{
 				//其它类型
 				strSQL.Format((_T("SELECT * FROM [%s] WHERE [CustomID] IN (SELECT [CustomID] FROM [%s] WHERE [ID]=\'%s\') AND [BH]=\'%s\'")),modPHScal::tbnBoltsNuts,modPHScal::tbnBoltsNutsID,pComPt->strID,pComPt->strClgg);
-				rs.Open(dbOpenSnapshot,strSQL);
-				if(rs.IsEOF())
+				rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rs->adoEOF)
 					throw szError1;
-				rs.GetFieldValue((_T("size2")),vTemp);
+				rs->get_Collect((_variant_t)(_T("size2")),&vTemp);
 				sVarInfo.fVal=vtof(vTemp)/10.0f;
 				_tcscpy(sVarInfo.szName,(_T("d0")));
 				lstVarInfo.AddTail(sVarInfo);
 			}
-			rs.Close();
+			rs->Close();
 		}
 		
 		if(bUpdMaterial)
 		{
 			//要更新材料数据
 			//填充材料数据.
-			rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
+//			rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
 			BOOL bEOF=FALSE;
 			//	α
 			float fTmpTemp;
@@ -1192,101 +1226,107 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 			//	E 钢材在 20度时的弹性模数(公斤力/厘米2)
 			strSQL.Format((_T("SELECT  [t],[Et] FROM [MechanicalofMaterialEt] WHERE [Material] ='%s' AND [t]>=%f ORDER BY [t]")),
 				pComPt->strMaterial,20.0f);	
-			rs.Open(dbOpenSnapshot,strSQL);
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			_tcscpy(sVarInfo.szName,(_T("E")));
-			if(!rs.IsEOF())
+			if(!rs->adoEOF)
 			{
-				rs.GetFieldValue(0,vTemp);
+				rs->get_Collect((_variant_t)0L,&vTemp);
 				fTmpTemp=fabs(vtof(vTemp)-20.0f);
-				rs.GetFieldValue(1,vTemp);
+				rs->get_Collect((_variant_t)1L,&vTemp);
 				sVarInfo.fVal=vtof(vTemp) * 100000.0f/EDIBgbl::kgf2N;
 				bEOF=FALSE;
 			}
 			else bEOF=TRUE;
-			rs.Close();
+			rs->Close();
 
 			strSQL.Format((_T("SELECT TOP 1 [t],[Et] FROM [MechanicalofMaterialEt] WHERE [Material] ='%s' AND [t]<%f ORDER BY [t] DESC")),
 				pComPt->strMaterial,20.0f);
-			rs.Open(dbOpenSnapshot,strSQL);
-			if(!rs.IsEOF() && !bEOF)
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(!rs->adoEOF && !bEOF)
 			{
-				rs.GetFieldValue(0,vTemp);
+				rs->get_Collect((_variant_t)0L,&vTemp);
 				if(fTmpTemp > fabs(vtof(vTemp)-20.0f))
 				{
-					rs.GetFieldValue(1,vTemp);
+					rs->get_Collect((_variant_t)1L,&vTemp);
 					sVarInfo.fVal=vtof(vTemp) * 100000.0f/EDIBgbl::kgf2N;
 				}
 				lstVarInfo.AddTail(sVarInfo);
 			}
-			else if(!rs.IsEOF())
+			else if(!rs->adoEOF)
 			{
-				rs.GetFieldValue(1,vTemp);
+				rs->get_Collect((_variant_t)1L,&vTemp);
 				sVarInfo.fVal=vtof(vTemp) * 100000.0f/EDIBgbl::kgf2N;
 				lstVarInfo.AddTail(sVarInfo);
 			}
 			else if(!bEOF)
 				lstVarInfo.AddTail(sVarInfo);
-			rs.Close();
+			rs->Close();
 
 
 			//	σtj 钢材在计算温度下基本许用应力(公斤力/厘米2)
 			strSQL.Format((_T("SELECT TOP 1 [t],[Sigma] FROM [MechanicalofMaterialSIGMAt] WHERE [Material] ='%s' AND [t]>=%f ORDER BY [t]")),
 				pComPt->strMaterial,pComPt->fTmp);//,pComPt->strMaterial,pComPt->fTmp);	
-			rs.Open(dbOpenSnapshot,strSQL);
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			_tcscpy(sVarInfo.szName,GetResStr(IDS_X_TJ));
-			if(!rs.IsEOF())
+			if(!rs->adoEOF)
 			{
-				rs.GetFieldValue(0,vTemp);
+				rs->get_Collect((_variant_t)0L,&vTemp);
 				fTmpTemp=fabs(vtof(vTemp)-pComPt->fTmp);
-				rs.GetFieldValue(1,vTemp);
+				rs->get_Collect((_variant_t)1L,&vTemp);
 				sVarInfo.fVal=vtof(vTemp) * 100.0f / EDIBgbl::kgf2N;
 				bEOF=FALSE;
 			}
 			else bEOF=TRUE;
-			rs.Close();
+			rs->Close();
 
 			strSQL.Format((_T("SELECT TOP 1 [t],[Sigma] FROM [MechanicalofMaterialSIGMAt] WHERE [Material] ='%s' AND [t]<%f ORDER BY [t] DESC")),
 				pComPt->strMaterial,pComPt->fTmp);//,pComPt->strMaterial,pComPt->fTmp);	
-			rs.Open(dbOpenSnapshot,strSQL);
-			if(!rs.IsEOF() && !bEOF)
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(!rs->adoEOF && !bEOF)
 			{
-				rs.GetFieldValue(0,vTemp);
+				rs->get_Collect((_variant_t)0L,&vTemp);
 				if(fTmpTemp > fabs(vtof(vTemp)-pComPt->fTmp))
 				{
-					rs.GetFieldValue(1,vTemp);
+					rs->get_Collect((_variant_t)1L,&vTemp);
 					sVarInfo.fVal=vtof(vTemp) * 100.0f / EDIBgbl::kgf2N;
 				}
 				lstVarInfo.AddTail(sVarInfo);
 			}
-			else if(!rs.IsEOF())
+			else if(!rs->adoEOF)
 			{
-				rs.GetFieldValue(1,vTemp);
+				rs->get_Collect((_variant_t)1L,&vTemp);
 				sVarInfo.fVal=vtof(vTemp) * 100.0f / EDIBgbl::kgf2N;
 				lstVarInfo.AddTail(sVarInfo);
 			}
 			else if(!bEOF)
 				lstVarInfo.AddTail(sVarInfo);
 
-			rs.Close();
+			rs->Close();
 
 			//σs 钢材屈服极限最小值(公斤力/厘米2)
 			strSQL.Format((_T("SELECT TOP 1 [SIGMAs] FROM [MechanicalofMaterialSIGMAsb] WHERE [Material] ='%s'")),
 				pComPt->strMaterial);	
-			rs.Open(dbOpenSnapshot,strSQL);
-			if(rs.IsEOF())
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(rs->adoEOF)
 				throw szError1;
 			_tcscpy(sVarInfo.szName,GetResStr(IDS_XS));
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L,&vTemp);
 			sVarInfo.fVal=vtof(vTemp) * 100.0f / EDIBgbl::kgf2N;
 			lstVarInfo.AddTail(sVarInfo);
-			rs.Close();
+			rs->Close();
 		}
 
 		POSITION pos;
 		strSQL.Format((_T("SELECT  [VarValue],[VarName] FROM [SAStructVariable] WHERE [StructID]=%d ")),
 			pStrCom->lStructID);
-		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
-		rs.Open(dbOpenDynaset,strSQL);
+//		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		CString strFind;
 		for(pos=lstVarInfo.GetHeadPosition();pos!=0;)
 		{
@@ -1296,11 +1336,17 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 				if(bCurComNo || bUpdMaterial)
 				{
 					strFind.Format((_T("VarName=\'%s\'")),varInfo.szName);
-					if(rs.FindFirst(strFind))
+					HRESULT hr = S_OK;
+					rs->MoveFirst();
+					hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
+					if( !rs->adoEOF)
 					{
-						rs.Edit();
-						rs.SetFieldValue(0,(float)varInfo.fVal);
-						rs.Update();
+//						rs.Edit();
+						VARIANT var;
+						var.vt = VT_R4;
+						var.fltVal = varInfo.fVal;
+						rs->put_Collect((_variant_t)0L, var);
+						rs->Update();
 					}
 				}
 			}
@@ -1308,34 +1354,27 @@ BOOL CCalStructDlg::InitVar(PComPt pComPt, PStrCom pStrCom,BOOL	 bCurComNo,BOOL 
 			{
 				//如果要更新带尾数的记录,如 Ix1,Iy1,Ix2,Iy2,...
 				strFind.Format((_T("VarName=\'%s%d\'")),varInfo.szName,pStrCom->lComNo);
-				if(rs.FindFirst(strFind))
+				HRESULT hr = S_OK;
+				rs->MoveFirst();
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
+				if( !rs->adoEOF)
 				{
-					rs.Edit();
-					rs.SetFieldValue(0,(float)varInfo.fVal);
-					rs.Update();
+//					rs.Edit();
+					VARIANT var;
+					var.vt = VT_R4;
+					var.fltVal = varInfo.fVal;
+					rs->put_Collect((_variant_t)0L, var);
+					rs->Update();
 				}
 			}
 		}
-		rs.Close();
+		rs->Close();
 		return TRUE;
 	}
-	catch(CDaoException * e)
+	catch(_com_error & e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_TCHAR e[])
-	{
-		AfxMessageBox(e);
+		AfxMessageBox(e.Description());
 		return FALSE;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		ReportError("Exception",__FILE__,__LINE__);
 	}
 	return TRUE;
 }
@@ -1354,7 +1393,7 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		CString strTemp;
 		float fTmp;
 		_TCHAR * ptTemp;
-		COleVariant vTemp;
+		_variant_t vTemp;
 
 		i=m_comboComMaterial.GetCurSel();
 		if(i==-1)
@@ -1382,7 +1421,7 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		}
 
 		strSQL=(_T("DELETE FROM [SSteelIDBH]"));
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL.Format(_T("INSERT INTO [SSteelIDBH] SELECT DISTINCT [tb1].[ID],[tb2].[BH],[Weight] As [Weg] FROM [%s] AS [tb1],[%s] AS [tb2]  IN \"\" [;DATABASE=%s;PWD=%s] ")
 			_T(" WHERE ")
 			_T(" [tb1].[ID] IN (%s) AND ")
@@ -1403,7 +1442,7 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 			basDirectory::ProjectDBDir + (_T("ZdjCrude.mdb")),ModEncrypt::gstrDBZdjCrudePassWord,
 			basDirectory::ProjectDBDir + (_T("ZdjCrude.mdb")),ModEncrypt::gstrDBZdjCrudePassWord,
 			basDirectory::ProjectDBDir + (_T("ZdjCrude.mdb")),ModEncrypt::gstrDBZdjCrudePassWord);
-		EDIBgbl::dbPRJ.Execute((LPCTSTR)strSQL);
+		EDIBgbl::dbPRJ->Execute((LPCTSTR)strSQL, NULL, adCmdText);
 
 		for(i=0;i<this->m_iComCount;i++)
 		{
@@ -1425,16 +1464,18 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 					modPHScal::tbnBoltsNutsID,modPHScal::tbnBoltsNuts,
 					basDirectory::ProjectDBDir + (_T("ZdjCrude.mdb")),ModEncrypt::gstrDBZdjCrudePassWord,
 					strIDs);
-				EDIBgbl::dbPRJ.Execute((LPCTSTR)strSQL);
+				EDIBgbl::dbPRJ->Execute((LPCTSTR)strSQL, NULL, adCmdText);
 			}
 		}
 		strSQL=(_T("DELETE FROM [CalSelList]"));
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL=(_T("DELETE FROM [CalSelResult]"));
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		HRESULT hr = S_OK;
+		hr = rs.CreateInstance(__uuidof(Recordset));
 		CString strFDs,strTbs,strWheres,strWeights;
 		for(i=0;i<this->m_iComCount;i++)
 		{
@@ -1463,29 +1504,35 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		}
 		int iSelID=1;
 		strSQL.Format((_T("INSERT INTO [CalSelList] SELECT DISTINCT %s FROM %s WHERE %s ")),strFDs,strTbs,strWheres);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL.Format((_T("UPDATE [CalSelList] SET [Weight]=%s")),strWeights);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		strSQL=(_T("SELECT * FROM [CalSelList] ORDER BY [Weight]"));
-		CDaoRecordset rs1;
-		rs1.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs1.Open(dbOpenDynaset,strSQL);
-		rs1.MoveLast();
-		rs1.MoveFirst();
-		int c=rs1.GetRecordCount();
+		_RecordsetPtr rs1;
+		hr = rs1.CreateInstance(__uuidof(Recordset));
+//		rs1.m_pDatabase=&EDIBgbl::dbPRJ;
+		rs1->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rs1->MoveLast();
+		rs1->MoveFirst();
+		int c=rs1->GetRecordCount();
 
 		strSQL.Format((_T("SELECT [Number],[Result],[Formula],[Where] FROM [SAStructComponent] , [SAStructFormula] WHERE [SAStructComponent].[StructID]=%d ")
 			_T(" AND [SAStructComponent].[ComponentID]=[SAStructFormula].[ComponentID] ORDER BY [Number]")),
 			this->m_lStructID);
-		CDaoRecordset rsf;
-		rsf.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
-		rsf.Open(dbOpenSnapshot,strSQL);
+		_RecordsetPtr rsf;
+//		rsf.m_pDatabase=&EDIBgbl::dbSORT;
+		hr = rsf.CreateInstance(__uuidof(Recordset));
+		rsf->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
 		strSQL=(_T("SELECT * FROM [CalSelResult]"));
-		CDaoRecordset rs2;
-		rs2.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs2.Open(dbOpenDynaset,strSQL);
+		_RecordsetPtr rs2;
+//		rs2.m_pDatabase=&EDIBgbl::dbPRJ;
+		hr = rs2.CreateInstance(__uuidof(Recordset));
+		rs2->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		i=0;
 		hStatusStopEvent=::CreateEvent(NULL,FALSE,FALSE,NULL);
@@ -1512,15 +1559,15 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 		}
 
 		BOOL bMakeTab=TRUE;
-		for(i=0;!rs1.IsEOF();rs1.MoveNext(),i++)
+		for(i=0;!rs1->adoEOF;rs1->MoveNext(),i++)
 		{
 			if(::WaitForSingleObject(hStatusStopEvent,0)==WAIT_OBJECT_0)
 			{
 				goto OutCal;
 			}
-			rs1.Edit();
-			rs1.SetFieldValue((_T("SelID")),COleVariant((long)(i+1)));
-			rs1.Update();
+//			rs1.Edit();
+			rs1->put_Collect((_variant_t)(_T("SelID")),_variant_t((long)(i+1)));
+			rs1->Update();
 			DWORD dwTime1=::GetTickCount();
 
 			//更新每个构件自已的数据
@@ -1528,26 +1575,26 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 			{
 				theStrCom.lComNo=i1+1;
 				strTemp.Format((_T("Length%d")),i1+1);
-				rs1.GetFieldValue(strTemp,vTemp);
+				rs1->get_Collect((_variant_t)strTemp, &vTemp);
 				theComPt.nLen=vtoi(vTemp);
 				strTemp.Format((_T("BH%d")),i1+1);
-				rs1.GetFieldValue(strTemp,vTemp);
+				rs1->get_Collect((_variant_t)strTemp, &vTemp);
 				theComPt.strClgg=vtos(vTemp);
 				strTemp.Format((_T("ID%d")),i1+1);
-				rs1.GetFieldValue(strTemp,vTemp);
+				rs1->get_Collect((_variant_t)strTemp, &vTemp);
 				theComPt.strID=vtos(vTemp);
 				InitVar(&theComPt,&theStrCom,FALSE,TRUE,FALSE);
 			}
 			int iTabNo;
 			BOOL bRegular=TRUE;
 			theStrCom.lComNo=-1;
-			for(iTabNo=1,rsf.MoveFirst();!rsf.IsEOF();rsf.MoveNext(),iTabNo++)
+			for(iTabNo=1,rsf->MoveFirst();!rsf->adoEOF;rsf->MoveNext(),iTabNo++)
 			{
 				if(::WaitForSingleObject(hStatusStopEvent,0)==WAIT_OBJECT_0)
 				{
 					goto OutCal;
 				}
-				rsf.GetFieldValue(0,vTemp);
+				rsf->get_Collect((_variant_t)0L, &vTemp);
 				int iComNo=vtoi(vTemp);
 
 				//更新当前计算的构件的数据,如果上一次更新的构件是当前构件则不用更新
@@ -1555,21 +1602,21 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 				{
 					theStrCom.lComNo=iComNo;
 					strTemp.Format((_T("Length%d")),iComNo);
-					rs1.GetFieldValue(strTemp,vTemp);
+					rs1->get_Collect((_variant_t)strTemp, &vTemp);
 					theComPt.nLen=vtoi(vTemp);
 					strTemp.Format((_T("BH%d")),iComNo);
-					rs1.GetFieldValue(strTemp,vTemp);
+					rs1->get_Collect((_variant_t)strTemp, &vTemp);
 					theComPt.strClgg=vtos(vTemp);
 					strTemp.Format((_T("ID%d")),iComNo);
-					rs1.GetFieldValue(strTemp,vTemp);
+					rs1->get_Collect((_variant_t)strTemp, &vTemp);
 					theComPt.strID=vtos(vTemp);
 					InitVar(&theComPt,&theStrCom,TRUE,FALSE,FALSE);
 				}
-				rsf.GetFieldValue(2,vTemp);
+				rsf->get_Collect((_variant_t)2L, &vTemp);
 				theCalInfo.strFormula=vtos(vTemp);
-				rsf.GetFieldValue(1,vTemp);
+				rsf->get_Collect((_variant_t)1L, &vTemp);
 				theCalInfo.strResult=vtos(vTemp);
-				rsf.GetFieldValue(3,vTemp);
+				rsf->get_Collect((_variant_t)3L, &vTemp);
 				theCalInfo.strWhere=vtos(vTemp);
 				float fResult=0.0f;
 				DWORD code=CalStruct(&fResult,&theCalInfo,bMakeTab,iTabNo);
@@ -1578,18 +1625,20 @@ void CCalStructDlg::LoopSelCom(long lStructID)
 				strSQL.Format((_T("INSERT INTO [CalSelResult] ([SelID],[ComNo],[ResultName],[Result],[Regular]) ")
 					_T("VALUES(%d,%d,\'%s\',%0.3f,%d)")),
 					i+1,theStrCom.lComNo,theCalInfo.strResult,fResult,(BOOL)(code==CAL_REGULAR));
-				EDIBgbl::dbPRJ.Execute((LPCTSTR)strSQL);
+				EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			}
 			bMakeTab=FALSE;
-			rs1.Edit();
-			rs1.SetFieldValue((_T("Regular")),(short)(bRegular));
-			rs1.Update();
+			VARIANT var;
+			var.vt = VT_INT;
+			var.intVal = bRegular;
+			rs1->put_Collect((_variant_t)(_T("Regular")), var);
+			rs1->Update();
 			thr->m_StatusBar.UpdateStatus((float)i/(float)c);
 		}
 OutCal:
-		rs1.Close();
-		rs2.Close();
-		rsf.Close();
+		rs1->Close();
+		rs2->Close();
+		rsf->Close();
 		if(thr!=NULL)
 		{
 			thr->EndThread();
@@ -1600,7 +1649,7 @@ OutCal:
 			thr=NULL;
 		}
 
-		EDIBgbl::dbPRJ.Execute(_T("UPDATE [CalSelResult] SET [Regular]=[Regular]"));
+		EDIBgbl::dbPRJ->Execute(_T("UPDATE [CalSelResult] SET [Regular]=[Regular]"), NULL, adCmdText);
 		delete [] m_pstrType;
 		delete [] m_pnLen;
 
@@ -1619,10 +1668,8 @@ OutCal:
 		CDlgCalStructRes dlg(m_iTmpComCount,m_pstrType,m_pnLen);
 		dlg.DoModal();
 	}
-	catch(CDaoException * e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 	if(thr!=NULL)
 	{
@@ -1731,27 +1778,28 @@ void CCalStructDlg::LoadComGrid()
 	{
 		strSQL.Format(_T("SELECT [Number],[Name],[Types] FROM [SAStructComponent] WHERE [StructID]=%d "),
 			m_lStructID);
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT"改为"dbSACal"
-		rs.Open(dbOpenSnapshot,strSQL);
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		CString strTemp;
-		COleVariant vTemp,vTemp1;
+		_variant_t vTemp,vTemp1;
 		
 		//加入构件,未填充数据
-		for(i=0;!rs.IsEOF();rs.MoveNext(),i++)
+		for(i=0;!rs->adoEOF;rs->MoveNext(),i++)
 		{
-			rs.GetFieldValue(0,vTemp);
-			rs.GetFieldValue(1,vTemp1);
+			rs->get_Collect((_variant_t)0L, &vTemp);
+			rs->get_Collect((_variant_t)1L, &vTemp1);
 			strTemp.Format((_T("构件 %d %s")),vtoi(vTemp),vtos(vTemp1));
 			m_ComGrid.InsertRow(strTemp);
-			rs.GetFieldValue(2,vTemp);
+			rs->get_Collect((_variant_t)2L, &vTemp);
 			this->ParseTypes(m_ComTypeInfo[i].m_astrTypes,vtos(vTemp));
 			m_ComGrid.SetCellType(i+1,1,RUNTIME_CLASS(CGridComboBoxCell));
 			m_ComGrid.SetCellType(i+1,2,RUNTIME_CLASS(CGridComboBoxCell));
 			m_ComGrid.SetItemState(i+1,3,m_ComGrid.GetItemState(i+1,3)|GVIS_READONLY);
 
 		}
-		rs.Close();
+		rs->Close();
 
 		m_iComCount=i;
 		if(m_iComCount>0 )
@@ -1761,18 +1809,19 @@ void CCalStructDlg::LoadComGrid()
 			PSSteelInfo pSSteelInfo;
 			strSQL.Format(_T("SELECT [Description],[CustomID],[ID] FROM [%s] WHERE ID IN (\'CS\',\'LSS\',\'HS\')"),
 				modPHScal::tbnSectionSteelID);
-			rs.m_pDatabase=&modPHScal::dbZDJcrude;
-			rs.Open(dbOpenSnapshot,strSQL);			
+//			rs.m_pDatabase=&modPHScal::dbZDJcrude;
+			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 
 			//加入构件的类型信息
-			for(i1=0;!rs.IsEOF();rs.MoveNext(),i1++)
+			for(i1=0;!rs->adoEOF;rs->MoveNext(),i1++)
 			{
 				pSSteelInfo=new SSteelInfo;
-				rs.GetFieldValue(1,vTemp);
+				rs->get_Collect((_variant_t)1L, &vTemp);
 				_tcscpy(pSSteelInfo->szCustomID,vtos(vTemp));
-				rs.GetFieldValue(2,vTemp);
+				rs->get_Collect((_variant_t)2L, &vTemp);
 				_tcscpy(pSSteelInfo->szID,vtos(vTemp));
-				rs.GetFieldValue(0,vTemp);
+				rs->get_Collect((_variant_t)0L, &vTemp);
 				strTemp=vtos(vTemp);
 				for(i=1;i<=m_iComCount;i++)
 				{
@@ -1785,7 +1834,7 @@ void CCalStructDlg::LoadComGrid()
 					}
 				}
 			}
-			rs.Close();
+			rs->Close();
 
 			for(i=1;i<=m_iComCount;i++)
 			{
@@ -1808,16 +1857,17 @@ void CCalStructDlg::LoadComGrid()
 
 					strSQL.Format((_T("SELECT [Description],[CustomID],[ID] FROM [%s] WHERE ID IN (%s)")),
 						modPHScal::tbnBoltsNutsID,strTemp);
-					rs.m_pDatabase=&modPHScal::dbZDJcrude;
-					rs.Open(dbOpenSnapshot,strSQL);
-					for(;!rs.IsEOF();rs.MoveNext())
+//					rs.m_pDatabase=&modPHScal::dbZDJcrude;
+					rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					for(;!rs->adoEOF;rs->MoveNext())
 					{
 						pSSteelInfo=new SSteelInfo;
-						rs.GetFieldValue(1,vTemp);
+						rs->get_Collect((_variant_t)1L, &vTemp);
 						_tcscpy(pSSteelInfo->szCustomID,vtos(vTemp));
-						rs.GetFieldValue(2,vTemp);
+						rs->get_Collect((_variant_t)2L, &vTemp);
 						_tcscpy(pSSteelInfo->szID,vtos(vTemp));
-						rs.GetFieldValue(0,vTemp);
+						rs->get_Collect((_variant_t)0L, &vTemp);
 						strTemp=vtos(vTemp);
 						pCell->m_Items.Add(strTemp);
 						pCell->m_ItemDatas.Add((DWORD)(LPVOID)pSSteelInfo);
@@ -1854,10 +1904,8 @@ void CCalStructDlg::LoadComGrid()
 			UpdateComLen();
 		}
 	}
-	catch(CDaoException * e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 	/*catch(_com_error & e)
 	{
@@ -1930,13 +1978,15 @@ void CCalStructDlg::LoadComGridGg(int iRow)
 			strSQL.Format((_T("SELECT [BH] FROM [%s] WHERE [CustomID]=\'%s\'")),
 				modPHScal::tbnBoltsNuts,pS->szCustomID);
 		}
-		CDaoRecordset rs;
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,strSQL);
-		COleVariant vTemp;
-		for(;!rs.IsEOF();rs.MoveNext())
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&modPHScal::dbZDJcrude;
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		_variant_t vTemp;
+		for(;!rs->adoEOF;rs->MoveNext())
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			strTemp=vtos(vTemp);
 			pCell->m_Items.Add(strTemp);
 			if(strTemp==strOldGg)
@@ -1949,11 +1999,13 @@ void CCalStructDlg::LoadComGridGg(int iRow)
 		CRect rect;
 		m_ComGrid.GetCellRect(iRow,2,&rect);
 		m_ComGrid.InvalidateRect(&rect);
-		rs.Close();
+		rs->Close();
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -2014,13 +2066,16 @@ void CCalStructDlg::LoadPjgList()
 		CString strSQL;
 		strSQL.Format((_T("SELECT DISTINCT [VarName] FROM [SAStructVariable] WHERE [StructID]=%d AND [VarName] LIKE \'Pjg*\' ORDER BY [VarName]")),
 			this->m_lStructID);
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
-		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
-		COleVariant vTemp;
-		for(i=1;!rs.IsEOF();rs.MoveNext(),i++)
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&EDIBgbl::dbSORT;
+//		rs.Open(dbOpenSnapshot,strSQL,dbForwardOnly);
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		_variant_t vTemp;
+		for(i=1;!rs->adoEOF;rs->MoveNext(),i++)
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			item.row=i;
 			item.col=0;
 			item.strText=vtos(vTemp);
@@ -2032,13 +2087,11 @@ void CCalStructDlg::LoadPjgList()
 				m_mapPjg[strVarName]=(_T("1000"));
 			m_PjgGrid.SetItemText(i,1,m_mapPjg[strVarName]);
 		}
-		rs.Close();
+		rs->Close();
 		UpdatePjg(NULL);
 	}
-	catch(CDaoException * e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 }
 
@@ -2064,35 +2117,41 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	}
 	catch(_com_error & e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	try
 	{
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
-		rs.Open(dbOpenDynaset ,strSQL);
-		COleVariant vTemp;
-		for(;!rs.IsEOF();rs.MoveNext())
+		_RecordsetPtr rs;
+//		rs.m_pDatabase=&EDIBgbl::dbSORT;
+		rs.CreateInstance(__uuidof(Recordset));
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		_variant_t vTemp;
+		for(;!rs->adoEOF;rs->MoveNext())
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			CString strVarName=vtos(vTemp);
 			strVarName.MakeLower();
 			double dValue=_tcstod(m_mapPjg[strVarName],NULL);
-			rs.Edit();
-			rs.SetFieldValue(1,dValue);
-			rs.Update();
+//			rs.Edit();
+			VARIANT var;
+			var.vt = VT_R8;
+			var.dblVal = dValue;
+			rs->put_Collect((_variant_t)1L, var);
+			rs->Update();
 		}
-		rs.Close();
+		rs->Close();
 		
 	}
-	catch(CDaoException * e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 	try
 	{
-		EDIBgbl::dbSACal.Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")));//20071103 "dbSORT" 改为 "dbSACal"
+		EDIBgbl::dbSACal->Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")), NULL, adCmdText);
+		//m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")),adConnectUnspecified);
 		m_rsVariable.CreateInstance(__uuidof(Recordset));
 		m_rsVariable->CursorLocation=adUseClient;
 		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
@@ -2127,7 +2186,9 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	}
 	catch(_com_error & e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 
@@ -2169,19 +2230,21 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 		double lret=0.0,hret=-1.0;
 		double lla=0.0,hla=-1.0;
 		double ret;
-		COleVariant vTemp;
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
+		_variant_t vTemp;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+//		rs.m_pDatabase=&EDIBgbl::dbSACal;//20071103 "dbSORT" 改为 "dbSACal"
 
 		strSQL.Format((_T("SELECT [Lamda],[Fi] FROM [SteadyDecreaseCoef] WHERE [Material]=\'%s\' ORDER BY [Lamda] ")),lpszMaterial);
-		rs.Open(dbOpenSnapshot,strSQL);
-		if(rs.IsEOF() && rs.IsBOF())
+		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(rs->adoEOF && rs->BOF)
 			;//no this material
 		else
 		{
-			rs.GetFieldValue(0,vTemp);
+			rs->get_Collect((_variant_t)0L, &vTemp);
 			lla=vtod(vTemp);
-			rs.GetFieldValue(1,vTemp);
+			rs->get_Collect((_variant_t)1L, &vTemp);
 			lret=vtod(vTemp);
 			if(dLamda<lla)
 			{
@@ -2191,45 +2254,48 @@ double CCalStructDlg::GetFiOfLamda(double dLamda, LPCTSTR lpszMaterial)
 			else
 			{
 				//细长比>=最小值
-				if(!rs.FindFirst("Lamda>"+ftos(dLamda)))
+				CString strFind;
+				strFind = "Lamda>"+ftos(dLamda);
+				HRESULT hr = S_OK;
+				rs->MoveFirst();
+				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
+				if( !rs->adoEOF)
 				{
 					//细长比>最大值
-					rs.MoveLast();
-					rs.GetFieldValue(0,vTemp);
+					rs->MoveLast();
+					rs->get_Collect((_variant_t)0L, &vTemp);
 					hla=vtod(vTemp);
-					rs.GetFieldValue(1,vTemp);
+					rs->get_Collect((_variant_t)1L, &vTemp);
 					hret=vtod(vTemp);
 					ret=hret;
 				}
 				else
 				{
 					//细长比>=最小值 and 细长比<=最大值
-					rs.GetFieldValue(0,vTemp);
+					rs->get_Collect((_variant_t)0L, &vTemp);
 					hla=vtod(vTemp);
-					rs.GetFieldValue(1,vTemp);
+					rs->get_Collect((_variant_t)1L, &vTemp);
 					hret=vtod(vTemp);
 
-					rs.MovePrev();
-					if(rs.IsBOF() && rs.IsEOF())
+					rs->MovePrevious();
+					if(rs->BOF && rs->adoEOF)
 						ret=hret;
 					else
 					{
-						rs.GetFieldValue(0,vTemp);
+						rs->get_Collect((_variant_t)0L, &vTemp);
 						lla=vtod(vTemp);
-						rs.GetFieldValue(1,vTemp);
+						rs->get_Collect((_variant_t)1L, &vTemp);
 						lret=vtod(vTemp);
 						ret= (dLamda-lla)/(hla-lla) * (hret-lret) + lret;
 					}
 				}
 			}
 		}
-		rs.Close();
+		rs->Close();
 		return ret;
 	}
-	catch(CDaoException * e)
+	catch(_com_error * e)
 	{
-		e->ReportError();
-		e->Delete();
 	}
 	return 0;
 }
@@ -2273,7 +2339,9 @@ void CCalStructDlg::OnAfterColUpdateDatagridMaindim(short ColIndex)
 			}
 			catch(_com_error & e)
 			{
-				AfxMessageBox(e.Description());
+				CString strErrorMsg;
+				strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+				AfxMessageBox(strErrorMsg);
 			}
 			CalComLen(this->m_rsMainDim);
 			UpdateComLen();
@@ -2305,23 +2373,23 @@ void CCalStructDlg::OnAfterColUpdateDatagridMaindim(short ColIndex)
 void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 {
 	CString strSQL;
+	_RecordsetPtr rsVar;
 	try
 	{
 		strSQL=_T("DROP TABLE [tmpCalComponentLength]");
 		try
 		{
-			EDIBgbl::dbPRJ.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
-		catch(...)
+		catch(_com_error &e)
 		{
 		}
-		_RecordsetPtr rsVar;
 		_variant_t vTemp;
 		if(rstheVar==NULL)
 		{
 			rsVar.CreateInstance(__uuidof(Recordset));
 			strSQL.Format((_T("SELECT [VarName],[VarValue] FROM [SAStructVariable] WHERE [StructID]=%d")),m_lStructID);
-			rsVar->Open((LPCTSTR)strSQL,(IDispatch*)this->m_connSASCal,adOpenForwardOnly,adLockReadOnly,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
+			rsVar->Open((LPCTSTR)strSQL,(IDispatch*)this->m_connSort,adOpenKeyset, adLockOptimistic,adCmdText);
 		}
 		else
 		{
@@ -2360,19 +2428,22 @@ void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 		rsVar->Close();
 		strSQL+=_T(")");
 		
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 		strSQL.Format((_T("INSERT INTO [tmpCalComponentLength] ( %s ) VALUES (%s)")),strFields,strValues);
 		
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL.Format(_T("SELECT [Lreal_formula],[Number] FROM [SAStructComponent] WHERE [StructID]=%d ORDER BY [Number]"),
 			this->m_lStructID);
 		_RecordsetPtr rsLiFml;
-		rsLiFml=this->m_connSASCal->Execute(_bstr_t(strSQL),NULL,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
+		rsLiFml=this->m_connSASCal->Execute(_bstr_t(strSQL),NULL,adCmdText);
 
 		CString strLiFml;
-		CDaoRecordset rsTmp;
-		rsTmp.m_pDatabase = &EDIBgbl::dbPRJ;
+//		rsTmp.m_pDatabase = &EDIBgbl::dbPRJ;
+		_RecordsetPtr rsTmp;
+		HRESULT hr = S_OK;
+		hr = rsTmp.CreateInstance(__uuidof(Recordset));
+		
 		for(;!rsLiFml->adoEOF;rsLiFml->MoveNext())
 		{
 			strLiFml=vtos(rsLiFml->GetCollect(0L));
@@ -2380,30 +2451,25 @@ void CCalStructDlg::CalComLen(_RecordsetPtr rstheVar)
 			{
 				//根据l1/l2/l3的计算公式，利用JET计算其值
 				strSQL.Format("SELECT (%s) As  Li FROM [tmpCalComponentLength]",strLiFml);
-				rsTmp.Open(dbOpenSnapshot,strSQL);
-				if( rsTmp.IsEOF() )
+				rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if( rsTmp->adoEOF )
 					;
 				else
 				{
-					COleVariant varTmp;
-					rsTmp.GetFieldValue(0,varTmp);
+					_variant_t varTmp;
+					rsTmp->get_Collect((_variant_t)0L, &varTmp);
 					double dLi=vtod(varTmp);
 					strSQL.Format("UPDATE [SAStructVariable] SET [VarValue]=%f WHERE StructID=%d AND VarName=\'l%d\'",dLi,m_lStructID,vtoi(rsLiFml->GetCollect(1L)));
 					this->m_connSASCal->Execute((LPCTSTR)strSQL,NULL,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
 				}
-				rsTmp.Close();
+				rsTmp->Close();
 			}
 		}
 		rsLiFml->Close();
 	}
-	catch(CDaoException * e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
 	}
 }
 
@@ -2414,6 +2480,7 @@ void CCalStructDlg::UpdateComLen()
 		int c=m_ComGrid.GetRowCount()-1;
 		int i;
 		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		for(i=1;i<=c;i++)
 		{
 			CString strSQL;
@@ -2432,7 +2499,9 @@ void CCalStructDlg::UpdateComLen()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 }
 

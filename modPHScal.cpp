@@ -61,12 +61,12 @@ SprInfo modPHScal::sSprInfo[16];//弹簧信息数组
 int modPHScal::SprInfoIndex=16;//弹簧组序号，如一个支吊架配置中弹簧组从下到上依次为T1.209、T1.109,则T1.209序号=0
 const _TCHAR*	modPHScal::gcsCustomID=_T("CustomID");
 const _TCHAR*	modPHScal::gcsID=_T("ID");
-CDaoDatabase modPHScal::dbZDJcrude;//支吊架原始数据库名称
+_ConnectionPtr modPHScal::dbZDJcrude;//支吊架原始数据库名称
 bool modPHScal::gbStartedOnceAPHS = false;//AutoPHS运行了
 CString modPHScal::Unit_Force = CString();//力单位
 CString modPHScal::Unit_Displacement = CString();//位移单位
 CString modPHScal::Unit_Momental = CString();//力矩单位
-COleVariant modPHScal::gBookmark = COleVariant();
+_variant_t modPHScal::gBookmark = _variant_t();
 CString modPHScal::Ax = CString();//图纸大小,A3,A4
 int modPHScal::gintParallelNum = 0;//弹簧并联数，即拉杆并联数
 int modPHScal::gSumDistOfSpring = 0;//弹簧总位移
@@ -478,14 +478,15 @@ int modPHScal::iBOMStartNo(int /*Optional*/ SN)
    return _ttoi(dlg.m_strValue);
 }
 
-COleVariant modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID)
+_variant_t modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID)
 {
 	//根据sFLD字段的值为ID的记录,返回dFLD字段的值
-	COleVariant vtmp;
+	_variant_t vtmp;
 	vtmp.ChangeType(VT_NULL);
    try
    {
-	   CDaoRecordset rs(&EDIBgbl::dbPHScode);//"dbSORT" 改为 "dbPHScode"
+	   _RecordsetPtr rs;
+	   rs.CreateInstance(__uuidof(Recordset));
 	   sFLD.TrimLeft();sFLD.TrimRight();
 	   sID.TrimLeft();sID.TrimRight();
 	   dFLD.TrimLeft();dFLD.TrimRight();
@@ -495,13 +496,14 @@ COleVariant modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID
 		SQLx+=_T(")=\'");
 		SQLx+=sID;
 		SQLx+=_T("\'");
-   rs.Open(dbOpenSnapshot,SQLx);
-   if(rs.IsEOF() && rs.IsBOF())
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+   if(rs->BOF && rs->adoEOF)
    {
 	   ShowMessage(GetResStr(IDS_NosFLDinPhsBlkDimPos));
 	   return vtmp;
    }
-   rs.GetFieldValue(dFLD,vtmp);
+   rs->get_Collect((_variant_t)dFLD,&vtmp);
    return vtmp;
    }
 	catch(CException *e)
@@ -509,21 +511,18 @@ COleVariant modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID
 		e->Delete();
 	}
 
-   catch(...)
-   {
 	   return vtmp;
-   }
 }
 
-COleVariant modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*/ strDestFLD, CString strSourceFLDvalue)
+_variant_t modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*/ strDestFLD, CString strSourceFLDvalue)
 {
 //根据strSourceFLD字段的值为strSourceFLDvalue的记录,返回strDestFLD字段的值
 //测试:无论使用rs的findfirst方法还是使用SQL获得表，结果都一样。Access查找时不区分大小写。因此CustomID必须唯一。
 	try{
-   CDaoRecordset rs;
-   rs.m_pDatabase=&EDIBgbl::dbPRJ;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
    CString sTmp;
-   COleVariant var;
+   _variant_t var;
    strDestFLD.TrimLeft();strDestFLD.TrimRight();
    strSourceFLD.TrimLeft();strSourceFLD.TrimRight();
    if(strSourceFLDvalue.Left(1)!=(_T("\'")))
@@ -531,25 +530,26 @@ COleVariant modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*
    if(strSourceFLDvalue.Right(1)!=(_T("\'")))
 	   strSourceFLDvalue=strSourceFLDvalue+_T("\'");
    sTmp=CString(_T("SELECT "))+strDestFLD +_T(" FROM PictureClipData WHERE trim(")+strSourceFLD+_T(") = ")+strSourceFLDvalue;
-   rs.Open(dbOpenSnapshot,sTmp);
    //rs=EDIBgbl::dbPRJ->Execute(_bstr_t(sTmp),NULL,adCmdText);
-   if(rs.IsEOF())
+   rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+	   adOpenKeyset, adLockOptimistic, adCmdText); 
+   if(rs->BOF)
          return _variant_t((long)0);
      else
      {
-		rs.GetFieldValue(strDestFLD,var);
+		rs->get_Collect((_variant_t)strDestFLD,&var);
 		 return var;
      }
-	 rs.Close();
+	 rs->Close();
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
 	return _variant_t((long)0);
 }
 }
-
+/*
 _variant_t modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue)
 {
 	_variant_t ret;
@@ -572,28 +572,31 @@ _variant_t modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSourceT
 		return ret;
 	}
 }
-COleVariant modPHScal::sFindAnyTableField(CDaoDatabase&  db, CString  strSourceTable, CString  strSourceFLD, CString  strDestFLD, CString  strSourceFLDvalue)
+*/
+_variant_t modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSourceTable, CString  strSourceFLD, 
+										  CString  strDestFLD, CString  strSourceFLDvalue)
 {
-	COleVariant ret;
+	_variant_t ret;
 	ret.ChangeType(VT_NULL);
-	COleVariant tmpvar;
-	if(db.m_pDAODatabase==NULL || strSourceTable == _T(""))
+	_variant_t tmpvar;
+	if(strSourceTable == _T(""))
 		return ret;
 	CString sTmp;
 	try{
 		sTmp=_T("Select ")+strDestFLD+_T(" from ")+strSourceTable+_T(" where ")+strSourceFLD+_T(" = ")+strSourceFLDvalue;
 		//_RecordsetPtr rs=db->Execute(_bstr_t(CString(_T("select * from "))+strSourceTable),&tmpvar,adCmdText);
-		CDaoRecordset rs;
-		rs.m_pDatabase=&db;
-		rs.Open(dbOpenSnapshot,sTmp);
-		if(rs.IsEOF())
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)db,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(rs->BOF)
 			return ret;
-		rs.GetFieldValue(strDestFLD,tmpvar);
-		rs.Close();
+		rs->get_Collect((_variant_t)strDestFLD,&tmpvar);
+		rs->Close();
 		ret=tmpvar;
 		return ret;
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -611,32 +614,35 @@ CString modPHScal::sFindID(CString CustomID)
       return  _T("");
    else
    {
-      CDaoRecordset rs;
-	  COleVariant tmpvar;
+	   _RecordsetPtr rs;
+	   rs.CreateInstance(__uuidof(Recordset));
+	  _variant_t tmpvar;
 	 // _bstr_t bs=(_bstr_t)CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'")+CustomID+_T("\'"));
       //rs = EDIBgbl::dbPRJ->Execute(_bstr_t(CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'")+CustomID+_T("\'"))),
 	///	  &tmpvar,adCmdText);
-	  rs.m_pDatabase=&EDIBgbl::dbPRJ;
 	  if(CustomID.Left(1)!=(_T("\'")))
 		  CustomID=_T("\'")+CustomID;
 	  if(CustomID.Right(1)!=(_T("\'")))
 		  CustomID+=_T("\'");
-	  rs.Open(dbOpenSnapshot,CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)="))+CustomID);
-      if(rs.IsEOF() && rs.IsBOF())
+	  CString sTmp;
+	  sTmp = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=")+CustomID;
+	  rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
+     if(rs->BOF && rs->adoEOF)
          //MsgBox ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData, _T("|1"), _T("CustomID"), _T("|2"), CustomID), vbMsgBoxSetForeground
          ret = _T("");
       else
       {
-		  rs.GetFieldValue(_T("id"),tmpvar);
+		  rs->get_Collect((_variant_t)_T("id"),&tmpvar);
 		  ret=vtos(tmpvar);
 		  //ret =(char*)(_bstr_t)rs->GetCollect(_variant_t(_T("id")));
 		  ret.TrimLeft();ret.TrimRight();
 	  }
-	  rs.Close();
+	  rs->Close();
    return ret;
    }
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -658,28 +664,26 @@ CString modPHScal::sFindCustomID(CString ID)
    if(ID.Right(1)!=_T("\'"))
 	   ID=ID+_T("\'");
 	CString SQLx=CString(_T("select * From PictureClipData Where Trim(ID)="))+ID;
-	CDaoRecordset rs;
-	rs.m_pDatabase=&EDIBgbl::dbPRJ;
-	rs.Open(AFX_DAO_USE_DEFAULT_TYPE,SQLx);
-	if(rs.IsBOF() && rs.IsEOF())
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
+	rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
+	if(rs->adoEOF || rs->BOF)
 	{
-		rs.Close();
+		rs->Close();
 		/*CString sTmp;
 		sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData),_T("ID"),ID);
 		ShowMessage(sTmp);*/
 		return _T("");
 	}
-	COleVariant v;
-	rs.GetFieldValue(_T("CustomID"),v);
-	rs.Close();
+	_variant_t v;
+	rs->get_Collect((_variant_t)_T("CustomID"),&v);
+	rs->Close();
 	return vtos(v);
 	}
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	return _T("");
 }
@@ -687,11 +691,12 @@ CString modPHScal::sFindCustomID(CString ID)
 
 CString modPHScal::sFindTBN(CString /*ByVal*/ PartCustomID)
 {
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
 //	int i;
    //iSA=0,iCSPR=7
    //Debug.Print PartCustomID
-	COleVariant tmpvar;
+	_variant_t tmpvar;
 	PartCustomID.TrimLeft();PartCustomID.TrimRight();
 	glClassID = -1;
       glIDIndex = -1;
@@ -701,28 +706,28 @@ CString modPHScal::sFindTBN(CString /*ByVal*/ PartCustomID)
       glIDIndex = -1;
 		return _T("");
 	}
-	rs.m_pDatabase=&EDIBgbl::dbPRJ;
-	rs.Open(dbOpenSnapshot,CString(_T("SELECT * FROM PictureClipData WHERE  trim(CustomID)=\'"))+PartCustomID+_T("\'"));
-	//rs=EDIBgbl::dbPRJ->Execute(_bstr_t(CString(_T("SELECT * FROM PictureClipData WHERE  trim(CustomID)=\'"))+PartCustomID+_T("\'")),
-	//	&tmpvar,adCmdText);
-   if(rs.IsEOF() || rs.IsBOF() )
+	CString SQLx;
+	SQLx = _T("SELECT * FROM PictureClipData WHERE  trim(CustomID)=\'")+PartCustomID+_T("\'");
+	rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
+   if(rs->BOF && rs->adoEOF )
    {
       //MsgBox ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData,_T("|1"),_T("CustomID"), _T("|2"), PartCustomID), vbMsgBoxSetForeground
       
       glClassID = -1;
       glIDIndex = -1;
-	  rs.Close();
+	  rs->Close();
 	  return _T("");
 	}
    else
    {
-	   rs.GetFieldValue(_T("ClassID"),tmpvar);
+	   rs->get_Collect((_variant_t)_T("ClassID"),&tmpvar);
 	   if(tmpvar.vt!=VT_NULL)
 			glClassID = vtoi( tmpvar);
-	   rs.GetFieldValue(_T("Index"),tmpvar);
+	   rs->get_Collect((_variant_t)_T("Index"),&tmpvar);
 	   if(tmpvar.vt!=VT_NULL)
       glIDIndex = vtoi(tmpvar);
-	   rs.Close();
+	   rs->Close();
 		switch(glClassID)
 		{
 		case iSAh:
@@ -829,9 +834,6 @@ bool  modPHScal::bPAIsHanger()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
    if(sngSEL > sngPEL)
 		return true;
 	else return false;
@@ -877,11 +879,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	bool bWarn = gbStartedOnceAPHS;   //LFX 2005.2.24 加,用于在启动程序后再选择规范时显时警告
 	bool ret=FALSE;
 	bool bSPECchanged=false;
-	COleVariant tmpvar,vTmp;
+	_variant_t tmpvar,vTmp;
 	CString strTmp;
 	int inttbExist=0;//0表示第一次进入循环，1表示表存在，2表示表不存在
-	CDaoDatabase db,db1;
-	CDaoRecordset rsX;
+	_ConnectionPtr db,db1;
+	db.CreateInstance(__uuidof(Connection));
+	db1.CreateInstance(__uuidof(Connection));
+	_RecordsetPtr rsX;
+	rsX.CreateInstance(__uuidof(Recordset));
 	//add by lfx 2005.4.20
 	CString strStandardConnect;   //标准连接件数据表名
 	strStandardConnect.Format("CONNECTNW");
@@ -939,18 +944,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		frmStatus.UpdateData(false);
 		frmStatus.ShowWindow(SW_SHOW);
 
-		db.Open( basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),false,false,_T(";pwd=") + ModEncrypt::gstrDBZdjCrudePassWord);
+		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
+		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
 		
-		db1.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
+		db1->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 		//正在获取管部信息...
 		frmStatus.UpdateStatus(1.0 /9.0,true);
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateWindow();
 		//支吊架管部原始数据表名称
-		rsX.m_pDatabase=&EDIBgbl::dbSORT;
-		rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuPA ORDER BY [Observation],[standard] ASC"));
+		CString SQLx;
+		SQLx = _T("SELECT * FROM phsManuPA ORDER BY [Observation],[standard] ASC");
+		rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsPASel.TrimLeft();gsPhsPASel.TrimRight();
-		if( rsX.IsEOF() && rsX.IsBOF() )
+		if( rsX->BOF && rsX->adoEOF )
 		{
 			lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuPA"),gsPhsPASel);
@@ -959,24 +968,23 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		}
 		if(	gsPhsPASel != _T("") )
 		{
-			// rsX->Filter=_variant_t(CString(_T("standard=\'") )+ gsPhsPASel + _T("\'"));
-			//rsX.FindFirst 
-			//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsPASel+_T("\'")),0,adSearchForward);//adSearchForward);
-			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsPASel+_T("\'")))
+			_variant_t vTmp;
+			strTmp = (_T("standard=\'")+gsPhsPASel+_T("\'"));
+			if( !rsX->adoEOF)
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 		}
 		else
 		{
-			rsX.MoveFirst();
+			rsX->MoveFirst();
 			inttbExist=2;
 		}
 		//以下判断管部原始数据表在数据库中是否存在
-		while((inttbExist!=1)&&(!rsX.IsEOF()))
+		while((inttbExist!=1)&&(!rsX->BOF))
 		{
-			rsX.GetFieldValue(_T("standard"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				gsPhsPASel=_T("");
 			else
@@ -984,7 +992,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				gsPhsPASel=vtos(tmpvar);
 				gsPhsPASel.TrimLeft();gsPhsPASel.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudePA"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudePA"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnPA=_T("");
 			else
@@ -992,14 +1000,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnPA=vtos(tmpvar);
 				tbnPA.TrimLeft();tbnPA.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudePAfix"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudePAfix"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnPAfix=_T("");
 			else{
 				tbnPAfix=vtos(tmpvar);
 				tbnPAfix.TrimLeft();tbnPAfix.TrimRight();
 			}
-			rsX.GetFieldValue(_T("tbnPAid"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("tbnPAid"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnPAID=_T("");
 			else{
@@ -1010,11 +1018,11 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else				//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 
@@ -1022,22 +1030,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnPAID,_T("phsManuPA"),_T("crudePAid"),gsPhsPASel,bWarn))
 			{
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			inttbExist=1;
@@ -1045,7 +1053,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		if(inttbExist!=1)	//没找到原数据表
 			goto errH;
 		inttbExist=0;		//将条件变量设为初值，供后面的情况使用
-		rsX.GetFieldValue(_T("standardDesc"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("standardDesc"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			gsPhsDescPASel=_T("");
 		else
@@ -1057,7 +1065,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		//Observation字段指出了材料选择的索引号ClassIndex,根据该索引和温度、零部件代码ID，
 		//可以从sort.mdb库中SpecificationOfMaterial表查到还没有选择材料的零部件可用的材料。
 		//例如: ClassIndex=0,为汽水管道支吊架零部件可用的材料（新管规DL/T5054-1996）;ClassIndex=1,为烟风煤粉管道支吊架零部件可用的材料（新六道规程DL/T5121-2000）。
-		rsX.GetFieldValue(_T("Observation"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("Observation"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			//默认按新管规DL/T5054-1996 p25 4.3.3 p67 7.5.2选择
 			giClassIndex=0;
@@ -1066,7 +1074,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 
 		//以下删除tbnPAfix中与tbnPA相同的项目，防止CreateTmpCustomIDForPART函数中产生索引重复错误。
 		sTmp=_T("DELETE FROM [") + tbnPAfix + _T("] WHERE CustomID IN ( SELECT DISTINCT CustomID FROM [") + tbnPA + _T("]) ");
-		db.Execute(sTmp);
+		db->Execute((_bstr_t)sTmp, NULL, adCmdText);
 		
 		//正在获取连接件信息...
 		sTmp.Format(IDS_GetDataTableInfo,GetResStr(IDS_InfoPART));
@@ -1075,11 +1083,13 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateWindow();
 		//支吊架连接件原始数据表名称
-		if(rsX.IsOpen())
-			rsX.Close();
-		rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuPART ORDER BY [Observation],[standard] ASC"));
+		if(rsX->State == adStateOpen)
+			rsX->Close();
+		sTmp = _T("SELECT * FROM phsManuPART ORDER BY [Observation],[standard] ASC");
+		rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsPARTSel.TrimLeft();gsPhsPARTSel.TrimRight(); 
-		if( rsX.IsEOF() && rsX.IsBOF() )
+		if( rsX->BOF && rsX->adoEOF )
 		{
 			lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuPART"),gsPhsPARTSel);
@@ -1088,21 +1098,25 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		}
 		if(gsPhsPARTSel != _T("") )
 		{
-			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsPARTSel+_T("\'")))
+			HRESULT hr = S_OK;
+			rsX->MoveFirst();
+			strTmp = (_T("standard=\'")+gsPhsPARTSel+_T("\'"));
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
+			if( !rsX->adoEOF)
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 		}
 		else
 		{
-			rsX.MoveFirst();
+			rsX->MoveFirst();
 			inttbExist=2;
 		}
 		//以下判断连接件原始数据表在数据库中是否存在
-		while((inttbExist!=1)&&(!rsX.IsEOF()))
+		while((inttbExist!=1)&&(!rsX->adoEOF))
 		{
-			rsX.GetFieldValue(_T("standard"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				gsPhsPARTSel=_T("");
 			else
@@ -1110,7 +1124,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				gsPhsPARTSel=vtos(tmpvar);
 				gsPhsPARTSel.TrimLeft();gsPhsPARTSel.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudePART"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudePART"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnPART=_T("");
 			else
@@ -1118,7 +1132,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnPART=vtos(tmpvar);
 				tbnPART.TrimLeft();tbnPART.TrimRight();
 			}
-			rsX.GetFieldValue(_T("tbnPARTid"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("tbnPARTid"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnPARTID=_T("");
 			else
@@ -1126,7 +1140,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnPARTID=vtos(tmpvar);
 				tbnPARTID.TrimLeft();tbnPARTID.TrimRight();
 			}
-			rsX.GetFieldValue(_T("LugInfo"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("LugInfo"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnLugInfo=_T("");
 			else
@@ -1134,7 +1148,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnLugInfo=vtos(tmpvar);
 				tbnLugInfo.TrimLeft();tbnLugInfo.TrimRight();
 			}
-			rsX.GetFieldValue(_T("LugLenCal"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("LugLenCal"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnLugLenCal=_T("");
 			else
@@ -1145,7 +1159,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			//add by ligb/lfx on 2005.04.20
 			//华东院拉杆和花兰螺丝两端自带了扁螺母，所以其连接规则与西北院等其它标准不一样，
 			//增加连接表功能满足这种情况
-			rsX.GetFieldValue(_T("tbnCONNECT"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("tbnCONNECT"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnCONNECT = strStandardConnect;
 			else
@@ -1159,33 +1173,33 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnLugLenCal,_T("phsManuPART"),_T("LugLenCal"),gsPhsPARTSel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnPART,_T("phsManuPART"),_T("crudePART"),gsPhsPARTSel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 
@@ -1193,11 +1207,11 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			inttbExist=1;
@@ -1205,7 +1219,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		if(inttbExist!=1)
 			goto errH;
 		inttbExist=0;
-		rsX.GetFieldValue(_T("standardDesc"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("standardDesc"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			gsPhsDescPARTSel=_T("");
 		else
@@ -1221,11 +1235,13 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		frmStatus.UpdateData(false);
 		frmStatus.UpdateWindow();
 		//支吊架根部原始数据表名称
-		if(rsX.IsOpen())
-			rsX.Close();
-		rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuSA ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
+		if(rsX->State == adStateOpen)
+			rsX->Close();
+		sTmp = _T("SELECT * FROM phsManuSA ORDER BY [Observation],[standard] ASC");
+		rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		gsPhsSASel.TrimLeft();gsPhsSASel.TrimRight(); 
-		if( rsX.IsEOF() && rsX.IsBOF() )
+		if( rsX->BOF && rsX->adoEOF )
 		{
 			lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuSA"),gsPhsSASel);
@@ -1234,21 +1250,25 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		}
 		if(gsPhsSASel != _T("") )
 		{
-			if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsSASel+_T("\'")))
+			HRESULT hr = S_OK;
+			rsX->MoveFirst();
+			strTmp = _T("standard=\'")+gsPhsSASel+_T("\'");
+			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
+			if( !rsX->adoEOF)
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 		}
 		else
 		{
-			rsX.MoveFirst();
+			rsX->MoveFirst();
 			inttbExist=2;
 		}
 		BOOL bCrudeSA=FALSE,btbnSAid=FALSE,bCrudeSS=FALSE,tCrudeSSID=FALSE;
-		while((inttbExist!=1)&&(!rsX.IsEOF()))
+		while((inttbExist!=1)&&(!rsX->adoEOF))
 		{
-			rsX.GetFieldValue(_T("standard"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				gsPhsSASel=_T("");
 			else
@@ -1256,7 +1276,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				gsPhsSASel=vtos(tmpvar);
 				gsPhsSASel.TrimLeft();gsPhsSASel.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudeSA"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeSA"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSA=_T("");
 			else
@@ -1264,7 +1284,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSA=vtos(tmpvar);
 				tbnSA.TrimLeft();tbnSA.TrimRight();
 			}
-			rsX.GetFieldValue(_T("tbnSAid"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("tbnSAid"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSAID=_T("");
 			else
@@ -1272,7 +1292,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSAID=vtos(tmpvar);
 				tbnSAID.TrimLeft();tbnSAID.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudeSectionSteel"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeSectionSteel"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSectionSteel=_T("");
 			else
@@ -1280,7 +1300,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSectionSteel=vtos(tmpvar);
 				tbnSectionSteel.TrimLeft();tbnSectionSteel.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudeSectionSteelID"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeSectionSteelID"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSectionSteelID=_T("");
 			else
@@ -1289,7 +1309,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSectionSteelID.TrimLeft();tbnSectionSteelID.TrimRight();
 			}
 			//根部螺栓螺母数据表
-			rsX.GetFieldValue(_T("crudeSABoltsNuts"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeSABoltsNuts"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSABoltsNuts=_T("");
 			else
@@ -1297,7 +1317,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSABoltsNuts=vtos(tmpvar);
 				tbnSABoltsNuts.TrimLeft();tbnSABoltsNuts.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudeAttachmentID"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeAttachmentID"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnSABoltsNutsID=_T("");
 			else
@@ -1306,7 +1326,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnSABoltsNutsID.TrimLeft();tbnSABoltsNutsID.TrimRight();
 			}
 			//根部附件数据表
-			rsX.GetFieldValue(_T("crudeAttachment"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeAttachment"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnAttachment=_T("");
 			else
@@ -1314,7 +1334,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 				tbnAttachment=vtos(tmpvar);
 				tbnAttachment.TrimLeft();tbnAttachment.TrimRight();
 			}
-			rsX.GetFieldValue(_T("crudeAttachmentID"),tmpvar);
+			rsX->get_Collect((_variant_t)_T("crudeAttachmentID"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
 				tbnAttachmentID=_T("");
 			else
@@ -1327,22 +1347,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnAttachmentID,_T("phsManuSA"),_T("crudeAttachmentID"),gsPhsSASel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			//以下判断根部使用的螺栓螺母表在数据库中是否存在
@@ -1350,22 +1370,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnSABoltsNutsID,_T("phsManuSA"),_T("crudeSABoltsNutsID"),gsPhsSASel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			//以下判断根部原始数据表在数据库中是否存在
@@ -1373,22 +1393,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnSAID,_T("phsManuSA"),_T("tbnSAID"),gsPhsSASel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			//以下判断根部使用的型钢表在数据库中是否存在
@@ -1396,22 +1416,22 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			if(!HStbExists(db,db1,tbnSectionSteelID,_T("phsManuSA"),_T("crudeSectionSteelID"),gsPhsSASel,bWarn))
 			{	
 				if(inttbExist==0)	//第一次移到第一条记录上
 				{
-					rsX.MoveFirst();
+					rsX->MoveFirst();
 					inttbExist=2;
 				}
 				else					//不是第一次，向后移一条记录
-					rsX.MoveNext();
+					rsX->MoveNext();
 				continue;
 			}
 			inttbExist=1;
@@ -1419,7 +1439,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	if(inttbExist!=1)
 		goto errH;
 	inttbExist=0;
-	rsX.GetFieldValue(_T("standardDesc"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("standardDesc"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 		gsPhsDescSASel=_T("");
 	else
@@ -1434,11 +1454,13 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	frmStatus.UpdateData(false);
 	frmStatus.UpdateWindow();
 	//螺栓螺母原始数据表名称
-	if(rsX.IsOpen())
-		rsX.Close();
-	rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuBoltsNuts ORDER BY [Observation],[standard] ASC"));//),(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
+	if(rsX->State == adStateOpen)
+		rsX->Close();
+	sTmp = _T("SELECT * FROM phsManuBoltsNuts ORDER BY [Observation],[standard] ASC");
+	rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	gsPhsBoltsNutsSel.TrimLeft();gsPhsBoltsNutsSel.TrimRight(); 
-	if( rsX.IsEOF() && rsX.IsBOF() )
+	if( rsX->BOF && rsX->adoEOF )
 	{
 		lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 		sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuBoltsNuts"),gsPhsBoltsNutsSel);
@@ -1447,20 +1469,24 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 	if(gsPhsBoltsNutsSel != _T("") )
 	{
-		if(!rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsBoltsNutsSel+_T("\'")))
+		HRESULT hr = S_OK;
+		rsX->MoveFirst();
+		strTmp = _T("standard=\'")+gsPhsBoltsNutsSel+_T("\'");
+		hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
+		if( !rsX->adoEOF)
 		{
-			rsX.MoveFirst();
+			rsX->MoveFirst();
 			inttbExist=2;
 		}
 	}
 	else
 	{
-		rsX.MoveFirst();
+		rsX->MoveFirst();
 		inttbExist=2;
 	}
-	while((inttbExist!=1)&&(!rsX.IsEOF()))
+	while((inttbExist!=1)&&(!rsX->adoEOF))
 	{
-		rsX.GetFieldValue(_T("standard"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			gsPhsBoltsNutsSel=_T("");
 		else
@@ -1468,7 +1494,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			gsPhsBoltsNutsSel=vtos(tmpvar);
 			gsPhsBoltsNutsSel.TrimLeft();gsPhsBoltsNutsSel.TrimRight();
 		}
-		rsX.GetFieldValue(_T("crudeBoltsNuts"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("crudeBoltsNuts"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnBoltsNuts=_T("");
 		else
@@ -1476,7 +1502,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			tbnBoltsNuts=vtos(tmpvar);
 			tbnBoltsNuts.TrimLeft();tbnBoltsNuts.TrimRight();
 		}
-		rsX.GetFieldValue(_T("crudeBoltsNutsID"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("crudeBoltsNutsID"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnBoltsNutsID=_T("");
 		else
@@ -1484,7 +1510,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			tbnBoltsNutsID=vtos(tmpvar);
 			tbnBoltsNutsID.TrimLeft();tbnBoltsNutsID.TrimRight();
 		}
-		rsX.GetFieldValue(_T("BoltsSurplusLength"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("BoltsSurplusLength"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnBoltsSurplusLength=_T("");
 		else
@@ -1497,33 +1523,33 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnBoltsNutsID,_T("phsManuBoltsNuts"),_T("crudeBoltsNutsID"),gsPhsBoltsNutsSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnBoltsSurplusLength,_T("phsManuBoltsNuts"),_T("BoltsSurplusLength"),gsPhsBoltsNutsSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		inttbExist=1;
@@ -1540,69 +1566,73 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	frmStatus.UpdateData(false);
 	frmStatus.UpdateWindow();
 	//弹簧原始数据
-	if(rsX.IsOpen())
-		rsX.Close();
-	rsX.Open(dbOpenDynaset,_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"));//,(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
+	if(rsX->State == adStateOpen)
+		rsX->Close();
+	sTmp = _T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC");
+	rsX->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 	gsPhsSPRINGSel.TrimLeft();gsPhsSPRINGSel.TrimRight(); 
-	if( rsX.IsEOF() && rsX.IsBOF() ){
+	if( rsX->BOF && rsX->adoEOF ){
 		lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 		sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuBoltsNuts"),gsPhsBoltsNutsSel);
 		ShowMessage(sTmp);
 		goto errH;
 	}
-	if(gsPhsSPRINGSel != _T("") ){
-		// rsX->Filter=_variant_t(CString(_T("standard=\'") )+ gsPhsPASel + _T("\'"));
-		//rsX.FindFirst
-		//rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsSPRINGSel+_T("\'")),0,adSearchForward);
-		if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsSPRINGSel+_T("\'")))	   
+	if(gsPhsSPRINGSel != _T("") )
+	{
+		  HRESULT hr = S_OK;
+		  rsX->MoveFirst();
+		  strTmp = _T("standard=\'")+gsPhsSPRINGSel+_T("\'");
+		  hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
+		  if( !rsX->adoEOF)
 		{
-			rsX.MoveFirst();
+			rsX->MoveFirst();
 			inttbExist=2;
 		}
 	}
 	else
 	{
-		rsX.MoveFirst();
+		rsX->MoveFirst();
 		inttbExist=2;
 	}
-	while((inttbExist!=1)&&(!rsX.IsEOF()))
+	while((inttbExist!=1)&&(!rsX->adoEOF))
 	{
-		rsX.GetFieldValue(_T("standard"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			gsPhsSPRINGSel=_T("");
 		else{
 			gsPhsSPRINGSel=vtos(tmpvar);
 			gsPhsSPRINGSel.TrimLeft();gsPhsSPRINGSel.TrimRight();
 		}
-		rsX.GetFieldValue(_T("Spring_property"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("Spring_property"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnSPRINGproperty=_T("");
 		else{
 			tbnSPRINGproperty=vtos(tmpvar);
 			tbnSPRINGproperty.TrimLeft();tbnSPRINGproperty.TrimRight();
 		}
-		rsX.GetFieldValue(_T("Spring_propertyMaxDist"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("Spring_propertyMaxDist"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnDiscSPRINGpropertyMaxDist=_T("");
 		else{
 			tbnDiscSPRINGpropertyMaxDist=vtos(tmpvar);
 			tbnDiscSPRINGpropertyMaxDist.TrimLeft();tbnDiscSPRINGpropertyMaxDist.TrimRight();
 		}
-		rsX.GetFieldValue(_T("Spring_id"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("Spring_id"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnSPRINGid=_T("");
 		else{
 			tbnSPRINGid=vtos(tmpvar);
 			tbnSPRINGid.TrimLeft();tbnSPRINGid.TrimRight();
 		}
-		rsX.GetFieldValue(_T("Spring_Crude"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("Spring_Crude"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnSPRINGCrude=_T("");
 		else{
 			tbnSPRINGCrude=vtos(tmpvar);
 			tbnSPRINGCrude.TrimLeft();tbnSPRINGCrude.TrimRight();
 		}
-		rsX.GetFieldValue(_T("CrudeTurnbuckle"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("CrudeTurnbuckle"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnSPRINGL5Crude=_T("");
 		else{
@@ -1610,7 +1640,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			tbnSPRINGL5Crude.TrimLeft();tbnSPRINGL5Crude.TrimRight();
 		}
 		//以下判断弹簧原始数据表在数据库中是否存在
-		rsX.GetFieldValue(_T("DiameterSerial"),tmpvar);
+		rsX->get_Collect((_variant_t)_T("DiameterSerial"),&tmpvar);
 		if(tmpvar.vt==VT_NULL)
 			tbnSPRDiameterSerial=_T("");
 		else{
@@ -1621,66 +1651,66 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnSPRINGCrude,_T("phsManuSPRING"),_T("Spring_Crude"),gsPhsSPRINGSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnSPRINGL5Crude,_T("phsManuSPRING"),_T("CrudeTurnbuckle"),gsPhsSPRINGSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnSPRINGid,_T("phsManuSPRING"),_T("Spring_id"),gsPhsSPRINGSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnSPRINGproperty,_T("phsManuSPRING"),_T("Spring_property"),gsPhsSPRINGSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		if(!HStbExists(db,db1,tbnDiscSPRINGpropertyMaxDist,_T("phsManuSPRING"),_T("Spring_propertyMaxDist"),gsPhsSPRINGSel,bWarn))
 		{	
 			if(inttbExist==0)	//第一次移到第一条记录上
 			{
-				rsX.MoveFirst();
+				rsX->MoveFirst();
 				inttbExist=2;
 			}
 			else					//不是第一次，向后移一条记录
-				rsX.MoveNext();
+				rsX->MoveNext();
 			continue;
 		}
 		inttbExist=1;
@@ -1688,14 +1718,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	if(inttbExist!=1)
 		goto errH;
 	inttbExist=0;
-	   rsX.GetFieldValue(_T("SerialNumPerSPR"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("SerialNumPerSPR"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   giAllowedMaxSerialNumPerSPR=0;
 	   else{
 		   giAllowedMaxSerialNumPerSPR=vtoi(tmpvar);
 		   //   giAllowedMaxSerialNumPerSPR.TrimLeft();giAllowedMaxSerialNumPerSPR.TrimRight();
 	   }
-	   rsX.GetFieldValue(_T("SerialNumSPRs"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("SerialNumSPRs"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   giAllowedMaxSerialNumSPRs=0;
 	   else{
@@ -1708,7 +1738,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 
 	   //获得弹簧或恒力弹簧编号规格的单位制
 	   //以下判断恒力弹簧/碟簧规格编号力单位制描述字段值是否存在
-	   rsX.GetFieldValue(_T("Unit_Force"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("Unit_Force"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 	   {
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -1724,10 +1754,10 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			   if(!modPHScal::gbSPRBHLOADUNITBYNEWTON)
 			   {
 				   gsSPRUnitOfLoad = _T("kgf");
-				   rsX.Edit();rsX.SetFieldValue(_T("Unit_Force"),STR_VAR("kgf"));rsX.Update();
+				   rsX->put_Collect((_variant_t)_T("Unit_Force"),STR_VAR("kgf"));rsX->Update();
 				   //如果没有导入，只修改模板库下的原始数据库；
 				   //修改方法：
-				   rsX.GetFieldValue(_T("Folder"),tmpvar);
+				   rsX->get_Collect((_variant_t)_T("Folder"),&tmpvar);
 				   
 				   if(tmpvar.vt==VT_NULL||vtos(tmpvar)=="")
 					   ;
@@ -1749,10 +1779,11 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			   if(modPHScal::gbSPRBHLOADUNITBYNEWTON)
 			   {
 				   gsSPRUnitOfLoad = _T("N");
-				   rsX.Edit();rsX.SetFieldValue(_T("Unit_Force"),STR_VAR("N"));rsX.Update();
+				   rsX->put_Collect((_variant_t)_T("Unit_Force"),_variant_t("N"));
+				   rsX->Update();
 				   //如果没有导入，只修改模板库下的原始数据库；
 				   //修改方法：
-				   rsX.GetFieldValue(_T("Folder"),tmpvar);
+				   rsX->get_Collect((_variant_t)_T("Folder"),&tmpvar);
 				   
 				   if(tmpvar.vt==VT_NULL||vtos(tmpvar)=="")
 					   ;
@@ -1773,7 +1804,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			   gsSPRUnitOfLoad = _T("daN");
 		   }
 	   }
-	   rsX.GetFieldValue(_T("DOWNchar"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("DOWNchar"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   gSprDirectionChar.SPR_Down=_T("");
 	   else
@@ -1781,7 +1812,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   gSprDirectionChar.SPR_Down=vtos(tmpvar);
 		   gSprDirectionChar.SPR_Down.TrimLeft();gSprDirectionChar.SPR_Down.TrimRight();
 	   }
-	   rsX.GetFieldValue(_T("UPchar"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("UPchar"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   gSprDirectionChar.SPR_UP=_T("");
 	   else
@@ -1808,7 +1839,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   }
 	   
 	   //以下判断弹簧/碟簧安装尺寸描述字段值是否存在
-	   rsX.GetFieldValue (_T("H1IncludeB"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("H1IncludeB"), &tmpvar);
 	   if( tmpvar.vt==VT_NULL) {
 		   gbH1IncludeB = TRUE;
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -1819,7 +1850,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   gbH1IncludeB = tmpvar.boolVal;
 	   }
 
-	   rsX.GetFieldValue (_T("H1Pos"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("H1Pos"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL){
 		   gH1Pos = 0;
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -1830,7 +1861,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   gH1Pos = vtoi(tmpvar);
 	   }
 
-	   rsX.GetFieldValue (_T("H1distPos"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("H1distPos"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL){
 		   gH1distPos = 0;
 		   lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -1840,7 +1871,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   }else{
 		   gH1distPos =vtoi(tmpvar);
 	   }
-	   rsX.GetFieldValue(_T("manufactory"),tmpvar);
+	   rsX->get_Collect((_variant_t)_T("manufactory"),&tmpvar);
 	   if(tmpvar.vt==VT_NULL)
 		   gsSPRmanufactory=_T("");
 	   else{
@@ -1856,93 +1887,97 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   frmStatus.ShowWindow(SW_SHOW);
 	   frmStatus.UpdateWindow();
 	   //恒力弹簧/碟簧原始数据
-	   if(rsX.IsOpen())
-		   rsX.Close();
-	   rsX.Open(dbOpenSnapshot,_T("SELECT * FROM phsManuConstantSPRING ORDER BY [Observation],[standard] ASC"));//),(IDispatch*)EDIBgbl::dbSORT,adOpenStatic,adLockOptimistic,adCmdText);
+	   if(rsX->State == adStateOpen)
+		   rsX->Close();
+	   SQLx = _T("SELECT * FROM phsManuConstantSPRING ORDER BY [Observation],[standard] ASC");
+	   rsX->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbSORT,
+		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   gsPhsConstantSpringSel.TrimLeft();gsPhsConstantSpringSel.TrimRight(); 
-	   /*if( rsX.IsEOF() && rsX.IsBOF() ){
+	   /*if( rsX->BOF && rsX->adoEOF ){
 	   lngErrNum = IDS_NotFoundThisStandardInSortMdb;
 	   sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),_T("phsManuBoltsNuts"),gsPhsBoltsNutsSel);
 	   ShowMessage(sTmp);
 	   goto errH;
          }*/
 	   if(gsPhsConstantSpringSel != _T("") ){
-		   // rsX->Filter=_variant_t(CString(_T("standard=\'") )+ gsPhsPASel + _T("\'"));
-		   //rsX.FindFirst
-		   //rsX->Find(_bstr_t(CString(_T("standard=\'"))+gsPhsConstantSpringSel+_T("\'")),0,adSearchForward);
-		   if( !rsX.FindFirst(CString(_T("Trim(standard)=\'"))+gsPhsConstantSpringSel+_T("\'")))	   
-		   {			rsX.MoveFirst();
-		   inttbExist=2;
+		   HRESULT hr = S_OK;
+		   rsX->MoveFirst();
+		   strTmp = _T("standard=\'")+gsPhsConstantSpringSel+_T("\'");
+		   hr = rsX->Find((_bstr_t)strTmp, 0, adSearchBackward);
+		   if( !rsX->adoEOF)
+		   {			
+			   rsX->MoveFirst();
+				inttbExist=2;
 		   }
 	   }
 	   else
 	   {
-		   rsX.MoveFirst();
+		   rsX->MoveFirst();
 		   inttbExist=2;
 	   }
 	   //以下判断恒力弹簧/碟原始数据表在数据库中是否存在,
 	   //如果不存在，则将记录指针移到第一条记录上，从头开始检查每条记录
 	   //如果所有的记录的原始数据表在数据库中都不存在,则报错
 	   //如果遇到原始数据表在数据库中存在的记录,则选用这条记录
-	   while((inttbExist!=1)&&(!rsX.IsEOF()))
+	   while((inttbExist!=1)&&(!rsX->adoEOF))
 	   {
-		   rsX.GetFieldValue(_T("standard"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   gsPhsConstantSpringSel=_T("");
 		   else{
 			   gsPhsConstantSpringSel=vtos(tmpvar);
 			   gsPhsConstantSpringSel.TrimLeft();gsPhsConstantSpringSel.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("manufactory"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("manufactory"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   gsCSPRmanufactory=_T("");
 		   else{
 			   gsCSPRmanufactory=vtos(tmpvar);
 			   gsCSPRmanufactory.TrimLeft();gsCSPRmanufactory.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("Spring_Crude"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("Spring_Crude"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnHDCrude=_T("");
 		   else{
 			   tbnHDCrude=vtos(tmpvar);
 			   tbnHDCrude.TrimLeft();tbnHDCrude.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("Spring_property"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("Spring_property"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnHDproperty=_T("");
 		   else{
 			   tbnHDproperty=vtos(tmpvar);
 			   tbnHDproperty.TrimLeft();tbnHDproperty.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("Spring_id"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("Spring_id"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnHDid=_T("");
 		   else{
 			   tbnHDid=vtos(tmpvar);
 			   tbnHDid.TrimLeft();tbnHDid.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("CrudeTurnbuckle"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("CrudeTurnbuckle"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnCSPRINGL5Crude=_T("");
 		   else{
 			   tbnCSPRINGL5Crude=vtos(tmpvar);
 			   tbnCSPRINGL5Crude.TrimLeft();tbnCSPRINGL5Crude.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("LugDiaOfCSPR"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("LugDiaOfCSPR"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnLugDiaOfCSPR=_T("");
 		   else{
 			   tbnLugDiaOfCSPR=vtos(tmpvar);
 			   tbnLugDiaOfCSPR.TrimLeft();tbnLugDiaOfCSPR.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("DisplacementSerial"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("DisplacementSerial"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnDisplacementSerial=_T("");
 		   else{
 			   tbnDisplacementSerial=vtos(tmpvar);
 			   tbnDisplacementSerial.TrimLeft();tbnDisplacementSerial.TrimRight();
 		   }
-		   rsX.GetFieldValue(_T("DiameterSerial"),tmpvar);
+		   rsX->get_Collect((_variant_t)_T("DiameterSerial"),&tmpvar);
 		   if(tmpvar.vt==VT_NULL)
 			   tbnCSPRDiameterSerial=_T("");
 		   else{
@@ -1955,77 +1990,77 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnHDCrude,_T("phsManuConstantSPRING"),_T("Spring_Crude"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnHDid,_T("phsManuConstantSPRING"),_T("Spring_id"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnHDproperty,_T("phsManuConstantSPRING"),_T("Spring_property"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnLugDiaOfCSPR,_T("phsManuConstantSPRING"),_T("Spring_property"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnDisplacementSerial,_T("phsManuConstantSPRING"),_T("DisplacementSerial"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   if(!HStbExists(db,db1,tbnCSPRINGL5Crude,_T("phsManuConstantSPRING"),_T("CrudeTurnbuckle"),gsPhsConstantSpringSel,bWarn))
 		   {	
 			   if(inttbExist==0)	//第一次移到第一条记录上
 			   {
-				   rsX.MoveFirst();
+				   rsX->MoveFirst();
 				   inttbExist=2;
 			   }
 			   else					//不是第一次，向后移一条记录
-				   rsX.MoveNext();
+				   rsX->MoveNext();
 			   continue;
 		   }
 		   inttbExist=1;
@@ -2035,7 +2070,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	inttbExist=0;
 	//以下判断恒力弹簧/碟簧规格编号力单位制描述字段值是否存在
 
-	rsX.GetFieldValue(_T("Unit_Force"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("Unit_Force"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 	{
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2064,7 +2099,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 
 	//按照荷载/位移选择恒力弹簧的拉杆直径TRUE/FALSE
 	//以下判断恒力弹簧/碟簧安装尺寸描述字段值是否存在
-	rsX.GetFieldValue (_T("bByForce"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("bByForce"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		gbByForce = TRUE;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2075,15 +2110,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbByForce = tmpvar.boolVal;
 	}
 	//以下判断恒力弹簧/碟簧安装尺寸描述字段值是否存在
-	//try
-	//{
-	rsX.GetFieldValue (_T("bE_FormulaPlusHalf"),tmpvar);
-	//}
-	//catch(::CDaoException * e)
-	//{
-	//	rsX.Close();		
-	//	EDIBgbl::dbSORT.Execute(_T("ALTER TABLE phsManuConstantSPRING ADD COLUMN bE_FormulaPlusHalf INTEGER"));
-	//}
+	rsX->get_Collect((_variant_t)_T("bE_FormulaPlusHalf"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		bE_FormulaPlusHalf = false;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2095,7 +2122,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 
 
-	rsX.GetFieldValue (_T("H1IncludeB"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1IncludeB"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gbCH1IncludeB = TRUE;
@@ -2109,7 +2136,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbCH1IncludeB = vtob(tmpvar);//tmpvar.boolVal
 	}
 
-	rsX.GetFieldValue (_T("bH1IncludeT"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("bH1IncludeT"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gbCH1IncludeT = TRUE;
@@ -2123,7 +2150,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gbCH1IncludeT = vtob(tmpvar);//tmpvar.boolVal
 	}
 
-	rsX.GetFieldValue (_T("H1Pos"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1Pos"), &tmpvar);
 	if(tmpvar.vt==VT_NULL )
 	{
 		gCH1Pos = 0;
@@ -2136,7 +2163,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	{
 		gCH1Pos = vtoi(tmpvar);
 	}
-	rsX.GetFieldValue (_T("H1distPos"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("H1distPos"), &tmpvar);
 	if(tmpvar.vt==VT_NULL ){
 		gCH1distPos = 0;
 		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
@@ -2147,14 +2174,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		gCH1distPos = vtoi(tmpvar);
 	}
 
-	rsX.GetFieldValue(_T("DOWNchar"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("DOWNchar"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 		gSprDirectionChar.CSPR_Down=_T("");
 	else{
 		gSprDirectionChar.CSPR_Down=vtos(tmpvar);
 		gSprDirectionChar.CSPR_Down.TrimLeft();gSprDirectionChar.CSPR_Down.TrimRight();
 	}
-	rsX.GetFieldValue(_T("UPchar"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("UPchar"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 		gSprDirectionChar.CSPR_UP=_T("");
 	else{
@@ -2178,26 +2205,26 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	}
 	
 	//默认热位移计算裕量为20%
-	rsX.GetFieldValue (_T("PercentSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("PercentSurplusDist"), &tmpvar);
 	if( tmpvar.vt==VT_NULL){
-		rsX.SetFieldValue(_T("PercentSurplusDist"),_variant_t((float)0.2));
+		rsX->put_Collect((_variant_t)_T("PercentSurplusDist"),_variant_t((float)0.2));
 		//rsX->PutCollect(_T("PercentSurplusDist"),_variant_t((float)0.2));
 		
 	}
 	//默认热位移计算裕量最小值为15mm
-	rsX.GetFieldValue (_T("MinSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("MinSurplusDist"), &tmpvar);
 	if( tmpvar.vt==VT_NULL){
-		rsX.SetFieldValue(_T("MinSurplusDist"),_variant_t((float)15));
+		rsX->put_Collect((_variant_t)_T("MinSurplusDist"),_variant_t((float)15));
 		// rsX->PutCollect(_T("MinSurplusDist"),_variant_t((float)15));
 	}
-	rsX.GetFieldValue(_T("PercentSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("PercentSurplusDist"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 		gUseConstantSpringPercentSurplusDist=0;
 	else{
 		gUseConstantSpringPercentSurplusDist=tmpvar.fltVal;
 		//   gUseConstantSpringPercentSurplusDist.TrimLeft();gUseConstantSpringPercentSurplusDist.TrimRight();
 	}
-	rsX.GetFieldValue(_T("MinSurplusDist"),tmpvar);
+	rsX->get_Collect((_variant_t)_T("MinSurplusDist"),&tmpvar);
 	if(tmpvar.vt==VT_NULL)
 		gUseConstantSpringMinSurplusDist=0;
 	else{
@@ -2205,13 +2232,17 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		//  gUseConstantSpringMinSurplusDist.TrimLeft();gUseConstantSpringMinSurplusDist.TrimRight();
 	}
 	
-	//正在获取TmpCustomIDForPART信息...
+	//正在获取临时CustomID信息...
 	sTmp.Format(IDS_GetDataTableInfo,GetResStr(IDS_InfoTmpCustomIDForPART));
 	frmStatus.m_Label1 = sTmp;
 	frmStatus.UpdateStatus(7.0 /9.0,true);
 	frmStatus.UpdateData(false);
 	frmStatus.UpdateWindow();
 	//建立当前标准CustomID表
+	frmStatus.m_Label1 = _T("建立当前标准CustomID表");
+	frmStatus.UpdateStatus(8.0 /9.0,true);
+	frmStatus.UpdateData(false);
+	frmStatus.UpdateWindow();
 	modPHScal::CreateTmpCustomIDForPART();
 	//正在获取当前标准CustomID信息...
 	sTmp.Format(IDS_GetDataTableInfo,GetResStr(IDS_InfoCustomID));
@@ -2231,38 +2262,38 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	CreateTmpConnectTable();
 	//导入厂家数据库中的CONNECTxx表     LFX 2005.4.19添
 	//此操作必须放在 	CreateTmpConnectTable(); 语句之后
+	CString strDBTableName;
+	CString strPRJTableName;
+	CString strSQL;
 	while (true)
 	{
-		CString strDBTableName;
-		CString strPRJTableName;
-		CString strSQL;
 		strDBTableName=tbnCONNECT;
 		if (tbnCONNECT == strStandardConnect)
 		{
 			//如果当前选用连接件没有自带连接表，则使用系统默认连接表
 			//strSQL.Format("DELETE * FROM CONNECT");
-			//EDIBgbl::dbPRJ.Execute(strSQL);
-			//strSQL.Format("INSERT INTO CONNECT SELECT * FROM %s IN '%s'",strStandardConnect,db.GetName());
-			//EDIBgbl::dbPRJ.Execute(strSQL);
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL);
+			//strSQL.Format("INSERT INTO CONNECT SELECT * FROM %s IN '%s'",strStandardConnect,db));
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL);
 		}
 		else
 		{
 			//当前选用连接件自带了连接表，将系统连接表中与选用连接件自带连接表
 			//的 CNTB,CNTE,CNTN 字段相同的记录删除，并将选用连接件自带连连接表
 			//中的记录复制到系统连接表中
-			strPRJTableName.Format("connect");
+			strPRJTableName.Format("[connect]");
 			if( EDIBgbl::tdfExists(db, strDBTableName) )
 			{
 				strSQL.Format("DELETE * FROM %s AS A WHERE EXISTS (SELECT * FROM %s AS B IN '%s'\
 					where a.cntb = b.cntb and a.cnte = b.cnte and \
 					(a.cntn = b.cntn or (a.cntn is null and b.cntn is null)))",
-					strPRJTableName,strDBTableName,db.GetName());
-				EDIBgbl::dbPRJ.Execute(strSQL);
+					strPRJTableName,strDBTableName,EDIBgbl::GetDBName(db));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 				
 				//导入厂家数据
 				strSQL.Format("INSERT INTO %s IN '%s' Select * FROM %s",
-					strPRJTableName,EDIBgbl::dbPRJ.GetName(),strDBTableName);
-				db.Execute(strSQL);
+					strPRJTableName,EDIBgbl::GetDBName(EDIBgbl::dbPRJ),strDBTableName);
+				db->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			}
 		}
 		break;
@@ -2307,7 +2338,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	ret = TRUE;
    }
    
-   catch(::CDaoException * e)
+   catch(CException *e)
    {
 	   e->ReportError();
 	   e->Delete();
@@ -2316,14 +2347,14 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	   // ShowMessage(e.Description());
    }
 errH:
-   if(rsX.IsOpen())
-	   rsX.Close();
+   if(rsX->State == adStateOpen)
+	   rsX->Close();
    
-   if(db.IsOpen())
-	   db.Close();
+   if(db->State == adStateOpen)
+	   db->Close();
    
-   if(db1.IsOpen())
-	   db1.Close();
+   if(db1->State == adStateOpen)
+	   db1->Close();
    AfxGetApp()->EndWaitCursor();
    frmStatus.ShowWindow(SW_HIDE);
    return ret;
@@ -2337,26 +2368,33 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 	AfxGetApp()->BeginWaitCursor();
 	try
 	{
-		if(modPHScal::dbZDJcrude.IsOpen())
+		if(modPHScal::dbZDJcrude->State == adStateOpen)
 		{
-			modPHScal::dbZDJcrude.Close();
+			modPHScal::dbZDJcrude->Close();
 		}
-		modPHScal::dbZDJcrude.Open(basDirectory::ProjectDBDir+_T("zdjcrude.mdb"),FALSE,FALSE,_T(";pwd=")+ModEncrypt::gstrDBZdjCrudePassWord);
+		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
+		modPHScal::dbZDJcrude->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
+
 		CString strTbn, strCrudeTbn;
 		CMessageBoxEx MsgDlg;
 		bool bAllYes=false;
 		bool bAllNo=false;
 		UINT nDlgID=0;
 
-		int i=0;
+		long i=0;
 		bool bFound=false;
-		CDaoDatabase db;
-		CDaoRecordset rs;
-		CDaoRecordset  rs1, rs2;
+		_ConnectionPtr db;
+		db.CreateInstance(__uuidof(Connection));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		rs1.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs2;
+		rs2.CreateInstance(__uuidof(Recordset));
 		strFN.TrimLeft();
 		strFN.TrimRight();
 		CString strTmp;
-		COleVariant vTmp;
+		_variant_t vTmp;
 		CString SQLx;
 		
 
@@ -2367,40 +2405,43 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 		}
 		else
 		{
-			db.Open(strFN,FALSE,FALSE,CString(_T(";pwd="))+ ModEncrypt::gstrDBProductPassWord);
+			ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFN;
+			db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBProductPassWord, adConnectUnspecified);
 			//取出管理表的名称
-			rs.m_pDatabase=&EDIBgbl::dbSORT;
-			rs.Open(dbOpenSnapshot,_T("SELECT * FROM phsManu ORDER BY seq"));
-			if( rs.IsBOF() && rs.IsEOF() )
+			CString strSql;
+			strSql = _T("SELECT * FROM phsManu ORDER BY seq");
+			rs->Open((_bstr_t)strSql, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( rs->adoEOF && rs->BOF )
 			{
-				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::dbSORT.GetName());
+				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT));
 				throw strTmp;
 			}
-			while(!rs.IsEOF())
+			while(!rs->adoEOF)
 			{
-				rs.GetFieldValue(_T("TableName"),vTmp);
+				rs->get_Collect((_variant_t)_T("TableName"),&vTmp);
 				strTbn = vtos(vTmp);
 				if( EDIBgbl::tdfExists(db, strTbn) )
 				{
 					//假设全部表都存在
 					bFound = true;
-					rs.GetFieldValue(_T("SQL"),vTmp);
+					rs->get_Collect((_variant_t)_T("SQL"),&vTmp);
 					//下面要判断是否所有的原始数据表都存在，不存在的要排除，不能写到可用列表框，防止用户误点击。
-					rs1.m_pDatabase=&db;
-					rs1.Open(dbOpenSnapshot,vtos(vTmp));
-					if( rs1.IsBOF() && rs1.IsEOF() ){
+					rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if( rs1->adoEOF || rs1->BOF ){
 						strTmp.Format(GetResStr(IDS_NullPhsManuXtableInProductMdb),strTbn);
 						ShowMessage(strTmp);
 					}
 					else
 					{
-						while(!rs1.IsEOF())
+						while(!rs1->adoEOF)
 						{
-							rs.GetFieldValue(_T("CrudeDataTableNum"),vTmp);
+							rs->get_Collect((_variant_t)_T("CrudeDataTableNum"),&vTmp);
 							int C=vtoi(vTmp);
 							for( i = 1 ;i<= C;i++)
 							{
-								rs1.GetFieldValue(i,vTmp);
+								rs1->get_Collect((_variant_t)i,&vTmp);
 								if( vTmp.vt!=VT_NULL)
 								{
 									strCrudeTbn = vtos(vTmp);
@@ -2411,7 +2452,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										{
 											if( bReplacement )
 											{
-												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),modPHScal::dbZDJcrude.GetName(),strCrudeTbn);
+												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),strCrudeTbn);
 												MsgDlg.m_strPrompt=strTmp;
 												if(! bAllYes)
 												{
@@ -2424,18 +2465,21 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 													else if(nDlgID == IDALLNO)
 													{
 														bAllNo=true;
-														if(rs1.IsOpen()) rs1.Close();
-														if(rs2.IsOpen()) rs2.Close();
-														if(rs.IsOpen()) rs.Close();
-														if(db.IsOpen()) db.Close();
+														if(rs1->State == adStateOpen) rs1->Close();
+														if(rs2->State == adStateOpen) rs2->Close();
+														if(rs->State == adStateOpen) rs->Close();
+														if(db->State == adStateOpen) db->Close();
 														AfxGetApp()->EndWaitCursor();
 														return;
 													}
 												}
 												if(bAllYes || nDlgID== IDYES)
 												{
-													dbZDJcrude.Execute(_T("drop table ") + strCrudeTbn);
-													db.Execute("Select * INTO [" + strCrudeTbn + _T("] IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\'  FROM ") + strCrudeTbn);
+													SQLx = _T("drop table ") + strCrudeTbn;
+													dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
+
+													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T("\'  FROM ") + strCrudeTbn;
+													db->Execute((_bstr_t)SQLx, NULL, adCmdText);
 													mbSPECchanged = true;
 												}
 
@@ -2445,9 +2489,9 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										{
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
-												//DAO3.50未检查密码，而ADO将检查密码,详见phs.arx
-												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + dbZDJcrude.GetName() + _T("\' FROM ") + strCrudeTbn;
-												db.Execute( SQLx);
+												//ADO将检查密码,详见phs.arx
+												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(dbZDJcrude) + _T("\' FROM ") + strCrudeTbn;
+												db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 												mbSPECchanged = true;
 											}
 										}
@@ -2462,7 +2506,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										else
 										{
 											//这个表在原始数据库中不存在
-											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),dbZDJcrude.GetName(),strCrudeTbn);
+											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),EDIBgbl::GetDBName(dbZDJcrude),strCrudeTbn);
 											//这种提示令用户烦恼。
 											//ShowMessage(strTmp);
 										}
@@ -2470,29 +2514,29 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 								}
 							}
 							//更新管理表
-							rs2.m_pDatabase=&EDIBgbl::dbSORT;
-							rs1.GetFieldValue(_T("standard"),vTmp);
+							rs1->get_Collect((_variant_t)_T("standard"),&vTmp);
 							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
-							rs2.Open(dbOpenSnapshot,SQLx);
+							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+								adOpenKeyset, adLockOptimistic, adCmdText); 
 							//创建一临时表保存将要追加的查询
-							if( rs2.IsBOF() && rs2.IsEOF() ){
+							if( rs2->adoEOF && rs2->BOF ){
 							}else{
 								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
-								EDIBgbl::dbSORT.Execute( SQLx);
+								EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							}							
-							rs2.Close();
+							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::dbSORT.GetName() + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
-							db.Execute( SQLx);
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
 							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
-							EDIBgbl::dbSORT.Execute( SQLx);							
-							rs1.MoveNext();
+							EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);							
+							rs1->MoveNext();
 						}
 					}
-					rs1.Close();
+					rs1->Close();
 				}
-				rs.MoveNext();
+				rs->MoveNext();
 			}
 			
 			//循环完成
@@ -2500,7 +2544,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2508,13 +2552,6 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 	catch(CString e)
 	{
 		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -2532,15 +2569,20 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 		bool bAllNo=false;
 		UINT nDlgID=0;
 
-		int i=0;
+		long i=0;
 		bool bFound=false;
-		CDaoDatabase db;
-		CDaoRecordset rs;
-		CDaoRecordset  rs1, rs2;
+		_ConnectionPtr db;
+		db.CreateInstance(__uuidof(Connection));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		rs1.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs2;
+		rs2.CreateInstance(__uuidof(Recordset));
 		strFN.TrimLeft();
 		strFN.TrimRight();
 		CString strTmp;
-		COleVariant vTmp;
+		_variant_t vTmp;
 		CString SQLx;
 		if(strFN == _T("") )
 		{
@@ -2550,42 +2592,44 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 		}
 		else
 		{
-			db.Open(strFN,FALSE,FALSE,CString(_T(";pwd="))+ ModEncrypt::gstrDBProductPassWord);
+			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFN;
+			db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBProductPassWord, adConnectUnspecified);
 			//取出管理表的名称
-			rs.m_pDatabase=&EDIBgbl::dbSORT;
-			rs.Open(dbOpenSnapshot,_T("SELECT * FROM phsManu ORDER BY seq"));
-			if( rs.IsBOF() && rs.IsEOF() )
+			SQLx = _T("SELECT * FROM phsManu ORDER BY seq");
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( rs->adoEOF || rs->BOF )
 			{
 				//MsgBox ResolveResString(iUE_NullPhsManuTableInSortMdb)
 				//Exit Sub
-				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::dbSORT.GetName());
+				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT));
 				throw strTmp;
 			}
-			while(!rs.IsEOF())
+			while(!rs->adoEOF)
 			{
-				rs.GetFieldValue(_T("TableName"),vTmp);
+				rs->get_Collect((_variant_t)_T("TableName"),&vTmp);
 				strTbn = vtos(vTmp);
 				if( EDIBgbl::tdfExists(db, strTbn) )
 				{
 					//假设全部表都存在
 					bFound = true;
-					rs.GetFieldValue(_T("SQL"),vTmp);
+					rs->get_Collect((_variant_t)_T("SQL"),&vTmp);
 					//下面要判断是否所有的原始数据表都存在，不存在的要排除，不能写到可用列表框，防止用户误点击。
-					rs1.m_pDatabase=&db;
-					rs1.Open(dbOpenSnapshot,vtos(vTmp));
-					if( rs1.IsBOF() && rs1.IsEOF() ){
+					rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if( rs1->adoEOF || rs1->BOF ){
 						strTmp.Format(GetResStr(IDS_NullPhsManuXtableInProductMdb),strTbn);
 						ShowMessage(strTmp);
 					}
 					else
 					{
-						while(!rs1.IsEOF())
+						while(!rs1->adoEOF)
 						{
-							rs.GetFieldValue(_T("CrudeDataTableNum"),vTmp);
+							rs->get_Collect((_variant_t)_T("CrudeDataTableNum"),&vTmp);
 							int C=vtoi(vTmp);
 							for( i = 1 ;i<= C;i++)
 							{
-								rs1.GetFieldValue(i,vTmp);
+								rs1->get_Collect((_variant_t)i,&vTmp);
 								if( vTmp.vt!=VT_NULL)
 								{
 									strCrudeTbn = vtos(vTmp);
@@ -2599,7 +2643,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										{
 											if( bReplacement )
 											{
-												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),modPHScal::dbZDJcrude.GetName(),strCrudeTbn);
+												strTmp.Format(GetResStr(IDS_ExistsThisCrudeDataTableInZDJcrudeOrproductMdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude),strCrudeTbn);
 												MsgDlg.m_strPrompt=strTmp;
 												//if(IDYES == ShowMessage(strTmp, MB_DEFBUTTON1|MB_ICONQUESTION|MB_SYSTEMMODAL|MB_YESNO) )
 												if(! bAllYes)
@@ -2613,18 +2657,21 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 													else if(nDlgID == IDALLNO)
 													{
 														bAllNo=true;
-														if(rs1.IsOpen()) rs1.Close();
-														if(rs2.IsOpen()) rs2.Close();
-														if(rs.IsOpen()) rs.Close();
-														if(db.IsOpen()) db.Close();
+														if(rs1->State == adStateOpen) rs1->Close();
+														if(rs2->State == adStateOpen) rs2->Close();
+														if(rs->State == adStateOpen) rs->Close();
+														if(db->State == adStateOpen) db->Close();
 														AfxGetApp()->EndWaitCursor();
 														return;
 													}
 												}
 												if(bAllYes || nDlgID== IDYES)
 												{
-													dbZDJcrude.Execute(_T("drop table ") + strCrudeTbn);
-													db.Execute("Select * INTO [" + strCrudeTbn + _T("] IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\'  FROM ") + strCrudeTbn);
+													SQLx = _T("drop table ") + strCrudeTbn;
+													dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
+
+													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T("\'  FROM ") + strCrudeTbn;
+													db->Execute((_bstr_t)SQLx, NULL, adCmdText);
 													mbSPECchanged = true;
 												}
 
@@ -2634,9 +2681,9 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										{
 											if( bReplacement ){
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
-												//DAO3.50未检查密码，而ADO将检查密码,详见phs.arx
-												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + dbZDJcrude.GetName() + _T("\' FROM ") + strCrudeTbn;
-												db.Execute( SQLx);
+												//ADO将检查密码,详见phs.arx
+												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(dbZDJcrude) + _T("\' FROM ") + strCrudeTbn;
+												db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 												mbSPECchanged = true;
 											}
 										}
@@ -2651,7 +2698,7 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 										else
 										{
 											//这个表在原始数据库中不存在
-											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),dbZDJcrude.GetName(),strCrudeTbn);
+											strTmp.Format(GetResStr(IDS_NoThisCrudeDataTableInProductMdb),EDIBgbl::GetDBName(dbZDJcrude),strCrudeTbn);
 											//这种提示令用户烦恼。
 											//ShowMessage(strTmp);
 										}
@@ -2659,43 +2706,37 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 								}
 							}
 							//更新管理表
-							rs2.m_pDatabase=&EDIBgbl::dbSORT;
-							rs1.GetFieldValue(_T("standard"),vTmp);
+							rs1->get_Collect((_variant_t)_T("standard"),&vTmp);
 							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
-							rs2.Open(dbOpenSnapshot,SQLx);
-							//创建一临时表保存将要追加的查询
-							//if( tdfExists(db.TableDefs, _T("tmp")) ){
-								//db.Execute( _T("DROP TABLE tmp")
-							//}
-							//SQLx = _T("SELECT * INTO tmp FROM [") & strTbn & _T("] WHERE trim(standard)=//") & Trim(rs1.Fields(_T("standard"))) & _T("//")
-							//db.Execute( SQLx
-							if( rs2.IsBOF() && rs2.IsEOF() ){
+							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+								adOpenKeyset, adLockOptimistic, adCmdText); 
+							if( rs2->adoEOF || rs2->BOF ){
 							}else{
 								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
-								EDIBgbl::dbSORT.Execute( SQLx);
+								EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							}							
 							//alter strTbn table structure before inserting records
 							//at first close rs2,otherwise to produce a error,because strTbn is still opened.
-							rs2.Close();
+							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::dbSORT.GetName() + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
-							db.Execute( SQLx);
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
 							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
-							EDIBgbl::dbSORT.Execute( SQLx);							
-							rs1.MoveNext();
+							EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);							
+							rs1->MoveNext();
 						}
 					}
-					rs1.Close();
+					rs1->Close();
 				}
-				rs.MoveNext();
+				rs->MoveNext();
 			}
 			//循环完成
 			strTmp.Format(GetResStr(IDS_FinishedImportProductMdb),strFN);			
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -2703,13 +2744,6 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 	catch(CString e)
 	{
 		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	EXECUTE_TIME_END
 	AfxGetApp()->EndWaitCursor();
@@ -2726,79 +2760,64 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 	long ret=0;
 	try
 	{
-		//  int i,iLB;
-		CDaoRecordset rs;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		//CSLength = 0;
 		//获得型钢长度(由字段sngLen确定)
 		CString SQL1;
 		CString sTmp;
-		COleVariant vTmp;
+		_variant_t vTmp;
 		SQL1 = _T("SELECT ") + LengthSQL + _T(" AS sngLen FROM tmpCSLen");
-		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		rs.Open(dbOpenSnapshot,SQL1);
+		rs->Open((_bstr_t)SQL1, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		
-		if(rs.IsEOF() && rs.IsBOF())
+		if(rs->BOF && rs->adoEOF)
 		{
-			sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::dbPRJ.GetName(),_T("tmpCSLen"),SQL1);
+			sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),_T("tmpCSLen"),SQL1);
 			throw sTmp;
 		}
 		else
 		{
-			rs.MoveFirst();
-			rs.GetFieldValue(_T("sngLen"),vTmp);
+			rs->MoveFirst();
+			rs->get_Collect((_variant_t)_T("sngLen"),&vTmp);
 			ret=vtoi(vTmp);
 			CString sTmp1;
 			sTmp1.Format(_T("%g"),vtof(vTmp));
-			EDIBgbl::dbPRJ.Execute( _T("UPDATE tmpCSLen SET L1=") + sTmp1);
+
+			SQL1 = _T("UPDATE tmpCSLen SET L1=") + sTmp1;
+			EDIBgbl::dbPRJ->Execute((_bstr_t)SQL1, NULL, adCmdText );
 			//获得CLgg或BH
 			SQL1 = _T("SELECT (") + sBHFormat + _T(") AS sBH FROM tmpCSLen");
-			rs.Close();
-			rs.Open(dbOpenSnapshot,SQL1);
+			rs->Close();
+			rs->Open((_bstr_t)SQL1, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			
-			if(rs.IsEOF() && rs.IsBOF())
+			if(rs->BOF && rs->adoEOF)
 			{
-				sTmp.Format(GetResStr(IDS_NoRecordAtTmpCSLenTableInWorkprjMdb),EDIBgbl::dbPRJ.GetName(),SQL1);
+				sTmp.Format(GetResStr(IDS_NoRecordAtTmpCSLenTableInWorkprjMdb),EDIBgbl::GetDBName(EDIBgbl::dbPRJ),SQL1);
 				ShowMessage(sTmp);
 			}
 			else
 			{
-				rs.MoveFirst();
+				rs->MoveFirst();
 				//规格结果表达式返回给sBH变量
-				rs.GetFieldValue(_T("sBH"),vTmp);
+				rs->get_Collect((_variant_t)_T("sBH"),&vTmp);
 				sBH =vtos(vTmp);
 			}
 		}
 	}catch(CString e)
 	{
 		ShowMessage(e);
-	}catch(::CDaoException * e)
+	}catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 	return ret;
 }
 
 	bool modPHScal::CheckFieldIfNull(_RecordsetPtr rs)
 {
-	/*try
-	{
-		_variant_t vTmp;
-		vTmp.ChangeType(VT_I4);
-		int C=rs->GetFields()->GetCount();
-		for(int i=0;i<C;i++)
-		{
-			vTmp.intVal=i;
-			if(rs->GetCollect(vTmp).vt==VT_NULL)
-			{
-				rs->Fields->Item[i]->get_OriginalValue*/
 	return true;
 }
 
@@ -2848,10 +2867,6 @@ catch(CString e)
 catch(CException *e)
 {
 	e->Delete();
-	return 0;
-}
-catch(...)
-{
 	return 0;
 }
 }
@@ -2948,10 +2963,11 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 
 		Cavphs->GetPhsSAELandPAdxdydz();  //计算根部标高和管部定位尺寸
 		Cavphs->GetPhsBlkIDandCrd(rsza);
-		CDaoRecordset rsTmpZB;
+		_RecordsetPtr rsTmpZB;
+		rsTmpZB.CreateInstance(__uuidof(Recordset));
 		CString SQLx = CString(_T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 order by recno");
-		rsTmpZB.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsTmpZB.Open(dbOpenDynaset,SQLx);
+		rsTmpZB->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		EDIBAcad::DrawPhsAssemble(rsTmpZB, iViewXZ) ; //绘制支吊架组装图
 
@@ -2979,8 +2995,11 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 		if( gbDraw_BOM )
 		{
 			EDIBDB::MakeTmp2ToBom();
-			CDaoRecordset tmprs(&EDIBgbl::dbPRJ);
-			tmprs.Open(dbOpenSnapshot,_T("SELECT * FROM TMP2"));
+			_RecordsetPtr tmprs;
+			tmprs.CreateInstance(__uuidof(Recordset));
+			SQLx = _T("SELECT * FROM TMP2");
+			tmprs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			CCadPoint p0(pt2x,pt2y,0);
 			if( EDIBAcad::g_bLJMX_BJBW )
 			{
@@ -3003,61 +3022,32 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 		}
 
 	}
-	catch(CDaoException* e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
 	catch(_com_error e)
 	{
 		ShowMessage(e.Description());
 	}
 	catch(CException *e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
 		ReportError("Exception in DrawPhs()",__FILE__,__LINE__);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
 
-void modPHScal::RecordAppend(_RecordsetPtr rs, CString FldName, COleVariant fldValue)
-{
-}
-
-void modPHScal::MakeTBDtmpzdj()
-{
-}
-
-//DEL void modPHScal::MakeZDJ_ZBZG(long bDEL, long TblType)
-//DEL {
-//DEL //如果没有丢失参数,则不删除记录,此状态可用于启动时检查表
-//DEL    /*Dim Found As Boolean
-//DEL    Dim i As Integer, iDelZdjh As Long*/
-//DEL 	long iDelZdjh;
-//DEL 	CString sZD;
-//DEL    if(bDEL==10000)
-//DEL       iDelZdjh = zdjh;
-//DEL 	sZD.Format(_T("%d"),iDelZdjh);
-//DEL 	//if( zdjh != -1)  
-//DEL 	//	EDIBgbl::dbPRJDB.Execute(CString( _T("DELETE * FROM [") )+ EDIBgbl::Btype[TblType] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND ZDJH=") +sZD);// iDelZdjh
-//DEL 
-//DEL }
-
 void modPHScal::MakeTmpCSLen()
 {
 //调用GetphsBHandSizes方法计算一个支吊架之前，必须在dbPRJ中建立表tmpCSLen
+	CString strExecute;
    if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpCSLen")))
-      //dbPRJ.Execute _T("DELETE * FROM tmpCSLen")
+   {
       //这样比较方便，而且版本升级时兼容性好。
-		EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpCSLen"));
-   //Else
-      //不存在,则建立临时表tmpCSLen,准备计算型钢长度
-   //End If
-   EDIBgbl::dbPRJ.Execute(_T("CREATE TABLE tmpCSLen (ID char(20),CustomID char(50),SprNo SHORT,SerialNum SHORT,P2 char(20),P3 char(20),P4 char(20),P5 char(20),P6 char(20),P7 char(20),P8 char(20),P9 char(20),t0 REAL,BH CHAR (80),SelOpLoad REAL,OpLoad REAL,InstallLoad REAL,SumDist long,SumDistID short,HeatDist long,DistFX CHAR (50),LugDiameter long,sizeH REAL,sizeC REAL,Length long, GDW1 REAL,sumL REAL,L1 REAL,A REAL,Lspan REAL, H REAL,B REAL,B1 REAL,A1 REAL,B0 REAL,M REAL,C REAL, CHDist REAL, CHheight REAL,CHLegheight REAL,BWIDTH  REAL,size2 REAL,PL1 REAL,SpecialDesign char(50),UnitForce char(50),Dw REAL,P1 char(50),DW1 REAL,S REAL,K REAL,K2 REAL,temperature REAL)"));
-   EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpCSLen (sizeH) VALUES (0)"));
+	   strExecute = _T("DROP TABLE tmpCSLen");
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+   }
+   strExecute = _T("CREATE TABLE tmpCSLen (ID char(20),CustomID char(50),SprNo SHORT,SerialNum SHORT,P2 char(20),P3 char(20),P4 char(20),P5 char(20),P6 char(20),P7 char(20),P8 char(20),P9 char(20),t0 REAL,BH CHAR (80),SelOpLoad REAL,OpLoad REAL,InstallLoad REAL,SumDist long,SumDistID short,HeatDist long,DistFX CHAR (50),LugDiameter long,sizeH REAL,sizeC REAL,Length long, GDW1 REAL,sumL REAL,L1 REAL,A REAL,Lspan REAL, H REAL,B REAL,B1 REAL,A1 REAL,B0 REAL,M REAL,C REAL, CHDist REAL, CHheight REAL,CHLegheight REAL,BWIDTH  REAL,size2 REAL,PL1 REAL,SpecialDesign char(50),UnitForce char(50),Dw REAL,P1 char(50),DW1 REAL,S REAL,K REAL,K2 REAL,temperature REAL)");
+   EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+   strExecute = _T("INSERT INTO tmpCSLen (sizeH) VALUES (0)");
+   EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 }
 
 
@@ -3070,30 +3060,18 @@ void modPHScal::MakeZDJ_ZD(long zdjh)
 	{
 //	bool Found ;
       //删除以前计算出的支吊架号为zdjh的一览表内容
-     EDIBgbl::dbPRJDB.Execute (_T("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + (zdjh==0 ? _T("") : CString(_T(" AND zdjh=")) + ltos(zdjh)));
-   
-	}
-	catch(CDaoException  * e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strExecute;
+		strExecute = _T("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + 
+			(zdjh==0 ? _T("") : CString(_T(" AND zdjh=")) + ltos(zdjh));
+     EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	}
 	catch(CException *e)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
-COleVariant modPHScal::PhsDrawNameGet(COleVariant ZDJNo)
-{
-	COleVariant t;
-	return t;
-}
-
-void modPHScal::PhsMLmake(COleVariant ZDJNo)
+void modPHScal::PhsMLmake(_variant_t ZDJNo)
 {
    //目的：添加或修改zdjh=zdjno支吊架组装图图纸的目录信息。
 	try
@@ -3101,14 +3079,15 @@ void modPHScal::PhsMLmake(COleVariant ZDJNo)
    
 	   CString tbn;
 	   int i ;
-	   CDaoRecordset rsX(&EDIBgbl::dbPRJDB);
+	   _RecordsetPtr rsX;
+	   rsX.CreateInstance(__uuidof(Recordset));
 	   tbn = EDIBgbl::Btype[EDIBgbl::TML];
 	   CString SQL1x=_T("");
 	   if(!EDIBgbl::tdfExists(EDIBgbl::dbPRJDB, tbn))
 	   {
 		   //copy ml table structure from f4511s.mdb in templatedir into ml of allprjdb.mdb in projectdbdir
 		   SQL1x = _T("SELECT * INTO [") + tbn + _T("] FROM [") + tbn + _T("] IN \'") + basDirectory::TemplateDir + _T("F4511s.mdb\' WHERE DrawNo=\'\'"); 
-		   EDIBgbl::dbPRJDB.Execute( SQL1x);
+		   EDIBgbl::dbPRJDB->Execute((_bstr_t) SQL1x, NULL, adCmdText);
 	   }
    
 	   CString sTmpDrawNo, sTmpDrawNa,sTmp;
@@ -3119,20 +3098,21 @@ void modPHScal::PhsMLmake(COleVariant ZDJNo)
 	   {
 		  //开始更新目录信息
 		   SQL1x = _T("SELECT * FROM [") + tbn + _T("] where VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(DrawNo) AND NOT IsNull(DrawNa) AND NOT trim(DrawNo)=\'\' AND NOT trim(DrawNa)=\'\' AND zdjh=") + sZdjh + _T(" ORDER BY SEQ");
-		  rsX.Open(dbOpenDynaset,SQL1x);
-		  if( rsX.IsEOF()&& rsX.IsBOF())// Then
+		   rsX->Open((_bstr_t)SQL1x, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
+		  if( rsX->BOF&& rsX->adoEOF)// Then
 		  {
 			 //MsgBox ResolveResString(iUE_NoRecordInTMLtableInAllPrjDbMdb, _T("|1"), dbPRJDB.Name, _T("|2"), tbn, _T("|3"), SQL1x), vbMsgBoxSetForeground + vbSystemModal
 			 //开始添加目录信息
-			 rsX.AddNew();
-			 rsX.SetFieldValue(_T("SEQ"),COleVariant((long)(zdjh + glDrawNoStartNumber - 1)));
-			 rsX.SetFieldValue(_T("Pages"),COleVariant((long)1));
-			 rsX.SetFieldValue(_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
-			 rsX.SetFieldValue(_T("DrawNo"),STR_VAR(sTmpDrawNo));
-			 rsX.SetFieldValue(_T("DrawNa") ,STR_VAR( sTmpDrawNa));
-			 rsX.SetFieldValue(_T("zdjh"),COleVariant((long)zdjh));
+			 rsX->AddNew();
+			 rsX->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)(zdjh + glDrawNoStartNumber - 1)));
+			 rsX->put_Collect((_variant_t)_T("Pages"),_variant_t((long)1));
+			 rsX->put_Collect((_variant_t)_T("VolumeID"),_variant_t(EDIBgbl::SelVlmID));
+			 rsX->put_Collect((_variant_t)_T("DrawNo"),STR_VAR(sTmpDrawNo));
+			 rsX->put_Collect((_variant_t)_T("DrawNa") ,STR_VAR( sTmpDrawNa));
+			 rsX->put_Collect((_variant_t)_T("zdjh"),_variant_t((long)zdjh));
 				
-			 rsX.Update();
+			 rsX->Update();
 		  }
 		  else
 		  {
@@ -3149,20 +3129,19 @@ void modPHScal::PhsMLmake(COleVariant ZDJNo)
 			 }
 			 if (i == IDYES)
 			 {
-				rsX.Edit();
-				rsX.SetFieldValue(_T("SEQ"),COleVariant((long)(zdjh + glDrawNoStartNumber - 1)));
-				rsX.SetFieldValue(_T("Pages"),COleVariant((long)1));
-				rsX.SetFieldValue(_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
-				rsX.SetFieldValue(_T("DrawNo"),STR_VAR( sTmpDrawNo));
-				rsX.SetFieldValue(_T("DrawNa"),STR_VAR(sTmpDrawNa));
+				rsX->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)(zdjh + glDrawNoStartNumber - 1)));
+				rsX->put_Collect((_variant_t)_T("Pages"),_variant_t((long)1));
+				rsX->put_Collect((_variant_t)_T("VolumeID"),_variant_t(EDIBgbl::SelVlmID));
+				rsX->put_Collect((_variant_t)_T("DrawNo"),STR_VAR( sTmpDrawNo));
+				rsX->put_Collect((_variant_t)_T("DrawNa"),STR_VAR(sTmpDrawNa));
 
-				rsX.Update();
+				rsX->Update();
 			 }
 		  }
-		  rsX.Close();
+		  rsX->Close();
 	   }
 	   }
-	catch(::CDaoException* e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -3177,8 +3156,12 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 		_Recordset* rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
 		EDIBAcad::DeleteAllEntitiesInLayers(1,_T("DLOAD"));
 		CCadPoint p0;
-		CDaoRecordset rs, rs1;
-		CDaoRecordset rsText(&EDIBgbl::dbPRJ);
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		rs1.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsText;
+		rsText.CreateInstance(__uuidof(Recordset));
 		CString tmpStr;
 		CString SQLx;
 		CMObject objEnt;
@@ -3195,24 +3178,39 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 		EDIBgbl::g_bPhsSetNum=  GetRegKey(_T("Settings"),_T("Custom_PhsSetNum"), EDIBgbl::g_bPhsSetNum);
 		EDIBgbl::g_bUserDesc=   GetRegKey(_T("Settings"),_T("Custom_UserDesc"),  EDIBgbl::g_bUserDesc);	
 
+		CString strExecute;
 		if(giPhsOutINFOTableType == iDisplacementLoadSep)
 		{
 			//华东院格式
 			//管道位移表tmpPipeDisplacement与荷载表分开
 			if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpPipeDisplacement")))
-				EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpPipeDisplacement"));
-			EDIBgbl::dbPRJ.Execute( _T("CREATE TABLE tmpPipeDisplacement (duty char(10),design REAL,cool REAL,heat REAL,Tj char(20))"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat,Tj) VALUES (\'x\',0,") +vtos(rsza->GetCollect(_T("xl1"))) + _T(",") + vtos(rsza->GetCollect(_T("xr1"))) + _T(",\'") + ftos(t0) + _T("\')"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat) VALUES (\'y\',0,") + vtos(rsza->GetCollect(_T("yl1"))) + _T(",") + vtos(rsza->GetCollect(_T("yr1"))) + _T(")"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat) VALUES (\'z\',0,") + vtos(rsza->GetCollect(_T("zl1")) )+ _T(",") + vtos(rsza->GetCollect(_T("zr1"))) + _T(")"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpPipeDisplacement"), NULL, adCmdText);
+			EDIBgbl::dbPRJ->Execute((_bstr_t) _T("CREATE TABLE tmpPipeDisplacement (duty char(10),design REAL,cool REAL,heat REAL,Tj char(20))"), NULL, adCmdText);
+
+			strExecute = _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat,Tj) VALUES (\'x\',0,") +vtos(rsza->GetCollect(_T("xl1"))) + _T(",") + vtos(rsza->GetCollect(_T("xr1"))) + _T(",\'") + ftos(t0) + _T("\')");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
+
+			strExecute = _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat) VALUES (\'y\',0,") + vtos(rsza->GetCollect(_T("yl1"))) + _T(",") + vtos(rsza->GetCollect(_T("yr1"))) + _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
+
+			strExecute = _T("INSERT INTO tmpPipeDisplacement (duty,design,cool,heat) VALUES (\'z\',0,") + vtos(rsza->GetCollect(_T("zl1")) )+ _T(",") + vtos(rsza->GetCollect(_T("zr1"))) + _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 			//支吊架荷载表tmpPhsLoad
 			if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpPhsLoad")))
-				EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpPhsLoad"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpPhsLoad"), NULL, adCmdText);
 			
-			EDIBgbl::dbPRJ.Execute(_T("CREATE TABLE tmpPhsLoad (duty char(10),design REAL,cool REAL,heat REAL,HydraulicPressure REAL,SafetyValveAction REAL,Tj char(20))"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat,Tj) VALUES (\'Px\',0,") + (rsza->GetCollect(_T("pxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("pxl1"))))) + _T(",") + (rsza->GetCollect(_T("pxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("pxr1"))))) + _T(",\'") + ftos(t0) + _T("\')"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpPhsLoad (duty char(10),design REAL,cool REAL,heat REAL,HydraulicPressure REAL,SafetyValveAction REAL,Tj char(20))"), NULL, adCmdText);
+
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat,Tj) VALUES (\'Px\',0,");
+			strExecute += (rsza->GetCollect(_T("pxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pxl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("pxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pxr1")))))); 
+			strExecute += _T(",\'"); 
+			strExecute += ftos(t0); 
+			strExecute += _T("\')");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 			//pfg20050422原代码
-			/*	EDIBgbl::dbPRJ.Execute( CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',")) + 
+			/*	EDIBgbl::dbPRJ->Execute((_bstr_t) CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',")) + 
 				(rsza->GetCollect(_T("pjg1")).vt==VT_NULL ? CString(_T("0")) : ftos(fabs(vtof(rsza->GetCollect(_T("pjg1"))) * UnitF))) 
 				+ CString(_T(","))
 				+ (rsza->GetCollect(_T("paz1")).vt==VT_NULL? CString(_T("0")) : ftos(fabs(vtof(rsza->GetCollect(_T("paz1"))) * UnitF))) 
@@ -3221,55 +3219,85 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			//pfg20050422原代码
 
 			//pfg20050422
-			EDIBgbl::dbPRJ.Execute( CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',")) + 
-				(rsza->GetCollect(_T("pjg1")).vt==VT_NULL ? CString(_T("0")) : ftos((vtof(rsza->GetCollect(_T("pjg1"))) * UnitF))) 
-				+ CString(_T(","))
-				+ (rsza->GetCollect(_T("paz1")).vt==VT_NULL? CString(_T("0")) : ftos((vtof(rsza->GetCollect(_T("paz1"))) * UnitF))) 
-				+ CString(_T(",")) 
-				+ (rsza->GetCollect(_T("pgz1")).vt==VT_NULL ? _T("0") : ftos(vtof(rsza->GetCollect(_T("pgz1"))) * UnitF)) + CString(_T(")")));
+			strExecute =  CString(_T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Py\',"));
+			strExecute += (rsza->GetCollect(_T("pjg1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("pjg1"))) * UnitF)));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("paz1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("paz1"))) * UnitF))); 
+			strExecute += _T(",\'"); 
+			strExecute += (rsza->GetCollect(_T("pgz1")).vt==VT_NULL ? _T("0") : ftos((vtof(rsza->GetCollect(_T("pgz1"))) * UnitF))); 
+			strExecute += _T(",\'"); 
+			strExecute += ftos(t0); 
+			strExecute += _T("\')");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText);
 			//pfg20050422
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Pz\',0,") + (rsza->GetCollect(_T("pzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzl1"))) * UnitF))) + _T(",") + (rsza->GetCollect(_T("pzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzr1"))) * UnitF))) + _T(")"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mx\',0,") + (rsza->GetCollect(_T("mxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxl1")))))) + _T(",") + (rsza->GetCollect(_T("mxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("mxr1"))))) + _T(")"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'My\',0,") + (rsza->GetCollect(_T("myl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myl1")))))) + _T(",") + (rsza->GetCollect(_T("myr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("myr1"))))) + _T(")"));
-			EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mz\',0,") + (rsza->GetCollect(_T("mzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzl1")))))) + _T(",") + (rsza->GetCollect(_T("mzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(rsza->GetCollect(_T("mzr1"))))) + _T(")"));
+
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Pz\',0,");
+			strExecute += (rsza->GetCollect(_T("pzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzl1"))) * UnitF)));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("pzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("pzr1"))) * UnitF))); 
+			strExecute += _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
+
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mx\',0,");
+			strExecute += (rsza->GetCollect(_T("mxl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("mxr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mxr1")))))); 
+			strExecute += _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
+
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'My\',0,");
+			strExecute += (rsza->GetCollect(_T("myl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("myr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("myr1")))))); 
+			strExecute += _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
+
+			strExecute = _T("INSERT INTO tmpPhsLoad (duty,design,cool,heat) VALUES (\'Mz\',0,");
+			strExecute += (rsza->GetCollect(_T("mzl1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzl1"))))));
+			strExecute += _T(","); 
+			strExecute += (rsza->GetCollect(_T("mzr1")).vt==VT_NULL ? _T("0") : ftos(fabs(vtof(rsza->GetCollect(_T("mzr1")))))); 
+			strExecute += _T(")");
+			EDIBgbl::dbPRJ->Execute((_bstr_t)strExecute, NULL, adCmdText );
 			
 			//开始绘制表格
 			p0.SetPoint(pt3x, pt3y);
-			rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPipeDisplacement"));
+			rsText->Open((_bstr_t)_T("SELECT * FROM tmpPipeDisplacement"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzDIST, atan((double)1.0) * 0, rsText, 100, 1.0f , (_T("DLOAD")),lpszTextStyle,(_T("%.f")),iAlign);
-			rsText.Close();
+			rsText->Close();
 
 
 			//计算支吊架荷载表的基点
 			SQLx = _T("SELECT * FROM tableINFO WHERE ID=") + ltos(EDIBgbl::TzDIST);
-			rs1.m_pDatabase=&EDIBgbl::dbTable;
-			rs1.Open(dbOpenSnapshot,SQLx );
+			rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			CString tmpStr;
-			if(rs1.IsEOF() && rs1.IsBOF())
+			if(rs1->BOF && rs1->adoEOF)
 			{
-				tmpStr.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::dbSORT.GetName(),_T("tableINFO"),SQLx);
+				tmpStr.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT),_T("tableINFO"),SQLx);
 				throw tmpStr;
 			}
-			rs1.MoveFirst();
+			rs1->MoveFirst();
 			p0.SetX(pt3x);
 
 
 			//往上移7mm，以尽量避免与Bom碰撞,不可改变全局变量pt3y的值
 			//pt3y = pt3y + 7
-			COleVariant vTmp;
-			rs1.GetFieldValue(_T("CADh0"),vTmp);
+			_variant_t vTmp;
+			rs1->get_Collect((_variant_t)_T("CADh0"),&vTmp);
 			if(vTmp.vt==VT_NULL)
 				p0.SetY(pt3y - 17);
 			else
 				p0.SetY(pt3y - fabs(vtof(vTmp)));
-			rs1.GetFieldValue(_T("CADRowHeight"),vTmp);
+			rs1->get_Collect((_variant_t)_T("CADRowHeight"),&vTmp);
 			if(vTmp.vt==VT_NULL)
 				p0.SetY(p0[1] - 7 * 3);
 			else
 				p0.SetY(p0[1] - vtof(vTmp) * 3);
 			p0.SetY(p0[1] - 14 + 7);
 			p0.SetZ(0.0);
-			rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPhsLoad"));
+			rsText->Open((_bstr_t)_T("SELECT * FROM tmpPhsLoad"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzLOAD, atan((double)1.0) * 0, rsText, 100, 1.0f , _T("DLOAD"),lpszTextStyle,(_T("%.f")),iAlign);
 			
 			
@@ -3287,7 +3315,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3298,7 +3326,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					//1.支吊架布置图见x1,支吊架一览表见x2
 					tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 					iNo++;
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3312,7 +3340,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3323,7 +3351,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					//2.本期工程按图制作x套
 					tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 					iNo++;
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3341,7 +3369,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//%d. 管部尺寸已包含偏装值
 						tmpStr.Format(IDS_PZ_D,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3350,7 +3378,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//%d. 根部尺寸已包含偏装值
 						tmpStr.Format(IDS_PZ_G,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3362,7 +3390,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 				{
 					tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3376,26 +3404,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					{
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(IDS_WeldingDemandSeeManual,GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);				
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3405,27 +3433,27 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				{
 					//5.焊接要求及焊缝高度见如下手册:
 					tmpStr.Format(IDS_WeldingDemandAsFollow,iNo++);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					
 					p0.SetX(p0[0] + 43);
 					//管部:焊接要求及焊缝高度见xx
 					tmpStr.Format(IDS_WeldingDemandSeeManual,GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
 					//连接件:焊接要求及焊缝高度见xx
 					tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
 					//根部:焊接要求及焊缝高度见xx
 					tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
 					
-					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+					objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 					objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                     EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 					p0.SetY(p0[1] - 7);
@@ -3464,8 +3492,8 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				//如果是非弹性支架，采用专门的详细荷载位移表格式，
 				//含有推力/力矩/线位移/角位移共12个数据，2行以上，冷态/热态两种工况
 				if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpPipeDisplacement")))
-					EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpPipeDisplacement"));
-				EDIBgbl::dbPRJ.Execute( _T("CREATE TABLE tmpPipeDisplacement (Jsdbh1 LONG,duty char(20),px REAL,py REAL,pz REAL,mx REAL,my REAL,mz REAL,dx REAL,dy REAL,dz REAL,rx REAL,ry REAL,rz REAL,haz REAL,ZDbz char(20))"));
+					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpPipeDisplacement"), NULL, adCmdText);
+				EDIBgbl::dbPRJ->Execute((_bstr_t) _T("CREATE TABLE tmpPipeDisplacement (Jsdbh1 LONG,duty char(20),px REAL,py REAL,pz REAL,mx REAL,my REAL,mz REAL,dx REAL,dy REAL,dz REAL,rx REAL,ry REAL,rz REAL,haz REAL,ZDbz char(20))"), NULL, adCmdText);
 				//手工计算，计算节点号为空，此时给jsdbh1字段赋值“无”，否则，该字段无值，INSERT INTO语句会出错。
 				/*//pfg20050416 测试 原代码
 				SQLx=GetResStr(IDS_INSERT_INTO_tmpPipeDisplacement2)
@@ -3488,7 +3516,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					+ vtos(rsza->GetCollect(_T("haz"))) + _T(",\'tj=") + ftos(t0) + _T("%%dC\')");
 				//pfg20050416				
 
-				EDIBgbl::dbPRJ.Execute( SQLx);
+				EDIBgbl::dbPRJ->Execute((_bstr_t) SQLx, NULL, adCmdText);
 				SQLx=GetResStr(IDS_INSERT_INTO_tmpPipeDisplacement)  
 					
 					+ ftos(fabs(UnitF*vtof(rsza->GetCollect(_T("pxl1"))))) + _T(",") + ftos(fabs(UnitF*vtof(rsza->GetCollect(_T("pyl1")))))  + _T(",") + ftos(fabs(UnitF*vtof(rsza->GetCollect(_T("pzl1"))))) + _T(",") 
@@ -3496,14 +3524,16 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					+ vtos(rsza->GetCollect(_T("xl1"))) + _T(",") + vtos(rsza->GetCollect(_T("yl1")))  + _T(",") + vtos(rsza->GetCollect(_T("zl1")))  + _T(",")
 					+ vtos(rsza->GetCollect(_T("rxl1"))) + _T(",") + vtos(rsza->GetCollect(_T("ryl1")))  + _T(",") + vtos(rsza->GetCollect(_T("rzl1"))) + _T(",") 
 					+ vtos(rsza->GetCollect(_T("haz"))) + _T(",\'t0=20%%dC\')");
-				EDIBgbl::dbPRJ.Execute( SQLx);
+				EDIBgbl::dbPRJ->Execute((_bstr_t) SQLx, NULL, adCmdText);
 				
 				//CString SQLx;
 				//开始绘制表格
 				p0.SetPoint(pt3x, pt3y);
-				rsText.Open(dbOpenSnapshot,_T("SELECT * FROM tmpPipeDisplacement"));
+				SQLx = _T("SELECT * FROM tmpPipeDisplacement");
+				rsText->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				EDIBAcad::DrawTableACAD(p0, EDIBgbl::TzDLOADS, atan((double)1.0) * 0, rsText, 100, 1.0f , _T("DLOAD"),lpszTextStyle,(_T("%.f")),iAlign);
-				rsText.Close();
+				rsText->Close();
 				
 				
 				
@@ -3522,7 +3552,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//1.支吊架布置图见x1,支吊架一览表见x2
 							tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3533,7 +3563,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3546,7 +3576,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//2.本期工程按图制作x套
 							tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3557,7 +3587,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3578,7 +3608,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.管部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_D,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3588,7 +3618,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.根部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_G,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3600,7 +3630,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 					{
 						tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3614,26 +3644,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//5.焊接要求及焊缝高度见如下手册:
 							tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 
 							p0.SetX(p0[0] + 43);
 							//管部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//连接件:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//根部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3644,26 +3674,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3696,11 +3726,11 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			{
 				//西北院位移荷载表格式，含有paz/pgz/pjg/冷热位移等数据，一行。
 				if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpDisplacementLoad")) )
-					EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpDisplacementLoad"));
+					EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpDisplacementLoad"), NULL, adCmdText);
 				MakeZDJ_ZD(zdjh);
 				PhsYLBMake(zdjh);
-				SQLx = _T("SELECT * INTO tmpDisplacementLoad IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh);
-				EDIBgbl::dbPRJDB.Execute(SQLx);
+				SQLx = _T("SELECT * INTO tmpDisplacementLoad IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh);
+				EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 				//更新备注字段为温度值
 
 				if(EDIBAcad::g_bHzabs)
@@ -3708,12 +3738,13 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 				else
 					SQLx = _T("UPDATE tmpDisplacementLoad SET ZDbz=\'tj=") + ftos(t0) + _T("%%dC\' , pgz1 = pgz1, pjg1 = pjg1  WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh);
 
-				EDIBgbl::dbPRJ.Execute(SQLx);
+				EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 
 				//开始绘制表格
 				p0.SetPoint(pt3x,pt3y,0);
 				SQLx = _T("SELECT * FROM tmpDisplacementLoad WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh);
-				rsText.Open(dbOpenSnapshot,SQLx);
+				rsText->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//pfg20050519绝对压缩值
 				if(modPHScal::giPhsOutINFOTableType==3)
 				{
@@ -3742,7 +3773,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//1.支吊架布置图见x1,支吊架一览表见x2
 							tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3753,7 +3784,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//1.支吊架布置图见x1,支吊架一览表见x2
 						tmpStr.Format(IDS_MsgBox_60674,iNo,gsPhsArrangementDwgNo,gsPhsScheduleDwgNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3766,7 +3797,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//2.本期工程按图制作x套
 							tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3777,7 +3808,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//2.本期工程按图制作x套
 						tmpStr.Format(IDS_MsgBox_60676,iNo,vtoi(rsza->GetCollect(_T("num"))));
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3796,7 +3827,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.管部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_D,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3806,7 +3837,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//%d.根部尺寸已包含偏装值。
 							tmpStr.Format(IDS_PZ_G,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3817,7 +3848,7 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 					if( vtob(rsza->GetCollect(_T("ifLongVertPipe"))) )
 					{
 						tmpStr.Format(IDS_SINGLEROD_CARRYALLPJG,iNo++);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3832,26 +3863,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 							//5.焊接要求及焊缝高度见如下手册:
 							tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 							iNo++;
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetX(p0[0] + 43);
 							//管部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//连接件:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
 							
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
 							//根部:焊接要求及焊缝高度见xx
 							tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+							objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 							objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                             EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 							p0.SetY(p0[1] - 7);
@@ -3862,26 +3893,26 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 						//5.焊接要求及焊缝高度见如下手册:
 						tmpStr.Format(IDS_WeldingDemandAsFollow,iNo);
 						iNo++;
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetX(p0[0] + 43);
 						//管部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PA),gsPhsDescPASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//连接件:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_PART),gsPhsDescPARTSel);
 						
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
 						//根部:焊接要求及焊缝高度见xx
 						tmpStr.Format(GetResStr(IDS_WeldingDemandSeeManual),GetResStr(IDS_FrmSelSpecification_Option1_SA),gsPhsDescSASel);
-						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0));
+						objEnt=EDIBAcad::MoSpace.Invoke(_T("AddText"),3,&_variant_t(tmpStr),(LPVARIANT)p0,&_variant_t((double)4.0)).pdispVal;
 						objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM"))));
                         EDIBAcad::ApplyTextStyleProperty(objEnt, EDIBAcad::GetTextStyleName(_T("注释"), _T("BOM")),_T("注释"));
 						p0.SetY(p0[1] - 7);
@@ -3916,20 +3947,11 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 	{
 		ShowMessage(e);
 	}
-	catch(CDaoException *e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
 	catch(_com_error e)
 	{
 		AfxMessageBox(e.Description());
 	}
 	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
 	{
 		ReportError("Exception in PhsDisplacementLoadINFOMake()",__FILE__,__LINE__);
 	}
@@ -3940,7 +3962,10 @@ void modPHScal::PhsYLBMake(long zdjh)
 	//目的:生成支吊架号=zdjh的支吊架一览表
 	//此前，调用makezdj_zd过程，清除支吊架号=zdjh的支吊架一览表
 	//返回:支吊架一览表保存到TZD表。
-	CDaoRecordset rs, rs1;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rs1;
+	rs1.CreateInstance(__uuidof(Recordset));
 	_variant_t Bmk ;
 	_Recordset* rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
 	CString strDrawName;
@@ -3952,238 +3977,238 @@ void modPHScal::PhsYLBMake(long zdjh)
 	
 	try
 	{
-		rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rs1.Open(dbOpenDynaset,SQLx);
+		rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(zdjh!=0)
 		{
 			//生成西北院格式的支吊架明细表
 			PreCalCrudeData(rsza);
-			rs1.AddNew();
-			COleVariant vTmp;
+			rs1->AddNew();
+			_variant_t vTmp;
 			CString tmpStr;
 			if(gbDrawNoPreMethod)
 				tmpStr=EDIBAcad::GetDrawIDAndName((zdjh + glDrawNoStartNumber - 1), strDrawName);
 			else
 				tmpStr = EDIBAcad::GetDrawIDAndName((zdjh + glDrawNoStartNumber - 1), strDrawName);
 			if( sngSEL < sngPEL )
-				rs1.SetFieldValue(_T("HSid"),STR_VAR(GetResStr(IDS_BRANCH)));
+				rs1->put_Collect((_variant_t)_T("HSid"),STR_VAR(GetResStr(IDS_BRANCH)));
 			else				
-				rs1.SetFieldValue(_T("HSid"),STR_VAR(GetResStr(IDS_SUSPEND)));
+				rs1->put_Collect((_variant_t)_T("HSid"),STR_VAR(GetResStr(IDS_SUSPEND)));
 			
-			rs1.SetFieldValue(_T("ZDID"),STR_VAR(tmpStr));
-			rs1.SetFieldValue(_T("VolumeID"),COleVariant(EDIBgbl::SelVlmID));
-			rs1.SetFieldValue(_T("PLName"),STR_VAR(EDIBgbl::SelVlmName));
-			rs1.SetFieldValue(_T("PLN"),STR_VAR(EDIBgbl::SelJcdm));//石化行业用，管线编号，暂时用卷册号代替
-			rs1.SetFieldValue(_T("ConDwg"),STR_VAR(EDIBgbl::VolumeNo));
-			rs1.SetFieldValue(_T("TagNo"),STR_VAR(EDIBgbl::VolumeNo));
-			rs1.SetFieldValue(_T("PhsNo"),STR_VAR(EDIBgbl::PhsNo));
-			rs1.SetFieldValue(_T("zdjh"),rsza->GetCollect(_T("ZDJH")));
+			rs1->put_Collect((_variant_t)_T("ZDID"),STR_VAR(tmpStr));
+			rs1->put_Collect((_variant_t)_T("VolumeID"),_variant_t(EDIBgbl::SelVlmID));
+			rs1->put_Collect((_variant_t)_T("PLName"),STR_VAR(EDIBgbl::SelVlmName));
+			rs1->put_Collect((_variant_t)_T("PLN"),STR_VAR(EDIBgbl::SelJcdm));//石化行业用，管线编号，暂时用卷册号代替
+			rs1->put_Collect((_variant_t)_T("ConDwg"),STR_VAR(EDIBgbl::VolumeNo));
+			rs1->put_Collect((_variant_t)_T("TagNo"),STR_VAR(EDIBgbl::VolumeNo));
+			rs1->put_Collect((_variant_t)_T("PhsNo"),STR_VAR(EDIBgbl::PhsNo));
+			rs1->put_Collect((_variant_t)_T("zdjh"),rsza->GetCollect(_T("ZDJH")));
 			
-			rs1.SetFieldValue(_T("ZDmc"),STR_VAR(gsPhsName));         //写入“支吊架名称”
+			rs1->put_Collect((_variant_t)_T("ZDmc"),STR_VAR(gsPhsName));         //写入“支吊架名称”
 			CString strGG;//写入“管径”
 			if( EDIBgbl::bSymbol )
 				strGG = _T("%%C") + vtos(rsza->GetCollect("dj1"));
 			else
 				strGG = vtos(rsza->GetCollect("dj1"));
-			rs1.SetFieldValue(_T("ZDgg"),STR_VAR(strGG));
-			rs1.SetFieldValue(_T("MCAndGG"),STR_VAR(gsPhsName+"   "+strGG));//写入“名称及规格”
-			rs1.SetFieldValue(_T("BornSA"),STR_VAR(vtos(rsza->GetCollect("BornSA"))));  //写入“生根地点”
-			rs1.SetFieldValue(_T("BornSAEngName"),STR_VAR(vtos(rsza->GetCollect("BornSAEngName"))));  //写入“生根地点”
-			rs1.SetFieldValue(_T("BornSAEngChina"),STR_VAR(vtos(rsza->GetCollect("BornSAEngChina"))));  //写入“生根地点”
-			rs1.SetFieldValue(_T("ZDnum"),rsza->GetCollect(_T("Num")));
+			rs1->put_Collect((_variant_t)_T("ZDgg"),STR_VAR(strGG));
+			rs1->put_Collect((_variant_t)_T("MCAndGG"),STR_VAR(gsPhsName+"   "+strGG));//写入“名称及规格”
+			rs1->put_Collect((_variant_t)_T("BornSA"),STR_VAR(vtos(rsza->GetCollect("BornSA"))));  //写入“生根地点”
+			rs1->put_Collect((_variant_t)_T("BornSAEngName"),STR_VAR(vtos(rsza->GetCollect("BornSAEngName"))));  //写入“生根地点”
+			rs1->put_Collect((_variant_t)_T("BornSAEngChina"),STR_VAR(vtos(rsza->GetCollect("BornSAEngChina"))));  //写入“生根地点”
+			rs1->put_Collect((_variant_t)_T("ZDnum"),rsza->GetCollect(_T("Num")));
 			if(EDIBAcad::g_bHzabs)
-				rs1.SetFieldValue(_T("paz1"),COleVariant(fabs(vtof(rsza->GetCollect(_T("paz1"))) * (float)UnitF)));
+				rs1->put_Collect((_variant_t)_T("paz1"),_variant_t(fabs(vtof(rsza->GetCollect(_T("paz1"))) * (float)UnitF)));
 			else
-				rs1.SetFieldValue(_T("paz1"),COleVariant(vtof(rsza->GetCollect(_T("paz1"))) * (float)UnitF));
-			rs1.SetFieldValue(_T("pgz1"),COleVariant(vtof(rsza->GetCollect(_T("pgz1"))) * (float)UnitF));
-			rs1.SetFieldValue(_T("pjg1"),COleVariant(vtof(rsza->GetCollect(_T("pjg1"))) * (float)UnitF));
-			rs1.SetFieldValue(_T("xr1"),rsza->GetCollect(_T("xr1")));
+				rs1->put_Collect((_variant_t)_T("paz1"),_variant_t(vtof(rsza->GetCollect(_T("paz1"))) * (float)UnitF));
+			rs1->put_Collect((_variant_t)_T("pgz1"),_variant_t(vtof(rsza->GetCollect(_T("pgz1"))) * (float)UnitF));
+			rs1->put_Collect((_variant_t)_T("pjg1"),_variant_t(vtof(rsza->GetCollect(_T("pjg1"))) * (float)UnitF));
+			rs1->put_Collect((_variant_t)_T("xr1"),rsza->GetCollect(_T("xr1")));
 			vTmp=rsza->GetCollect(_T("yr1"));
 			float fyr1=(int(vtof(vTmp)*10))/10.0;
-			rs1.SetFieldValue(_T("yr1"),COleVariant(fyr1));
-			rs1.SetFieldValue(_T("zr1"),rsza->GetCollect(_T("zr1")));
-			rs1.SetFieldValue(_T("xl1"),rsza->GetCollect(_T("xl1")));
-			rs1.SetFieldValue(_T("yl1"),rsza->GetCollect(_T("yl1")));
-			rs1.SetFieldValue(_T("zl1"),rsza->GetCollect(_T("zl1")));
-			rs1.SetFieldValue(_T("jsdbh1"),rsza->GetCollect(_T("jsdbh1")));
-			rs1.SetFieldValue(_T("temp"),rsza->GetCollect(_T("T01")));
-			rs1.SetFieldValue(_T("InstallPEL"),rsza->GetCollect(_T("dh1")));
-			rs1.SetFieldValue(_T("SEL"),rsza->GetCollect(_T("gh1")));
-			rs1.Update();
-			rs1.MoveLast();
+			rs1->put_Collect((_variant_t)_T("yr1"),_variant_t(fyr1));
+			rs1->put_Collect((_variant_t)_T("zr1"),rsza->GetCollect(_T("zr1")));
+			rs1->put_Collect((_variant_t)_T("xl1"),rsza->GetCollect(_T("xl1")));
+			rs1->put_Collect((_variant_t)_T("yl1"),rsza->GetCollect(_T("yl1")));
+			rs1->put_Collect((_variant_t)_T("zl1"),rsza->GetCollect(_T("zl1")));
+			rs1->put_Collect((_variant_t)_T("jsdbh1"),rsza->GetCollect(_T("jsdbh1")));
+			rs1->put_Collect((_variant_t)_T("temp"),rsza->GetCollect(_T("T01")));
+			rs1->put_Collect((_variant_t)_T("InstallPEL"),rsza->GetCollect(_T("dh1")));
+			rs1->put_Collect((_variant_t)_T("SEL"),rsza->GetCollect(_T("gh1")));
+			rs1->Update();
+			rs1->MoveLast();
 
 			UpdatePipeDimHeight();
 			//现在处理管部
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND Index=") + ltos(iPA);
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			
-			if( !rs.IsEOF() && !rs.IsBOF() ){
+			if( !rs->BOF && !rs->adoEOF ){
 			
 				
-				while( !rs.IsEOF()){
-					rs1.Edit();
+				while( !rs->adoEOF){
 					if( b1st ){
 						//(vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))
-						rs1.SetFieldValue(_T("PAbh"), STR_VAR(vtos(GetFields(rs1,_T("PAbh")))+ _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("PAweight"), COleVariant(vtof(GetFields(rs1,_T("PAweight"))) +vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("PAbh"), STR_VAR(vtos(GetFields(rs1,_T("PAbh")))+ _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("PAweight"), _variant_t(vtof(GetFields(rs1,_T("PAweight"))) +vtof(GetFields(rs,_T("CLzz")))));
 					}else{
-						rs1.SetFieldValue(_T("PAbh"),STR_VAR((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("PAweight"),COleVariant(vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("PAbh"),STR_VAR((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("PAweight"),_variant_t(vtof(GetFields(rs,_T("CLzz")))));
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();					
+					rs1->Update();
+					rs->MoveNext();					
 				}
 				
 			}
 			//复位标志
 			b1st = false;
-			if(rs.IsOpen())
-				rs.Close();
+			if(rs->State == adStateOpen)
+				rs->Close();
 			//现在处理恒力弹簧或弹簧
 			SQLx=CString( _T("SELECT ClassID,GDW1,CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND (ClassID=") + ltos(iCSPR) + _T(" OR ClassID=") + ltos(iSPR) + _T(") GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz,GDW1,ClassID");
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if( !rs.IsEOF() && !rs.IsBOF() )
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( !rs->BOF && !rs->adoEOF )
 			{
 				int iSEQofSPR=0;
-				while( !rs.IsEOF())
+				while( !rs->adoEOF)
 				{
-					rs1.Edit();
 					if( b1st )
 					{						
-						rs1.SetFieldValue(_T("SPRbh"), STR_VAR(vtos(GetFields(rs1,_T("SPRbh"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("SPRweight"), COleVariant(vtof(GetFields(rs1,_T("SPRweight"))) +vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("SPRbh"), STR_VAR(vtos(GetFields(rs1,_T("SPRbh"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("SPRweight"), _variant_t(vtof(GetFields(rs1,_T("SPRweight"))) +vtof(GetFields(rs,_T("CLzz1")))));
 						//对于弹簧，函数GetPhsBHandSizes已经将相对安装压缩值写到TZB的GDW1字段，以便在函数PhsYLBmake输出一览表使用
 						if( vtoi(GetFields(rs,_T("ClassID"))) == iSPR ) 
 						{								
 							sTmp.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz + sSprInfo[iSEQofSPR].Hpcmprs)*10)/10.0);
-							rs1.SetFieldValue(_T("hazTotal"),STR_VAR(vtos(GetFields(rs1,_T("hazTotal"))) + _T(";") + sTmp));
+							rs1->put_Collect((_variant_t)_T("hazTotal"),STR_VAR(vtos(GetFields(rs1,_T("hazTotal"))) + _T(";") + sTmp));
 							sTmp.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz - sSprInfo[iSEQofSPR].HeatDisp + sSprInfo[iSEQofSPR].Hpcmprs)*10)/10.0);
-							rs1.SetFieldValue(_T("hgzTotal"),STR_VAR(vtos(GetFields(rs1,_T("hgzTotal"))) + _T(";") + sTmp));
+							rs1->put_Collect((_variant_t)_T("hgzTotal"),STR_VAR(vtos(GetFields(rs1,_T("hgzTotal"))) + _T(";") + sTmp));
 							strHaz.Format(_T("%g"),int(sSprInfo[iSEQofSPR].haz*10)/(double)10.0);
 							strHgz.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz - sSprInfo[iSEQofSPR].HeatDisp)*10)/10.0);
-							rs1.SetFieldValue(_T("Haz"),STR_VAR(vtos(GetFields(rs1,_T("Haz"))) + _T(";") + strHaz));
-							rs1.SetFieldValue(_T("Hgz"),STR_VAR(vtos(GetFields(rs1,_T("Hgz"))) + _T(";") + strHgz));
-							rs1.SetFieldValue(_T("SPRpcmprs"), STR_VAR(vtos(GetFields(rs1,_T("SPRpcmprs"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].Hpcmprs)));
-							rs1.SetFieldValue(_T("Diameter"), STR_VAR(vtos(GetFields(rs1,_T("Diameter"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].FiJ)));
-							rs1.SetFieldValue(_T("SpringNo"), STR_VAR(vtos(GetFields(rs1,_T("SpringNo"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].DH)));
-							rs1.SetFieldValue(_T("BH"), STR_VAR(vtos(GetFields(rs1,_T("BH"))) + _T(";") + modPHScal::sSprInfo[iSEQofSPR].BH));
+							rs1->put_Collect((_variant_t)_T("Haz"),STR_VAR(vtos(GetFields(rs1,_T("Haz"))) + _T(";") + strHaz));
+							rs1->put_Collect((_variant_t)_T("Hgz"),STR_VAR(vtos(GetFields(rs1,_T("Hgz"))) + _T(";") + strHgz));
+							rs1->put_Collect((_variant_t)_T("SPRpcmprs"), STR_VAR(vtos(GetFields(rs1,_T("SPRpcmprs"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].Hpcmprs)));
+							rs1->put_Collect((_variant_t)_T("Diameter"), STR_VAR(vtos(GetFields(rs1,_T("Diameter"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].FiJ)));
+							rs1->put_Collect((_variant_t)_T("SpringNo"), STR_VAR(vtos(GetFields(rs1,_T("SpringNo"))) + _T(";") + ltos((long)modPHScal::sSprInfo[iSEQofSPR].DH)));
+							rs1->put_Collect((_variant_t)_T("BH"), STR_VAR(vtos(GetFields(rs1,_T("BH"))) + _T(";") + modPHScal::sSprInfo[iSEQofSPR].BH));
 						}
 					}
 					else
 					{						
-						rs1.SetFieldValue(_T("SPRbh"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("SPRweight"),COleVariant(vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("SPRbh"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("SPRweight"),_variant_t(vtof(GetFields(rs,_T("CLzz1")))));
 						//对于弹簧，函数GetPhsBHandSizes已经将相对安装压缩值写到TZB的GDW1字段，以便在函数PhsYLBmake输出一览表使用
 						if( vtoi(GetFields(rs,_T("ClassID"))) == iSPR ) 
 						{
 							sTmp.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz + sSprInfo[iSEQofSPR].Hpcmprs)*10)/10.0);
-							rs1.SetFieldValue(_T("hazTotal"),STR_VAR(sTmp));	
+							rs1->put_Collect((_variant_t)_T("hazTotal"),STR_VAR(sTmp));	
 							sTmp.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz - sSprInfo[iSEQofSPR].HeatDisp + sSprInfo[iSEQofSPR].Hpcmprs)*10)/10.0);
-							rs1.SetFieldValue(_T("hgzTotal"),STR_VAR(sTmp));	
+							rs1->put_Collect((_variant_t)_T("hgzTotal"),STR_VAR(sTmp));	
 							strHaz.Format(_T("%g"),int(sSprInfo[iSEQofSPR].haz*10)/(double)10.0);
 							strHgz.Format(_T("%g"),int((sSprInfo[iSEQofSPR].haz - sSprInfo[iSEQofSPR].HeatDisp)*10)/10.0);
-							rs1.SetFieldValue(_T("Haz"),STR_VAR(strHaz));							
-							rs1.SetFieldValue(_T("Hgz"),STR_VAR(strHgz));							
-							rs1.SetFieldValue(_T("SPRpcmprs"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].Hpcmprs)));
-							rs1.SetFieldValue(_T("Diameter"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].FiJ)));
-							rs1.SetFieldValue(_T("SpringNo"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].DH)));
-							rs1.SetFieldValue(_T("BH"),STR_VAR(modPHScal::sSprInfo[iSEQofSPR].BH));
+							rs1->put_Collect((_variant_t)_T("Haz"),STR_VAR(strHaz));							
+							rs1->put_Collect((_variant_t)_T("Hgz"),STR_VAR(strHgz));							
+							rs1->put_Collect((_variant_t)_T("SPRpcmprs"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].Hpcmprs)));
+							rs1->put_Collect((_variant_t)_T("Diameter"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].FiJ)));
+							rs1->put_Collect((_variant_t)_T("SpringNo"),STR_VAR(ltos((long)modPHScal::sSprInfo[iSEQofSPR].DH)));
+							rs1->put_Collect((_variant_t)_T("BH"),STR_VAR(modPHScal::sSprInfo[iSEQofSPR].BH));
 						}
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 					iSEQofSPR++;
 				}				
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();      
+			rs->Close();      
       
 			//现在处理拉杆
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND ClassID=") + ltos(iROD) + _T(" GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if( !rs.IsEOF() && !rs.IsBOF() ){
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( !rs->BOF && !rs->adoEOF ){
 				
-				while( !rs.IsEOF()){
+				while( !rs->adoEOF){
 					//当循环不止一次时，rs1.EDIT()方法必须在每次设置字段之前使用。否则显示无Edit方法。
-					rs1.Edit();
 					if( b1st ){
-						rs1.SetFieldValue(_T("RODDiaLen"), STR_VAR(vtos(GetFields(rs1,_T("RODDiaLen"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("RODweight"),COleVariant(vtof(GetFields(rs1,_T("RODweight"))) +vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("RODDiaLen"), STR_VAR(vtos(GetFields(rs1,_T("RODDiaLen"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("RODweight"),_variant_t(vtof(GetFields(rs1,_T("RODweight"))) +vtof(GetFields(rs,_T("CLzz1")))));
 					}else{
-						rs1.SetFieldValue(_T("RODDiaLen"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("RODweight"),COleVariant(vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("RODDiaLen"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("RODweight"),_variant_t(vtof(GetFields(rs,_T("CLzz1")))));
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}
 				
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();
+			rs->Close();
       
       
 			//现在处理非弹性连接件（不包括拉杆）
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND NOT IsNull(Index) AND Index=") + ltos(iConnectPART) + _T(" AND ClassID<>") + ltos(iROD) + _T(" AND ClassID<>") + ltos(iCSPR) + _T(" AND ClassID<>") + ltos(iSPR) + _T(" AND IsSAPart<>-1 GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if( !rs.IsEOF() && !rs.IsBOF() ){
-				while( !rs.IsEOF()){
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( !rs->BOF && !rs->adoEOF ){
+				while( !rs->adoEOF){
 					//当循环不止一次时，rs1.EDIT()方法必须在每次设置字段之前使用。否则显示无Edit方法。
-					rs1.Edit();
 					if( b1st ){
-						rs1.SetFieldValue(_T("CntPart"), STR_VAR(vtos(GetFields(rs1,_T("CntPart"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("CntPartweight"),COleVariant(vtof(GetFields(rs1,_T("CntPartweight")))+vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("CntPart"), STR_VAR(vtos(GetFields(rs1,_T("CntPart"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("CntPartweight"),_variant_t(vtof(GetFields(rs1,_T("CntPartweight")))+vtof(GetFields(rs,_T("CLzz1")))));
 					}else{
-						rs1.SetFieldValue(_T("CntPart"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("CntPart"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
 						//是第一个，设置标志。
-						rs1.SetFieldValue(_T("CntPartweight"),COleVariant(vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("CntPartweight"),_variant_t(vtof(GetFields(rs,_T("CLzz1")))));
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}				
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();
+			rs->Close();
           
           
 			//现在处理非根部中的螺母,螺栓
 			//由于在明细一览表中附件中没有统计"F3"(根部已经统计),由西安华瑞提出.
 			//原代码SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND (ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) + _T(") AND Not IsNull(SEQ) GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
 			SQLx=CString( _T("SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND (ClassID=") + ltos(iBolts) + _T(" OR ClassID=") + ltos(iNuts) +_T("OR (ID='F3' AND IsSAPart <> -1 )")+ _T(") AND Not IsNull(SEQ) GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz");
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if( !rs.IsEOF() && !rs.IsBOF() ){
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( !rs->BOF && !rs->adoEOF ){
 				
-				while( !rs.IsEOF()){
-					rs1.Edit();
+				while( !rs->adoEOF){
 					if( b1st ){
-						rs1.SetFieldValue(_T("Attachment"), STR_VAR(vtos(GetFields(rs1,_T("Attachment"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("Attachmentweight"),COleVariant(vtof(GetFields(rs1,_T("Attachmentweight")))+vtof(GetFields(rs,_T("CLzz1")))));
-						rs1.SetFieldValue(_T("Attachment1"), STR_VAR(vtos(GetFields(rs1,_T("Attachment1"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("Attachmentweight1"),COleVariant(vtof(GetFields(rs1,_T("Attachmentweight1")))+vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("Attachment"), STR_VAR(vtos(GetFields(rs1,_T("Attachment"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight"),_variant_t(vtof(GetFields(rs1,_T("Attachmentweight")))+vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("Attachment1"), STR_VAR(vtos(GetFields(rs1,_T("Attachment1"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight1"),_variant_t(vtof(GetFields(rs1,_T("Attachmentweight1")))+vtof(GetFields(rs,_T("CLzz1")))));
 					}else{
-						rs1.SetFieldValue(_T("Attachment"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachment"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
 						//是第一个，设置标志。
-						rs1.SetFieldValue(_T("Attachmentweight"),COleVariant(vtof(GetFields(rs,_T("CLzz1")))));
-						rs1.SetFieldValue(_T("Attachment1"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight"),_variant_t(vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("Attachment1"),STR_VAR((vtoi(GetFields(rs,_T("CLnum1"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum1"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
 						//是第一个，设置标志。
-						rs1.SetFieldValue(_T("Attachmentweight1"),COleVariant(vtof(GetFields(rs,_T("CLzz1")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight1"),_variant_t(vtof(GetFields(rs,_T("CLzz1")))));
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}
 				
 			}
-			rs.Close();
+			rs->Close();
 			//复位标志
 			//需要把下面的根部附件连接到螺栓螺母字符串，故关闭下面开关。
 			//b1st = false
@@ -4191,115 +4216,104 @@ void modPHScal::PhsYLBMake(long zdjh)
 			//SELECT CLmc,CLgg,CLid,CLcl,CLdw,CLdz,sum(CLnum) as CLnum1,sum(CLzz) as CLzz1 FROM TMP2 GROUP BY CLmc,CLgg,CLid,CLcl,CLdw,CLdz,CLnum,CLzz
 			//现在处理根部附件(不含型钢)
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND IsSAPart=-1 AND (ClassID=") + ltos(iAttached) + _T(" OR ClassID=") + ltos(iBolts )+ _T(" OR ClassID=") + ltos(iNuts) + _T(")");
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if(!( rs.IsEOF() && rs.IsBOF() || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) )){
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(!( rs->BOF && rs->adoEOF || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) )){
 			
 				//只选择根部材料需要统计的支吊架
 				
-				while( !rs.IsEOF()){
-					rs1.Edit();
+				while( !rs->adoEOF){
 					if( b1st ){
-						rs1.SetFieldValue(_T("Attachment"), STR_VAR(vtos(GetFields(rs1,_T("Attachment"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("Attachmentweight"),COleVariant(vtof(GetFields(rs1,_T("Attachmentweight")))+vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("Attachment"), STR_VAR(vtos(GetFields(rs1,_T("Attachment"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight"),_variant_t(vtof(GetFields(rs1,_T("Attachmentweight")))+vtof(GetFields(rs,_T("CLzz")))));
 					}else{
-						rs1.SetFieldValue(_T("Attachment"),STR_VAR((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
-						rs1.SetFieldValue(_T("Attachmentweight"),COleVariant(vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("Attachment"),STR_VAR((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg")))));
+						rs1->put_Collect((_variant_t)_T("Attachmentweight"),_variant_t(vtof(GetFields(rs,_T("CLzz")))));
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}
 				
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();
+			rs->Close();
       
 			//现在处理根部型钢
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND IsSAPart=-1 AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts) + _T(" AND ClassID<>") + ltos(iAttached);
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if(!( rs.IsEOF() && rs.IsBOF() || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) ))
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(!( rs->BOF && rs->adoEOF || (vtoi(rsza->GetCollect(_T("bNotSumSA")))!=0) ))
 			{							
 				//只选择根部材料需要统计的支吊架
-				while( !rs.IsEOF())
+				while( !rs->adoEOF)
 				{
-					rs1.Edit();
 					if( b1st )
 					{
 						if( vtoi(GetFields(rs,_T("CLnum"))) ==1  )
-							rs1.SetFieldValue(_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs1,_T("SAssAndLen"))) + _T(";") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1")))));
+							rs1->put_Collect((_variant_t)_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs1,_T("SAssAndLen"))) + _T(";") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1")))));
 						else
-							rs1.SetFieldValue(_T("SAssAndLen"), STR_VAR(vtos(GetFields(rs1,_T("SAssAndLen"))) + _T(";") +vtos(GetFields(rs,_T("CLnum"))) + _T("x(") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1"))) + _T(")")));
+							rs1->put_Collect((_variant_t)_T("SAssAndLen"), STR_VAR(vtos(GetFields(rs1,_T("SAssAndLen"))) + _T(";") +vtos(GetFields(rs,_T("CLnum"))) + _T("x(") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1"))) + _T(")")));
 						
 					}
 					else
 					{
 						if( vtoi(GetFields(rs,_T("CLnum"))) ==1  )
-							rs1.SetFieldValue(_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1")))));
+							rs1->put_Collect((_variant_t)_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1")))));
 						else
-							rs1.SetFieldValue(_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs,_T("CLnum"))) + _T("x(") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1"))) + _T(")")));
+							rs1->put_Collect((_variant_t)_T("SAssAndLen"),STR_VAR(vtos(GetFields(rs,_T("CLnum"))) + _T("x(") +vtos(GetFields(rs,_T("CLgg"))) + _T(",L=") +vtos(GetFields(rs,_T("L1"))) + _T(")")));
 						
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}
 				//由西安华瑞提出,双根部在支吊架一览表中没有乘2,原来是表示单个根部的材料.
 				if(modPHScal::glNumSA==2)
 				{
-					rs1.Edit();
-					rs1.SetFieldValue(_T("SAssAndLen"),STR_VAR(_T("2x( ")+vtos(GetFields(rs1,_T("SAssAndLen")))+_T(" )")));
-					rs1.Update();
+					rs1->put_Collect((_variant_t)_T("SAssAndLen"),STR_VAR(_T("2x( ")+vtos(GetFields(rs1,_T("SAssAndLen")))+_T(" )")));
+					rs1->Update();
 				}
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();
+			rs->Close();
       
 			//现在处理根部整体
 			SQLx=CString( _T("SELECT * FROM [")) + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(zdjh) + _T(" AND Index=") + ltos(iSA) + _T(" AND ClassID<>") + ltos(iGCement);
-			rs.m_pDatabase=&EDIBgbl::dbPRJDB; rs.Open(dbOpenDynaset,SQLx);
-			if( !rs.IsEOF() && !rs.IsBOF() ){
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( !rs->BOF && !rs->adoEOF ){
 				
-				while( !rs.IsEOF()){
-					rs1.Edit();
-					rs1.SetFieldValue(_T("XBL1"),COleVariant(vtof(GetFields(rs,_T("XBL1")))));//悬臂长度，跟根部绑定 Add by luorijin 2008.10.30
+				while( !rs->adoEOF){
+					rs1->put_Collect((_variant_t)_T("XBL1"),_variant_t(vtof(GetFields(rs,_T("XBL1")))));//悬臂长度，跟根部绑定 Add by luorijin 2008.10.30
 					if( b1st ){
-						rs1.SetFieldValue(_T("SAbh"), STR_VAR((vtos(GetFields(rs1,_T("SAbh"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg"))))));
-						rs1.SetFieldValue(_T("SAweight"), COleVariant(vtof(GetFields(rs1,_T("SAweight"))) +vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("SAbh"), STR_VAR((vtos(GetFields(rs1,_T("SAbh"))) + _T(";") + (vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg"))))));
+						rs1->put_Collect((_variant_t)_T("SAweight"), _variant_t(vtof(GetFields(rs1,_T("SAweight"))) +vtof(GetFields(rs,_T("CLzz")))));
 					}else{
-						rs1.SetFieldValue(_T("SAbh"),STR_VAR(((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg"))))));
-						rs1.SetFieldValue(_T("SAweight"),COleVariant(vtof(GetFields(rs,_T("CLzz")))));
+						rs1->put_Collect((_variant_t)_T("SAbh"),STR_VAR(((vtoi(GetFields(rs,_T("CLnum"))) ==1 ? _T("") : vtos(GetFields(rs,_T("CLnum"))) + _T("x")) + vtos(GetFields(rs,_T("CLgg"))))));
+						rs1->put_Collect((_variant_t)_T("SAweight"),_variant_t(vtof(GetFields(rs,_T("CLzz")))));
 						//是第一个，设置标志。
 						b1st = true;
 					}
-					rs1.Update();
-					rs.MoveNext();
+					rs1->Update();
+					rs->MoveNext();
 				}
 				
 			}
 			//复位标志
 			b1st = false;
-			rs.Close();
-			rs1.Close();
+			rs->Close();
+			rs1->Close();
 			
 		}
-	}
-	catch(CDaoException* e)
-	{
-#ifdef _DEBUG
-		e->ReportError();
-#endif
-		e->Delete();
 	}
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -4321,86 +4335,53 @@ void modPHScal::CreateTmpIDCustomIDTable()
 		//Dim i As Integer, j As Integer
 		//首先判别PictureClipData表是否设置给Cavphs->rsID
 		//首先判别表是否已经打开。如果打开，则先关闭对象Cavphs->rsID
-		if (Cavphs->rsID.IsOpen())
-			Cavphs->rsID.Close();
+		if (Cavphs->rsID->State == adStateOpen)
+			Cavphs->rsID->Close();
    
 		_variant_t tmpvar;
-		/*
-		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PictureClipData")))
-		{
-			EDIBgbl::dbPRJ.Execute(_T("DELETE * FROM PictureClipData"));
-			EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPAID + _T("]");
-			dbZDJcrude.Execute(EDIBgbl::SQLx);
-		}
-		else
-		{
-			EDIBgbl::SQLx = CString(_T("SELECT * INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + tbnPAID + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnPA + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-			dbZDJcrude.Execute(EDIBgbl::SQLx);
-		}
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPARTID + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnPA + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-		dbZDJcrude.Execute( EDIBgbl::SQLx);
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSAID + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnPA + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-		dbZDJcrude.Execute(EDIBgbl::SQLx);
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnAttachmentID + _T("]");
-		dbZDJcrude.Execute(EDIBgbl::SQLx );
-		*/
-		//MsgBox dbPRJ.RecordsAffected
-		//EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'") )+ EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnBoltsNutsID + _T("]");
-		//dbZDJcrude.Execute(EDIBgbl::SQLx );
-		//弹性件的ID表字段可能多两个InstallHeightOfUP,InstallHeightOfDown
-		/*
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnHDid + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnHDCrude + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-		dbZDJcrude.Execute(EDIBgbl::SQLx );
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ)+ _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnSPRINGid + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnSPRINGCrude + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-		dbZDJcrude.Execute(EDIBgbl::SQLx );
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSectionSteelID + _T("] WHERE CustomID IN ( SELECT CustomID FROM ") + modPHScal::tbnSectionSteel + _T(" IN \'") + modPHScal::dbZDJcrude.GetName() + _T("\' )");
-		dbZDJcrude.Execute(EDIBgbl::SQLx );
-		//Screen.MousePointer = vbDefault
-		AfxGetApp()->EndWaitCursor();
-*/
    if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PictureClipData")))
 	{
-	   EDIBgbl::dbPRJ.Execute(_T("DELETE * FROM PictureClipData"));
+	   EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM PictureClipData"), NULL, adCmdText);
 		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPAID + _T("]");
-		dbZDJcrude.Execute(EDIBgbl::SQLx);
+		dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
    }
 	else
 	{
 		EDIBgbl::SQLx = CString(_T("SELECT * INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + tbnPAID + _T("]");
-		dbZDJcrude.Execute(EDIBgbl::SQLx);
+		dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
 	}
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPARTID + _T("]");
-   dbZDJcrude.Execute( EDIBgbl::SQLx);
+   dbZDJcrude->Execute((_bstr_t) EDIBgbl::SQLx, NULL, adCmdText);
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSAID + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx);
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnAttachmentID + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx );
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
    //MsgBox dbPRJ.RecordsAffected
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'") )+ EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnBoltsNutsID + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx );
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
 	
    //弹性件的ID表字段可能多两个InstallHeightOfUP,InstallHeightOfDown
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnHDid + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx );
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ)+ _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnSPRINGid + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx );
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
    EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSectionSteelID + _T("]");
-   dbZDJcrude.Execute(EDIBgbl::SQLx );   
+   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );   
 	
 		//打开一个ID-CustomID对照表快照，是否可以加快运行速度。
 		EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 	//if(Cavphs->rsID==NULL)
 	//Cavphs->rsID.CreateInstance(__uuidof(Recordset));
-		if(Cavphs->rsID.IsOpen())
-			Cavphs->rsID.Close();
+		if(Cavphs->rsID->State == adStateOpen)
+			Cavphs->rsID->Close();
 			//Cavphs->rsID->CursorLocation=adUseClient;
 			//Cavphs->rsID->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic,adLockOptimistic,adCmdText);
-		Cavphs->rsID.m_pDatabase=&EDIBgbl::dbPRJ;
-		Cavphs->rsID.Open(dbOpenDynaset,EDIBgbl::SQLx);
+		Cavphs->rsID->Open((_bstr_t)EDIBgbl::SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		Cavphs->brsIDStatus=TRUE;
 		//此后一般应该检查ID和修改模板名称
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4422,15 +4403,22 @@ void modPHScal::CreateTmpConnectTable()
 	{
 		//如果Cphs.rsConnect对象打开，关闭它。以便删除。
 		Cavphs->CloseRecordsets();
-		EDIBgbl::dbPRJ.Execute( _T("DROP TABLE [connect]"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t) _T("DROP TABLE [connect]"), NULL, adCmdText);
 	}
     //20071018(start) "dbSORT" 改为 "dbPHScode"
-	EDIBgbl::SQLx = _T("SELECT * INTO [connect] FROM connectPASA IN \'") + EDIBgbl::dbPHScode.GetName() + _T("\'");
-	EDIBgbl::dbPRJ.Execute(EDIBgbl::SQLx);
-   EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectCSPR IN \'") + EDIBgbl::dbPHScode.GetName() + _T("\'");
-	EDIBgbl::dbPRJ.Execute(EDIBgbl::SQLx);
-   EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectSPR IN \'") + EDIBgbl::dbPHScode.GetName() + _T("\'");
-   EDIBgbl::dbPRJ.Execute(EDIBgbl::SQLx);
+	EDIBgbl::SQLx = _T("SELECT * INTO [connect] FROM connectPASA IN \'");
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
+		EDIBgbl::SQLx += _T("\'");
+	EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+   EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectCSPR IN \'");
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
+		EDIBgbl::SQLx += _T("\'");
+	EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+   EDIBgbl::SQLx = _T("INSERT INTO [connect] SELECT * FROM connectSPR IN \'");
+		EDIBgbl::SQLx += EDIBgbl::GetDBName(EDIBgbl::dbPHScode);
+		EDIBgbl::SQLx += _T("\'");
+
+   EDIBgbl::dbPRJ->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
 	Cavphs->InitListRs(); 
    AfxGetApp()->EndWaitCursor();//20071018(end) "dbSORT" 改为 "dbPHScode"
 }
@@ -4443,40 +4431,40 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 //输入:SprMaxSerialNum-总的允许最大串联弹簧片数，圆柱形弹簧一般=4，蝶簧可能=5
 	try
 	{
-			//CDaoDatabase sDb , dDb ;
-			CDaoTableDef sTD(&dbZDJcrude);
-			//CDaoTableDefInfo sTDInfo;
-			
-			//DAOFields * sFDs, * dFDs;
-			CDaoFieldInfo sFD;
+			FieldPtr sFD;
 			CString sTD1;
 
-			CDaoRecordset rs,rs1;
+			_RecordsetPtr rs;
+			rs.CreateInstance(__uuidof(Recordset));
+			_RecordsetPtr rs1;
+			rs1.CreateInstance(__uuidof(Recordset));
 
 			bool bLineSPR=false;//默认为碟簧(非线性弹簧)
 			bool bFinish =false;//写完碟簧某个规格号的载荷位移特性数据
-			int i=0 , j =0;
+			LONG i=0 , j =0;
 			CString SQLx=_T("");
-			COleVariant v;
+			_variant_t v;
    
 		   //过程可能较长
 		   AfxGetApp()->BeginWaitCursor();
    
 		   SQLx = _T("SELECT * FROM [") + tbnSPRINGproperty + _T("]");
-		   rs.m_pDatabase = &dbZDJcrude;
-		   rs.Open(dbOpenDynaset,SQLx);
+		   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 
-		   rs1.m_pDatabase = &EDIBgbl::dbPRJ;
-		   rs1.Open(dbOpenDynaset, _T("select * from tmpSPRProperty"));
+		   rs1->Open((_bstr_t)_T("select * from tmpSPRProperty"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
 
 		   //根据字段内容确定是否是线性弹簧特性表
 		   //线性弹簧有刚度字段G
 		   
-		   int fc=rs.GetFieldCount(); 
+		   int fc=rs->Fields->Count; 
 		   for (i=0;i<fc;i++)
 		   {
-			   rs.GetFieldInfo(i,sFD);
-			   if(sFD.m_strName==_T("G") || sFD.m_strName==_T("g"))
+			   rs->Fields->get_Item((_variant_t)i, &sFD);
+			   CString strName;
+			   strName = (LPTSTR)sFD->Name;
+			   if(strName ==_T("G") || strName ==_T("g"))
 			   {
 				   bLineSPR=true;
 				   break;
@@ -4486,21 +4474,21 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 
 		   //临时弹簧特性表建立在dbprj中(本地),加快访问速度
 			if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("tmpSPRProperty")))		   
-				EDIBgbl::dbPRJ.Execute (_T("DELETE * FROM tmpSPRProperty"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM tmpSPRProperty"), NULL, adCmdText);
 			else
-				EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpSPRProperty (SerialNum SHORT,seq SHORT,Dist SINGLE,Pgz SINGLE,Pgzmax SINGLE,PreCmprs SINGLE,Hopmax SINGLE)"));
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpSPRProperty (SerialNum SHORT,seq SHORT,Dist SINGLE,Pgz SINGLE,Pgzmax SINGLE,PreCmprs SINGLE,Hopmax SINGLE)"), NULL, adCmdText);
 
 			long n=0,m=0;//记录计数
    
 		   if( bLineSPR) 
 			{
-				while (!rs.IsEOF())
+				while (!rs->adoEOF)
 				{
 					//先取出值，记录计数
-					rs.GetFieldValue(_T("HopMax"),v);
+					rs->get_Collect((_variant_t)_T("HopMax"),&v);
 					long Hopmax=vtof(v);
 					n=n+(Hopmax+1)*SprMaxSerialNum;
-					rs.MoveNext();
+					rs->MoveNext();
 				}
 		   }
 
@@ -4511,19 +4499,19 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 			   frmStatus.SetWindowText(GetResStr(IDS_InitializeAutoPHS));
 			   frmStatus.UpdateData(false);
 			   frmStatus.ShowWindow(SW_SHOW);
-			   rs.MoveFirst();
-				while (!rs.IsEOF())
+			   rs->MoveFirst();
+				while (!rs->adoEOF)
 				{
 					//先取出值，加快速度
-					rs.GetFieldValue(_T("HopMax"),v);
+					rs->get_Collect((_variant_t)_T("HopMax"),&v);
 					long Hopmax=vtof(v);
-					rs.GetFieldValue(_T("PreCmprs"),v);
+					rs->get_Collect((_variant_t)_T("PreCmprs"),&v);
 					float PreCmprs=vtof(v);
-					rs.GetFieldValue(_T("G"),v);
+					rs->get_Collect((_variant_t)_T("G"),&v);
 					float G=vtof(v);
-					rs.GetFieldValue(_T("SEQ"),v);
+					rs->get_Collect((_variant_t)_T("SEQ"),&v);
 					CString SEQ=vtos(v);
-					int SEQ2 = vtoi(v);
+					long SEQ2 = vtoi(v);
 					 //从最小的规格号开始
 					 //从最小的串联数j=1开始
 
@@ -4535,18 +4523,18 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 						 
 						for (i = 0;i<= Hopmax;i++)
 						{
-							rs1.AddNew();
-							rs1.SetFieldValue(_T("SerialNum"), (long)j);
-							rs1.SetFieldValue(_T("seq"), (long)(SEQ2));
-							rs1.SetFieldValue(_T("Dist"), (long)(i * j));
-							rs1.SetFieldValue(_T("Pgz"), (i +PreCmprs) * G);
-							rs1.SetFieldValue(_T("Pgzmax"), (Hopmax + PreCmprs) *G);
-							rs1.SetFieldValue(_T("Hopmax"), (long)(Hopmax * j));
-							rs1.SetFieldValue(_T("PreCmprs"), PreCmprs * j);
-							rs1.Update();
+							rs1->AddNew();
+							rs1->put_Collect((_variant_t)_T("SerialNum"), (_variant_t)j);
+							rs1->put_Collect((_variant_t)_T("seq"), (_variant_t)(SEQ2));
+							rs1->put_Collect((_variant_t)_T("Dist"), (_variant_t)(i * j));
+							rs1->put_Collect((_variant_t)_T("Pgz"), (_variant_t)((i +PreCmprs) * G));
+							rs1->put_Collect((_variant_t)_T("Pgzmax"), (_variant_t)((Hopmax + PreCmprs) *G));
+							rs1->put_Collect((_variant_t)_T("Hopmax"), (_variant_t)(Hopmax * j));
+							rs1->put_Collect((_variant_t)_T("PreCmprs"), (_variant_t)(PreCmprs * j));
+							rs1->Update();
 /*
 							SQLx=_T("INSERT INTO tmpSPRProperty (SerialNum,seq,Dist,Pgz,Pgzmax,Hopmax,PreCmprs) VALUES (") + ltos(j) + _T(",") + SEQ +  _T(",") + ltos(i * j) + _T(",") + ftos((i +PreCmprs) * G) +  _T(",") + ftos((Hopmax + PreCmprs) *G) + _T(",") + ftos(Hopmax * j )+ _T(",") + ftos(PreCmprs * j) + _T(")");
-							EDIBgbl::dbPRJ.Execute (SQLx);
+							EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
 */
 							m++;
 							frmStatus.UpdateStatus((float)m /(float) n,true);
@@ -4556,18 +4544,19 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 
 //					EXECUTE_TIME_END
 
-					 rs.MoveNext();
+					 rs->MoveNext();
 				}
 				frmStatus.ShowWindow(SW_HIDE);
 			}
 			else
 			{
 			  //非线性弹簧特性表的生成，依赖于厂家产品样本的格式，此处针对江阴石化设备厂的蝶簧样本格式编制
-				dbZDJcrude.Execute (_T("INSERT INTO tmpSPRProperty IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' SELECT SerialNum,seq,Dist,Pgz,Pgzmax,Hopmax,PreCmprs FROM [") + tbnSPRINGproperty + _T("]"));
+				SQLx = _T("INSERT INTO tmpSPRProperty IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT SerialNum,seq,Dist,Pgz,Pgzmax,Hopmax,PreCmprs FROM [") + tbnSPRINGproperty + _T("]");
+				dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		   }
 		   
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError ();
 		e->Delete ();
@@ -4579,7 +4568,7 @@ void modPHScal::CreateTmpSPRPropertyTableUnfinish(int /*Optional*/ SprMaxSerialN
 {
 }
 
-void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType)
+void modPHScal::SetSpringPhsInfo(_RecordsetPtr rsTmpSelSpring, _RecordsetPtr rsTZA, bool  bLineSPR,CString& mZdjType)
 {
  //目的：设置原始数据表中有关弹簧支吊架的计算结果数据
 	try
@@ -4593,10 +4582,10 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
 		sTmp=GetResStr(IDS_NullRsOrRss);
 		throw sTmp;
 	}
-	COleVariant v1,v2,v3;
-	rsTmpSelSpring->GetFieldValue(_T("SerialNum"),v1);
-	rsTmpSelSpring->GetFieldValue(_T("Installload"),v2);
-	rsTmpSelSpring->GetFieldValue(_T("Opload"),v3);
+	_variant_t v1,v2,v3;
+	rsTmpSelSpring->get_Collect((_variant_t)_T("SerialNum"), &v1);
+	rsTmpSelSpring->get_Collect((_variant_t)_T("Installload"),&v2);
+	rsTmpSelSpring->get_Collect((_variant_t)_T("Opload"),&v3);
       iSumSerialNum = vtoi(v1);
       sngInstallLoad = vtof(v2);
       sngOpLoad = vtof(v3);
@@ -4605,7 +4594,7 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
 	  mZdjType=sTmp;
 	  sTmp.Format(_T("%d"),gintParallelNum);
 	  mZdjType+=sTmp;
-	  rsTmpSelSpring->GetFieldValue(_T("SEQ"),v1);
+	  rsTmpSelSpring->get_Collect((_variant_t)_T("SEQ"),&v1);
 	  sTmp.Format(_T("%02d"),vtoi(v1));
 	  mZdjType+=sTmp;
       //《火力发电厂汽水管道设计技术规定(电力部,DL/T5054-1996)》p66
@@ -4616,7 +4605,7 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
       //故推论，
       //弹簧安装压缩值Haz=弹簧工作位移Dop-弹簧预压缩值Hprecmprs
       //见sub AutoSelSpringNo
-	  rsTmpSelSpring->GetFieldValue(_T("OpDist"),v1);
+	  rsTmpSelSpring->get_Collect((_variant_t)_T("OpDist"),&v1);
       mvHaz =vtof(v1) + yr;
       
       
@@ -4649,22 +4638,24 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
 		signOfPaz0 = Sgn;
 	 }
 
-	  rsTmpSelSpring->GetFieldValue(_T("CoefOfVarLoad"),v1);
+	  rsTmpSelSpring->get_Collect((_variant_t)_T("CoefOfVarLoad"),&v1);
       rsTZA->PutCollect(_T("CoefOfVarLoad"),_variant_t(vtof(v1)));
-      //rsTZA.Update();
+      //rsTZA->Update();
       CString SQLx;
 	  sTmp.Format(_T("%d"),_ttoi(mZdjType.Mid(2,2)));
       SQLx = _T("SELECT * FROM [") + tbnSPRINGproperty + _T("] WHERE seq=") + sTmp;
-	  CDaoRecordset rs1(&dbZDJcrude);
-	  rs1.Open(dbOpenSnapshot,SQLx);
-      if(rs1.IsEOF() && rs1.IsBOF())
+	  _RecordsetPtr rs1;
+	  rs1.CreateInstance(__uuidof(Recordset));
+	  rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
+      if(rs1->BOF && rs1->adoEOF)
          FrmTxsr.m_pViewTxsr->m_PagItem->m_SPRrigid=_T("");
       else
 	  {
          if( bLineSPR )
 		 {
-            rs1.MoveLast();
-			rs1.GetFieldValue(_T("G"),v1);
+            rs1->MoveLast();
+			rs1->get_Collect((_variant_t)_T("G"),&v1);
 			FrmTxsr.m_pViewTxsr->m_PagItem->m_SPRrigid.Format(_T("%d%s%.2fkgf/mm"),iSumSerialNum,mZdjType.Mid(2,2)+GetResStr(IDS_MsgBox_60684),vtof(v1)/iSumSerialNum);
          }
 		else
@@ -4673,7 +4664,7 @@ void modPHScal::SetSpringPhsInfo(CDaoRecordset*  rsTmpSelSpring, _RecordsetPtr r
 	  FrmTxsr.m_pViewTxsr->UpdateData(false);
 	  FrmTxsr.m_pViewTxsr->m_PagItem->UpdateData(false);
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -4708,12 +4699,19 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 	   //保存原来的弹簧类型。
 	   CString strOldZdjType;
 
-		int i=0 ,j=0;
+		LONG i=0 ,j=0;
 		float deltaZ1 =0, Pmax=0 , Tmpyr=0 , TmpPgz=0 , TmpPaz=0 , mvCoefOfVarLoad=0 , mvHaz=0 ;
 //		int iSumSerialNum;
 		float paz0=0, mvF=0 ;
 		CString FD;
-		CDaoRecordset rs,rs1,rs2,rsw;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		rs1.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs2;
+		rs2.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsw;
+		rsw.CreateInstance(__uuidof(Recordset));
 		//FD As Field, rs As Recordset, rs1 As Recordset, rs2 As Recordset, rsw As Recordset
 		bool bLineSPR =false;//默认为碟簧
 		float mvDn=0 , mvFn=0 , mvD =0, mvSN =0, mvCoef=0 , mvChzbh=0 ;
@@ -4731,19 +4729,21 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 	   //保证sTmpSelectedSpring存在
 	   if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, sTmpSelectedSpring) )
 		{
-		  EDIBgbl::dbPRJ.Execute (_T("DROP TABLE [") + sTmpSelectedSpring + _T("]"));
+			SQLx = _T("DROP TABLE [") + sTmpSelectedSpring + _T("]");
+		  EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 	   }
 	   //拷贝SelectedSpring表结构从sort.mdb中到workprj.mdb
 	   if( ! EDIBgbl::tdfExists(EDIBgbl::dbPRJ, sTmpSelectedSpring.Mid(3)) )
 		{
 		  //MsgBox ResolveResString(iUE_NotExistsSelectedSpringTableInWorkPrjMdb)
 		  //Err.Raise iUE_NotExistsSelectedSpringTableInWorkPrjMdb, , ResolveResString(iUE_NotExistsSelectedSpringTableInWorkPrjMdb, _T("|1"), ProjectDir)
-		  SQLx = _T("SELECT * INTO [") + sTmpSelectedSpring.Mid(3) + _T("] IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
-		  EDIBgbl::dbPHScode.Execute(SQLx);//20071101 "dbSORT" 改为 "dbPHScode"
+		  SQLx = _T("SELECT * INTO [") + sTmpSelectedSpring.Mid(3) + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
+		  EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
 	   }
-	   EDIBgbl::dbPRJ.Execute(_T("DELETE * FROM [") + sTmpSelectedSpring.Mid(3) + _T("]"));
+	   SQLx = _T("DELETE * FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
+	   EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 	   SQLx = _T("SELECT * INTO [") + sTmpSelectedSpring + _T("] FROM [") + sTmpSelectedSpring.Mid(3) + _T("]");
-	   EDIBgbl::dbPRJ.Execute(SQLx);
+	   EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 	   //荷载变化系数mvChzbh应该尽量与应力分析程序计算时一致,为此,先获得此值(如果有的话)。
 	   //这是AutoPHS41的特色算法之一，我们推测，这将尽量减少弹簧代换对管系应力分析造成的偏差。
 	   if( bAutoApplyChzbh )
@@ -4767,21 +4767,23 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
    
 	   //判断是否为线性弹簧?
 	   SQLx = _T("SELECT * FROM [") + strbnSPRINGproperty + _T("]");
-		rs.m_pDatabase=&dbZDJcrude;
-		rs.Open(dbOpenSnapshot,SQLx);
-		int CF=rs.GetFieldCount();
-		::CDaoFieldInfo fldInfo;
+	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
+		int CF=rs->Fields->Count;
+		FieldPtr fldInfo;
 		for(i=0;i<CF;i++)
 		{
-			rs.GetFieldInfo(i,fldInfo);
-			if(fldInfo.m_strName==_T("G"))
+			rs->Fields->get_Item((_variant_t)i, &fldInfo);
+			CString strName;
+			strName = (LPTSTR)fldInfo->Name;
+			if(strName==_T("G"))
 			{
 			 //线性弹簧有刚度字段_T("G")
 				bLineSPR=true;
 				break;
 			}
 		}
-		rs.Close();
+		rs->Close();
 	   i = Cavphs->GetPhsStructFromSampleID(lSelSampleID);
 		//dn=Cavphs->PA;
 	   dn = vtos(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("dn1")));
@@ -4838,9 +4840,9 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 		  //}else{
 			 //SQLx = _T("SELECT seq FROM [") + strbnDiscSPRINGpropertyMaxDist + _T("] WHERE Pgzmin<=") + TmpPgz + _T(" AND Pgzmax>=") + TmpPgz + _T(" ORDER BY seq")
 		  //}
-		  rs1.m_pDatabase=&EDIBgbl::dbPRJ;
-		  rs1.Open(dbOpenSnapshot,SQLx);
-		  if( rs1.IsEOF() && rs1.IsBOF() ){
+		  rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
+		  if( rs1->BOF && rs1->adoEOF ){
 			 //找不到符合条件的弹簧号
 			  sTmp.Format(GetResStr(IDS_NotFoundDiscSPRNoInsTmpSPRPROPERTY),SQLx);
 			  throw sTmp;
@@ -4852,16 +4854,14 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 //例如弹簧号12，当前串联片数为3，弹簧型号就是312
 				   
 				   CString seq,Sj;
-				   rs.m_pDatabase=&EDIBgbl::dbPRJ;
-				   rs2.m_pDatabase=&dbZDJcrude;
-			 while(!rs1.IsEOF())
+			 while(!rs1->BOF)
 			 {//8
 				//确定碟簧串联片数,江阴石化弹吊厂样本为从1到5
 				for( j = 1 ;j<= giAllowedMaxSerialNumSPRs;j++)
 				{//7
 				   //通过增加串联数，使该号弹簧满足位移及荷载变化系数要求
-					COleVariant v,v2;
-					rs1.GetFieldValue(_T("seq"),v);
+					_variant_t v,v2;
+					rs1->get_Collect((_variant_t)_T("seq"),&v);
 					seq.Format(_T("%d"),vtoi(v));
 					Sj.Format(_T("%d"),j);
 				   //该表只需要前向滚动，以减少资源消耗。注意该表在ZdjCrude.mdb中
@@ -4875,10 +4875,11 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 					  //非线性弹簧，查非线性弹簧表
 					  SQLx = _T("SELECT * FROM [") + strbnDiscSPRINGpropertyMaxDist + _T("] WHERE seq=") + seq;// + _T(" ORDER BY Seq,SerialNum,Dist");
 					}//1 //是否是线性弹簧(end)
-				   if(rs2.IsOpen())
-					   rs2.Close();
-				   rs2.Open(dbOpenSnapshot,SQLx,dbForwardOnly);
-				   if(rs2.IsBOF() && rs2.IsEOF())
+				   if(rs2->State == adStateOpen)
+					   rs2->Close();
+				   rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
+				   if(rs2->adoEOF && rs2->BOF)
 				   {//1
 					  //MsgBox iUE_NotFoundDiscSPRNoInsTmpSPRPROPERTY
 					  //Exit Sub
@@ -4889,8 +4890,8 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 				   else
 				   {//1					  
 					  //rs2.MoveFirst //因为是前向滚动表，不能执行这种操作
-					   rs2.GetFieldValue(_T("Theoretical")+Sj,v);
-					   rs2.GetFieldValue(Sj,v2);
+					   rs2->get_Collect((_variant_t)(_T("Theoretical")+Sj),&v);
+					   rs2->get_Collect((_variant_t)Sj,&v2);
 					  if(v.vt==VT_NULL || v2.vt==VT_NULL)
 						  break;
 					  //最大理论位移
@@ -4898,17 +4899,18 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 				   }//1//取最大理论位移(end)
 				   //选择同一号弹簧的荷载位移表，按位移值排序。该表的SerialNum字段记录该号弹簧的当前串联数
 				   SQLx = _T("SELECT * FROM [") + sTmpSPRPROPERTY + _T("] WHERE seq=") + seq + _T(" AND SerialNum=") + Sj + _T(" AND NOT ISNULL(pgz) ORDER BY Seq,SerialNum,Dist");
-				   if(rs.IsOpen())
-					   rs.Close();
-				   rs.Open(dbOpenSnapshot,SQLx);
-					if(!rs.IsBOF() && !rs.IsEOF())
+				   if(rs->State == adStateOpen)
+					   rs->Close();
+				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
+					if(!rs->adoEOF && !rs->BOF)
 				   {//6
-					  rs.MoveLast();
+					  rs->MoveLast();
 					  //最后一个记录的位移值最大，这是当前串联数时弹簧实际工作位移范围的上界
-					  rs.GetFieldValue(_T("dist"),v);
+					  rs->get_Collect((_variant_t)_T("dist"),&v);
 					  mvMaxDistActual = vtof(v);
 					  //如果当前弹簧最大工作位移满足需要的热位移值
-						rs2.GetFieldValue(Sj,v);
+						rs2->get_Collect((_variant_t)Sj,&v);
 					  if( vtof(v) >= fabs(fyr) )
 					  {//5
 						  //找出工作荷载满足要求时，当前弹簧的位移值
@@ -4916,22 +4918,24 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 							  sTmp.Format(_T("%g"),TmpPgz);
 						  else
 							  sTmp.Format(_T("%g"),TmpPaz);					 
-						  if(  rs.FindFirst(_T("Pgz>=") +sTmp ))
+						  _variant_t vTmp;
+						  rs->Find((_bstr_t)(_T("Pgz>=") +sTmp), 0, adSearchBackward);
+						  if( !rs->adoEOF)
 						  {//4
 							//找到啦，需要插值法确定工作荷载处的弹簧位移
 							//记录当前位移值mvDn，它对应于当前rs(_T("seq"))号弹簧串联rs(_T("SerialNum"))片时的位移值
-							rs.GetFieldValue(_T("dist"),v);
+							rs->get_Collect((_variant_t)_T("dist"),&v);
 							mvDn =vtof(v); 
 							//记录当前荷载值
-							rs.GetFieldValue(_T("pgz"),v);
+							rs->get_Collect((_variant_t)_T("pgz"),&v);
 							mvFn =vtof(v);
 							if( mvDn > 0 )
 							{//1
 							   //工作荷载处的弹簧位移>0,则当前记录
 							   //不是第一个记录,可以移动到前一个记录,以便插值
-							   rs.MovePrev();
-							   rs.GetFieldValue(_T("dist"),v);
-							   rs.GetFieldValue(_T("pgz"),v2);
+							   rs->MovePrevious();
+							   rs->get_Collect((_variant_t)_T("dist"),&v);
+							   rs->get_Collect((_variant_t)_T("pgz"),&v2);
 							   if(gbHotStatus2Zero)
 								   mvD = (mvDn - vtof(v)) / (mvFn - vtof(v2)) * (TmpPgz - vtof(v2)) + vtof(v);
 							   else
@@ -4964,19 +4968,20 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 								else
 									sTmp.Format(_T("%g"),(mvD - fyr));
                            
-							   if( rs.FindFirst(_T("Dist>=") + sTmp) )
+								rs->Find((_bstr_t)(_T("Dist>=") +sTmp), 0, adSearchBackward);
+								if( !rs->adoEOF)
 								{//2
 								  //需要插值法确定安装荷载
-								   rs.GetFieldValue(_T("dist"),v);
+								   rs->get_Collect((_variant_t)_T("dist"),&v);
 									mvDn =vtof(v); 
-									rs.GetFieldValue(_T("pgz"),v);
+									rs->get_Collect((_variant_t)_T("pgz"),&v);
 									mvFn =vtof(v);
 									if( mvDn > 0 )
 									{//1
 									 //不是第一个记录,可以移动到前一个记录,以便插值
-										rs.MovePrev();
-										rs.GetFieldValue(_T("dist"),v);
-										rs.GetFieldValue(_T("pgz"),v2);
+										rs->MovePrevious();
+										rs->get_Collect((_variant_t)_T("dist"),&v);
+										rs->get_Collect((_variant_t)_T("pgz"),&v2);
 										if(gbHotStatus2Zero)
 											mvF = (mvFn - vtof(v2)) / (mvDn - vtof(v)) * (mvD + fyr - vtof(v)) + vtof(v2);
 										else
@@ -5004,7 +5009,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 								  //mvHaz = mvD / j + fyr
 								  //Debug.Print rs.Fields(_T("seq")), mvHaz, mvF
 								  //弹簧重量
-									rs.GetFieldValue(_T("seq"),v);
+									rs->get_Collect((_variant_t)_T("seq"),&v);
 									sTmp.Format(_T("%2d"),vtoi(v));
 								  sngWeight = sngSpringWeight(Sj + _T("1") + sTmp, rss, 1, sngHeight);
 								  //下句偶尔产生INSERT INTO语句错误
@@ -5020,11 +5025,11 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 								  }//1
 								  //存入SelectedSpring表以便结束时选择弹簧
 								  short nSEQ;//弹簧号
-								  rs.GetFieldValue(_T("seq"),v);
+								  rs->get_Collect((_variant_t)_T("seq"),&v);
 								  nSEQ=vtoi(v);
 
 								  float mPreCmprs;//预压缩值,mm
-								  rs.GetFieldValue(_T("PreCmprs"),v);
+								  rs->get_Collect((_variant_t)_T("PreCmprs"),&v);
 								  mPreCmprs=vtof(v);
 								  								  								  
 								  float mOpDist;//工作位移,mm
@@ -5040,7 +5045,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 									  mHaz=mvD;
 
 								  float mDifToMidLine;//工作状态偏离中线的值,一个<0.5的非负数
- 								  rs2.GetFieldValue(Sj,v);
+ 								  rs2->get_Collect((_variant_t)Sj,&v);
 								  mDifToMidLine=fabs(0.5 - mOpDist/vtof(v));
 								 
 								 float mOpLoad;//工作荷载,kgf
@@ -5060,7 +5065,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 								  SQLx.Format("INSERT INTO [%s] (SerialNum,SEQ,SpringTypeNo,CoefOfVarLoad,PreCmprs,MaxDist,        OpDist,Haz,DifToMidLine,   Weight,Height,difPSAinstallLoad,        OpLoad,InstallLoad,paz0)\
 									                     VALUES (%s,      %d,  \'%s%02d\',        %g,            %g,      %g,      %g,   %g,  %g,             %g,     %g,    %g,                      %g,    %g,         %g)",\
 									         sTmpSelectedSpring, Sj,   nSEQ,    Sj,nSEQ,   mvCoefOfVarLoad,mPreCmprs,mvMaxDistActual,mOpDist,mHaz,mDifToMidLine,sngWeight,sngHeight,sngDifPSAinstallLoad,mOpLoad,mInstallLoad,paz0);
-								EDIBgbl::dbPRJ.Execute(SQLx);
+								EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							   }//2
 							   else
 							   {//1
@@ -5071,21 +5076,19 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 					  }//5
 				   }//6
 				}//7
-				rs1.MoveNext();
+				rs1->MoveNext();
 			 }//8
 		  }//9
    
-		  rs.Close();
-		  rs2.Close();
+		  rs->Close();
+		  rs2->Close();
 		  //开始按照选定的弹簧选择规则从结果表中过滤需要的弹簧
 		   SQLx = _T("SELECT * FROM [") + sTmpSelectedSpring + _T("]  WHERE CoefOfVarLoad<=");
 		   sTmp.Format(_T("%g"),mvChzbh);
 		   SQLx+= sTmp + _T(" ") + gstrSpringOrderSQL;
-		   rs.m_pDatabase=&EDIBgbl::dbPRJ;
-		   rs.m_strFilter=_T("");
-		   rs.m_strSort=_T("");
-		   rs.Open(dbOpenSnapshot,SQLx);
-		   if( rs.IsEOF() && rs.IsBOF() )
+		   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			   adOpenKeyset, adLockOptimistic, adCmdText); 
+		   if( rs->BOF && rs->adoEOF )
 		   {//是恒力弹簧(start)
 			  //选择不到需要的弹簧，就选择恒力弹簧
 			  //MsgBox ResolveResString(iUE_OverAllowedMaxSerialNumSPRs)
@@ -5103,17 +5106,17 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			  else
 			  {//1
 				 //计算弹簧荷载变化系数<=允许的弹簧荷载变化系数,则输出结果
-				  COleVariant v;
-				 rs.MoveFirst();
+				  _variant_t v;
+				 rs->MoveFirst();
 				 if(strOldZdjType!="")
 				 {
-					FindPSAType(strOldZdjType,&rs);//pfg20051101 应力计算的支吊架类型是否存在
+					FindPSAType(strOldZdjType, rs);//pfg20051101 应力计算的支吊架类型是否存在
 				 }
-				 rs.GetFieldValue(_T("MaxDist"),v);
+				 rs->get_Collect((_variant_t)_T("MaxDist"),&v);
 				 iSumDistOfSpring = vtoi(v);//最大总位移，用于编号中。
 				 //设置弹簧计算结果信息
-				 SetSpringPhsInfo(&rs, rss, bLineSPR,strZdjType);
-				 rs.GetFieldValue(_T("OpDist"),v);
+				 SetSpringPhsInfo(rs, rss, bLineSPR,strZdjType);
+				 rs->get_Collect((_variant_t)_T("OpDist"),&v);
 				if(gbHotStatus2Zero)
 					fTotalInstallCompressValue = vtof(v) + fyr;
 				else
@@ -5130,28 +5133,24 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 {
 					//只有当新老弹簧都可以选择到时，才会出现第一次提示
 					//AutoPHS计算的弹簧与应力分析程序GLIF计算的结果不一致，且按照应力分析程序计算的结果
-					rs.Close();
+					rs->Close();
 				   SQLx = _T("SELECT * FROM [") + sTmpSelectedSpring + _T("]  WHERE CoefOfVarLoad<=");
 				   sTmp.Format(_T("%g"),mvChzbh);
 				   SQLx+= sTmp + _T(" AND SerialNum=") + strOldZdjType.Left(1) + _T(" AND SEQ=") + strOldZdjType.Right(2);
-				   rs.m_pDatabase=&EDIBgbl::dbPRJ;
-				   rs.m_strFilter=_T("");
-				   rs.m_strSort=_T("");
-				   rs.Open(dbOpenSnapshot,SQLx);
+				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 				   //ShowMessage(rs.GetRecordCount());
-				   if( rs.IsEOF() && rs.IsBOF() )
+				   if( rs->BOF && rs->adoEOF )
 				   {
 					  //选择不到需要的GLIF计算弹簧，再选择AutoPHS计算弹簧
-						rs.Close();
+						rs->Close();
 						SQLx = _T("SELECT * FROM [") + sTmpSelectedSpring + _T("]  WHERE CoefOfVarLoad<=");
 						sTmp.Format(_T("%g"),mvChzbh);
 						SQLx+= sTmp + _T(" AND SerialNum=") + strZdjType.Left(1) + _T(" AND SEQ=") + strZdjType.Right(2);
-						rs.m_pDatabase=&EDIBgbl::dbPRJ;
-						rs.m_strFilter=_T("");
-						rs.m_strSort=_T("");
-						rs.Open(dbOpenSnapshot,SQLx);
+						rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 						//ShowMessage(rs.GetRecordCount());
-						if( rs.IsEOF() && rs.IsBOF() )
+						if( rs->BOF && rs->adoEOF )
 						{
 							//选择不到需要的GLIF计算的弹簧，也选择不到AutoPHS计算的弹簧	
 						  //只能选择恒力弹簧
@@ -5178,16 +5177,14 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 				   else
 				   {
 					  //可以选择到需要的GLIF计算弹簧，再看是否能选择到AutoPHS计算弹簧
-						rs.Close();
+						rs->Close();
 						SQLx = _T("SELECT * FROM [") + sTmpSelectedSpring + _T("]  WHERE CoefOfVarLoad<=");
 						sTmp.Format(_T("%g"),mvChzbh);
 						SQLx+= sTmp + _T(" AND SerialNum=") + strZdjType.Left(1) + _T(" AND SEQ=") + strZdjType.Right(2);
-						rs.m_pDatabase=&EDIBgbl::dbPRJ;
-						rs.m_strFilter=_T("");
-						rs.m_strSort=_T("");
-						rs.Open(dbOpenSnapshot,SQLx);
+						rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
 						//ShowMessage(rs.GetRecordCount());
-						if( rs.IsEOF() && rs.IsBOF() )
+						if( rs->BOF && rs->adoEOF )
 						{
 							//选择到需要的GLIF计算弹簧，选择不到AutoPHS计算弹簧	
 						  //只能选择GLIF计算弹簧,执行代换
@@ -5217,16 +5214,14 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 {
 					//AutoPHS计算的弹簧与应力分析程序GLIF计算的结果不一致，且按照应力分析程序计算的结果
 					strZdjType=strOldZdjType;
-					rs.Close();
+					rs->Close();
 				   SQLx = _T("SELECT * FROM [") + sTmpSelectedSpring + _T("]  WHERE CoefOfVarLoad<=");
 				   sTmp.Format(_T("%g"),mvChzbh);
 				   SQLx+= sTmp + _T(" AND SerialNum=") + strOldZdjType.Left(1) + _T(" AND SEQ=") + strOldZdjType.Right(2);
-				   rs.m_pDatabase=&EDIBgbl::dbPRJ;
-				   rs.m_strFilter=_T("");
-				   rs.m_strSort=_T("");
-				   rs.Open(dbOpenSnapshot,SQLx);
+				   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+					   adOpenKeyset, adLockOptimistic, adCmdText); 
 				   //ShowMessage(rs.GetRecordCount());
-				   if( rs.IsEOF() && rs.IsBOF() )
+				   if( rs->BOF && rs->adoEOF )
 				   {
 					  //选择不到需要的弹簧，就选择恒力弹簧
 					  //MsgBox ResolveResString(iUE_OverAllowedMaxSerialNumSPRs)
@@ -5244,13 +5239,13 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 					  else
 					  {
 							//计算弹簧荷载变化系数<=允许的弹簧荷载变化系数,则输出结果
-							COleVariant v;
-							rs.MoveFirst();
-							rs.GetFieldValue(_T("MaxDist"),v);
+							_variant_t v;
+							rs->MoveFirst();
+							rs->get_Collect((_variant_t)_T("MaxDist"),&v);
 							gSumDistOfSpring = vtoi(v);//最大总位移，用于编号中。
 							//设置弹簧计算结果信息
-							SetSpringPhsInfo(&rs, rss, bLineSPR,strZdjType);
-							rs.GetFieldValue(_T("OpDist"),v);
+							SetSpringPhsInfo(rs, rss, bLineSPR,strZdjType);
+							rs->get_Collect((_variant_t)_T("OpDist"),&v);
 							if(gbHotStatus2Zero)
 								fTotalInstallCompressValue = vtof(v) + fyr;
 							else
@@ -5262,7 +5257,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 }
 		 }
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -5290,12 +5285,16 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 		float Cmin=0 , Cmax=0 ;  //第一个/最后一个规格的载荷容量
 		float C1=0, C2=0;
 		CString sTmp1,sTmp2,sTmp,SQLx;
-		COleVariant vTmp;
+		_variant_t vTmp;
 		float tmpDist=0 ;
 		bool bFoundCSPR=false;
 
-		CDaoDatabase db;
-		CDaoRecordset rs , rs1;
+		_ConnectionPtr db;
+		db.CreateInstance(__uuidof(Connection));
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rs1;
+		rs1.CreateInstance(__uuidof(Recordset));
 		long lngMaxSerialCSPR=0;
 
 		//设置恒吊需要特殊设计标志为假
@@ -5371,34 +5370,33 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 		}
 
 		SQLx = _T("SELECT * FROM [") + strbnHDproperty + _T("] ORDER BY Capacity");
-		rs.m_pDatabase=&dbZDJcrude;
-		rs.Open(dbOpenSnapshot,SQLx);
-		if( rs.IsEOF() && rs.IsBOF())
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if( rs->BOF && rs->adoEOF)
 		{
 			//恒吊载荷容量表为空，不可能
-			sTmp1.Format(GetResStr(IDS_NullTableInXMdb),dbZDJcrude.GetName(), strbnHDproperty);
+			sTmp1.Format(GetResStr(IDS_NullTableInXMdb),EDIBgbl::GetDBName(dbZDJcrude), strbnHDproperty);
 			throw sTmp1;
 		}
-		rs.GetFieldValue(_T("Capacity"),vTmp);
+		rs->get_Collect((_variant_t)_T("Capacity"),&vTmp);
 		Cmin =vtof(vTmp);
-		rs.MoveLast();
-		rs.GetFieldValue(_T("Capacity"),vTmp);
+		rs->MoveLast();
+		rs->get_Collect((_variant_t)_T("Capacity"),&vTmp);
 		Cmax =vtof(vTmp);
-		rs.MoveFirst();
-		rs1.m_pDatabase=&dbZDJcrude;
-		rs1.Open(dbOpenSnapshot,_T("SELECT * FROM [") + strbnDisplacementSerial + _T("]"));
+		rs->MoveFirst();
 		for( iSumSerialNum =1 ;iSumSerialNum<= lngMaxSerialCSPR;iSumSerialNum++)
 		{
 			tmpDist = Tmpyr / iSumSerialNum;
 			sTmp1.Format(_T("%d"),(long)tmpDist);
-			rs1.m_strFilter=CString(_T(" DisplacementSerial>=")) + sTmp1;
-			rs1.m_strSort=_T(" DisplacementSerial ");
-			rs1.Requery();
-			if( rs1.IsEOF() && rs1.IsBOF());
+			CString m_strFilter=CString(_T(" DisplacementSerial>=")) + sTmp1;
+			SQLx = _T("SELECT * FROM [") + strbnDisplacementSerial + _T("]") + _T(" WHERE ") + m_strFilter + _T(" ORDER BY DisplacementSerial");
+			rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if( rs1->BOF && rs1->adoEOF);
 			//位移超出系列最大值
 			else
 			{
-				rs1.GetFieldValue(_T("DisplacementSerial"),vTmp);
+				rs1->get_Collect((_variant_t)_T("DisplacementSerial"),&vTmp);
 				tmpDist =vtof(vTmp);
 				//载荷容量单位为kN*mm,即N*m,位移单位为mm,荷载单位为kgf(或daN=10N)
 				tmpCapacity = TmpPgz * tmpDist * EDIBgbl::kgf2N / 1000;
@@ -5418,10 +5416,12 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 					{
 					//荷载容量合适
 						sTmp1.Format(_T("%g"),tmpCapacity);
-						if(rs.FindFirst (_T("Capacity>=")+sTmp1))
+						_variant_t vTmp;
+						rs->Find((_bstr_t)(_T("Capacity>=")+sTmp1), 0, adSearchBackward);
+						if( !rs->adoEOF)
 						{
 							//找到了
-							rs.GetFieldValue(_T("minDist"),vTmp);
+							rs->get_Collect((_variant_t)_T("minDist"),&vTmp);
 							if (tmpDist < vtof(vTmp))
 							{
 								//比最小位移小，应该用弹簧
@@ -5429,7 +5429,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 								sTmp2.Format(sTmp1,tmpDist,vtof(vTmp));
 								throw sTmp2;
 							}
-							rs.GetFieldValue(_T("maxDist"),vTmp);
+							rs->get_Collect((_variant_t)_T("maxDist"),&vTmp);
 							if( tmpDist > vtof(vTmp)) 
 							{
 								//比最大位移还大
@@ -5473,12 +5473,12 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 			//找到合适的恒吊
 			//按就近原则选择恒吊
 			//记录当前载荷容量
-			rs.GetFieldValue(_T("Capacity"),vTmp);
+			rs->get_Collect((_variant_t)_T("Capacity"),&vTmp);
 			C1 = vtof(vTmp);
 
 			//记录前一个载荷容量
-			rs.MovePrev();
-			rs.GetFieldValue(_T("Capacity"),vTmp);
+			rs->MovePrevious();
+			rs->get_Collect((_variant_t)_T("Capacity"),&vTmp);
 			C2 = vtof(vTmp);
 			if( fabs(C1 - tmpCapacity) >= fabs(C2 - tmpCapacity))
 				;
@@ -5486,10 +5486,10 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 			else
 				//载荷容量更接近C1
 				//回到容量接近的记录
-				rs.MoveNext();
+				rs->MoveNext();
 
 			strZdjType = _T("9999");
-			rs.GetFieldValue(_T("DH"),vTmp);
+			rs->get_Collect((_variant_t)_T("DH"),&vTmp);
 			sTmp.Format(_T("%d%d%2d"),iSumSerialNum,gintParallelNum,vtoi(vTmp));
             //sTmp.Format(_T("%d%d"),iSumSerialNum,vtoi(vTmp)) ;
 			rss->PutCollect(_T("type"),_variant_t(_T("9999")));
@@ -5498,7 +5498,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 			iWholeSprNum = iSumSerialNum;
 			//对于恒力弹簧，串联数=串联组数
 			nSumSerialNum = iSumSerialNum;
-			rs.GetFieldValue(_T("DH"),vTmp);
+			rs->get_Collect((_variant_t)_T("DH"),&vTmp);
 			for(i = 0;i<iSumSerialNum;i++)
 			{
 
@@ -5518,7 +5518,7 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 	{
 		ShowMessage(e);
 	}
-	catch(::CDaoException* e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -5526,13 +5526,6 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 	catch(_com_error e)
 	{
 		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -5562,10 +5555,6 @@ void modPHScal::SetPhsTK3()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
-
 }
 
 void modPHScal::CalSpringParallelNum(CString& PipeA)
@@ -5575,8 +5564,9 @@ void modPHScal::CalSpringParallelNum(CString& PipeA)
   
 	_RecordsetPtr rstbl=::FrmTxsr.m_pViewTxsr->m_ActiveRs;
 	try{
-		CDaoRecordset rs;
-		COleVariant v;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_variant_t v;
 		_variant_t tmpvar;
 		if(PipeA==_T(""))
 		{
@@ -5597,12 +5587,11 @@ void modPHScal::CalSpringParallelNum(CString& PipeA)
 
 		  if (PipeA != _T(""))
 		  {
-			  rs.m_pDatabase=&EDIBgbl::dbPRJ;
-			  //CString tmps=CString(_T("SELECT ParallelingNum FROM PictureClipData WHERE trim(CustomID)=\'")) + PipeA + _T("\'");
-			  rs.Open(dbOpenSnapshot,CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'")) + PipeA + _T("\'"));
-			  //rs = EDIBgbl::dbPRJ->Execute(_bstr_t(CString(_T("SELECT ParallelingNum FROM PictureClipData WHERE trim(CustomID)=\'")) + PipeA + _T("\'")),
-			//	  &tmpvar,adCmdText);
-			 if (rs.IsEOF() || rs.IsBOF())
+			  CString SQLx;
+			  SQLx = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'") + PipeA + _T("\'");
+			  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				  adOpenKeyset, adLockOptimistic, adCmdText); 
+			 if (rs->BOF && rs->adoEOF)
 			 {
 				//Err.Raise iUE_NoRecordFLDEqvThisValueInPictureClipData, , ResolveResString(iUE_NoRecordFLDEqvThisValueInPictureClipData, _T("|1"), _T("CustomID"), _T("|2"), PipeA)
 				 if(rstbl->GetCollect(_variant_t(_T("ParallelingNum"))).vt==VT_NULL)
@@ -5620,13 +5609,13 @@ void modPHScal::CalSpringParallelNum(CString& PipeA)
 			 }
 			 else
 			 {
-				 rs.GetFieldValue(_T("ParalleledNum"),v);
+				 rs->get_Collect((_variant_t)_T("ParalleledNum"),&v);
 				if(v.vt==VT_NULL ||vtoi(v)<=0)
 					gintParallelNum = 1;
 				else
 					  gintParallelNum = vtoi(v);
 			 }
-			 rs.Close();
+			 rs->Close();
 		  }
 		  else
 		  {
@@ -5657,11 +5646,10 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 	float fTmpPgz=0.0;
 	float fTmpPaz=0.0;
 
-   _RecordsetPtr rs;
   bool bTmp=false;
   long lngErrNum=0;
   _variant_t tmpvar;
-  COleVariant v;
+  _variant_t v;
   CString sTmp,sTmp2,SQLx,tbn;
   float UTmp=0.0;
   try{
@@ -5892,30 +5880,32 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 		//上面这段代码必须位于下段之前
 	   //下句CalSAPA函数要用到dj,t0,pjg等参数
 		//获取管部根部及其通用代号,如果不成功,则退出
-		CDaoRecordset rs(&modPHScal::dbZDJcrude);
-		COleVariant v;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_variant_t v;
 		float tmppjg=fabs(modPHScal::pjg);
 	   //获取管部根部及其通用代号
 	   if(vtos(rstbl->GetCollect(_T("dn1")))==_T(""))
 		{
 			
-		   SQLx = _T("SELECT DISTINCT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ.GetName() + 
+		   SQLx = _T("SELECT DISTINCT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 					_T("\' WHERE CustomID IN (SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] IN \"\" [\; DATABASE=") 
-								+ modPHScal::dbZDJcrude.GetName() + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE (Pmax >=") 
+								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE (Pmax >=") 
 								+ ftos(tmppjg) + _T(" AND PictureClipData.ClassID<>") + ltos(iPAfixZ1) + _T(" AND PictureClipData.ClassID<>") + ltos(iPAfixZ2) 
 								+ _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ1) + _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ2) + _T(") AND (Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 								+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
 								+ _T(" AND Dw>0 OR Dw IS NULL OR Dw=0) AND tj >= ") + ftos(modPHScal::t0) + _T(")");
-			if(rs.IsOpen())
-				rs.Close();
-			rs.Open(dbOpenSnapshot,SQLx);
-			if(rs.IsBOF() && rs.IsEOF())
+			if(rs->State == adStateOpen)
+				rs->Close();
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(rs->adoEOF && rs->BOF)
 			{
 				//当前标准找不到管部
 			}
 			else
 			{
-				rs.GetFieldValue(_T("CustomID"),v);
+				rs->get_Collect((_variant_t)_T("CustomID"),&v);
 				dn=vtos(v);
 				rstbl->PutCollect(_T("dn1"),_variant_t(dn));
 			}
@@ -5953,9 +5943,9 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 		{		   
 		   int Gnum;			
 			Gnum= (modPHScal::glNumSA!=0 ? modPHScal::glNumSA : 1);
-			SQLx = _T("SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'")
+			SQLx = _T("SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'")
 								+ _T(" WHERE EXISTS ( Select CustomID FROM [") + modPHScal::tbnSA + _T("] IN \"\" [; DATABASE=") 
-								+ modPHScal::dbZDJcrude.GetName() + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= ") + ltos(iG100) + _T(" OR PMAXH >=") 
+								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE PictureClipData.CustomID = CustomID AND (PictureClipData.ClassID= ") + ltos(iG100) + _T(" OR PMAXH >=") 
 								+ ftos(tmppjg / Gnum * (vtob(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("ifLongVertPipe"))) ? Gnum : 1))
 								+ _T(" AND (( PictureClipData.ClassID = ")
 								+ ltos(iSACantilever) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbrace) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG47) + _T(" OR PictureClipData.ClassID = ") + ltos(iSALbraceFixG48) + _T(" OR PictureClipData.ClassID = ") + ltos(iG51) + _T(" OR PictureClipData.ClassID = ") + ltos(iG56) + _T(" OR PictureClipData.ClassID = ") + ltos(iG57)  + _T(") AND GDW1 >=")
@@ -5963,16 +5953,17 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 								+ _T(" IIF(")+ ftos(modPHScal::gdw1+(modPHScal::glNumSA==1 ? modPHScal::DblHangerRodDist : 0)/2) +_T(" > L1/2 , L1 - ") + ftos(modPHScal::gdw1+(modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2)
 								+ _T(" , ")+ ftos(modPHScal::gdw1+(modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2) + _T(") AND L1> ") + ftos(modPHScal::Lspan)
 								+ _T("  OR PictureClipData.ClassID= ") + ltos(iGCement) + _T(")) )");
-			if(rs.IsOpen())
-				rs.Close();
-			rs.Open(dbOpenSnapshot,SQLx);
-			if(rs.IsBOF() && rs.IsEOF())
+			if(rs->State == adStateOpen)
+				rs->Close();
+			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(rs->adoEOF && rs->BOF)
 			{
 				//当前标准找不到根部
 			}
 			else
 			{
-				rs.GetFieldValue(_T("CustomID"),v);
+				rs->get_Collect((_variant_t)_T("CustomID"),&v);
 				gn=vtos(v);
 				rstbl->PutCollect(_T("gn1"),_variant_t(gn));
 			}
@@ -6166,8 +6157,9 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 		int iSumSerialNum=0;
 		int i=0;
 //		float haz0,haz1;
-		CDaoRecordset rs;
-		COleVariant v;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_variant_t v;
 	try
 	{	
 		//获取弹簧号，例如支吊架号为1208,则弹簧号strSprNo=08.
@@ -6206,25 +6198,25 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 		  //以下查找质量,假定都是T1，这对于仅仅作为排序比较是可行的。
 		  sTmp.Format(_T("%d"),sSprInfo[i].DH);
 		  SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + sTmp + _T(" And trim(CustomID)=\'") + sFindCustomID(_T("T1")) + _T("\'");
-		  rs.m_pDatabase=&dbZDJcrude;
-		  if(rs.IsOpen())
-			  rs.Close();
-		  rs.Open(dbOpenSnapshot,SQLx);
-		  if( rs.IsEOF() && rs.IsBOF() ){
+		  if(rs->State == adStateOpen)
+			  rs->Close();
+		  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
+		  if( rs->BOF && rs->adoEOF ){
 			 sngWeight = 0;
 			 sngHeight = 0;
 		  }
 		  else
 		  {
-			 rs.MoveFirst();
-			rs.GetFieldValue(_T("weight"),v);
+			 rs->MoveFirst();
+			rs->get_Collect((_variant_t)_T("weight"),&v);
 			 if(v.vt==VT_NULL){
 				sngWeight = 0;
 				sngHeight = 0;
 			 }else{
-				 rs.GetFieldValue(_T("weight"),v);
+				 rs->get_Collect((_variant_t)_T("weight"),&v);
 				 sngWeight=vtof(v);
-				 rs.GetFieldValue(_T("sizeH"),v);
+				 rs->get_Collect((_variant_t)_T("sizeH"),&v);
 				sngHeight = vtof(v);
 			 }
 		  }
@@ -6238,10 +6230,7 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
 	return ret;
-	}
 }
 
 float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetPtr rstbl, float mvDist, float sngTotalHeight)
@@ -6265,9 +6254,13 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
    
 		 long iSumSerialNum ;CString strSprNo ;float  haz0=0.0 , haz1=0.0;
 		 iSumSerialNum=0;
-		 CDaoRecordset rs, rsw;
-		 CDaoRecordset rs1 ;
-		 COleVariant v;
+		 _RecordsetPtr rs;
+		 rs.CreateInstance(__uuidof(Recordset));
+		 _RecordsetPtr rs1;
+		 rs1.CreateInstance(__uuidof(Recordset));
+		 _RecordsetPtr rsw;
+		 rsw.CreateInstance(__uuidof(Recordset));
+		 _variant_t v;
 		//保存当前支吊架组合结构内容（不含附件，便于绘图）
 		 long lngLastPartNo;  //记录整个支吊架的组件数（不含附件）
 		i=0;
@@ -6281,11 +6274,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
    
 		strSprNo = strZdjType.Mid(2);
 		CString SQLx,sTmp;
-		COleVariant vTmp;
-		//SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + ltos(strSprNo) + _T(" ORDER BY DH DESC");
-		rs1.m_pDatabase=&dbZDJcrude;
-		rs.m_pDatabase=&dbZDJcrude;
-		//rs1.Open(dbOpenSnapshot,SQLx);
+		_variant_t vTmp;
 		giSumSerialNum = _ttoi(strZdjType.Left(1));
 		if( giSumSerialNum > giAllowedMaxSerialNumSPRs ){
 			ShowMessage(GetResStr(IDS_OverAllowedMaxSerialNumSPRs));
@@ -6301,10 +6290,11 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					return ret;
 				}
 				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" ORDER BY DH DESC");
-				rs1.Open(dbOpenSnapshot,SQLx);
-				//if(!rs1.IsBOF() && !rs1.IsEOF())
+				rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				//if(!rs1->adoEOF && !rs1->BOF)
 				//{
-				rs1.GetFieldValue(_T("DH"),vTmp);
+				rs1->get_Collect((_variant_t)_T("DH"),&vTmp);
 				if( (i == 0? giSumSerialNum: k) > ( vtoi(vTmp) / 100 )){
 					//弹簧组需要串联
 					if( (giSumSerialNum % 2) == 0 ){
@@ -6318,16 +6308,17 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					k = giSumSerialNum - iSumSerialNum;
 				}
 				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" AND int(dh/100)<=") + ltos(k) + _T(" ORDER BY DH DESC");
-				rs.Open(dbOpenSnapshot,SQLx);
+				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//只有从实际的数据库中才能判别这个弹簧的最大串联数,数据表中字段DH=串联数 *100+弹簧号
-				if( rs.IsEOF() && rs.IsBOF() ){
+				if( rs->BOF && rs->adoEOF ){
 					//数据表没有这种弹簧的数据
 				}
 				else
 				{
 					//数据表有这种弹簧的数据
-					rs.MoveFirst();
-					rs.GetFieldValue(_T("DH"),vTmp);
+					rs->MoveFirst();
+					rs->get_Collect((_variant_t)_T("DH"),&vTmp);
 					sSprInfo[i].SerialNum = vtoi(vTmp) / 100;
 					iSumSerialNum = iSumSerialNum + sSprInfo[i].SerialNum;
 					if( iSumSerialNum >= giSumSerialNum ){
@@ -6343,10 +6334,9 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
          
 				}
 				i = i + 1;
-				rs.Close();
-				rs1.Close();
+				rs->Close();
+				rs1->Close();
 			}
-			rsw.m_pDatabase=&dbZDJcrude;
 			if( bFound )
 			{
 				//Rsx(_T("PreCmprs"))=弹簧的预压缩值
@@ -6366,11 +6356,11 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					sSprInfo[i].HeatDisp = yr / giSumSerialNum * sSprInfo[i].SerialNum;
 					//以下查找弹簧预压缩值，用于PhsYLBMake函数输出各种压缩值。
 				  SQLx = _T("SELECT * FROM [") + tbnSPRINGproperty + _T("] WHERE SEQ=") + strSprNo;// + _T(" ORDER BY seq");
-				  rs.m_pDatabase=&dbZDJcrude;
-				  if(rs.IsOpen())
-					  rs.Close();
-				  rs.Open(dbOpenSnapshot,SQLx);
-				  if( rs.IsEOF() && rs.IsBOF() )
+				  if(rs->State == adStateOpen)
+					  rs->Close();
+				  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					  adOpenKeyset, adLockOptimistic, adCmdText); 
+				  if( rs->BOF && rs->adoEOF )
 				  {
 					  //没有发现这种弹簧,暂时预设为0
 					  sSprInfo[i].Hpcmprs=0;
@@ -6378,35 +6368,36 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 				  else
 				  {
 					  //存在这种弹簧
-					  rs.GetFieldValue(_T("PreCmprs"),v);
+					  rs->get_Collect((_variant_t)_T("PreCmprs"),&v);
 					  sSprInfo[i].Hpcmprs=sSprInfo[i].SerialNum*vtoi(v);
 				  }
 				  
 					//以下查找质量,假定都是T1，这对于仅仅作为排序比较是可行的。
 					SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + ltos(sSprInfo[i].DH) + _T(" AND trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\'");
-					rsw.Open(dbOpenSnapshot,SQLx);
-					if( rsw.IsEOF() && rsw.IsBOF() ){
+					rsw->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if( rsw->BOF && rsw->adoEOF ){
 						sngWeight = 0;
 						sngHeight = 0;
 					}
 					else
 					{
-						rsw.MoveFirst();
-						rsw.GetFieldValue(_T("weight"),vTmp);
+						rsw->MoveFirst();
+						rsw->get_Collect((_variant_t)_T("weight"),&vTmp);
 						if( vTmp.vt==VT_NULL){
 							sngWeight = 0;
 							sngHeight = 0;
 						}else{
-							rsw.GetFieldValue(_T("weight"),vTmp);
+							rsw->get_Collect((_variant_t)_T("weight"),&vTmp);
 							sngWeight = vtof(vTmp);
-							rsw.GetFieldValue(_T("sizeH"),vTmp);
+							rsw->get_Collect((_variant_t)_T("sizeH"),&vTmp);
 							sngHeight =vtof(vTmp);
 						}
 					}
 					//质量统计和*******
 					ret +=sngWeight;
 					sngTotalHeight = sngTotalHeight + sngHeight;
-					rsw.Close();
+					rsw->Close();
 				}
 			}
 		}
@@ -6415,7 +6406,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 	{
 		ShowMessage(e);
 	}
-	catch(::CDaoException* e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -6641,113 +6632,6 @@ void modPHScal::CalDG(_RecordsetPtr rstbl)
 {
 }
 
-//DEL long modPHScal::CalSAPA(_RecordsetPtr rstbl)
-//DEL {
-//DEL 	//目的：对于未设置管部或根部的原始数据，人为确定管部为Z3与根部为G26。以防止程序不能运行。
-//DEL 	//返回:计算成功,0;失败,错误码.
-//DEL    //假设全部成功。
-//DEL 	CString SQLx;
-//DEL 	CDaoRecordset rs(&modPHScal::dbZDJcrude);
-//DEL 	COleVariant v;
-//DEL 	long ret = 0;
-//DEL 	try
-//DEL 	{
-//DEL 	   //获取管部根部及其通用代号
-//DEL 	   if(vtos(rstbl->GetCollect(_T("dn1")))==_T(""))
-//DEL 		{
-//DEL 			SQLx = _T("SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] IN \")\_T(" [\; DATABASE=") 
-//DEL 								+ modPHScal::dbZDJcrude.GetName() + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("]WHERE Pmax >=") 
-//DEL 								+ ftos(fabs(modPHScal::pjg)) + _T(" AND Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
-//DEL 								+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
-//DEL 								+ _T(" AND tj >= ") + ftos(modPHScal::t0) ;
-//DEL 			if(rs.IsOpen())
-//DEL 				rs.Close();
-//DEL 			rs.Open(dbOpenSnapshot,SQLx);
-//DEL 			if(rs.IsBOF() && rs.IsEOF())
-//DEL 			{
-//DEL 				//当前标准找不到管部
-//DEL 			}
-//DEL 			else
-//DEL 			{
-//DEL 				rs.GetFieldValue(_T("CustomID"),v);
-//DEL 				dn=vtos(v);
-//DEL 				rstbl->PutCollect(_T("dn1"),v);
-//DEL 			}
-//DEL 		}	   
-//DEL 		else
-//DEL 		{
-//DEL 			//管部/根部/连接件区分大小写
-//DEL 			dn = vtos(rstbl->GetCollect(_T("dn1")));
-//DEL 		}
-//DEL 	   //确定管部通用代号，以便程序适应各种标准的支吊架类型，
-//DEL 	   //具有通用性
-//DEL 	   IDdn = sFindID(dn);
-//DEL 	   if(IDdn != _T("") )
-//DEL 		  //rstbl.Edit: rstbl(_T("IDdn1")) = IDdn: rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("IDdn1"), _variant_t(IDdn));
-//DEL 	   else
-//DEL 	   {
-//DEL 		  IDdn = vtos(rstbl->GetCollect(_T("IDdn1")));
-//DEL 		  if( Trim(IDdn) != _T(""))
-//DEL 		  {
-//DEL 			 //当改变规范或厂家的时候，因为原始数据中的dn字段或gn字段未作相应变化，将出现查找不到CustomID的错误。
-//DEL 			 //此处试图修正这种错误。
-//DEL 			 dn = sFindCustomID(IDdn);
-//DEL 			 //rstbl.Edit: rstbl(_T("dn1")) = dn: rstbl.Update
-//DEL 			 UpdateTZB4zdjh(_T("dn1"), _variant_t(dn));
-//DEL 		  }
-//DEL 		  else
-//DEL 		  {
-//DEL 			 IDdn = _T("");
-//DEL 			 //MsgBox _T("未找到通用管部代码!请重新定义通用代码之后再运行")
-//DEL 			 throw GetResStr(IDS_NotFoundGeneralPAID);
-//DEL 		  }
-//DEL 	   }
-//DEL 	   
-//DEL 	   if(vtos(rstbl->GetCollect(_T("gn1")))== _T(""))
-//DEL 		  //rstbl.Edit: rstbl(_T("gn1")) = sFindCustomID(_T("G21")): rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("gn1"), _variant_t(sFindCustomID(_T("G21"))));
-//DEL 	   
-//DEL 	   gn = vtos(rstbl->GetCollect(_T("gn1")));
-//DEL 	   //确定通用代号，以便程序适应各种标准的支吊架类型，
-//DEL 	   //具有通用性
-//DEL 	   IDgn = sFindID(gn);
-//DEL 	   if(IDgn != _T(""))
-//DEL 		  //rstbl.Edit: rstbl(_T("IDgn1")) = IDgn: rstbl.Update
-//DEL 		  UpdateTZB4zdjh(_T("IDgn1"), _variant_t(IDgn));
-//DEL 	   else
-//DEL 	   {
-//DEL 		  IDgn = vtos(rstbl->GetCollect(_T("IDgn1")));
-//DEL 		  if(Trim(IDgn) != _T(""))
-//DEL 		  {
-//DEL 			 //当改变规范或厂家的时候，因为原始数据中的dn字段或gn字段未作相应变化，将出现查找不到CustomID的错误。
-//DEL 			 //此处试图修正这种错误。
-//DEL 			 gn = sFindCustomID(IDgn);
-//DEL 			 //rstbl.Edit: rstbl(_T("gn1")) = gn: rstbl.Update
-//DEL 			 UpdateTZB4zdjh(_T("gn1"), _variant_t(gn));
-//DEL 		  }
-//DEL 		  else
-//DEL 		  {
-//DEL 			 IDgn = _T("");
-//DEL 			 throw GetResStr(IDS_NotFoundGeneralSAID);
-//DEL 			 //MsgBox _T("未找到通用根部代码!请重新定义通用代码之后再运行")
-//DEL 		  }
-//DEL 	   }
-//DEL 
-//DEL 	   return ret;
-//DEL 	}
-//DEL 	catch(CString e)
-//DEL 	{
-//DEL 		ShowMessage(e);
-//DEL 		return -1;
-//DEL 	}
-//DEL 	catch(_com_error e)
-//DEL 	{
-//DEL 		ShowMessage(e.Description());
-//DEL 		return -1;
-//DEL 	}
-//DEL }
-
 void modPHScal::CalUnitX(_RecordsetPtr rstbl)
 {
  //目的:获得原始数据表中的单位制
@@ -6877,11 +6761,11 @@ void modPHScal::UpdateTZB4zdjh(CString FieldName,_variant_t FieldValue)
 			EDIBgbl::SQLx = CString(_T("UPDATE [")) + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] SET ") 
 				+ FieldName + _T("= ") +  sFieldValue +_T(" WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) 
 				+ _T(" AND zdjh=") + sTmp;
-			EDIBgbl::dbPRJDB.Execute(EDIBgbl::SQLx);
+			EDIBgbl::dbPRJDB->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
 		}
 		//_variant_t tmpvar;
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError ();
 		e->Delete ();
@@ -6908,7 +6792,8 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 		strSQL.Format(_T("SELECT COUNT(*) FROM [z1] WHERE VolumeID=%d AND zdjh=%d AND nth<>1"),
 			EDIBgbl::SelVlmID,zdjh);
 		_RecordsetPtr rsZ1=::conPRJDB->Execute(_bstr_t(strSQL),NULL,adCmdText);
-		CDaoRecordset rsTmpZB(&EDIBgbl::dbPRJDB);
+		_RecordsetPtr rsTmpZB;
+		rsTmpZB.CreateInstance(__uuidof(Recordset));
 		inthCount = vtoi(rsZ1->GetCollect((long)0)); 
 		if(inthCount >0)
 		{
@@ -6928,30 +6813,31 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 			}
 
 			strSQL.Format("SELECT * FROM [ZB] WHERE VolumeID = %d AND ZDJH = %d AND NTH = %d ",EDIBgbl::SelVlmID,modPHScal::zdjh,nth);
-			rsTmpZB.Open(dbOpenSnapshot,strSQL);
-			if(rsTmpZB.IsEOF() && rsTmpZB.IsBOF())
+			rsTmpZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 			{
 			  Cavphs->SavephsAllStructToTZB(zdjh,nth);
 			}
-			rsTmpZB.Close();
+			rsTmpZB->Close();
 		}
 
 		if(inthCount > 0)
 		{
 			strSQL.Format("SELECT * FROM [ZB] WHERE VolumeID = %d AND ZDJH = %d AND NTH = %d ",EDIBgbl::SelVlmID ,modPHScal::zdjh, nth );
-			rsTmpZB.Open(dbOpenSnapshot,strSQL);
-			if(rsTmpZB.IsEOF() && rsTmpZB.IsBOF())
+			rsTmpZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 			{
 				Cavphs->SavephsAllStructToTZB (zdjh,nth);
 			}
-			rsTmpZB.Close();
+			rsTmpZB->Close();
 		}
 
 		FrmTxsr.m_pViewTxsr->m_PagOption->UpdateData();
 
 		short iCalSuccess=0;
 		int iNumCSPR,iNumSPR,iNumSPROrCSPR,lngLastPartNo,i;
-		_RecordsetPtr rs1;
 		static long iPreviousZDJH=-1;//前次计算的支吊架号
 		static bool bFirst=false;//当前支吊架第一次计算
 		bool bFoundLHG;//发现下方恒吊 
@@ -6978,29 +6864,30 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
    
 	   //下面过程将破坏sSprInfo()全局数组，以至弹簧信息被破坏。因此必须放在开头。
 	   CString strDeleteUserMaterial;
-	   CDaoRecordset rsTZB;
-	   rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
+	   _RecordsetPtr rsTZB;
+	   rsTZB.CreateInstance(__uuidof(Recordset));
 	   strSQL=_T("SELECT zdjh FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND ZDJH=") + ltos(modPHScal::zdjh) + _T(" AND bUserAdd is not null AND bUserAdd=-1");
-	   rsTZB.Open(dbOpenDynaset,strSQL);
-		if(!(rsTZB.IsEOF() && rsTZB.IsBOF()))
+	   rsTZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(!(rsTZB->BOF && rsTZB->adoEOF))
 		{
 			if(AfxMessageBox(IDS_YESNODELETEUSERMATERIAL,MB_YESNO)==IDNO)
 				strDeleteUserMaterial=_T(" AND ( bUserAdd is null OR bUserAdd=0) "); 
 			else
 			{
-				while(!rsTZB.IsEOF())
+				while(!rsTZB->adoEOF)
 				{
-					if(!(rsTZB.IsEOF()&&rsTZB.IsBOF () )) rsTZB.Delete();
-					if(!rsTZB.IsBOF () )
+					if(!(rsTZB->adoEOF || rsTZB->BOF )) rsTZB->Delete(adAffectCurrent);
+					if(!rsTZB->BOF )
 					{	
-						rsTZB.MoveFirst();					
+						rsTZB->MoveFirst();					
 					}
 				}
 			}
 
 			
 		}
-		rsTZB.Close();
+		rsTZB->Close();
 		//串联弹簧或恒力弹簧数量,还要返回是否含有滚动部件L9/L10,以便确定偏装值:
 		//iScrollPartType=0/1/2(无滚动部件/只有L9/只有L10)
 	   iNumCSPR = Cavphs->GetPhsIsCSPR(iCSPR, iSelSampleID, lngLastPartNo);
@@ -7202,7 +7089,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 	   PhsMLmake(zdjh);    //把支吊架图号\图名写入目录库
    }
 
-   catch(::CDaoException * e)
+   catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -7215,13 +7102,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
    {
 		frmStatus.MessageBox(e);
    }
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-   catch(...)
-   {
-   }
+
    if ( g_itest != (int)PtypeDiameter )
 	   AfxMessageBox ( "hello" );
    if(PtypeDiameter!=NULL)
@@ -7232,7 +7113,7 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
    iRepZdjType=-1;
 }
 
-bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
+bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 {
 //目的：自动计算和分配拉杆长度
 //原则：1，尽量使用最大长度的拉杆，也就是尽量使拉杆数最少;
@@ -7253,9 +7134,14 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 
 	try
 	{
-		COleVariant vTmp1,vTmp2,vTmp3;
-		 CDaoRecordset rs, rsTZB;
-		 CDaoRecordset rsTmp;
+		_variant_t vTmp1,vTmp2,vTmp3;
+		 _RecordsetPtr rs;
+		 rs.CreateInstance(__uuidof(Recordset));
+		 _RecordsetPtr rsTZB;
+		 rsTZB.CreateInstance(__uuidof(Recordset));
+		 _RecordsetPtr rsTmp;
+		 rsTmp.CreateInstance(__uuidof(Recordset));
+
 		 CString tbn1, sBHFormat , sBH;
 		 float sngLugAvgLen=0.0 , mvL=0.0 , sngTmpSumLen=0.0;
 		 float iDifRodLen=0.0 ; //拉杆长度圆整前与圆整后的差值mm
@@ -7286,24 +7172,24 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 		 float fTmp;//临时变量
 		 float mfNutsHeight;//记录连接螺母的厚度
 		CString SQLx,sTmp,sTmp1;
-		COleVariant vTmp;
+		_variant_t vTmp;
 
 
 		//注意下句中必须是IsSAPart<>-1，而不能是NOT IsNull(seq)，以便于后面呼应一致：因为根部也可能没有编号（公用根部），而根部要参与零件判断
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(ClassID) AND ClassID<>") + ltos(iAttached) + _T(" AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-		rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsTZB.Open(dbOpenDynaset,SQLx);
-		if( rsTZB.IsEOF() && rsTZB.IsBOF() )
+		rsTZB->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if( rsTZB->BOF && rsTZB->adoEOF )
 		{
-			sTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),EDIBgbl::dbPRJDB.GetName(), EDIBgbl::Btype[EDIBgbl::TZB],SQLx);
+			sTmp.Format(GetResStr(IDS_NoThisZDJHResultInTBNSelPrjspecTZB),EDIBgbl::GetDBName(EDIBgbl::dbPRJDB), EDIBgbl::Btype[EDIBgbl::TZB],SQLx);
 			throw sTmp;
 		}
 		else 
 		{
-			rsTZB.MoveLast();
-			int iTZBRcount = rsTZB.GetRecordCount();
+			rsTZB->MoveLast();
+			int iTZBRcount = rsTZB->RecordCount;
 			i = iTZBRcount;
-			rsTZB.MoveFirst();//加快速度
+			rsTZB->MoveFirst();//加快速度
 			//拉杆数
 			//第一个零件下标i=0			
 			Ptype=new CString [i];
@@ -7326,64 +7212,64 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 			memset(AllowedMinLugExt,0,sizeof(float)*i*2);
 
 
-            rsTmp.m_pDatabase = &modPHScal::dbZDJcrude;
 			for( i = 0 ;i< iTZBRcount;i++)
 			{//4 ZA表中的每一条记录进行循环取值(start)
-				rsTZB.GetFieldValue(_T("ID"),vTmp);
+				rsTZB->get_Collect((_variant_t)_T("ID"),&vTmp);
 				Ptype[i] =vtos(vTmp);
 
-				rsTZB.GetFieldValue(_T("ClassID"),vTmp);
+				rsTZB->get_Collect((_variant_t)_T("ClassID"),&vTmp);
 				mlPartClassID[i] =vtoi(vTmp);
 
-				rsTZB.GetFieldValue(_T("recno"),vTmp);
+				rsTZB->get_Collect((_variant_t)_T("recno"),&vTmp);
 				mlPartRecno[i]=vtoi(vTmp);
 
 				mlPartIndex[i] = vtoi(sFindFLD(_T("ID"), _T("Index"), Ptype[i]));
-				rsTZB.GetFieldValue(_T("sizeC"),vTmp);
+				rsTZB->get_Collect((_variant_t)_T("sizeC"),&vTmp);
 				mlPartDia[i] = vtoi(vTmp);
 
 				if( mlPartClassID[i] == iROD )
 				{//3
 					SQLx.Format(_T("SELECT SizeH,sizeHH FROM [%s] WHERE size2 = %d AND CustomID = \'%s\'"),modPHScal::tbnBoltsNuts,mlPartDia[i],modPHScal::sFindCustomID("F2"));	
-					rsTmp.Open(dbOpenDynaset,SQLx);
-					if(rsTmp.IsEOF() && rsTmp.IsBOF() )
+					rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if(rsTmp->BOF && rsTmp->adoEOF )
 					{//1
-						sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),modPHScal::dbZDJcrude.GetName(), modPHScal::tbnBoltsNuts,SQLx);
+						sTmp.Format(GetResStr(IDS_NoRecordInXtableInXmdb),EDIBgbl::GetDBName(modPHScal::dbZDJcrude), modPHScal::tbnBoltsNuts,SQLx);
 						throw sTmp;
 //						mfNutsHeight = 0;
 					}//1
 					else
 					{//2
-						rsTmp.GetFieldValue("SizeH",vTmp);
+						rsTmp->get_Collect((_variant_t)"SizeH",&vTmp);
 						mfNutsHeight=vtof(vTmp);
 						if(mfNutsHeight == 0)
 						{//1
-							rsTmp.GetFieldValue("sizeHH",vTmp);
+							rsTmp->get_Collect((_variant_t)"sizeHH",&vTmp);
 							mfNutsHeight = vtof(vTmp);
 						}//1
 					}//2
 
-					rsTmp.Close();
+					rsTmp->Close();
 					//螺纹吊杆
 					if(Ptype[i]==_T("L2"))
 					{//1
 						//拉杆上端插入长度=L2左螺纹长度
-						rsTZB.GetFieldValue(_T("AllowedMinLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMinLugExt"),&vTmp);
 						AllowedMinLugExt[i][0]= vtof(vTmp);
 						AllowedMaxLugExt[i][0] = vtof(vTmp);
 						//拉杆下端插入长度=右螺纹长度
-						rsTZB.GetFieldValue(_T("AllowedMaxLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMaxLugExt"),&vTmp);
 						AllowedMinLugExt[i][1]= vtof(vTmp)-mfNutsHeight;
 						AllowedMaxLugExt[i][1] = vtof(vTmp)-mfNutsHeight;						
 					}//1
 					else
 					{//1
 						//拉杆上端插入长度=L2左螺纹长度或L1右螺纹长度
-						rsTZB.GetFieldValue(_T("AllowedMinLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMinLugExt"),&vTmp);
 						AllowedMinLugExt[i][0]= vtof(vTmp)-mfNutsHeight;
 						AllowedMaxLugExt[i][0] = vtof(vTmp)-mfNutsHeight;
 						//拉杆下端插入长度=右螺纹长度
-						rsTZB.GetFieldValue(_T("AllowedMaxLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMaxLugExt"),&vTmp);
 						AllowedMinLugExt[i][1]= vtof(vTmp)-mfNutsHeight;
 						AllowedMaxLugExt[i][1] = vtof(vTmp)-mfNutsHeight;						
 					}//1
@@ -7393,40 +7279,40 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 					//其它连接件，预先取插入值
 					if( Ptype[i] == _T("LHA") ||Ptype[i] == _T("LHB") || Ptype[i] == _T("PHA") || Ptype[i] == _T("PHB"))
 					{//1
-						rsTZB.GetFieldValue(_T("AllowedMinLugExtUp"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMinLugExtUp"),&vTmp);
 						AllowedMinLugExt[i][0]= vtof(vTmp);
-						rsTZB.GetFieldValue(_T("AllowedMinLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMinLugExt"),&vTmp);
 						AllowedMinLugExt[i][1]= vtof(vTmp);
 						
-						rsTZB.GetFieldValue(_T("AllowedMaxLugExtUp"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMaxLugExtUp"),&vTmp);
 						AllowedMaxLugExt[i][0] = vtof(vTmp);
-						rsTZB.GetFieldValue(_T("AllowedMaxLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMaxLugExt"),&vTmp);
 						AllowedMaxLugExt[i][1] = vtof(vTmp);
 					}//1
 					else
 					{//1						
-						rsTZB.GetFieldValue(_T("AllowedMinLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMinLugExt"),&vTmp);
 						AllowedMinLugExt[i][0]= vtof(vTmp);
 						AllowedMinLugExt[i][1]= vtof(vTmp);
 						
-						rsTZB.GetFieldValue(_T("AllowedMaxLugExt"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("AllowedMaxLugExt"),&vTmp);
 						AllowedMaxLugExt[i][0] = vtof(vTmp);
 						AllowedMaxLugExt[i][1] = vtof(vTmp);
 					}//1
 				}//2
-				rsTZB.MoveNext();
+				rsTZB->MoveNext();
 			}//4 ZA表中的每一条记录进行循环取值(end)
 						
 			//在此之前必须先获得下一个零件的ClassID和Index
 			//必须在第一次循环之后，因为要获取下一个零件的ClassID和Index
 			bool bHasPA=false,bHasSA=false,bHasT3=false,bHasT3A=false;
 			int iRodPosHasPA,iRodPosHasSA;
-			rsTZB.MoveFirst();
+			rsTZB->MoveFirst();
 			giNumRod = 0;
-			rsTZB.MoveFirst();
+			rsTZB->MoveFirst();
 			for( i = 0 ;i< iTZBRcount;i++)
 			{
-				rsTZB.GetFieldValue(_T("ID"),vTmp);
+				rsTZB->get_Collect((_variant_t)_T("ID"),&vTmp);
 				Ptype[i] =vtos(vTmp);
 
 				//修改于2003.06.09，原为 
@@ -7438,7 +7324,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 					//记住最后一根拉杆的位置，以便后面计算最后拉杆时好调整拉杆长度
 					lngLastRodPos = i;
 					//获得拉杆直径值(此前通过GetPhsBHandSizes函数暂时保存在sizeC字段)，以便现在或以后使用
-					//rsTZB.GetFieldValue(_T("sizeC"),vTmp);
+					//rsTZB->get_Collect((_variant_t)_T("sizeC"),vTmp);
 					//iDiameter = vtof(vTmp);
 					//在过程GetBoltsNutsAndAttachmentsCLgg中，字段C保存了拉杆在与管部、根部、上下方弹簧连接的情况下拉杆伸出的最小长度(华东院),对于西北院C可能大于拉杆螺纹长度
 					//支吊架零部件高度和（含拉杆与管部、根部、上下方弹簧等的出头裕量）
@@ -7446,7 +7332,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 					if( Ptype[i-1] == _T("T3A") || mlPartIndex[i-1]==iPA)
 					{//2
 						//管部或下方弹簧，加下段
-						rsTZB.GetFieldValue(_T("C"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("C"),&vTmp);
 						fTmp=vtof(vTmp);
 						//拉杆下端插入长度
 						//受到螺纹长度限制
@@ -7490,7 +7376,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 					if( Ptype[i+1] == _T("T3") || mlPartIndex[i+1]==iSA)
 					{//2
 						//根部或上方弹簧，加尺寸上段
-						rsTZB.GetFieldValue(_T("C"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("C"),&vTmp);
 						fTmp=vtof(vTmp);
 						//拉杆上端插入长度
 						//受到螺纹长度限制
@@ -7538,7 +7424,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				}//3 是拉杆(end)
 				else 
 				{//6 //不是拉杆(start)
-					rsTZB.GetFieldValue(_T("sizeDIM"),vTmp);
+					rsTZB->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);
 					if( Ptype[i] == _T("T3A") )
 						tempT3A = fabs(vtof(vTmp));
 					else if( Ptype[i] == _T("T3") )
@@ -7576,7 +7462,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 									if(Ptype[i-1]==_T("PHD1"))
 									{
 										//这种下方恒吊不能计算根部高度
-										rsTZB.GetFieldValue(_T("sizeDIM"),vTmp);//pfg?
+										rsTZB->get_Collect((_variant_t)_T("sizeDIM"),&vTmp);//pfg?
 										iSumRodLength+=vtof(vTmp);
 									}
 									else
@@ -7590,15 +7476,15 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							//已经获得插入值了
 						}
 					}//5
-					rsTZB.GetFieldValue(_T("PreviousPartInsertLen"),vTmp);
+					rsTZB->get_Collect((_variant_t)_T("PreviousPartInsertLen"),&vTmp);
 					PreviousPartInsertLen[i] = vtoi(vTmp);
 					//支吊架零部件高度和（不含拉杆与管部、根部、上下方弹簧等的最小伸出长度，不计其它螺纹件内的拉杆插入长度）
 					//根部的sizeH字段在此之前必须=0，而sizeDIM字段必须=根部高度，拉杆长度才能计算正确。
-					rsTZB.GetFieldValue(_T("sizeH"),vTmp);
+					rsTZB->get_Collect((_variant_t)_T("sizeH"),&vTmp);
 					iSumRodLength+=vtof(vTmp);
 					//iSumRodLength += abs(vtof(vTmp));
 				}//6	//不是拉杆(end)
-				rsTZB.MoveNext();
+				rsTZB->MoveNext();
 			}
       
 			//拉杆长度=(根部标高-管部标高)*1000-其它零部件高度之和+拉杆长度调整值
@@ -7611,7 +7497,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 			iRodMaxLen = iSumRodLength;
       
 			//重新开始，考虑螺纹连接件伸入长度，来修正拉杆总长度
-			rsTZB.MoveFirst();
+			rsTZB->MoveFirst();
 			for( i = 0 ;i<iTZBRcount;i++)
 			{
 				//if( Ptype[i] == _T("L8") )
@@ -7695,23 +7581,23 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 								if( mlPartClassID[i - 1] == iROD )
 								{
 									SQLx = _T("SELECT * FROM [") + tbnSPRINGL5Crude + _T("] WHERE size2=") + ltos(mlPartDia[i - 1]);
-									rsTmp.m_pDatabase=&dbZDJcrude;
-									rsTmp.Open(dbOpenSnapshot,SQLx);
+									rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+										adOpenKeyset, adLockOptimistic, adCmdText); 
 
-									if( rsTmp.IsEOF() && rsTmp.IsBOF() )
+									if( rsTmp->BOF && rsTmp->adoEOF )
 									{
-										sTmp.Format(GetResStr(IDS_NotFoundThisDia),dbZDJcrude.GetName(),tbnSPRINGL5Crude,ltos(mlPartDia[i-1]));
+										sTmp.Format(GetResStr(IDS_NotFoundThisDia),EDIBgbl::GetDBName(dbZDJcrude),tbnSPRINGL5Crude,ltos(mlPartDia[i-1]));
 										ShowMessage(sTmp);
 									}
 									else
 									{
 										//请看数据库定义说明书或江阴石化设备厂蝶簧样本p54
-										rsTmp.GetFieldValue(_T("size4"),vTmp);
+										rsTmp->get_Collect((_variant_t)_T("size4"),&vTmp);
 
 										AllowedMinLugExt[i][0] = vtof(vTmp);
-										rsTmp.GetFieldValue(_T("size5"),vTmp1);
-										rsTmp.GetFieldValue(_T("size3"),vTmp2);
-										rsTmp.GetFieldValue(_T("size2"),vTmp3);
+										rsTmp->get_Collect((_variant_t)_T("size5"),&vTmp1);
+										rsTmp->get_Collect((_variant_t)_T("size3"),&vTmp2);
+										rsTmp->get_Collect((_variant_t)_T("size2"),&vTmp3);
 										AllowedMaxLugExt[i][0] =(vTmp1.vt==VT_NULL ? (vtof(vTmp2) - vtof(vTmp3)) / 2 : vtof(vTmp1));
 										//插入长度必须<=拉杆上端螺纹长度
 										if(AllowedMaxLugExt[i-1][0]<AllowedMaxLugExt[i][0])	AllowedMaxLugExt[i][0]=AllowedMaxLugExt[i-1][0];
@@ -7719,7 +7605,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 										iRodMaxLen +=AllowedMaxLugExt[i][0];
 										iRodMinLen +=AllowedMinLugExt[i][0];
 									}
-									rsTmp.Close();
+									rsTmp->Close();
 								}
 								else 
 								{
@@ -7727,20 +7613,20 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 									{
 										//这是有松紧螺母的弹性件
 										SQLx = _T("SELECT * FROM [") + tbnSPRINGL5Crude + _T("] WHERE size2=") + ltos(mlPartDia[i + 1]);
-										rsTmp.m_pDatabase=&dbZDJcrude;
-										rsTmp.Open(dbOpenSnapshot,SQLx);
-										if( rsTmp.IsEOF() && rsTmp.IsBOF() )
+										rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+											adOpenKeyset, adLockOptimistic, adCmdText); 
+										if( rsTmp->BOF && rsTmp->adoEOF )
 										{
-											sTmp.Format(GetResStr(IDS_NotFoundThisDia),  dbZDJcrude.GetName(), tbnSPRINGL5Crude,ltos(mlPartDia[i + 1])); ShowMessage(sTmp);
+											sTmp.Format(GetResStr(IDS_NotFoundThisDia),  EDIBgbl::GetDBName(dbZDJcrude), tbnSPRINGL5Crude,ltos(mlPartDia[i + 1])); ShowMessage(sTmp);
 										}
 										else 
 										{
 											//请看数据库定义说明书PHSdbManual.DOC或江阴石化设备厂蝶簧样本p54
-											rsTmp.GetFieldValue(_T("size4"),vTmp);
+											rsTmp->get_Collect((_variant_t)_T("size4"),&vTmp);
 											AllowedMinLugExt[i][0] = vtof(vTmp);
-											rsTmp.GetFieldValue(_T("size5"),vTmp1);
-											rsTmp.GetFieldValue(_T("size3"),vTmp2);
-											rsTmp.GetFieldValue(_T("size2"),vTmp3);
+											rsTmp->get_Collect((_variant_t)_T("size5"),&vTmp1);
+											rsTmp->get_Collect((_variant_t)_T("size3"),&vTmp2);
+											rsTmp->get_Collect((_variant_t)_T("size2"),&vTmp3);
 											AllowedMaxLugExt[i][0] =(vTmp1.vt==VT_NULL ? (vtof(vTmp2) - vtof(vTmp3)) / 2 : vtof(vTmp1));
 											//插入长度必须<=拉杆下端螺纹长度
 											if(AllowedMaxLugExt[i+1][1]<AllowedMaxLugExt[i][0])	AllowedMaxLugExt[i][0]=AllowedMaxLugExt[i+1][1];
@@ -7748,7 +7634,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 											iRodMaxLen +=AllowedMaxLugExt[i][0];
 											iRodMinLen +=AllowedMinLugExt[i][0];
 										}
-										rsTmp.Close();
+										rsTmp->Close();
 									}
 								}
 							}
@@ -7807,7 +7693,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 						}
 					}
 				}
-				rsTZB.MoveNext();
+				rsTZB->MoveNext();
 			}
 
 
@@ -7897,7 +7783,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 			int  bA , bB; //A,B端可调整长度
 			iNumRod = 0;
 		
-			rsTZB.MoveFirst();
+			rsTZB->MoveFirst();
 			for( i = 0 ;i< iTZBRcount;i++)
 			{//4
 				bA = 1;
@@ -7919,13 +7805,15 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							bB = 0;
 						}
 					}
-				    rsTZB.Edit(); rsTZB.SetFieldValue(_T("size"),COleVariant((float)(bA + bB)));rsTZB.Update();
+					rsTZB->put_Collect((_variant_t)_T("size"),_variant_t((float)(bA + bB)));
+					rsTZB->Update();
 				}//3
 				else 
 				{
-					rsTZB.Edit(); rsTZB.SetFieldValue(_T("size"),COleVariant(3.0));rsTZB.Update();
+					rsTZB->put_Collect((_variant_t)_T("size"),_variant_t(3.0));
+					rsTZB->Update();
 				}
-				rsTZB.MoveNext();
+				rsTZB->MoveNext();
 			}//4
       
 			//圆整后的拉杆长度差值按可调整间隙大小比例分配到伸入长度中
@@ -7943,18 +7831,19 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 			//注意下句中必须是IsSAPart<>-1，而不能是NOT IsNull(seq)，因为根部也可能没有编号（公用根部），而根部要参与零件判断
 			
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(ClassID) AND ClassID<>") + ltos(iAttached) + _T(" AND ClassID<>") + ltos(iBolts) + _T(" AND ClassID<>") + ltos(iNuts) + _T(" AND IsSAPart<>-1 AND (bUserAdd IS NULL OR bUserAdd=0) ORDER BY size");
-			rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
-			rsTmp.Open(dbOpenSnapshot,SQLx);
+			rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
 			long delta = 0;
-			while(!rsTmp.IsEOF())
+			while(!rsTmp->BOF)
 			{//9
 				for( i = 0 ;i< iTZBRcount;i++)
 				{
-					rsTmp.GetFieldValue(_T("recno"),vTmp);
+					rsTmp->get_Collect((_variant_t)_T("recno"),&vTmp);
 					if( mlPartRecno[i] == vtoi(vTmp) )
 						break;
 				}
-				rsTZB.FindFirst(_T("recno=") + ltos(mlPartRecno[i]));
+				_variant_t vTmp;
+				rs->Find((_bstr_t)(_T("recno=") + ltos(mlPartRecno[i])), 0, adSearchBackward);
 				if( mlPartClassID[i] == iROD )
 				{//8 //当前是拉杆(start)
 					iNumRod ++;
@@ -8014,7 +7903,8 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							}//2
 							k = k + AllowedMaxLugExt[i-1][0] - n;
 						}//3
-					    rsTZB.Edit();	rsTZB.SetFieldValue(_T("A"),COleVariant((float)n));rsTZB.Update();
+						rsTZB->put_Collect((_variant_t)_T("A"),_variant_t((float)n));
+						rsTZB->Update();
 					}//4 当前是拉杆前面连接件为T1,T2,HA,HB,T3A,iPA,L5,L6,L7,L8,L7Dd,L8Dd,T5,LHG (end)	
 
 					if( Ptype[i + 1] == _T("T3") || mlPartIndex[i + 1] == iSA || Ptype[i+1] == _T("L5") || Ptype[i+1] == _T("L6") || Ptype[i+1] == _T("L7") || Ptype[i+1] == _T("L8") || Ptype[i+1] == _T("L7Dd") || Ptype[i+1] == _T("L8Dd") || Ptype[i+1] == _T("T1") || Ptype[i+1] == _T("T2") || Ptype[i+1] == _T("T6") || mlPartClassID[i+1] == iCSPR && Ptype[i+1] != _T("ZHB") )
@@ -8105,15 +7995,14 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 										delta = n - AllowedMaxLugExt[i+1][1];
 										n = AllowedMaxLugExt[i+1][1];
 									
-										COleVariant tmp;
-										rsTZB.GetFieldValue (_T("B"),tmp);
+										_variant_t tmp;
+										rsTZB->get_Collect((_variant_t)_T("B"), &tmp);
 										float b = vtof(tmp);
 
 										if( b + delta <= AllowedMaxLugExt[i+1][0])
 										{//1
-											rsTZB.Edit ();
-											rsTZB.SetFieldValue(_T("B"),COleVariant((float)(b+delta))); 
-											rsTZB.Update();
+											rsTZB->put_Collect((_variant_t)_T("B"),_variant_t((float)(b+delta))); 
+											rsTZB->Update();
 										}//1
 										else
 										{//1
@@ -8149,15 +8038,14 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 										delta = n - AllowedMaxLugExt[i+1][0];
 										n = AllowedMaxLugExt[i+1][0];
 									
-										COleVariant tmp;
-										rsTZB.GetFieldValue (_T("B"),tmp);
+										_variant_t tmp;
+										rsTZB->get_Collect((_variant_t)_T("B"), &tmp);
 										float a = vtof(tmp);
 
 										if( a + delta <= AllowedMaxLugExt[i+1][1])
 										{//1
-											rsTZB.Edit ();
-											rsTZB.SetFieldValue(_T("B"),COleVariant((float)(a+delta))); 
-											rsTZB.Update();
+											rsTZB->put_Collect((_variant_t)_T("B"),_variant_t((float)(a+delta))); 
+											rsTZB->Update();
 										}//1
 										else
 										{//1
@@ -8203,46 +8091,46 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 								k = k + AllowedMaxLugExt[i+1][0] - n;
 							}
 						}//6
-						rsTZB.Edit();rsTZB.SetFieldValue(_T("B"),COleVariant((float)n)); rsTZB.Update();
+						rsTZB->put_Collect((_variant_t)_T("B"),_variant_t((float)n)); rsTZB->Update();
 					}//7
 				}//8
-				rsTmp.MoveNext();
+				rsTmp->MoveNext();
 			}//9
-			rsTmp.Close();   
+			rsTmp->Close();   
 
 		
 		//计算并且分配每根拉杆最小长度，然后按最小长度排序，优先处理最小长度最大的拉杆。
 		//先将最小长度保存在size字段
    
-		rsTZB.MoveFirst();
+		rsTZB->MoveFirst();
 		iNumRod = 1;
 		for( i = 0 ;i< iTZBRcount;i++)
 		{
-			rsTZB.GetFieldValue(_T("CustomID"),vTmp);
+			rsTZB->get_Collect((_variant_t)_T("CustomID"),&vTmp);
 			tbn1 = sFindTBN(vtos(vTmp));
 			if( mlPartClassID[i] == iROD )
 			{//5 当前是拉杆(start)
 				//获得拉杆数据
 				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE trim(CustomID)=\'") +vtos(vTmp) + _T("\'");
-				rs.m_pDatabase=&dbZDJcrude;
-				rs.Open(dbOpenDynaset,SQLx);
-				if( rs.IsEOF() && rs.IsBOF() )
+				rs->Open((_bstr_t)SQLx, dbZDJcrude.GetInterfacePtr(), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if( rs->BOF && rs->adoEOF )
 				{
-					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO), dbZDJcrude.GetName(),tbnLugInfo,SQLx);
+					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO), EDIBgbl::GetDBName(dbZDJcrude),tbnLugInfo,SQLx);
 					throw sTmp;
 				}
-				rs.MoveFirst();
+				rs->MoveFirst();
 				//拉杆最小长度
-				rs.GetFieldValue(_T("minLength"),vTmp);
+				rs->get_Collect((_variant_t)_T("minLength"),&vTmp);
 				MinLength = vtof(vTmp);
 				//拉杆最大长度
-				rs.GetFieldValue(_T("maxLength"),vTmp);
+				rs->get_Collect((_variant_t)_T("maxLength"),&vTmp);
 				MaxLength = vtof(vTmp);
 				//拉杆增量长度起点1，比如若从最小长度200开始增量为100,
 				//直到1000，增量又为500，直到最大长度2000止。
 				//则IncrementStart1=200,IncrementLength1=100
 				//则IncrementStart2=1000,IncrementLength2=500
-				rs.GetFieldValue(_T("IncrementStart1"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementStart1"),&vTmp);
 				if( vtof(vTmp) <= MinLength )
 				{
 					IncrementStart1 = MinLength;
@@ -8251,10 +8139,10 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				{
 					IncrementStart1 = vtof(vTmp);
 				}
-				rs.GetFieldValue(_T("IncrementLength1"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementLength1"),&vTmp);
 				IncrementLength1 = vtof(vTmp);
 				//拉杆增量长度起点2，比如从1000开始增量为500，
-				rs.GetFieldValue(_T("IncrementStart2"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementStart2"),&vTmp);
 				if( vtof(vTmp) <= MinLength )
 				{
 					IncrementStart2 = MaxLength;
@@ -8263,7 +8151,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				{
 					IncrementStart2 =vtof(vTmp);
 				}
-				rs.GetFieldValue(_T("IncrementLength2"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementLength2"),&vTmp);
 				if( vtof(vTmp) >= MaxLength - MinLength )
 				{
 					IncrementLength2 = 0;
@@ -8284,7 +8172,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 					if( Ptype[i - 1] == _T("T3A") )
 					{//1
 						//前一个是下方弹簧
-						rsTZB.GetFieldValue(_T("A"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("A"),&vTmp);
 						tempMinLength = fabs(tempT3A) + vtof(vTmp);
 						/*if( mlPartIndex[i - 2] = iPA && i - 2 >= 0 ){
 							//前一个是下方弹簧，再前一个是管部
@@ -8305,7 +8193,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							}else {
 							}
 						}*/
-						rsTZB.GetFieldValue(_T("A"),vTmp);
+						rsTZB->get_Collect((_variant_t)_T("A"),&vTmp);
 						tempMinLength = vtof(vTmp);
 					}//1
             
@@ -8317,7 +8205,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							if( mlPartIndex[i + 2] == iSA && i + 2 <= iTZBRcount - 1 )
 							{//1
 								//后一个是上方弹簧,再后一个是根部
-								rsTZB.GetFieldValue(_T("B"),vTmp);
+								rsTZB->get_Collect((_variant_t)_T("B"),&vTmp);
 								tempMinLength = tempMinLength + fabs(tempT3) + vtof(vTmp) + Cavphs->SACSHeight;
 							}//1
 							//else {
@@ -8331,7 +8219,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							if( mlPartIndex[i + 1] == iSA )
 							{//1
 								//后一个不是上方弹簧,后一个是根部
-								rsTZB.GetFieldValue(_T("C"),vTmp);
+								rsTZB->get_Collect((_variant_t)_T("C"),&vTmp);
 								tempMinLength = tempMinLength + vtof(vTmp) + Cavphs->SACSHeight;
 							}//1
 							else
@@ -8344,7 +8232,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 									//后一个不是上方弹簧,不是根部，不是螺纹连接件
                         
 								}*/
-								rsTZB.GetFieldValue(_T("C"),vTmp);
+								rsTZB->get_Collect((_variant_t)_T("C"),&vTmp);
 								tempMinLength = tempMinLength + vtof(vTmp);
 							}//1
 						}//2
@@ -8352,42 +8240,42 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				}//4
 				tempMinLength = (tempMinLength > MinLength ? tempMinLength : MinLength);
 				//最小尺寸临时保存在拉杆size字段
-				rsTZB.Edit(); rsTZB.SetFieldValue(_T("size"),COleVariant((float)tempMinLength)); rsTZB.Update();
-				rs.Close();
+				rsTZB->put_Collect((_variant_t)_T("size"),_variant_t((float)tempMinLength)); rsTZB->Update();
+				rs->Close();
 			}//5当前是拉杆(end)
-			rsTZB.MoveNext();
+			rsTZB->MoveNext();
 		}     
 		//计算并且分配每根拉杆长度
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(ClassID) AND ( ClassID=") + ltos(iROD) + _T(" OR ClassID=") + ltos(iXL1) + _T(") AND NOT IsNull(SEQ) ORDER BY C DESC");
-		rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
-		rsTmp.Open(dbOpenSnapshot,SQLx);		
-		rsTmp.MoveLast();
-		rsTmp.MoveFirst();
+		rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		rsTmp->MoveLast();
+		rsTmp->MoveFirst();
 		iNumRod = 1;
-		for( i = 0 ;i< rsTmp.GetRecordCount() ;i++)
+		for( i = 0 ;i< rsTmp->RecordCount ;i++)
 		{
 				//获得拉杆数据
-				rsTmp.GetFieldValue(_T("CustomID"),vTmp);
+				rsTmp->get_Collect((_variant_t)_T("CustomID"),&vTmp);
 				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE trim(CustomID)=\'") + vtos(vTmp) + _T("\'");
-				rs.m_pDatabase=&dbZDJcrude;
-				rs.Open(dbOpenDynaset,SQLx);
-				if( rs.IsEOF() && rs.IsBOF() )
+				rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if( rs->BOF && rs->adoEOF )
 				{
-					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO),dbZDJcrude.GetName(),tbnLugInfo,SQLx);
+					sTmp.Format(GetResStr(IDS_NoLugCustomIDInLugINFO),EDIBgbl::GetDBName(dbZDJcrude),tbnLugInfo,SQLx);
 					throw sTmp;
 				}
-				rs.MoveFirst();
+				rs->MoveFirst();
 				//拉杆最小长度
-				rs.GetFieldValue(_T("minLength"),vTmp);
+				rs->get_Collect((_variant_t)_T("minLength"),&vTmp);
 				MinLength = vtof(vTmp);
-				rs.GetFieldValue(_T("maxLength"),vTmp);
+				rs->get_Collect((_variant_t)_T("maxLength"),&vTmp);
 				//拉杆最大长度
 				MaxLength =vtof(vTmp);
 				//拉杆增量长度起点1，比如若从最小长度200开始增量为100,
 				//直到1000，增量又为500，直到最大长度2000止。
 				//则IncrementStart1=200,IncrementLength1=100
 				//则IncrementStart2=1000,IncrementLength2=500
-				rs.GetFieldValue(_T("IncrementStart1"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementStart1"),&vTmp);
 				if( vtof(vTmp)<= MinLength )
 				{
 					IncrementStart1 = MinLength;
@@ -8396,16 +8284,16 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				{
 					IncrementStart1 = vtof(vTmp);
 				}
-				rs.GetFieldValue(_T("IncrementLength1"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementLength1"),&vTmp);
 				IncrementLength1 = vtof(vTmp);
 				//拉杆增量长度起点2，比如从1000开始增量为500，
-				rs.GetFieldValue(_T("IncrementStart2"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementStart2"),&vTmp);
 				if(  vtof(vTmp)<= MinLength ){
 					IncrementStart2 = MaxLength;
 				}else {
 					IncrementStart2 = vtof(vTmp);
 				}
-				rs.GetFieldValue(_T("IncrementLength2"),vTmp);
+				rs->get_Collect((_variant_t)_T("IncrementLength2"),&vTmp);
 				if( vtof(vTmp) >= MaxLength - MinLength ){
 					IncrementLength2 = 0;
 				}else {
@@ -8420,7 +8308,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				//使每节的长度尽量接近平均长度。
 				sngLugAvgLen = (iSumRodLength - sngTmpSumLen) / (giNumRod - iNumRod + 1);
 				//记住每根拉杆的最小允许长度
-				rsTmp.GetFieldValue(_T("size"),vTmp);
+				rsTmp->get_Collect((_variant_t)_T("size"),&vTmp);
 				tempMinLength = vtof(vTmp);
 				if( iNumRod != giNumRod )
 				{
@@ -8497,24 +8385,28 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 				}
 
 				//获得拉杆规格->sBH
-				rsTmp.GetFieldValue(_T("CustomID"),vTmp);
+				rsTmp->get_Collect((_variant_t)_T("CustomID"),&vTmp);
 				sBHFormat = vtos(sFindFLD(_T("CustomID"), _T("BHformat"), vtos(vTmp)));
-				rsTmp.GetFieldValue(_T("CLgg"),vTmp);
+				rsTmp->get_Collect((_variant_t)_T("CLgg"),&vTmp);
 				sBH = vtos(vTmp);
-				EDIBgbl::dbPRJ.Execute(_T("UPDATE tmpCSLen SET BH=\'") + vtos(vTmp) + _T("\'"));
-				COleVariant vBH = vTmp;
-				EDIBgbl::dbPRJ.Execute(_T("UPDATE tmpCSLen SET L1=") + ftos(RodLen[iNumRod]));
+				SQLx = _T("UPDATE tmpCSLen SET BH=\'") + vtos(vTmp) + _T("\'");
+				EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
+				_variant_t vBH = vTmp;
+
+				SQLx = _T("UPDATE tmpCSLen SET L1=") + ftos(RodLen[iNumRod]);
+				EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 				mvL = CSLength(sBHFormat, _T("L1"), sBH);
-				rsTmp.GetFieldValue(_T("recno"),vTmp);
-				COleVariant vTmp3;
-				if(rsTZB.FindFirst(_T("recno=") + vtos(vTmp)))
+				rsTmp->get_Collect((_variant_t)_T("recno"),&vTmp);
+				_variant_t vTmp3;
+				_variant_t vTmp;
+				rsTZB->Find((_bstr_t)(_T("recno=") + vtos(vTmp)), 0, adSearchBackward);
+				if(!rsTZB->adoEOF)
 				{
-					rsTZB.GetFieldValue(_T("GDW1"),vTmp);
-					rsTZB.GetFieldValue(_T("CLnum"),vTmp1);
-					rsTmp.GetFieldValue(_T("B"),vTmp2);
-					rsTmp.GetFieldValue(_T("A"),vTmp3);
-					rsTZB.Edit();
-					rsTZB.SetFieldValue(_T("BH"),vBH);
+					rsTZB->get_Collect((_variant_t)_T("GDW1"),&vTmp);
+					rsTZB->get_Collect((_variant_t)_T("CLnum"),&vTmp1);
+					rsTmp->get_Collect((_variant_t)_T("B"),&vTmp2);
+					rsTmp->get_Collect((_variant_t)_T("A"),&vTmp3);
+					rsTZB->put_Collect((_variant_t)_T("BH"),vBH);
 					
 					//2007.09.12(start)
 					if( iNumRod<giNumRod )
@@ -8539,28 +8431,29 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 							}
 							
 						}
-						EDIBgbl::dbPRJ.Execute(_T("UPDATE tmpCSLen SET L1=") + ftos(RodLen[iNumRod]));
+						SQLx = _T("UPDATE tmpCSLen SET L1=") + ftos(RodLen[iNumRod]);
+						EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 						mvL = CSLength(sBHFormat, _T("L1"), sBH);
 					}
 					//2007.09.12(end)
 
-					rsTZB.SetFieldValue(_T("sizeH"),COleVariant((double)RodLen[iNumRod]));
+					rsTZB->put_Collect((_variant_t)_T("sizeH"),_variant_t((double)RodLen[iNumRod]));
 					//标注尺寸=实际长度-两端调整长度
-					rsTZB.SetFieldValue(_T("sizeDIM"),COleVariant((long)(RodLen[iNumRod] - vtof(vTmp3)-vtof(vTmp2))));
+					rsTZB->put_Collect((_variant_t)_T("sizeDIM"),_variant_t((long)(RodLen[iNumRod] - vtof(vTmp3)-vtof(vTmp2))));
 					//拉杆作为零件计算整体单重. 单重/m由Cphs.GetPhsBHandSizes方法保存在rsTzb.Fields(_T("GDW1"))
 					//gbConnectHoleDimMatch
-					rsTZB.SetFieldValue(_T("L1"),COleVariant((float)RodLen[iNumRod]));
-					rsTZB.SetFieldValue(_T("CLdz"),COleVariant((float)(RodLen[iNumRod] / 1000.0 * vtof(vTmp))));					
-					rsTZB.SetFieldValue(_T("CLzz"),COleVariant((float)(RodLen[iNumRod] / 1000.0 * vtof(vTmp) * vtof(vTmp1))));
-					rsTZB.SetFieldValue(_T("CLgg"),STR_VAR(sBH));
-					rsTZB.Update();
+					rsTZB->put_Collect((_variant_t)_T("L1"),_variant_t((float)RodLen[iNumRod]));
+					rsTZB->put_Collect((_variant_t)_T("CLdz"),_variant_t((float)(RodLen[iNumRod] / 1000.0 * vtof(vTmp))));					
+					rsTZB->put_Collect((_variant_t)_T("CLzz"),_variant_t((float)(RodLen[iNumRod] / 1000.0 * vtof(vTmp) * vtof(vTmp1))));
+					rsTZB->put_Collect((_variant_t)_T("CLgg"),STR_VAR(sBH));
+					rsTZB->Update();
 				}
 				//Debug.Print RodLen(iNumRod)
 				iNumRod++;
-				rs.Close();
-				rsTmp.MoveNext();
+				rs->Close();
+				rsTmp->MoveNext();
 			}
-			rsTmp.Close();
+			rsTmp->Close();
 		}
 		ret=true;
 	}
@@ -8569,17 +8462,7 @@ bool modPHScal::CalRodLength(_Recordset*  rstbl, long  zdjh)
 		ShowMessage(e);
 
 	}
-	catch(CDaoException* e)
-	{
-		//AfxMessageBox(_T("ReportError"));
-		e->ReportError();
-		e->Delete();
-	}
 	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
 	{
 		AfxMessageBox(_T("Other general error!"));
 	}
@@ -8610,8 +8493,12 @@ void modPHScal::SetBasePoint()
 	{
 	   CalSpringParallelNum();
 	   CString FDp, FDp1;
-	   CDaoRecordset rs(&EDIBgbl::dbPHScode); //20071022 "dbSORT" 改为 "dbPHScode"
-	   rs.Open(dbOpenSnapshot,_T("SELECT * FROM phsDrawPos"));
+	   _RecordsetPtr rs;
+	   rs.CreateInstance(__uuidof(Recordset));
+	   CString SQLx;
+	   SQLx = _T("SELECT * FROM phsDrawPos");
+	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+		   adOpenKeyset, adLockOptimistic, adCmdText); 
 	   if (giDrawSIZE_A3A4 == 2)
 	   {
 		  //图幅自动
@@ -8654,87 +8541,101 @@ void modPHScal::SetBasePoint()
 	   FDp.MakeUpper();
 	   FDp.TrimLeft();
 	   FDp.TrimRight();
-	   COleVariant vTmp;
-	   if(rs.FindFirst(_T("ucase(trim(name))=\'") + (FDp) + (_T("VX_pt0x")) + _T("\'")))
+	   _variant_t vTmp;
+
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VX_pt0x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   VX_pt0x=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst (_T("ucase(trim(name))=\'") + (FDp) + (_T("VX_pt0y")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VX_pt0y")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {	   
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 			VX_pt0y=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst(_T("ucase(trim(name))=\'") + (FDp) + (_T("VZ_pt0x")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("VZ_pt0x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   VZ_pt0x=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt1x")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt1x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt1x=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt1y")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt1y")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt1y=vtof(vTmp);
 	   }
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt2x")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt2x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt2x=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt2y")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt2y")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt2y=vtof(vTmp);
 	   }
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt3x")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt3x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt3x=vtof(vTmp);
 	   }
    
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp) + (_T("pt3y")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp) + (_T("pt3y")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   pt3y=vtof(vTmp);
 	   }
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'") + (FDp1) + _T("_") + (_T("pt0x")) + _T("\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'") + (FDp1) + _T("_") + (_T("pt0x")) + _T("\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   Pt0X=vtof(vTmp);
 	   }
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'GIDIMOFFSET\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'GIDIMOFFSET\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   giDimOffset=vtof(vTmp);
 	   }
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'GIATTDOFFSETX\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'GIATTDOFFSETX\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   giAttDxOffsetX=vtof(vTmp);
 	   }
 	   giAttDzOffsetX = giAttDxOffsetX;
 
-	   if(rs.FindFirst( _T("ucase(trim(name))=\'GIATTDOFFSETY\'")))
+	   rs->Find((_bstr_t)(_T("((name))=\'GIATTDOFFSETY\'")), 0, adSearchBackward);
+	   if(!rs->adoEOF)
 	   {
-		   rs.GetFieldValue(Ax+_T("Pos"),vTmp);
+		   rs->get_Collect((_variant_t)(Ax+_T("Pos")),&vTmp);
 		   giAttDOffsetY=vtof(vTmp);
 	   }
 	 }
-	 catch(::CDaoException *e)
+	 catch(CException *e)
 	 {
 		 e->Delete();
 	 }
@@ -8953,7 +8854,7 @@ void modPHScal::InitializeCrudeData(_RecordsetPtr rs, bool /*ByVal*/ bFrmTxsrLoa
 	}
 }
 
-void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvariNumPart, CDaoRecordset& rsX)
+void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvariNumPart, _RecordsetPtr rsX)
 {
 //目的：计算固定支架Z1或Z2
 //原因:此过程加入到GetPhsBHandSizes中，导致VB6.0过程超过64K而使运行编译停止。
@@ -8978,14 +8879,14 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 	 //CString sXYZ;	//记录坐标系转换前的坐标方向
 
     _Recordset* rsza;
-    CDaoRecordset rsTmp;
-   
+	_RecordsetPtr rsTmp;
+	rsTmp.CreateInstance(__uuidof(Recordset));
+  
 	rsza=FrmTxsr.m_pViewTxsr->m_ActiveRs;
-	if(rsX.IsOpen())
-		rsX.Close();
-	rsX.m_pDatabase=&dbZDJcrude;
+	if(rsX->State == adStateOpen)
+		rsX->Close();
 	CString SQLx,sTmp,sTmp2,sTmp3;
-	COleVariant vTmp,vTmp2,vTmp3;
+	_variant_t vTmp,vTmp2,vTmp3;
 	switch(glClassID)
 	{
 	case iPAfixZ1:
@@ -8998,10 +8899,11 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			tmpSelPJG / mvariNumPart,
 			tmpT0 ,
 			dn);
-			if(rsX.IsOpen())
-				rsX.Close();
-			rsX.Open(dbOpenSnapshot,SQLx);
-         if( rsX.IsEOF() && rsX.IsBOF() )
+			if(rsX->State == adStateOpen)
+				rsX->Close();
+			rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+         if( rsX->BOF && rsX->adoEOF )
 			{
          }
 			else
@@ -9035,19 +8937,19 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			}
 		}
 
-		if(rsX.IsOpen())
-			rsX.Close();
-       rsX.m_pDatabase=&dbZDJcrude;
-	   rsX.Open(dbOpenSnapshot,SQLx);
-       if( rsX.IsEOF() && rsX.IsBOF() )
+		if(rsX->State == adStateOpen)
+			rsX->Close();
+		rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+       if( rsX->BOF && rsX->adoEOF )
 	   {
 		   sTmp.Format(GetResStr(IDS_NoThisZ1orZ2inCrudePAfix),dn);
 			throw sTmp;
        }
 	   else
 	   {
-          rsX.MoveFirst();
-			rsX.GetFieldValue(_T("size5"),vTmp);
+          rsX->MoveFirst();
+			rsX->get_Collect((_variant_t)_T("size5"),&vTmp);
           PAfixC1 = vtof(vTmp);
           
           if( vtos(rsza->GetCollect(_T("Unit_Force"))) == _T("N") )
@@ -9222,7 +9124,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
              pnr = 1000 * mzrc / (2 * PAfixC1) / sngCoef;
           }
 
-          rsX.GetFieldValue(_T("pmax"),vTmp);
+          rsX->get_Collect((_variant_t)_T("pmax"),&vTmp);
           if( fabs(pnl) > vtof(vTmp) )
 		  {
 			  sTmp2.Format(GetResStr(IDS_FixSupportBoltsNutsLoadOverAllowedMaxLoad),GetResStr(IDS_frmtxsr_OptCoolStatus),_T("\%g"),_T("\%g"));
@@ -9235,7 +9137,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			  sTmp.Format(sTmp2,pnr, vtof(vTmp));
 			  throw sTmp;
           }
-          rsX.GetFieldValue(_T("px0"),vTmp);
+          rsX->get_Collect((_variant_t)_T("px0"),&vTmp);
           if( fabs(pxlc) > vtof(vTmp) )
 		  {
 			  sTmp2.Format(GetResStr(IDS_XYZdirectionLoadTooLarger),_T("\%d"),_T("X"),GetResStr(IDS_frmtxsr_OptCoolStatus),_T("\%g"),_T("\%g"));
@@ -9249,7 +9151,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			  throw sTmp;
           }
           
-          rsX.GetFieldValue(_T("pz0"),vTmp);
+          rsX->get_Collect((_variant_t)_T("pz0"),&vTmp);
           if( fabs(pzlc) > vtof(vTmp) )
 		  {
 			  sTmp2.Format(GetResStr(IDS_XYZdirectionLoadTooLarger),_T("\%d"),_T("Z"),GetResStr(IDS_frmtxsr_OptCoolStatus),_T("\%g"),_T("\%g"));
@@ -9263,7 +9165,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			  throw sTmp;
           }
           
-          rsX.GetFieldValue(_T("mx0"),vTmp);
+          rsX->get_Collect((_variant_t)_T("mx0"),&vTmp);
           if( fabs(mxlc) > vtof(vTmp) )
 		  {
 			  sTmp2.Format(GetResStr(IDS_XYZdirectionLoadTooLarger),_T("\%d"),_T("X"),GetResStr(IDS_frmtxsr_OptCoolStatus),_T("\%g"),_T("\%g"));
@@ -9277,7 +9179,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			  throw sTmp;
           }
           
-          rsX.GetFieldValue(_T("my0"),vTmp);
+          rsX->get_Collect((_variant_t)_T("my0"),&vTmp);
           if( fabs(mylc) > vtof(vTmp) )
 		  {
 			  sTmp2.Format(GetResStr(IDS_XYZdirectionLoadTooLarger),_T("\%d"),_T("Y"),GetResStr(IDS_frmtxsr_OptCoolStatus),_T("\%g"),_T("\%g"));
@@ -9291,7 +9193,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			  throw sTmp;
           }
           
-		  rsX.GetFieldValue(_T("sizeH"),vTmp);
+		  rsX->get_Collect((_variant_t)_T("sizeH"),&vTmp);
           modPHScal::PAfixH = vtof(vTmp);
        }
 	   break;
@@ -9322,10 +9224,11 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				tmpT0,
 				gstrMaterial,
 				dn);
-          if(rsX.IsOpen())
-				rsX.Close();
-			rsX.Open(dbOpenSnapshot,SQLx);
-          if( rsX.IsEOF() && rsX.IsBOF() )
+          if(rsX->State == adStateOpen)
+				rsX->Close();
+		  rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+			  adOpenKeyset, adLockOptimistic, adCmdText); 
+          if( rsX->BOF && rsX->adoEOF )
 			{
           }
 		  else
@@ -9342,18 +9245,18 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 		   sngCoef = 0.83;
        if(dj< 168) 
 		   sngCoef = 0.7;
-	  if(rsX.IsOpen())
-		  rsX.Close();
-       rsX.m_pDatabase=&dbZDJcrude;
-	   rsX.Open(dbOpenSnapshot,SQLx);
-       if( rsX.IsEOF() && rsX.IsBOF() )
+	  if(rsX->State == adStateOpen)
+		  rsX->Close();
+	  rsX->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
+		  adOpenKeyset, adLockOptimistic, adCmdText); 
+       if( rsX->BOF && rsX->adoEOF )
 	   {
 		   sTmp.Format(GetResStr(IDS_NoThisZ1orZ2inCrudePAfix),dn);
 			throw sTmp;
        }
 	   else
 	   {
-          rsX.MoveFirst();
+          rsX->MoveFirst();
           
           if( vtos(rsza->GetCollect(_T("Unit_Force"))) == _T("N") )
 		  {
@@ -9523,15 +9426,15 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				 //冷态推力存储在pmax字段
 				//冷态推力矩存储在mx0字段
 				 //热态推力矩存储在my0字段
-				rsX.GetFieldValue(_T("sizeH"),vTmp);//unit=mm
+				rsX->get_Collect((_variant_t)_T("sizeH"),&vTmp);//unit=mm
 				modPHScal::PAfixH =vtof(vTmp);
-				rsX.GetFieldValue(_T("size4"),vTmp);//unit=mm
+				rsX->get_Collect((_variant_t)_T("size4"),&vTmp);//unit=mm
 				modPHScal::gfPSThickness=vtof(vTmp);//钢板厚度>=K,mm
 				FrmTxsr.m_pViewTxsr->m_PagOption->m_fPSThickness=modPHScal::gfPSThickness;
 				FrmTxsr.m_pViewTxsr->m_PagOption->UpdateData(FALSE);
-				rsX.GetFieldValue(_T("Pmax"),vTmp);//unit=kgf
-				rsX.GetFieldValue(_T("mx0"),vTmp2);//unit=kgf.m
-				rsX.GetFieldValue(_T("my0"),vTmp3);//unit=kgf.m
+				rsX->get_Collect((_variant_t)_T("Pmax"),&vTmp);//unit=kgf
+				rsX->get_Collect((_variant_t)_T("mx0"),&vTmp2);//unit=kgf.m
+				rsX->get_Collect((_variant_t)_T("my0"),&vTmp3);//unit=kgf.m
 				if( pnl <= vtof(vTmp) && pnr <= vtof(vTmp) && ml <= vtof(vTmp2) && mr <= vtof(vTmp3) )
 				{
 					 //此种情况不必验算焊缝抗弯矩						
@@ -9552,7 +9455,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 					wkl = (pnl * modPHScal::PAfixH/10 + ml*100) / (0.85 * Sigma0);
 
 					//焊缝抗弯矩wk保存在size7字段
-					rsX.GetFieldValue(_T("size7"),vTmp);
+					rsX->get_Collect((_variant_t)_T("size7"),&vTmp);
 					wk=vtof(vTmp);
 					if( wkr2 > wkr1 )
 					{
@@ -9560,7 +9463,9 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 						{
 							//热态根部焊缝需要的抗弯矩最大
 							//wk=wkr2;
-							if(!rsX.FindFirst(_T("size7>=")+ftos(wkr2)))
+							_variant_t vTmp;
+							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr2)), 0, adSearchBackward);
+							if(!rsX->adoEOF)
 							{
 								//%s号支吊架%s热态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
 								sTmp.Format(GetResStr(IDS_SAWeldingAgainstMomental),ltos(zdjh),GetResStr(IDS_frmtxsr_OptHeatStatus),ftos(wkr2),ftos(wk));
@@ -9573,7 +9478,9 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 							{
 								//冷态根部焊缝需要的抗弯矩最大
 								//wk=wkl;
-								if(!rsX.FindFirst(_T("size7>=")+ftos(wkl)))
+								_variant_t vTmp;
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchBackward);
+								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s冷态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
 									sTmp.Format(GetResStr(IDS_SAWeldingAgainstMomental),ltos(zdjh),GetResStr(IDS_frmtxsr_OptHeatStatus),ftos(wkl),ftos(wk));
@@ -9591,7 +9498,9 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 						{
 							//热态管部焊缝需要的抗弯矩最大
 							//wk=wkr1;
-							if(!rsX.FindFirst(_T("size7>=")+ftos(wkr1)))
+							_variant_t vTmp;
+							rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchBackward);
+							if(!rsX->adoEOF)
 							{
 								//%s号支吊架%s热态时，上焊缝(管部焊缝)需要的抗弯矩%s>允许值%s
 								sTmp.Format(GetResStr(IDS_PAWeldingAgainstMomental),ltos(zdjh),GetResStr(IDS_frmtxsr_OptHeatStatus),ftos(wkr1),ftos(wk));
@@ -9605,7 +9514,9 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 								//wkr2<=wkr1 and wkr2<=wkl and wkr1<wkl
 								//冷态根部焊缝需要的抗弯矩最大
 								//wk=wkl;
-								if(!rsX.FindFirst(_T("size7>=")+ftos(wkl)))
+								_variant_t vTmp;
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkl)), 0, adSearchBackward);
+								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s冷态时，下焊缝(根部焊缝)需要的抗弯矩%s>允许值%s
 									sTmp.Format(GetResStr(IDS_SAWeldingAgainstMomental),ltos(zdjh),GetResStr(IDS_frmtxsr_OptHeatStatus),ftos(wkl),ftos(wk));
@@ -9616,8 +9527,9 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 							{
 								//wkr2<=wkr1 and wkr2<=wkl and wkr1>=wkl
 								//热态管部焊缝需要的抗弯矩最大
-								//wk=wkr1;
-								if(!rsX.FindFirst(_T("size7>=")+ftos(wkr1)))
+								_variant_t vTmp;
+								rsX->Find((_bstr_t)(_T("size7>=")+ftos(wkr1)), 0, adSearchBackward);
+								if(!rsX->adoEOF)
 								{
 									//%s号支吊架%s热态时，上焊缝(管部焊缝)需要的抗弯矩%s>允许值%s
 									sTmp.Format(GetResStr(IDS_PAWeldingAgainstMomental),ltos(zdjh),GetResStr(IDS_frmtxsr_OptHeatStatus),ftos(wkr1),ftos(wk));
@@ -9755,34 +9667,27 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				modPHScal::StressOfMaterial(gstrMaterial,100,Sigma100);
 				modPHScal::StressOfMaterial(gstrMaterial,20,Sigma0);
 
-				//rsX.GetFieldValue(_T("sizeC"),vTmp);
-				//rsTmp1.SetFieldValue(_T("dw1"),vTmp);
-				//rsX.GetFieldValue(_T("size3"),vTmp);
-				//rsTmp1.SetFieldValue(_T("s"),vTmp);
 					//先做一遍查询
 					//支管外径dw,mm
-					rsX.GetFieldValue(_T("sizeC"),vTmp);
+					rsX->get_Collect((_variant_t)_T("sizeC"),&vTmp);
 					float dw=vtof(vTmp);
 					//支管壁厚S,mm
-					rsX.GetFieldValue(_T("size3"),vTmp);
+					rsX->get_Collect((_variant_t)_T("size3"),&vTmp);
 					float S=vtof(vTmp);
 					//上焊缝(管部侧焊缝)k1,mm
-					rsX.GetFieldValue(_T("size4"),vTmp);
+					rsX->get_Collect((_variant_t)_T("size4"),&vTmp);
 					float k1=vtof(vTmp);
 					//下焊缝(根部侧焊缝)k2,mm
-					rsX.GetFieldValue(_T("size5"),vTmp);
+					rsX->get_Collect((_variant_t)_T("size5"),&vTmp);
 					float k2=vtof(vTmp);			
 					//高度H,mm
-					rsX.GetFieldValue(_T("sizeH"),vTmp);
+					rsX->get_Collect((_variant_t)_T("sizeH"),&vTmp);
 					modPHScal::PAfixH=vtof(vTmp);			
 
-					rsX.GetFieldValue(_T("size4"),vTmp);//unit=mm
+					rsX->get_Collect((_variant_t)_T("size4"),&vTmp);//unit=mm
 					modPHScal::gfPSThickness=vtof(vTmp);//钢板厚度>=K,mm
 					FrmTxsr.m_pViewTxsr->m_PagOption->m_fPSThickness=modPHScal::gfPSThickness;
 					FrmTxsr.m_pViewTxsr->m_PagOption->UpdateData(FALSE);
-					//rsX.GetFieldValue(_T("Pmax"),vTmp);//unit=kgf
-					//rsX.GetFieldValue(_T("mx0"),vTmp2);//unit=kgf.m
-					//rsX.GetFieldValue(_T("my0"),vTmp3);//unit=kgf.m
 			  
 					bool bEOF=false;//没到尾
 					bool bErr=false;//超限标志
@@ -9869,8 +9774,8 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 					  break;
 				  else
 				  {
-						rsX.MoveNext();
-						if(rsX.IsEOF())
+						rsX->MoveNext();
+						if(rsX->BOF)
 						{
 							//已经到记录尾，重新循环一次，以便报警
 							bEOF=true;
@@ -9881,28 +9786,25 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 							bErr=false;
 
 						//支管外径dw,mm
-						rsX.GetFieldValue(_T("sizeC"),vTmp);
+						rsX->get_Collect((_variant_t)_T("sizeC"),&vTmp);
 						float dw=vtof(vTmp);
 						//支管壁厚S,mm
-						rsX.GetFieldValue(_T("size3"),vTmp);
+						rsX->get_Collect((_variant_t)_T("size3"),&vTmp);
 						float S=vtof(vTmp);
 						//上焊缝(管部侧焊缝)k1,mm
-						rsX.GetFieldValue(_T("size4"),vTmp);
+						rsX->get_Collect((_variant_t)_T("size4"),&vTmp);
 						float k1=vtof(vTmp);
 						//下焊缝(根部侧焊缝)k2,mm
-						rsX.GetFieldValue(_T("size5"),vTmp);
+						rsX->get_Collect((_variant_t)_T("size5"),&vTmp);
 						float k2=vtof(vTmp);			
 						//高度H,mm
-						rsX.GetFieldValue(_T("sizeH"),vTmp);
+						rsX->get_Collect((_variant_t)_T("sizeH"),&vTmp);
 						modPHScal::PAfixH=vtof(vTmp);	
 						
-						rsX.GetFieldValue(_T("size4"),vTmp);//unit=mm
+						rsX->get_Collect((_variant_t)_T("size4"),&vTmp);//unit=mm
 						modPHScal::gfPSThickness=vtof(vTmp);//钢板厚度>=K,mm
 						FrmTxsr.m_pViewTxsr->m_PagOption->m_fPSThickness=modPHScal::gfPSThickness;
 						FrmTxsr.m_pViewTxsr->m_PagOption->UpdateData(FALSE);
-						//rsX.GetFieldValue(_T("Pmax"),vTmp);//unit=kgf
-						//rsX.GetFieldValue(_T("mx0"),vTmp2);//unit=kgf.m
-						//rsX.GetFieldValue(_T("my0"),vTmp3);//unit=kgf.m
 				  }
 				}while(true);
 
@@ -10188,30 +10090,8 @@ bool modPHScal::tbExists(_ConnectionPtr db,_ConnectionPtr db1, CString &tbn, CSt
    }
    return TRUE;
 }
-
-bool modPHScal::tbExists(CDaoDatabase& db/*Zdjcrude.mdb*/,CDaoDatabase& db1/*Sort.mdb*/, CString &tbn, CString s1, CString s2,CString s3)
-{
-	CString sTmp;
-	UINT lngErrNum;
-	if( tbn.GetLength()<=0 || tbn == _T("") ){
-		tbn = _T("");
-		lngErrNum = IDS_NullXfieldInphsManuXOfsortMdb;
-		sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db1),s1,s3,s2);
-		ShowMessage(sTmp);
-		return FALSE;
-	}else
-	{
-		if( !EDIBgbl::tdfExists(db,tbn) )
-		{
-			lngErrNum = IDS_NoThisXCrudeDataTableInZDJcrudeMdb;
-			sTmp.Format(GetResStr(lngErrNum),EDIBgbl::GetDBName(db),tbn);
-			ShowMessage(sTmp);
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-bool modPHScal::HStbExists(CDaoDatabase& db/*Zdjcrude.mdb*/,CDaoDatabase& db1/*Sort.mdb*/, CString &tbn, CString s1, CString s2,CString s3,bool bWarn)
+bool modPHScal::HStbExists(_ConnectionPtr db/*Zdjcrude.mdb*/,_ConnectionPtr db1/*Sort.mdb*/, CString &tbn, 
+						   CString s1, CString s2,CString s3,bool bWarn)
 {
 	CString sTmp;
 	UINT lngErrNum;
@@ -10557,9 +10437,11 @@ BOOL modPHScal::CalOffset(_RecordsetPtr rsZA)
 void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigmat,int iMODE,float& Density)
 {
 	CString SQLx,sTmp,strTbn,strFD;
-	COleVariant vTmp;
+	_variant_t vTmp;
 	float t1,t2,Sigma1,Sigma2;
-	CDaoRecordset rsTmp;
+
+	_RecordsetPtr rsTmp;
+	rsTmp.CreateInstance(__uuidof(Recordset));
 	Sigmat=0.0;
 	Density=0.0;
 	float Coef;
@@ -10591,28 +10473,31 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 
 	try
 	{
-		rsTmp.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
-		rsTmp.Open(dbOpenSnapshot,_T("SELECT * FROM [") + strTbn + _T("] WHERE Trim(material)=\'") + Trim(Material) + _T("\' ORDER BY t"));
-		if(rsTmp.IsBOF() && rsTmp.IsEOF())
+		SQLx = _T("SELECT * FROM [") + strTbn + _T("] WHERE Trim(material)=\'") + Trim(Material) + _T("\' ORDER BY t");
+		rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(rsTmp->adoEOF && rsTmp->BOF)
 			;
 		else
 		{
 			//查找计算温度t0时的许用应力值Sigma1
 			SQLx.Format(_T("t>=%g"),temperature);
-			if(rsTmp.FindFirst(SQLx))
+			_variant_t vTmp;
+			rsTmp->Find((_bstr_t)SQLx, 0, adSearchBackward);
+			if(!rsTmp->adoEOF)
 			{
-				rsTmp.GetFieldValue(strFD,vTmp);
+				rsTmp->get_Collect((_variant_t)strFD,&vTmp);
 				Sigma1 = vtof(vTmp);
-				rsTmp.GetFieldValue(_T("t"),vTmp);
+				rsTmp->get_Collect((_variant_t)_T("t"),&vTmp);
 				t1 = vtof(vTmp);
 				if(iMODE==1)
 				{
-					rsTmp.GetFieldValue(_T("Density"),vTmp);
+					rsTmp->get_Collect((_variant_t)_T("Density"),&vTmp);
 					Density=vtof(vTmp);
 				}
 				//找到温度值,前移一个记录，其温度值肯定比计算温度低。
-				rsTmp.MovePrev();
-				if(rsTmp.IsBOF())
+				rsTmp->MovePrevious();
+				if(rsTmp->adoEOF)
 				{
 					if(t1!=temperature)
 					{
@@ -10628,15 +10513,15 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 				}
 				else
 				{
-					rsTmp.GetFieldValue(strFD,vTmp);
+					rsTmp->get_Collect((_variant_t)strFD,&vTmp);
 					Sigma2 = vtof(vTmp);
-					rsTmp.GetFieldValue(_T("t"),vTmp);
+					rsTmp->get_Collect((_variant_t)_T("t"),&vTmp);
 					t2 = vtof(vTmp);
 					Sigmat = Sigma2 + (temperature - t2) * (Sigma1 - Sigma2) / (t1 - t2);
 					Sigmat = Sigmat *Coef;
 					if(iMODE==1)
 					{
-						rsTmp.GetFieldValue(_T("Density"),vTmp);
+						rsTmp->get_Collect((_variant_t)_T("Density"),&vTmp);
 						Density=vtof(vTmp);
 					}
 				}
@@ -10647,28 +10532,21 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 				//sTmp.Format(GetResStr(IDS_NotFoundTemperatureValueInTableAllowStress),_T("\%d"),modPHScal::tbnAllowStress,temperature);
 				//throw sTmp;
 				//取最大温度下的值作为查询值
-				rsTmp.MoveLast();
-				rsTmp.GetFieldValue(strFD,vTmp);
+				rsTmp->MoveLast();
+				rsTmp->get_Collect((_variant_t)strFD,&vTmp);
 				Sigmat = vtof(vTmp) *Coef;
 				if(iMODE==1)
 				{
-					rsTmp.GetFieldValue(_T("Density"),vTmp);
+					rsTmp->get_Collect((_variant_t)_T("Density"),&vTmp);
 					Density=vtof(vTmp);
 				}
 			}
 		}
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 
@@ -10684,7 +10562,7 @@ void modPHScal::MakeTmpCalFixPhs()
 			//dbPRJ.Execute _T("DELETE * FROM tmpCalFixPhs")
 			//这样比较方便，而且版本升级时兼容性好。
 			;
-			//EDIBgbl::dbPRJ.Execute(_T("DROP TABLE tmpCalFixPhs"));
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE tmpCalFixPhs"));
 		//Else
 			//不存在,则建立临时表tmpCalFixPhs,准备计算固定支架：双臂三角架SJ8
 		//End If		
@@ -10694,9 +10572,9 @@ void modPHScal::MakeTmpCalFixPhs()
 			_T("F1sa REAL,F2sa REAL,h1 REAL,h2 REAL,b1 REAL,b2 REAL,B1 REAL,bb REAL,PL3 REAL,gdw2 REAL)");
 			//上句gdw2字段存储了偏装修正过的根部定位值gdw
 			
-		EDIBgbl::dbPRJ.Execute(SQLx);
-		EDIBgbl::dbPRJ.Execute("ALTER TABLE ADD COLUMN );
-		EDIBgbl::dbPRJ.Execute( _T("INSERT INTO tmpCalFixPhs (H) VALUES (0)"));
+		EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)"ALTER TABLE ADD COLUMN );
+		EDIBgbl::dbPRJ->Execute((_bstr_t) _T("INSERT INTO tmpCalFixPhs (H) VALUES (0)"));
 	}
 	catch(CException *e)
 	{
@@ -10706,81 +10584,93 @@ void modPHScal::MakeTmpCalFixPhs()
 
 bool modPHScal::CreateTmpCustomIDForPART()
 {
-	//目的:为加快过滤可用模板的速度，先设置三个临时表，存储PA/PART/SA/SPR/CSPR的CustomID,每次只要找这几个表，即可确定零件是否可用于当前标准
+	// 目的:为加快过滤可用模板的速度，先设置三个临时表，存储PA/PART/SA/SPR/CSPR的CustomID,
+	// 每次只要找这几个表，即可确定零件是否可用于当前标准
 	CString strSQL;
+	HRESULT hr = S_OK;
 	try
 	{
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPA")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDPA"));			
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPA"), NULL, adCmdText);			
+			strSQL = _T("INSERT INTO tmpCustomIDPA IN \'");
+			strSQL += EDIBgbl::GetDBName(EDIBgbl::dbPRJ);
+			strSQL += _T("\' SELECT DISTINCT CustomID FROM [");
+			strSQL += modPHScal::tbnPA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		else
 		{
 			//不要建立唯一索引，可能冲突
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"));
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);
+			strSQL = _T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)");
+			try {
+				hr = EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
+			} catch (_com_error &e)
+			{
+				e.Description();
+			}
+
+			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		//建立固定支架数据表tbnPAfix时，绝对不能出现管部数据表tbnPA中已经出现的CustomID，否则出错.
 		if(modPHScal::tbnPAfix!=modPHScal::tbnPA)
 		{
-			//strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] WHERE CustomID NOT IN ( SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] ) ");
-			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] ");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			//strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] WHERE CustomID NOT IN ( SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] ) ");
+			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] ");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSA")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDSA"));			
-			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSA"), NULL, adCmdText);			
+			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		else
 		{
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDSA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"));
-			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
+			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPART")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDPART"));			
-			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPART"), NULL, adCmdText);			
+			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDPART (CustomID Char(20) CONSTRAINT index1 UNIQUE)"));
-			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDPART (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
+			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSPR")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDSPR"));			
-			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSPR"), NULL, adCmdText);			
+			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"));
-			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
+			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDCSPR")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDCSPR"));			
-			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDCSPR"), NULL, adCmdText);			
+			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDCSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"));
-			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDCSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
+			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		//add by pfg,ligb on 2005.02.18
@@ -10789,34 +10679,23 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		//而临时表tmpCustomID_GDW1只有300条左右记录，速度可提高7000/300=23倍以上。
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDGDW1")))
 		{
-			EDIBgbl::dbPRJ.Execute (_T("DELETE FROM tmpCustomIDGDW1"));			
-			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDGDW1"), NULL, adCmdText);			
+			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
-			EDIBgbl::dbPRJ.Execute (_T("CREATE TABLE tmpCustomIDGDW1 (CustomID Char(20),GDW1 single)"));
-			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
-			modPHScal::dbZDJcrude.Execute(strSQL);		
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDGDW1 (CustomID Char(20),GDW1 single)"), NULL, adCmdText);
+			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		return true;
-	}
-	catch(CDaoException *e)
-	{
-		e->ReportError();
-		e->Delete();
-		return false;
 	}
 	catch(CException *e)
 	{
 		e->Delete();
 		return false;
 	}
-	catch(...)
-	{
-		return false;
-	}
-
 }
 
 void modPHScal::CreatePhsStructureNameAndREFIndbPRJ()
@@ -10829,46 +10708,35 @@ void modPHScal::CreatePhsStructureNameAndREFIndbPRJ()
 		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureNAME")))
 		{
 			//这样做可以避免锁定
-			EDIBgbl::dbPRJ.Execute(_T("DELETE FROM PhsStructureNAME"));
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureNAME"), NULL, adCmdText);
 			SQLx = CString(_T("INSERT INTO PhsStructureNAME IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM PhsStructureNAME ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071018 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
 		}
 		else
 		{
 			//报警：表不存在。
 			SQLx = CString(_T("SELECT * INTO PhsStructureNAME IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureNAME ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071018 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
 		}
 		//先复制PhsStructureREF从sort.mdb->dbPRJ,因为Jet一次只能连接1个外部表
 		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureREF")))
 		{
-			//EDIBgbl::dbPRJ.Execute(_T("DROP TABLE PhsStructureREF"));			
-			EDIBgbl::dbPRJ.Execute(_T("DELETE FROM PhsStructureREF"));		
+			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE PhsStructureREF"));			
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureREF"), NULL, adCmdText);		
 			SQLx = CString(_T("INSERT INTO PhsStructureREF IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM PhsStructureREF ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071018 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
 		}
 		else
 		{
 			//报警：表不存在。
 			SQLx = CString(_T("SELECT * INTO PhsStructureREF IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureREF ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071018 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
 		}
-		return;
-	}
-
-	catch(CDaoException * e)
-	{
-		e->ReportError();
-		e->Delete();
-		return;
 	}
 	catch(CException *e)
 	{
+		e->ReportError();
 		e->Delete();
-	}
-	catch(...)
-	{
-		return;
 	}
 }
 
@@ -10883,55 +10751,22 @@ void modPHScal::CreatePhsStructureNameAndREFatStart()
 		if (!EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureNAME")))
 		{
 			SQLx = CString(_T("SELECT * INTO PhsStructureNAME IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureNAME ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071101 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
 		}
 		//先复制PhsStructureREF从sort.mdb->dbPRJ,因为Jet一次只能连接1个外部表
 		if (!EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureREF")))
 		{
 			SQLx = CString(_T("SELECT * INTO PhsStructureREF IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureREF ");
-			EDIBgbl::dbPHScode.Execute(SQLx);//20071101 "dbSORT" 改为 "dbPHScode"
+			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
 		}
-		return;
 	}
 
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
-		return;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		return;
 	}
 }
-
-//DEL void modPHScal::UserFormat(CString &strTmp, float fValue)
-//DEL {
-//DEL 	try
-//DEL 	{
-//DEL 		//将浮点数保留一位小数
-//DEL 		if(fabs((double)fValue-int(fValue+.5))<=1e-3)
-//DEL 		{
-//DEL 			strTmp.Format(_T("%d"),int(fValue+.5));
-//DEL 		}
-//DEL 		else
-//DEL 		{
-//DEL 			//if(fabs(fValue-int(fValue*10.0+.5)/10.0)<=1e-3)
-//DEL 			//{
-//DEL 				strTmp.Format(_T("%.1f"),int(fValue*10.0+.5)/10.0);
-//DEL 			//}
-//DEL 		}
-//DEL 	}
-//DEL 	catch(...)
-//DEL 	{
-//DEL 	}
-//DEL 	return;
-//DEL }
 
 void modPHScal::WndDataCheck(CWnd *pCtrl, CString strCaption)
 {
@@ -10950,10 +10785,6 @@ void modPHScal::WndDataCheck(CWnd *pCtrl, CString strCaption)
 			strInfo.Format("请在[%s]中输入数据",strCaption);
 			AfxMessageBox(strInfo);
 		}
-	}
-	else
-	{
-		return;
 	}
 }
 
@@ -11015,7 +10846,7 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 				//CMObject tmpObj=EDIBAcad::objAcadDoc.GetPropertyByName(_T("Text"));
 				//int iWidth = vtoi(tmpObj.GetPropertyByName("Width"));
 				//可能会出现 'MText' 对象根据自身 'Width' 属性而换行的动作
-				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText));
+				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText)).pdispVal;
 				objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(strTextStyle));
 				objEnt.PutPropertyByName(_T("Height"),&_variant_t((double)4.0));
 				
@@ -11030,7 +10861,7 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 				strText.Format("%d.%s",iNo++,strReadDesc);
 
 				//可能会出现 'MText' 对象根据自身 'Width' 属性而换行的动作
-				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText));
+				objEnt=oSpace.Invoke(_T("AddMText"),3, (LPVARIANT)basePt, &_variant_t((double)190.0), &_variant_t(strText)).pdispVal;
 				objEnt.PutPropertyByName(_T("StyleName"),&_variant_t(strTextStyle));
 				objEnt.PutPropertyByName(_T("Height"),&_variant_t((double)4.0));
 				
@@ -11057,9 +10888,6 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 		ReportError("Exception in DrawUserDesc()",__FILE__,__LINE__);
 	}
 }
@@ -11067,26 +10895,29 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 int modPHScal::SumLugNum()
 {  int n,i;
    float gh1,dh1,fRodLen;
-   CDaoRecordset rs;
+   _RecordsetPtr rs;
+   rs.CreateInstance(__uuidof(Recordset));
    CString strSQL;
-   COleVariant vTmp;
+   _variant_t vTmp;
    gh1=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("GH1")));
    dh1=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("DH1")));
 //   strSQL.Format(_T("SELECT * FROM [%s] WHERE ID='L1'"
   strSQL = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE ID=\'L1\'");
-   rs.m_pDatabase=&dbZDJcrude;
-   rs.Open(dbOpenDynaset,strSQL);
-   if(!(rs.IsEOF() && rs.IsBOF()))
-   {	rs.MoveFirst();
-	    rs.GetFieldValue(_T("maxLength"),vTmp);
+//    rs.m_pDatabase=&dbZDJcrude;
+//    rs.Open(dbOpenDynaset,strSQL);
+   rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)dbZDJcrude,true), 
+	   adOpenKeyset, adLockOptimistic, adCmdText); 
+   if(!(rs->BOF && rs->adoEOF))
+   {	rs->MoveFirst();
+	    rs->get_Collect((_variant_t)_T("maxLength"),&vTmp);
 	    fRodLen= vtof(vTmp);
 		if((i=int((gh1-dh1)*1000)%int(fRodLen))==0)
 			n=(gh1-dh1)*1000/fRodLen;
 		else n=(gh1-dh1)*1000/fRodLen+1;
-		rs.Close();
+		rs->Close();
    }
    else
-   { rs.Close();
+   { rs->Close();
      return 0;
    }
 
@@ -11158,23 +10989,23 @@ int modPHScal::SpringTypeCompare(CString strType)
 //author: pfg20051101
 //function: 根据应力计算所得的支吊架类型在符合条件的支吊架类型集中查找
 //return:  找到返回1; 不找到返回0;   
-int modPHScal::FindPSAType(CString strPSAType, CDaoRecordset *rs)
+int modPHScal::FindPSAType(CString strPSAType, _RecordsetPtr rs)
 {
 	int flag=0;
 	CString strZDJType=_T("");
-	COleVariant var;
+	_variant_t var;
 	CString str=_T("");
 	rs->MoveFirst();
 	int iSumSerialNum;
-	while(!rs->IsEOF())
+	while(!rs->adoEOF)
 	{//循环(start)
-		rs->GetFieldValue(_T("SerialNum"),var);
+		rs->get_Collect((_variant_t)_T("SerialNum"),&var);
 		iSumSerialNum=vtoi(var);
 		str.Format("%d",iSumSerialNum);
 		strZDJType=str;
 		str.Format("%d",gintParallelNum);
 		strZDJType+=str;
-		rs->GetFieldValue(_T("SEQ"),var);
+		rs->get_Collect((_variant_t)_T("SEQ"),&var);
 		str.Format("%02d",vtoi(var));
 		strZDJType+=str;
 		if(strZDJType==strPSAType)
@@ -11200,7 +11031,7 @@ void modPHScal::UpdatePipeDimHeight()
 		strSQL.Format("Update Z8 set Design_DH=%f,DH1=%f,work_DH=%f,SEL=%f  where VolumeID=%d and zdjh=%d",
 			modPHScal::sngPEL, modPHScal::dyl / 1000, modPHScal::dyr / 1000, modPHScal::sngSEL, EDIBgbl::SelVlmID,
 			modPHScal::zdjh );
-		EDIBgbl::dbPRJDB.Execute( strSQL );
+		EDIBgbl::dbPRJDB->Execute((_bstr_t) strSQL, NULL, adCmdText );
 	}
 	catch(_com_error e)
 	{

@@ -14,7 +14,7 @@
 class CrudePA : public SupportCompData  
 {
 public:
-	CrudePA(CDaoDatabase &DataMdb);
+	CrudePA(_ConnectionPtr DataMdb);
 	virtual ~CrudePA();
 public:
 	double GetDW();

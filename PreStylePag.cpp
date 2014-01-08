@@ -575,14 +575,14 @@ BOOL CPreStylePag::CreateTextStyle(
         
         //SETUP-1: 获取ACAD文本样式列表
         obj = EDIBAcad::objAcadDoc.GetPropertyByName(
-                                      _T("TextStyles"));
+                                      _T("TextStyles")).pdispVal;
         
         //SETUP-2: 如果指定样式对象已经存在，则返回
 
 		nCount = (long)obj.GetPropertyByName(_T("Count"));
 		for( i = 0; i < nCount; i++)
 		{
-			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i));
+			tsobj = obj.Invoke(_T("Item"), 1, &_variant_t(i)).pdispVal;
 			strtmp = vtos(tsobj.GetPropertyByName(_T("Name")));
 			strtmp.TrimLeft();
             strtmp.TrimRight();
@@ -602,7 +602,7 @@ BOOL CPreStylePag::CreateTextStyle(
         //SETUP-4: 获取新样式对象
         newobj = obj.Invoke(_T("Item"),
                             1,
-                            &_variant_t(strTSName));
+                            &_variant_t(strTSName)).pdispVal;
         
         //SETUP-5: 设定新样式的属性值
         if(newobj.p)//成功获取新对象
@@ -647,7 +647,7 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
     CMObject obj, tsobj;
     long     i, nCount;
     CString  strtmp;
-    HRESULT  retCode;
+//    HRESULT  retCode;
 
     //进行参数检查和初始化
     strTSName.TrimLeft();

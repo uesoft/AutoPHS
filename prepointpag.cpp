@@ -198,7 +198,7 @@ void CPrePointPag::SetBasePoint()
 		rs.Open(dbOpenDynaset,SQLx);
 		CString sTmp;
 		FDp.MakeUpper();
-		COleVariant vTmp;
+		_variant_t vTmp;
 		for(int i=0;i<9;i++)
 		{
 			sTmp=m_posFld[i].FldName;
@@ -236,7 +236,7 @@ void CPrePointPag::SetBasePoint()
 					}
 					else if (bSetBPOK )
 					{
-						vTmp=COleVariant((long)m_posFld[i].FldValue);
+						vTmp=_variant_t((long)m_posFld[i].FldValue);
 						rs.Edit();
 						rs.SetFieldValue(modPHScal::Ax+"pos",vTmp);
 						rs.Update();
@@ -280,8 +280,8 @@ void CPrePointPag::SetBasePoint()
 		pag->UpdateData();
 		this->UpdateData();
 		bFirst = 1;
-		CDaoRecordset rs;
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071022 "dbSORT" ¸ÄÎª "dbPHScode"
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 
 		if(pag->GetCheckedRadioButton(IDC_DRAWSIZE_A3,IDC_DRAWSIZE_AUTO)==IDC_DRAWSIZE_A3)
 			modPHScal::Ax = "A3";
@@ -323,59 +323,61 @@ void CPrePointPag::SetBasePoint()
 		if(pag->m_bCheckDraw_BOM)
 			FDp+="bom";
 		CString SQLx = "SELECT * FROM phsDrawPos";
-		rs.Open(dbOpenDynaset,SQLx);
+		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
+		if (!rs->adoEOF)
+		{
 		CString sTmp;
 		FDp.MakeUpper();
-		COleVariant vTmp;
+		_variant_t vTmp;
+			HRESULT hr = S_OK;
+			rs->MoveFirst();
 		for(int i=0;i<9;i++)
 		{
 			sTmp=m_posFld[i].FldName;
 			sTmp.MakeUpper();
 			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
-			if(rs.FindFirst(SQLx))
+				hr = rs->Find((_bstr_t)(SQLx), 0, adSearchForward);
+				if(!rs->adoEOF)
 			{
 					if(bGetPos)
 					{
-						rs.GetFieldValue(strCurAx + "pos", vTmp);
+							rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if( bSetPrevious)
 					{
-						rs.Edit();
-						rs.GetFieldValue(strCurAx + "old", vTmp);
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+							rs->get_Collect((_variant_t)(strCurAx + "old"), &vTmp);
+							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+							rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if(bSetDefault)
 					{
-						rs.Edit();
-						rs.GetFieldValue(strCurAx + "Default", vTmp);
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+							rs->get_Collect((_variant_t)(strCurAx + "Default"), &vTmp);
+							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+							rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if (bSetBPOK )
 					{
-						vTmp=COleVariant((long)m_posFld[i].FldValue);
-						rs.Edit();
-						rs.SetFieldValue(strCurAx + "pos", vTmp);
-						rs.Update();
+						vTmp=_variant_t((long)m_posFld[i].FldValue);
+							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+							rs->Update();
 					}
 					else
 					{
-						rs.GetFieldValue(strCurAx + "pos", vTmp);
+							rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(iSetBPbegan == 1 )
 						{
-							rs.Edit();
-							rs.SetFieldValue(strCurAx + "old", vTmp);
-							rs.Update();
+								rs->put_Collect((_variant_t)(strCurAx + "old"), vTmp);
+								rs->Update();
 						}
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
@@ -389,12 +391,13 @@ void CPrePointPag::SetBasePoint()
 		bSetPrevious = false;
 		iSetBPbegan = iSetBPbegan + 1;
 	}
-	catch(CDaoException *e)
+	}
+	catch(_com_error &e)
 	{
-		char ss[256];
-		e->GetErrorMessage(ss,255);
-		MessageBox(ss);
-		e->Delete();
+// 		char ss[256];
+// 		e->GetErrorMessage(ss,255);
+// 		MessageBox(ss);
+// 		e->Delete();
 	}
 
 	this->UpdateData(false);

@@ -62,24 +62,27 @@ BOOL CDlgExportVolume::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	CDaoRecordset rsbackup;
-	rsbackup.m_pDatabase=&EDIBgbl::dbPRJ;
+	_RecordsetPtr rsbackup;
+	rsbackup.CreateInstance(__uuidof(Recordset));
+//	rsbackup.m_pDatabase=&EDIBgbl::dbPRJ;
 	CString strSQL;
 	strSQL = "SELECT * FROM BackupDBTbl";
-	rsbackup.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-	COleVariant varField;
+//	rsbackup.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+	rsbackup->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
+	_variant_t varField;
 	CString str1,str2,strFirst;	
-	while( !rsbackup.IsEOF() )
+	while( !rsbackup->adoEOF )
 	{
-		rsbackup.GetFieldValue(1,varField);//BackupDB_Tablename
+		rsbackup->get_Collect((_variant_t)1L, &varField);//BackupDB_Tablename
 		str1 = vtos(varField);
-		rsbackup.GetFieldValue(2,varField);//Description
+		rsbackup->get_Collect((_variant_t)2L, &varField);//Description
 		str2 = vtos(varField);
 		m_comboHadBackup.AddString(str1);
 		m_map[str1]=str2;
-		rsbackup.MoveNext();
+		rsbackup->MoveNext();
 	}
-	rsbackup.Close();
+	rsbackup->Close();
 
 
 
@@ -117,13 +120,13 @@ void CDlgExportVolume::OnOK()
 	if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T(m_strCurBackupTablename)) )
 	{
 		strSQL.Format(_T("DROP TABLE %s"),m_strCurBackupTablename);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 	}
 	strSQL.Format(_T("SELECT * INTO %s IN \'C:\\prj4.0\\workprj.mdb\' FROM ZA WHERE VolumeID=%d"),
 		m_strCurBackupTablename,EDIBgbl::SelVlmID);
-	EDIBgbl::dbPRJDB.Execute( strSQL );
+	EDIBgbl::dbPRJDB->Execute((_bstr_t) strSQL , NULL, adCmdText);
 	strSQL.Format(_T("INSERT INTO BackupDBTbl(BackupDB_Tablename,Description) VALUES(\'%s\',\'%s\')"),m_strCurBackupTablename,m_strCurBackupDes);
-	EDIBgbl::dbPRJ.Execute( strSQL );
+	EDIBgbl::dbPRJ->Execute((_bstr_t) strSQL , NULL, adCmdText);
 
 	CDialog::OnOK();
 }

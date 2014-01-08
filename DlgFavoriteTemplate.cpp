@@ -21,6 +21,7 @@ CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent ,long lSampleID)
 	: CDialog(CDlgFavoriteTemplate::IDD, pParent)
 {
 	m_lSampleID = lSampleID;
+	m_rsFavorite.CreateInstance(__uuidof(Recordset));
 }
 
 CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent /*=NULL*/)
@@ -30,6 +31,7 @@ CDlgFavoriteTemplate::CDlgFavoriteTemplate(CWnd* pParent /*=NULL*/)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 	m_lCurSelSampleID = 0;
+	m_rsFavorite.CreateInstance(__uuidof(Recordset));
 }
 
 
@@ -58,12 +60,17 @@ BOOL CDlgFavoriteTemplate::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	//选出所有常用模板
-	m_rsFavorite.m_pDatabase=&EDIBgbl::dbPRJ;
-	if( m_rsFavorite.IsOpen() )
-		m_rsFavorite.Close();
-	m_rsFavorite.Open(
-		dbOpenDynaset,
-		"SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]");
+// 	m_rsFavorite.m_pDatabase=&EDIBgbl::dbPRJ;
+// 	if( m_rsFavorite.IsOpen() )
+	if (m_rsFavorite->State == adStateOpen)
+	{
+		m_rsFavorite->Close();
+	}
+// 	m_rsFavorite.Open(
+// 		dbOpenDynaset,
+// 		"SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]");
+	m_rsFavorite->Open((_bstr_t)_T("SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		adOpenKeyset, adLockOptimistic, adCmdText); 
 
 	InitFavoriteList();
 	return TRUE;
@@ -75,18 +82,19 @@ void CDlgFavoriteTemplate::InitFavoriteList()
 	CString strTemplateName;
 	int iWillSelIndex=0;
 	long iSampleID=1;
-	COleVariant varTmp;
+	_variant_t varTmp;
 
-	if(m_rsFavorite.IsBOF() || m_rsFavorite.IsEOF() )
+//	if(m_rsFavorite.IsBOF() || m_rsFavorite.IsEOF() )
+	if(m_rsFavorite->BOF || m_rsFavorite->adoEOF )
 	{
 		return;
 	}
 
-	for(int iIndex=0; !m_rsFavorite.IsEOF() ; m_rsFavorite.MoveNext())
+	for(int iIndex=0; !m_rsFavorite->adoEOF ; m_rsFavorite->MoveNext())
 	{
-		m_rsFavorite.GetFieldValue("SampleID",varTmp);
+		m_rsFavorite->get_Collect((_variant_t)"SampleID", &varTmp);
 		iSampleID = vtoi(varTmp);
-		m_rsFavorite.GetFieldValue("SampleName",varTmp);
+		m_rsFavorite->get_Collect((_variant_t)"SampleName", &varTmp);
 		if( vtos(varTmp) != "" )
 		{
 			iIndex = m_lstFavorite.AddString(vtos(varTmp));
@@ -112,7 +120,7 @@ void CDlgFavoriteTemplate::Delete(int index)
 
 	strSQL.Format("UPDATE PhsStructureName SET [Favorite]=0 WHERE [SampleID]=%d",
 		m_lstFavorite.GetItemData(index));
-	EDIBgbl::dbPRJ.Execute(strSQL);
+	EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
 	m_lstFavorite.DeleteString(index);
 }

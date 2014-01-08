@@ -118,7 +118,9 @@ BOOL CSelPSAProjectNameDlg::OnInitDialog()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		return false;
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control

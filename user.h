@@ -129,12 +129,12 @@ private:
 };
 CString GetShareDbPath();//得到PSA所用单位数据库的路径
 extern int  vtoi(_variant_t & v);
-extern int  vtoi2(COleVariant & v);
+extern int  vtoi2(_variant_t & v);
 extern float vtof(_variant_t &v);
-extern int  vtoi(COleVariant & v);
-extern float vtof(COleVariant &v);
+extern int  vtoi(_variant_t & v);
+extern float vtof(_variant_t &v);
 extern double vtod(_variant_t &v);
-extern double vtod(COleVariant &v);
+extern double vtod(_variant_t &v);
 extern bool vtob(VARIANT &v);
 extern CString inline ftos1(float v);
 extern CString GetStrAtEx(CString strText,int i); //返回字符串中子串，(格式：动态库AutoPSA 生成文件中的格式);
@@ -157,23 +157,23 @@ extern bool inline IsNull(_variant_t &v);
 #define MINOR(X)   (WORD)X 
 extern CString gObjMainFrm;
 //extern int vtoi( VARIANT & v );
-extern void RsDeleteAll(CDaoRecordset& rs);
-extern COleVariant inline STR_VAR( LPCTSTR X );
+extern void RsDeleteAll(_RecordsetPtr rs);
+extern _variant_t inline STR_VAR( LPCTSTR X );
 #define V_STR( X ) (X.vt!=VT_NULL ? X.pcVal : "") 
 extern _ConnectionPtr conPRJDB;
 extern _ConnectionPtr conPRJDB4;
 extern _ConnectionPtr conPHSConfig;
 extern _ConnectionPtr conZDJCrude;
-extern CString vtos(COleVariant& v);
 extern CString vtos(_variant_t& v);
-extern CString vtos2(COleVariant& v);
+extern CString vtos(_variant_t& v);
+extern CString vtos2(_variant_t& v);
 extern float Sgn(float x);
 extern _variant_t stov(LPCTSTR svar);
 extern bool GetAllMenu(HMENU hMenu,long pos);
 extern bool DisabledSystemMenu(HWND hWnd,HMENU hMenu);
 extern CString inline btos(BOOL v);
 extern int inline ShowMessage(LPCTSTR lpszText, UINT nType = MB_OK,LPCTSTR lpszTitle=AfxGetApp()->m_pszAppName, UINT nIDHelp = 0 );
-extern COleVariant inline GetFields(CDaoRecordset & rs,CString FieldName);
+extern _variant_t inline GetFields(_RecordsetPtr rs,CString FieldName);
 extern void SetWindowCenter(HWND hWnd); 
 extern void inline DoEvents();
 extern BOOL MakePath(CString strDirName);

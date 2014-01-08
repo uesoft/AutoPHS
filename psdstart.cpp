@@ -21,7 +21,7 @@ static char THIS_FILE[] = __FILE__;
 CTime PSDstart::sTime =CTime::GetCurrentTime();
 CTime PSDstart::eTime =CTime::GetCurrentTime();
 	
-void PSDstart::ConvertAllDb(COleVariant dVer, COleVariant Pwd)
+void PSDstart::ConvertAllDb(_variant_t dVer, _variant_t Pwd)
 {
 }
 

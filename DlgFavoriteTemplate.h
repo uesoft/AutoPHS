@@ -19,7 +19,7 @@ public:
 	long m_lCurSelSampleID;
 	void InitFavoriteList();
 	long m_lSampleID;
-	CDaoRecordset m_rsFavorite;
+	_RecordsetPtr m_rsFavorite;
 	CDlgFavoriteTemplate(CWnd* pParent ,long lSampleID);
 	CDlgFavoriteTemplate(CWnd* pParent = NULL);   // standard constructor
 

@@ -71,7 +71,8 @@ void CGridComboBoxCell::SetCurSel(int iIndex)
 
 int CGridComboBoxCell::FindStringExact(LPCTSTR lpszText)
 {
-	for(int i=0;i<m_Items.GetSize() && m_Items[i].Compare(lpszText)!=0 ;i++);
+	int i=0;
+	for(i=0;i<m_Items.GetSize() && m_Items[i].Compare(lpszText)!=0 ;i++);
 	if(i>=m_Items.GetSize()) return -1;
 	return i;
 }

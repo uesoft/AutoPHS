@@ -104,7 +104,7 @@ public:
 		void LoadListPA();
 		void LoadListName();
 		CString m_strSortFieldName;
-		CDaoRecordset m_rsTemplateName;
+		_RecordsetPtr m_rsTemplateName;
 		void OpenTemplateRs();
 		void UpdateRecordset();
 public://sorry

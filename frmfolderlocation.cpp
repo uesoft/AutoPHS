@@ -59,7 +59,7 @@ CString CFrmFolderLocation::GetDir(CString key)
 	return sDir;
 }
 
-CFrmFolderLocation::SetDir(CString key,CString setval)
+void CFrmFolderLocation::SetDir(CString key,CString setval)
 {
 	::SetRegValue(_T("directory"),key,setval);
 }

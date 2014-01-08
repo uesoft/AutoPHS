@@ -105,7 +105,9 @@ void CUnitsTransformDlg::OnSave()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 	}
 	m_conIdokBut.EnableWindow(true);//保存数据后按钮可用
 	UpdateData(false);
@@ -167,7 +169,7 @@ BOOL CUnitsTransformDlg::OnInitDialog()
 			if((!m_pRsUnits->adoEOF)&&(!m_pRsUnits->BOF))
 			{
 				m_pRsUnits->MoveFirst();
-				char buf[20];
+//				char buf[20];
 				int i=0;//用来记录当前表项的序号
 				while(!m_pRsUnits->adoEOF)
 				{
@@ -186,7 +188,9 @@ BOOL CUnitsTransformDlg::OnInitDialog()
 	}
 	catch(_com_error e)
 	{
-		AfxMessageBox(e.Description());
+		CString strErrorMsg;
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strErrorMsg);
 		return false;
 	}
 	return true;

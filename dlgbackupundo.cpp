@@ -62,8 +62,8 @@ void CDlgBackupUndo::OnOK()
 		CopyFile(m_strPrjDBPath+"AllPrjDB.mdb",m_strPrjDBPath+"AllPrjDB.bak",FALSE);
 		CopyFile(m_strPrjDBPath+"Sort.mdb",m_strPrjDBPath+"Sort.bak",FALSE);
 
-		EDIBgbl::dbPRJDB.Close();
-		EDIBgbl::dbSORT.Close();
+		EDIBgbl::dbPRJDB->Close();
+		EDIBgbl::dbSORT->Close();
 
 		CString strDir;
 		m_comboHadBackup.GetLBText(m_comboHadBackup.GetCurSel(),strDir);
@@ -82,24 +82,7 @@ BOOL CDlgBackupUndo::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-/*	CDaoRecordset rsbackup;
-	rsbackup.m_pDatabase=&EDIBgbl::dbPRJ;
-	CString strSQL;
-	strSQL = "SELECT * FROM BackupDBTbl";
-	rsbackup.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-	COleVariant varField;
-	CString str1,str2,strFirst;	
-	while( !rsbackup.IsEOF() )
-	{
-		rsbackup.GetFieldValue(1,varField);//BackupDB_Tablename
-		str1 = vtos(varField);
-		rsbackup.GetFieldValue(2,varField);//Description
-		str2 = vtos(varField);
-		m_comboHadBackup.AddString(str1);
-		m_map[str1]=str2;
-		rsbackup.MoveNext();
-	}
-	rsbackup.Close();*/
+
 	m_strPrjDBPath = GetRegKey(_T("Directory"), _T("EDInBox_PrjDBDir"), CString(_T("")));
 	m_strAppInstallPath = GetRegKey(_T("Directory"), _T("EDInBox_InsDir"), CString(_T("")));
 

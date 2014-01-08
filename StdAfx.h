@@ -32,7 +32,6 @@ rename("LockTypeEnum","adoLockTypeEnum") rename("FieldAttributeEnum","adoFieldAt
 rename("DataTypeEnum","adoDataTypeEnum") rename("ParameterDirectionEnum","adoParameterDirectionEnum")\
 rename("RecordStatusEnum","adoRecordStatusEnum") 
 //#include <icrsint.h>
-#include <afxdao.h>
 
  /* #import "D:\Program Files\Microsoft Office\Office\MSO9.DLL" no_namespace
   #import "C:\Program Files\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB" no_namespace

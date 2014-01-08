@@ -104,16 +104,13 @@ void CDlgEditDB::OpenTable()
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 }
 
 BOOL CDlgEditDB::ListTableName()
 {
 	m_lstTableName.ResetContent();
-	CDaoDatabase db;
-	CDaoTableDefInfo tbInfo;
+	_ConnectionPtr db;
+	db.CreateInstance(__uuidof(Connection));
 	CInputBox inpBox;
 	inpBox.m_bIsProtected=TRUE;
 	BOOL bIsRet=FALSE;
@@ -168,7 +165,10 @@ BOOL CDlgEditDB::ListTableName()
 		if(bIsRet) return FALSE;
 		pCon->Close();
 		pCon=NULL;
-		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strPassword);
+// 		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strPassword);
+		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + m_strDBName;
+		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strPassword, adConnectUnspecified);
+/*
 		int i,c;
 		c=db.GetTableDefCount();
 		for(i=0;i<c;i++)
@@ -179,9 +179,23 @@ BOOL CDlgEditDB::ListTableName()
 				m_lstTableName.AddString(tbInfo.m_strName);
 			}
 		}
+*/
+		_bstr_t bt;
+		_RecordsetPtr rs;
+		rs = db->OpenSchema(adSchemaTables);
+		while (!rs->adoEOF)
+		{
+			bt = rs->Fields->GetItem(_T("TABLE_TYPE"))->Value;
+			if (!strcmp((char*)bt, "TABLE"))
+			{
+				bt = rs->Fields->GetItem(_T("TABLE_NAME"))->Value;
+				m_lstTableName.AddString((char*)bt);
+			}
+			rs->MoveNext();
+		}
 		return TRUE;
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -239,9 +253,6 @@ void CDlgEditDB::OnMoveCompleteAdodc1(long adReason, LPDISPATCH pError, long FAR
 	catch(CException *e)
 	{
 		e->Delete();
-	}
-	catch(...)
-	{
 	}
 }
 

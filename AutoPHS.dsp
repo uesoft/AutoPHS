@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W2 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Fr /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W2 /GX /Zi /O2 /I "..\SelEngineVolume\inc" /I "..\PSADomain\Inc" /I "..\InterfaceAndStruct\INC" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /Fr /Yu"stdafx.h" /FD /c
 # SUBTRACT CPP /WX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -54,7 +54,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /debug /machine:I386
+# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /pdb:"..\Release/AutoPHS.pdb" /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS.exe"
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "AutoPHS - Win32 Debug"
 
@@ -70,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "..\SelEngineVolume\inc" /I "..\PSADomain\Inc" /I "..\InterfaceAndStruct\INC" /D "WIN32" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "_DEBUG"
@@ -80,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 htmlhelp.lib FillExcelDlld.lib DataFormatDlgd.lib version.lib SelEngineVolumed.lib InterfaceAndStructd.lib PSAPointElevationd.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\shareDLL\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
+# ADD LINK32 htmlhelp.lib FillExcelDll.lib DataFormatDlg.lib version.lib SelEngineVolume.lib InterfaceAndStruct.lib PSAPointElevation.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -170,10 +171,6 @@ SOURCE=.\adodc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\adorecordset.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\AutoPHS.cpp
 # End Source File
 # Begin Source File
@@ -255,6 +252,10 @@ SOURCE=.\CommDBOper.cpp
 # Begin Source File
 
 SOURCE=.\Cphs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Cphs1.cpp
 # End Source File
 # Begin Source File
 
@@ -830,10 +831,6 @@ SOURCE=.\adodc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\adorecordset.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\AutoPHS.h
 # End Source File
 # Begin Source File
@@ -1186,6 +1183,14 @@ SOURCE=.\NewStyleDlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\OtherStruct.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\OutFunction.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\OutputPDSFileTr.h
 # End Source File
 # Begin Source File
@@ -1227,6 +1232,10 @@ SOURCE=.\phsstart.h
 # Begin Source File
 
 SOURCE=.\picture.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\PipeUnitData.h
 # End Source File
 # Begin Source File
 
@@ -1291,6 +1300,10 @@ SOURCE=.\selbookmarks.h
 # Begin Source File
 
 SOURCE=.\SelectXYZdlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\SelEngVolDll.h
 # End Source File
 # Begin Source File
 

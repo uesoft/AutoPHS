@@ -16,7 +16,7 @@ class PSDstart
 {
 public:
 
-    static void ConvertAllDb(COleVariant dVer, COleVariant Pwd);
+    static void ConvertAllDb(_variant_t dVer, _variant_t Pwd);
     static void tmpT();
     static void tmpSub2DB();
     static void tmpTelmdb2BitWareDefaultDBF();

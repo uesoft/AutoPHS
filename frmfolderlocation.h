@@ -24,7 +24,7 @@ public:
 	CFrmFolderLocation(CWnd* pParent = NULL);   // standard constructor
 	void LoadCaption();
 	CString GetDir(CString key);
-    SetDir (CString key,CString setval);
+    void SetDir (CString key,CString setval);
 
 // Dialog Data
 	//CString	m_strFolderLocation;

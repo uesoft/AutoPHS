@@ -581,10 +581,6 @@ void CDlgModifyZdjh::OnOK()
 				}
 				catch(CException *e)
 				{
-					e->Delete();
-				}
-				catch(...)
-				{
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->CancelUpdate();
 				}
 			}
@@ -595,11 +591,7 @@ void CDlgModifyZdjh::OnOK()
 			catch(CException *e)
 			{
 				e->Delete();
-			}
-			catch(...)
-			{
-			}
-				
+			}				
 		}
 		::FrmPhsData.m_DBGbill.SetRefDataSource(NULL);
 		//FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(NULL);

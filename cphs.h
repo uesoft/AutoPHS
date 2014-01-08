@@ -39,6 +39,22 @@ public:
     void MakeRsTZB(long iDbID, CString  rsPrefixName,CString strDeleteUserMaterial="");
     bool GetphsBHandSizesTest();
     bool GetphsBHandSizes(CFrmStatus& frmStatus, int FirstCal, int  MaxCalCount,int nth,float& ,float& );
+    bool GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNuts, int FirstCal,int MaxCalCount,int nth,float& TmpPaz,float& TmpPgz);
+	bool doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vTmp1, CString& sTmp, 
+		_variant_t& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+		_RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+		float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+				   float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, _variant_t& vBH, _RecordsetPtr rsSAPart, 
+				   int nth, _variant_t& vnil);
+	bool doiCSPR(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vTmp1, CString& sTmp, 
+		_variant_t& vTmp2, CString& sTmp2, CString& sBHFormat, CString& sBH, float& sngCSLen, 
+		_RecordsetPtr rsza, CString& mvSAattachedCustomID, _RecordsetPtr rsTmp, CString& SQL1, 
+		float& sngWeight, long& mviSASSClassID, CString& tmpCustomID, float& tmpSize2, float& tmpSizeH,
+		float& sngW, long& mviSASSIndex, CString& mvsSASSMaterial, _variant_t& vBH, _RecordsetPtr rsSAPart, 
+		int nth, _variant_t& vnil,
+		_RecordsetPtr rsDiaOfCSPRFiJ, _RecordsetPtr rsDiaOfCSPRFiK, float& Height_SPRINGsL5, CString& sPartID, CString *Ptype, long& i, float& sngH1xmax,
+				   float& sngDim, float& tmpSelPJG4CSPRFiK);
+
     void GetBoltsNutsAndAttachmentsCLgg(int nth = 1);
     void GetphsBlkRotation();
     long CheckMatchPhs();
@@ -49,14 +65,14 @@ public:
 	long CheckDuplicateREFRecordWhenAppend(int *ipCheckButton = NULL);//LFX  2005.3.24  加
     void CheckAllCustomIDandIDinPhsStructureREF();
     void ChangeNameInphsStructureName();
-    CDaoRecordset* AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString strFilter);
+    _RecordsetPtr AvailableSampleIDrsForphsSamp(CString strOrderByDesc,CString strFilter);
     void GetMaterial();
     void GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza);
     void GetphsSumBom();
     void GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza);
     void GetPhsSAELandPAdxdydz();
-	void simplify2(CDaoRecordset& rsPartBoltNuts,int nth);
-	void simplify(CDaoRecordset& rsSAPart,int nth);
+	void simplify2(_RecordsetPtr rsPartBoltNuts,int nth);
+	void simplify(_RecordsetPtr rsSAPart,int nth);
     _variant_t ClassDebugID();
     CString GetBHforDoubleCSBeam(float  GDW1, float  OffsetOfP1toP2, float  Span, float  p1, float  p2, CString  SACustomID, int  iDCS=2, int  FirstCal=2);
     int GetPhsStructFromSampleID(long /*ByVal*/ SampleID);
@@ -64,15 +80,16 @@ public:
 	bool brsIDStatus;
     /*Object*/CListBox* ResultObj;
     /*Object*/CListBox* SourceObj;
-	//_RecordsetPtr rsID;
-	CDaoRecordset rsID;
+
+	_RecordsetPtr rsID;
+
 	CString	PA;
     CString	SA;
 protected:
 
 public:
 	void CloseRecordsets();
-	_Recordset* m_rsObj;
+	_RecordsetPtr m_rsObj;
 	void SelectItemRsObj();
 	void InitListRs();
 
@@ -120,19 +137,19 @@ public:
      * 保持属性值的局部变量
      */
     bool	mvarbrsIDStatus;
-    CDaoRecordset	phsAvailableTypeRs;
-    CDaoRecordset	rsTZB;
+    _RecordsetPtr	phsAvailableTypeRs;
+    _RecordsetPtr	rsTZB;
     _RecordsetPtr	rsTZC;
-    CDaoRecordset	rsTmpREF;
+    _RecordsetPtr	rsTmpREF;
     _RecordsetPtr	mvarrsDiameterSerial;
     /*
      * 保持属性值的局部变量
      */
 
-	CDaoRecordset rsUnCheckedType;
-	CDaoRecordset rsConnect;
-	CDaoRecordset rsphsStructureREF;
-	//CDaoRecordset rsPictureClipData;
+	_RecordsetPtr rsUnCheckedType;
+	_RecordsetPtr rsConnect;
+	_RecordsetPtr rsphsStructureREF;
+	//_RecordsetPtr rsPictureClipData;
 
 };
 extern Cphs	* Cavphs;

@@ -61,12 +61,12 @@ CString user::LF = CString();
 CString user::LS = CString();
 //CWnd* user::gObjMainFrm=NULL;
 CString gObjMainFrm;
-//DEL void user::CompressFile(COleVariant SrcFile, COleVariant Dest, COleVariant Optional r)
+//DEL void user::CompressFile(_variant_t SrcFile, _variant_t Dest, _variant_t Optional r)
 //DEL {
 //DEL 
 //DEL }
 
-int  vtoi2(COleVariant & v)
+int  vtoi2(_variant_t & v)
 {
 	int ret=0;
 	switch(v.vt)
@@ -625,19 +625,19 @@ double vtod(COleVariant &v)
 	return ret;
 }
 
-void RsDeleteAll(CDaoRecordset& rs)
+void RsDeleteAll(_RecordsetPtr rs)
 {
 	try{
-		if(!rs.IsOpen() || !rs.CanUpdate())
+		if(!rs->adoEOF)// || !rs->CanUpdate())
 			return ;
-		rs.MoveFirst();
-		while(!rs.IsEOF()&&!rs.IsBOF())
+		rs->MoveFirst();
+		while(!rs->adoEOF && !rs->BOF)
 		{
-			rs.Delete();
-			rs.MoveFirst();
+			rs->Delete(adAffectCurrent);
+			rs->MoveFirst();
 		}
 	}
-	catch(::CDaoException * e)
+	catch(CException * e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -671,7 +671,7 @@ CString vtos(_variant_t& v)
 		ret="";
 		break;
 	case VT_BSTR:
-		ret=V_BSTR(&v);
+		ret= v.bstrVal;
 		break;
 	case VT_R4:
 		ret.Format("%g", (double)V_R4(&v));
@@ -724,7 +724,7 @@ CString vtos(COleVariant& v)
 	return ret;
 }
 
-CString vtos2(COleVariant& v)
+CString vtos2(_variant_t& v)
 {
 	char ch[14];
 	switch(v.vt)
@@ -816,9 +816,9 @@ bool DisabledSystemMenu(HWND hWnd,HMENU hMenu)
 {
 	return true;
 }
-COleVariant inline STR_VAR( LPCTSTR X )
+_variant_t inline STR_VAR( LPCTSTR X )
 {
-	COleVariant nul;
+	_variant_t nul;
 	nul.ChangeType(VT_NULL);
 	if(CString(X)=="")
 		return nul;
@@ -832,10 +832,10 @@ int inline ShowMessage(LPCTSTR lpszText, UINT nType, LPCTSTR lpszTitle,UINT nIDH
 {
 	return ::MessageBox(NULL,lpszText,lpszTitle,nType|MB_TASKMODAL|MB_TOPMOST );
 }
-COleVariant inline GetFields(CDaoRecordset & rs,CString FieldName)
+_variant_t inline GetFields(_RecordsetPtr rs,CString FieldName)
 {
-	COleVariant vTmp;
-	rs.GetFieldValue(FieldName,vTmp);
+	_variant_t vTmp;
+	rs->get_Collect((_variant_t)FieldName,&vTmp);
 	return vTmp;
 }
 void SetWindowCenter(HWND hWnd)

@@ -16,7 +16,7 @@ public:
 	tmpCalFixPhsTb();
 	virtual ~tmpCalFixPhsTb();
 public:
-	BOOL SetData( CDaoRecordset* pRs,CDaoRecordset* pOtherRs );
+	BOOL SetData( _RecordsetPtr pRs, _RecordsetPtr pOtherRs );
 
 
 };

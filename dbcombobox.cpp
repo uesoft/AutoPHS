@@ -40,20 +40,20 @@ void CDBComboBox::LoadList()
 	m_fis=true;
 	try
 	{
-		if(m_RowRs==NULL || !m_RowRs->IsOpen())
+		if(m_RowRs==NULL || m_RowRs->State != adStateOpen)
 			return;
 		if(m_ListField==_T(""))
 			return;
 		//Çå¿ÕÏîÄ¿
 		this->ResetContent();
-		if(m_RowRs->IsEOF () && m_RowRs->IsBOF())
+		if(m_RowRs->adoEOF && m_RowRs->BOF)
 			return;
 		m_RowRs->MoveFirst();
-		COleVariant v;
+		_variant_t v;
 		CString sTmp;
-		while(!m_RowRs->IsEOF())
+		while(!m_RowRs->adoEOF)
 		{
-			m_RowRs->GetFieldValue(m_ListField,v);
+			m_RowRs->get_Collect((_variant_t)m_ListField, &v);
 			if(v.vt==VT_BSTR)
 				sTmp=vtos(v);
 			else
@@ -64,7 +64,7 @@ void CDBComboBox::LoadList()
 			m_RowRs->MoveNext();
 		}
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();
@@ -78,30 +78,30 @@ void CDBComboBox::RefLst()
 	try
 	{
 		
-		if(m_RowRs==NULL || !m_RowRs->IsOpen())
+		if(m_RowRs==NULL || m_RowRs->State != adStateOpen)
 			return;
-		if(m_Rs==NULL || !m_Rs->IsOpen())
+		if(m_Rs==NULL || m_Rs->State != adStateOpen)
 			return;
 		if(m_BoundField==_T("") || m_Field==_T(""))
 			return;
-		COleVariant v;
-		//m_Rs->GetFieldValue(m_Field,v);
+		_variant_t v;
+		//m_Rs->get_Collect((_variant_t)m_Field,v);
 		int i=0;
-		if(m_RowRs->IsBOF() && m_RowRs->IsEOF())
+		if(m_RowRs->BOF && m_RowRs->adoEOF)
 		{
 			this->SetCurSel(-1);
 			return;
 		}
-		if(m_RowRs->IsBOF())
+		if(m_RowRs->BOF)
 			m_RowRs->MoveFirst();
-		else if(m_RowRs->IsEOF())
+		else if(m_RowRs->adoEOF)
 			m_RowRs->MoveLast();
-		COleVariant v1;
-		m_RowRs->GetFieldValue(m_ListField,v1);
+		_variant_t v1;
+		m_RowRs->get_Collect((_variant_t)m_ListField, &v1);
 		i=this->FindStringExact(-1,vtos(v1));
 		this->SetCurSel(i);
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -119,29 +119,29 @@ void CDBComboBox::OnSelchange()
 			m_fis=false;
 			return;
 		}
-		if(m_RowRs==NULL || !m_RowRs->IsOpen())
+		if(m_RowRs==NULL || m_RowRs->State != adStateOpen)
 			return;
-		if(m_Rs==NULL || !m_Rs->IsOpen())
+		if(m_Rs==NULL || m_Rs->State != adStateOpen)
 			return;
 		if(m_BoundField==_T("") || m_Field==_T(""))
 			return;
-		if(m_Rs->IsEOF() || m_Rs->IsBOF())
+		if(m_Rs->adoEOF || m_Rs->BOF)
 			return;
 		int ix=this->GetCurSel();
 		if(ix<0)
 			return;
 		m_RowRs->MoveFirst();
 		int i=0;
-		COleVariant v;
-		while(!m_RowRs->IsEOF())
+		_variant_t v;
+		while(!m_RowRs->adoEOF)
 		{
 			if(i==ix)
 			{
-				m_RowRs->GetFieldValue(m_BoundField,v);
-				m_Rs->Edit();
-				m_Rs->SetFieldValue(m_Field,v);
-				m_RowRs->GetFieldValue(m_ListField,v);
-				m_Rs->SetFieldValue(m_ListField,v);
+				m_RowRs->get_Collect((_variant_t)m_BoundField, &v);
+//				m_Rs->Edit();
+				m_Rs->put_Collect((_variant_t)m_Field, v);
+				m_RowRs->get_Collect((_variant_t)m_ListField, &v);
+				m_Rs->put_Collect((_variant_t)m_ListField, v);
 				m_Rs->Update();
 				break;
 			}
@@ -149,7 +149,7 @@ void CDBComboBox::OnSelchange()
 			m_RowRs->MoveNext();
 		}
 	}
-	catch(::CDaoException * e)
+	catch(CException *e)
 	{
 		//e->ReportError();
 		e->Delete();

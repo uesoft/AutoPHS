@@ -38,12 +38,12 @@ public:
 	DWORD GetItemData( int nItem ) const;
 
 
-	CDaoRecordset*  m_prsNAME;
+	_RecordsetPtr  m_prsNAME;
 	virtual ~CVirtualListCtrl();
 
 	// Generated message map functions
 protected:
-	CDaoRecordset* m_prsREF;
+	_RecordsetPtr m_prsREF;
 	long m_lRefRecords;
 	//{{AFX_MSG(CVirtualListCtrl)
 	afx_msg void OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult);

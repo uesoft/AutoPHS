@@ -51,29 +51,29 @@ public:
 public:
 	static double MaxLGLong;
 	static void UpdateDBForUpdate();
-	static bool bFieldExists(CDaoTableDef *rd, CString sName);
-	static bool bIndexExists(CDaoTableDef* pTd,CString strIndex);
-	static void UpdateDBTable(CDaoDatabase &SourceDB, CString SourceTBName, CDaoDatabase &DesDB, CString DesTBName);
+//	static bool bFieldExists(CDaoTableDef *rd, CString sName);
+//	static bool bIndexExists(_TablePtr* pTd,CString strIndex);
+	static void UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _ConnectionPtr DesDB, CString DesTBName);
 	static void CloseAll_ConnectionPtr();
 	static BOOL UpdateSortDB();
 	static CString VolumeNo;
 	static CString PhsNo;
-	static bool ChangeColumnsToRows(CDaoDatabase &db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
-	static bool ChangeDatabase(CDaoDatabase& dDb,CDaoDatabase &sDb);
-	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
-	static bool IsExistentQuery(CDaoDatabase &db,CString strQueryName);
-	static bool bFieldExists(CDaoRecordset &rs, CString sName);
-	static bool DataTabAddRs(CDaoRecordset &dRsData, CDaoRecordset &sRsData, long VolumeID);
+	static bool ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString OutTblName,int iRowStart=1,int iRowCount=1);
+	static bool ChangeDatabase(_ConnectionPtr dDb,_ConnectionPtr sDb);
+//	static CString GetTblField(CDaoTableDef& tbldef,CString tblName);
+	static bool IsExistentQuery(_ConnectionPtr db,CString strQueryName);
+	static bool bFieldExists(_RecordsetPtr rs, CString sName);
+	static bool DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long VolumeID);
 	
 	static int FindStr(CString *pStr,int Count, CString sName);
-	static bool VolTabAddRs(CDaoRecordset &RsVolume, _VolumeDef &VolumeDef);
-	static bool FindTable(CDaoDatabase &db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
+	static bool VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef);
+	static bool FindTable(_ConnectionPtr db, CString sTab,CString * pSTabName,CString *pSDataTabName,int *n1 ,int *n2);
 	static bool UpdateAllPrjDB();
 	static bool UpgradeDatabase();
-	static void InitWorkTable(CDaoDatabase& db,CString tbn,int type);
-	static CString GetDBName(CDaoDatabase& db);
-	static bool tdfExists(CDaoDatabase & db,CString tbn);
+	static void InitWorkTable(_ConnectionPtr db,CString tbn,int type);
 	static CString GetDBName(_ConnectionPtr db);
+	static bool tdfExists(_ConnectionPtr  db,CString tbn);
+//	static CString GetDBName(_ConnectionPtr db);
 	static const int PrjNw;
 	static const int GDLJB;
 	static const int GDZDJ270;
@@ -120,10 +120,10 @@ public:
 	static const int TZD800HBYJ;    //华冶建支吊架明细一览表
 
     static bool FdExists(_RecordsetPtr  rs, CString  strFieldName);
-    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
+//    static bool tdfExists(_ConnectionPtr pConn, CString  tbn);
     static bool InitBillType();
     static void InitCurrWork();
-    static void ConVertDB(CString  sDBN, CString  dDBN, COleVariant dVer, COleVariant  Pwd);
+    static void ConVertDB(CString  sDBN, CString  dDBN, _variant_t dVer, _variant_t  Pwd);
     static void CheckAllRecords(_RecordsetPtr rs);
     static void CheckAllFields(_RecordsetPtr rs);
     static void InitDBTBN(CString  &strSQL=CString());
@@ -132,8 +132,8 @@ public:
     static void SortField(/*Object MyDBGrid, Object MyData,*/ int MyColIndex);
     static void SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColIndex, CString tbn);
     static void SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn="");
-    static COleVariant va(/*Object Obj*/);
-    static void LocateFrm(CWnd* frm, COleVariant  bDisplayWindow);
+    static _variant_t va(/*Object Obj*/);
+    static void LocateFrm(CWnd* frm, _variant_t  bDisplayWindow);
     static void TraceMainFrm(long  hwnd);
     static bool bFrmLoaded(CString frmName);
     static void InitPrjAndPrjdb();
@@ -158,7 +158,7 @@ public:
      */
     static bool	gbDisplayBOM;
     static bool	gbSelSPECset;
-    static COleVariant	DBstruArr;
+    static _variant_t	DBstruArr;
     static CString	SelPrjID;
     static CString	SelPrjName;//工程名
 	static CString SelPrjEnglishName;//工程英文名
@@ -188,7 +188,7 @@ public:
     static CString	TBNRawData;
     static CString	SQLx;
     static CString	SQL1;
-    static COleVariant	Bmk;
+    static _variant_t	Bmk;
     /*
      * 功能标志:绘图/计算
      */
@@ -219,7 +219,7 @@ public:
     static const int	INSERT_BG_Z;
     static const int	INSERT_BG_DDATTE;
     static const int	PrjIDw;
-    static COleVariant	FieldAttrNum;
+    static _variant_t	FieldAttrNum;
     static CString	Btype[81];//20071016 "51" 改为 "71"
 	static MnuProperty Cbtype[81]; //20071016 "51" 改为 "71"
     static int	DBfields[81];//20071016 "51" 改为 "71"
@@ -227,14 +227,14 @@ public:
     /*
      * 角钢边长壁厚数据
      */
-    //static COleVariant	LSteel;
+    //static _variant_t	LSteel;
     /*
      * 静力计算批文件名，位于StressAnaDir
      */
     static const _TCHAR*	YLJSBAT;
     static CString	PSA_OutDataUnit;
-    static const float	kgf2N;
-    static const float	kgf2MPa;
+    static const double	kgf2N;
+    static const double	kgf2MPa;
     static const int	cm2mm;
     /*
      * 以下为TK窗体使用的变量和常数
@@ -249,8 +249,8 @@ public:
     static bool	TkLspLoaded;
     static float	gsngSumBomWeight;
     static CString	HelpFile;
-    static COleVariant	zdjBmpNum;
-    static COleVariant	zdjBmp;
+    static _variant_t	zdjBmpNum;
+    static _variant_t	zdjBmp;
     static long	glCurRecordNo;
     static bool	pbFrmLoadedFrmStatus;
     static bool	pbFrmLoadedSELPDSV;
@@ -263,16 +263,16 @@ public:
 	static long SelHyID;
 	 static CString SelJcdm;//卷册代号
 	 static CString SelZyID;
-	static CDaoDatabase dbPRJ;
-	static CDaoDatabase dbSORT;
-    static CDaoDatabase	dbTable;//20071015
+	static _ConnectionPtr dbPRJ;
+	static _ConnectionPtr dbSORT;
+    static _ConnectionPtr	dbTable;//20071015
 
-	static CDaoDatabase dbDSize;//20071018
-	static CDaoDatabase dbMaterial;//20071018
-	static CDaoDatabase dbPHScode;//20071018
-	static CDaoDatabase dbSACal;//20071018
+	static _ConnectionPtr dbDSize;//20071018
+	static _ConnectionPtr dbMaterial;//20071018
+	static _ConnectionPtr dbPHScode;//20071018
+	static _ConnectionPtr dbSACal;//20071018
 
-    static CDaoDatabase	dbPRJDB;
+    static _ConnectionPtr	dbPRJDB;
 	static CString		strExportPaint;
 	static bool IsCalc;//pfg20051021是否正在计算
 	static BOOL bSymbol;

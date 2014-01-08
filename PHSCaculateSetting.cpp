@@ -4,7 +4,6 @@
 
 #include "stdafx.h"
 #include "PHSCaculateSetting.h"
-#include <afxdao.h>
 #include "modPHScal.h"
 
 #ifdef _DEBUG

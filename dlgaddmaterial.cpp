@@ -133,7 +133,8 @@ void CDlgAddMaterial::LoadListClass()
 		delete [] m_pstrClassTbn;
 		m_pstrClassTbn=NULL;
 	}
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -150,30 +151,32 @@ void CDlgAddMaterial::LoadListClass()
 		{
 			SQLx=_T("SELECT [Index],[IndexName],[tbn] FROM ClassTypeDesc WHERE Index = 3 OR Index=4  OR Index=5  OR Index=2  OR Index=1 OR Index=6 ORDER BY seq ");
 		}
-		rs.m_pDatabase=&EDIBgbl::dbSORT;
-		rs.Open(dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&EDIBgbl::dbSORT;
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i;
-		int count=rs.GetRecordCount();
+		int count=rs->RecordCount;
 		m_piClassIndex=new long[count];
 		m_pstrClassTbn=new CString[count];
 		i=0;
 		CString sTmp;
-		COleVariant vTmp;
-		while(!rs.IsEOF())
+		_variant_t vTmp;
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue (0,vTmp);
+			rs->get_Collect((_variant_t)0L, &vTmp);
 			m_piClassIndex[i]=vtoi(vTmp);
 			
-			rs.GetFieldValue (1,vTmp);
+			rs->get_Collect((_variant_t)1L, &vTmp);
 			m_comboClass.AddString(vtos(vTmp));
 
-			rs.GetFieldValue(2,vTmp);
+			rs->get_Collect((_variant_t)2L, &vTmp);
 			m_pstrClassTbn[i]=vtos(vTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 			i++;
 		}
 	}
-	catch(CDaoException *e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -258,7 +261,8 @@ void CDlgAddMaterial::LoadListDesc()
 		//m_comboDesc.ModifyStyle(CBS_DROPDOWN,CBS_DROPDOWNLIST);
 	}
 	m_strDescTbn=strTbn;
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -267,34 +271,36 @@ void CDlgAddMaterial::LoadListDesc()
 		else
 			SQLx=_T("SELECT [CustomID],[Description],[ID] FROM ") + strTbn + _T(" WHERE ClassID<900 ORDER BY seq ");
 		
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int count,i;
-		if(!rs.IsBOF() && !rs.IsEOF())
+		if(!rs->BOF && !rs->adoEOF)
 		{
-			rs.MoveLast();
-			rs.MoveFirst();
+			rs->MoveLast();
+			rs->MoveFirst();
 		}
-		count=rs.GetRecordCount();
+		count=rs->RecordCount;
 		m_pstrDescCustomID=new CString[count];
 		m_pstrDescID=new CString[count];
 		i=0;
-		while(!rs.IsEOF())
+		while(!rs->adoEOF)
 		{
-			COleVariant vTmp;
-			rs.GetFieldValue (0,vTmp);
+			_variant_t vTmp;
+			rs->get_Collect((_variant_t)0L, &vTmp);
 			m_pstrDescCustomID[i]=vtos(vTmp);
 
-			rs.GetFieldValue (1,vTmp);
+			rs->get_Collect((_variant_t)1L, &vTmp);
 			m_comboDesc.AddString(vtos(vTmp));
-			rs.GetFieldValue (2,vTmp);
+			rs->get_Collect((_variant_t)2L, &vTmp);
 			m_pstrDescID[i]=vtos(vTmp);
-			rs.MoveNext();
+			rs->MoveNext();
 			i++;
 		}
-		rs.Close();
+		rs->Close();
 	}
-	catch(CDaoException *e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -376,7 +382,8 @@ void CDlgAddMaterial::LoadListBH()
 		m_editThickness.EnableWindow(FALSE);
 		//m_comboBH.EnableWindow(TRUE);
 	}
-	CDaoRecordset rs;
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
 	try
 	{
 		CString SQLx;
@@ -386,47 +393,51 @@ void CDlgAddMaterial::LoadListBH()
 		{
 			if(iClassIndex==iOtherPART)
 			{
-				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM ") + strTbn + _T(" WHERE CustomID=\'") + strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' WHERE ClassID>=900)");
+				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM ") + strTbn + _T(" WHERE CustomID=\'") + strCustomID + 
+					_T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' WHERE ClassID>=900)");
 			}
 			else
 			{
-				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM [") + strTbn + _T("] AS tmpTb1 WHERE CustomID=\'") + strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::dbPRJ.GetName() + _T("\' WHERE ClassID<900)");
+				SQLx=_T("SELECT [BH],[WEIGHT],[Material] FROM [") + strTbn + _T("] AS tmpTb1 WHERE CustomID=\'") + 
+					strCustomID + _T("\' AND CustomID IN (SELECT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' WHERE ClassID<900)");
 			}			
 		}
 
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,SQLx);
+// 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int count,i;
-		if(!rs.IsBOF() && !rs.IsEOF())
+		if(!rs->BOF && !rs->adoEOF)
 		{
-			rs.MoveLast();
-			rs.MoveFirst();
+			rs->MoveLast();
+			rs->MoveFirst();
 		}
-		count=rs.GetRecordCount();
+		count=rs->RecordCount;
 		m_pfBHWeight=new float[count];
 		if(iClassIndex!=iSA)
 			m_pstrBHMaterial=new CString[count];
 		i=0;
-		while(!rs.IsEOF())
+		while(!rs->adoEOF)
 		{
 			CString sTmp;
-			COleVariant vTmp;
-			rs.GetFieldValue (0,vTmp);
+			_variant_t vTmp;
+			rs->get_Collect((_variant_t)0L, &vTmp);
 			m_comboBH.AddString(vtos(vTmp));
 
-			rs.GetFieldValue (1,vTmp);
+			rs->get_Collect((_variant_t)1L, &vTmp);
 			m_pfBHWeight[i]=vtof(vTmp);
 
 			if(iClassIndex!=iSA)
 			{
-				rs.GetFieldValue(2,vTmp);
+				rs->get_Collect((_variant_t)2L, &vTmp);
 				m_pstrBHMaterial[i]=vtos(vTmp);
 			}
-			rs.MoveNext();
+			rs->MoveNext();
 			i++;
 		}
 	}
-	catch(CDaoException *e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -571,14 +582,6 @@ void CDlgAddMaterial::LoadMaterialValue()
 	OnChangeLength();
 }
 
-//DEL void CDlgAddMaterial::OnOK() 
-//DEL {
-//DEL 	// TODO: Add extra validation here
-//DEL 	
-//DEL 	//不要取消对话框
-//DEL 	//CDialog::OnOK();
-//DEL }
-
 void CDlgAddMaterial::OnChangeWeigth() 
 {
 	// TODO: If this is a RICHEDIT control, the control will not
@@ -687,11 +690,19 @@ void CDlgAddMaterial::OnBtnAdd()
 		
 	if(m_bIsSA || MessageBox(sTmp,NULL,MB_YESNO)==IDYES)
 	{
-		CDaoRecordset rsTZB,rsDesc,rsTmp,rsBH;
+//		 rsTZB,rsDesc,rsTmp,rsBH;
+		_RecordsetPtr rsTZB;
+		rsTZB.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsDesc;
+		rsDesc.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsTmp;
+		rsTmp.CreateInstance(__uuidof(Recordset));
+		_RecordsetPtr rsBH;
+		rsBH.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		try
 		{
-			COleVariant vTmp;
+			_variant_t vTmp;
 			CString strTmp,strClgg,strBHFormat;
 			UpdateData();
 			CString strDesc,strBH,strMaterial;
@@ -713,21 +724,25 @@ void CDlgAddMaterial::OnBtnAdd()
 			{
 				int iClassID=900;//其它类(index=iOtherPART=6)用户自定义零件,其ClassID从900开始
 				m_comboDesc.GetWindowText(strDesc);
-				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
+// 				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
 				m_strInpCustomID.TrimLeft();m_strInpCustomID.TrimRight();
 				strSQL.Format(_T("Select * FROM %s WHERE Description=\'%s\' AND ClassID>=900"),m_strDescTbn,strDesc);
-				rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-				if(rsDesc.IsEOF() && rsDesc.IsBOF())
+// 				rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rsDesc->adoEOF && rsDesc->BOF)
 				{
 					strSQL.Format(_T("Select * FROM %s WHERE ID LIKE \'UD*\' AND ClassID>=900 ORDER BY ID "),m_strDescTbn);
-					rsDesc.Close();
-					rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-					if(rsDesc.IsBOF() && rsDesc.IsEOF())
+					rsDesc->Close();
+//					rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+					rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if(rsDesc->BOF && rsDesc->adoEOF)
 						strID=_T("UD0000");
 					else
 					{
-						rsDesc.MoveLast();
-						rsDesc.GetFieldValue(_T("ID"),vTmp);
+						rsDesc->MoveLast();
+						rsDesc->get_Collect((_variant_t)_T("ID"), &vTmp);
 						strID=vtos(vTmp);
 						ix=0;
 						while(strID[ix]<_T('0') || strID[ix]>_T('9')) ix++;
@@ -736,58 +751,62 @@ void CDlgAddMaterial::OnBtnAdd()
 					}
 					if(m_strInpCustomID==_T(""))
 						m_strInpCustomID=strID;
-					rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
+// 					rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
 					strSQL.Format(_T("SELECT * FROM PictureClipData WHERE ID=\'%s\'"),strID);
-					rsTmp.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-					if(rsTmp.IsEOF() && rsTmp.IsBOF())
+// 					rsTmp.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if(rsTmp->adoEOF && rsTmp->BOF)
 					{
-						rsTmp.AddNew();
-						rsTmp.SetFieldValue(_T("ID"),STR_VAR(strID));
-						rsTmp.SetFieldValue(_T("CustomID"),STR_VAR(m_strInpCustomID));
-						rsTmp.SetFieldValue(_T("Index"),COleVariant((long)6));
-						rsTmp.SetFieldValue(_T("ClassID"),COleVariant((long)iClassID));
-						rsTmp.SetFieldValue(_T("SEQ"),COleVariant((long)(GetMaxSEQ(_T("PictureClipData"),EDIBgbl::dbPRJ)+1)));
-						rsTmp.SetFieldValue(_T("Description"),STR_VAR(strDesc));
-						rsTmp.SetFieldValue(_T("ChineseDescription"),STR_VAR(strDesc));
-						rsTmp.Update();
+						rsTmp->AddNew();
+						rsTmp->put_Collect((_variant_t)_T("ID"),STR_VAR(strID));
+						rsTmp->put_Collect((_variant_t)_T("CustomID"),STR_VAR(m_strInpCustomID));
+						rsTmp->put_Collect((_variant_t)_T("Index"),_variant_t((long)6));
+						rsTmp->put_Collect((_variant_t)_T("ClassID"),_variant_t((long)iClassID));
+						rsTmp->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)(GetMaxSEQ(_T("PictureClipData"),EDIBgbl::dbPRJ)+1)));
+						rsTmp->put_Collect((_variant_t)_T("Description"),STR_VAR(strDesc));
+						rsTmp->put_Collect((_variant_t)_T("ChineseDescription"),STR_VAR(strDesc));
+						rsTmp->Update();
 					}
-					rsTmp.Close();
+					rsTmp->Close();
 
-					rsDesc.AddNew();
-					rsDesc.SetFieldValue(_T("ID"),STR_VAR(strID));
-					rsDesc.SetFieldValue(_T("CustomID"),STR_VAR(m_strInpCustomID));
-					rsDesc.SetFieldValue(_T("Index"),COleVariant((long)6));
-					rsDesc.SetFieldValue(_T("Description"),STR_VAR(strDesc));
-					rsDesc.SetFieldValue(_T("ChineseDescription"),STR_VAR(strDesc));
-					rsDesc.SetFieldValue(_T("ClassID"),COleVariant((long)iClassID));
-					rsDesc.SetFieldValue(_T("SEQ"),COleVariant((long)(GetMaxSEQ(m_strDescTbn,modPHScal::dbZDJcrude)+1)));
-					rsDesc.Update();
+					rsDesc->AddNew();
+					rsDesc->put_Collect((_variant_t)_T("ID"),STR_VAR(strID));
+					rsDesc->put_Collect((_variant_t)_T("CustomID"),STR_VAR(m_strInpCustomID));
+					rsDesc->put_Collect((_variant_t)_T("Index"),_variant_t((long)6));
+					rsDesc->put_Collect((_variant_t)_T("Description"),STR_VAR(strDesc));
+					rsDesc->put_Collect((_variant_t)_T("ChineseDescription"),STR_VAR(strDesc));
+					rsDesc->put_Collect((_variant_t)_T("ClassID"),_variant_t((long)iClassID));
+					rsDesc->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)(GetMaxSEQ(m_strDescTbn,modPHScal::dbZDJcrude)+1)));
+					rsDesc->Update();
 					this->LoadListDesc();
 					m_comboDesc.SetCurSel(m_comboDesc.GetCount()-1);
 				}
 				else
 				{
-					rsDesc.GetFieldValue(_T("ID"),vTmp);
+					rsDesc->get_Collect((_variant_t)_T("ID"), &vTmp);
 					strID=vtos(vTmp);
-					rsDesc.GetFieldValue(_T("ClassID"),vTmp);
+					rsDesc->get_Collect((_variant_t)_T("ClassID"), &vTmp);
 					iClassID=vtoi(vTmp);
 				}
-				rsDesc.Close();
+				rsDesc->Close();
 				strCustomID=m_strInpCustomID;
 				m_comboBH.GetWindowText(strBH);
 				strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE CustomID=\'") + strCustomID + _T("\' AND BH=\'") + strBH +_T("\'");
-				rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
-				rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-				if(rsBH.IsBOF() && rsBH.IsEOF())
+// 				rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
+// 				rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+				rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				if(rsBH->BOF && rsBH->adoEOF)
 				{
-					rsBH.AddNew();
-					rsBH.SetFieldValue(_T("BH"),STR_VAR(strBH));
-					rsBH.SetFieldValue(_T("CustomID"),STR_VAR(strCustomID));
-					rsBH.SetFieldValue(_T("Material"),STR_VAR(strMaterial));
-					rsBH.SetFieldValue(_T("Weight"),COleVariant((float)m_fWeight));
-					rsBH.Update();
+					rsBH->AddNew();
+					rsBH->put_Collect((_variant_t)_T("BH"),STR_VAR(strBH));
+					rsBH->put_Collect((_variant_t)_T("CustomID"),STR_VAR(strCustomID));
+					rsBH->put_Collect((_variant_t)_T("Material"),STR_VAR(strMaterial));
+					rsBH->put_Collect((_variant_t)_T("Weight"),_variant_t((float)m_fWeight));
+					rsBH->Update();
 				}
-				rsBH.Close();
+				rsBH->Close();
 				
 				this->LoadListBH();
 				m_comboBH.SetCurSel(m_comboBH.FindStringExact(-1,strBH));
@@ -810,24 +829,26 @@ void CDlgAddMaterial::OnBtnAdd()
 
 					strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE (BH=\'") + strBH + _T("\' OR BH=\'") + _strBH +_T("\') AND CustomID=\'")
 						+ strCustomID + _T("\'");
-					rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
-					rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
-					if(rsBH.IsBOF() && rsBH.IsEOF())
+// 					rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
+// 					rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+					rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					if(rsBH->BOF && rsBH->adoEOF)
 					{
-						rsBH.AddNew();
-						rsBH.SetFieldValue(_T("BH"),STR_VAR(strBH));
-						rsBH.SetFieldValue(_T("CustomID"),STR_VAR(strCustomID));
-						rsBH.SetFieldValue(_T("Material"),STR_VAR(strMaterial));
-						rsBH.SetFieldValue(_T("Weight"),COleVariant((float)m_fWeight));						
-						rsBH.Update();
+						rsBH->AddNew();
+						rsBH->put_Collect((_variant_t)_T("BH"),STR_VAR(strBH));
+						rsBH->put_Collect((_variant_t)_T("CustomID"),STR_VAR(strCustomID));
+						rsBH->put_Collect((_variant_t)_T("Material"),STR_VAR(strMaterial));
+						rsBH->put_Collect((_variant_t)_T("Weight"),_variant_t((float)m_fWeight));						
+						rsBH->Update();
 						
 						LoadListBH();
 					}
 					else
 					{
-						rsBH.GetFieldValue(_T("BH"),vTmp);
+						rsBH->get_Collect((_variant_t)_T("BH"), &vTmp);
 						strBH=vtos(vTmp);
-						rsBH.GetFieldValue(_T("Material"),vTmp);
+						rsBH->get_Collect((_variant_t)_T("Material"), &vTmp);
 						strMaterial=vtos(vTmp);
 					}
 				}
@@ -844,23 +865,27 @@ void CDlgAddMaterial::OnBtnAdd()
 				}
 				m_strBH=strBH;
 				strSQL.Format(_T("Select * FROM %s WHERE ID=\'%s\' AND Description=\'%s\' AND ClassID<900"),m_strDescTbn,strID,strDesc);
-				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
-				rsDesc.Open(dbOpenSnapshot,strSQL);
-				rsDesc.GetFieldValue(_T("BHFormat"),vTmp);
+// 				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
+// 				rsDesc.Open(dbOpenSnapshot,strSQL);
+				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
+				rsDesc->get_Collect((_variant_t)_T("BHFormat"), &vTmp);
 				strBHFormat=vtos(vTmp);
 
 				UpdateTmpCSLen();
 
 				strSQL.Format(_T("Select %s FROM tmpCSLen"),strBHFormat);
-				rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
+//				rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
 				try
 				{
-					rsTmp.Open(dbOpenSnapshot,strSQL);
-					rsTmp.GetFieldValue(0,vTmp);
+// 					rsTmp.Open(dbOpenSnapshot,strSQL);
+					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+						adOpenKeyset, adLockOptimistic, adCmdText); 
+					rsTmp->get_Collect((_variant_t)0L, &vTmp);
 					strClgg=vtos(vTmp);
-					rsTmp.Close();
+					rsTmp->Close();
 				}
-				catch(CDaoException * e)
+				catch(CException *e)
 				{
 					e->Delete();
 					strClgg=strBH;
@@ -869,65 +894,56 @@ void CDlgAddMaterial::OnBtnAdd()
 			if(!m_bIsSA)
 			{
 				//如果不是在“添加根部的附件”状态
-				rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
+// 				rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
 				modPHScal::zdjh=vtoi(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("ZDJH")));
 				strSQL.Format(_T("SELECT * FROM %s WHERE VolumeID=%d AND ZDJH=%d ORDER BY recno"),
 					EDIBgbl::Btype[EDIBgbl::TZB],
 					EDIBgbl::SelVlmID,
 					modPHScal::zdjh);
-				rsTZB.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+// 				rsTZB.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
+				rsTZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
+					adOpenKeyset, adLockOptimistic, adCmdText); 
 				int maxrecno=0;
-				if(!rsTZB.IsBOF() && !rsTZB.IsEOF())
+				if(!rsTZB->BOF && !rsTZB->adoEOF)
 				{
 					//获得现有零件的最大记录号
-					rsTZB.MoveLast();
-					rsTZB.GetFieldValue(_T("recno"),vTmp);
+					rsTZB->MoveLast();
+					rsTZB->get_Collect((_variant_t)_T("recno"), &vTmp);
 					maxrecno=vtoi(vTmp);
 				}
 
-				rsTZB.AddNew();
-				rsTZB.SetFieldValue(_T("VolumeID"),COleVariant((long)EDIBgbl::SelVlmID));
-				rsTZB.SetFieldValue(_T("Zdjh"),COleVariant((long)modPHScal::zdjh));
-				rsTZB.SetFieldValue(_T("nth"),COleVariant((long)1));
+				rsTZB->AddNew();
+				rsTZB->put_Collect((_variant_t)_T("VolumeID"),_variant_t((long)EDIBgbl::SelVlmID));
+				rsTZB->put_Collect((_variant_t)_T("Zdjh"),_variant_t((long)modPHScal::zdjh));
+				rsTZB->put_Collect((_variant_t)_T("nth"),_variant_t((long)1));
 
-				rsTZB.SetFieldValue(_T("bUserAdd"),COleVariant((short)1));
+				rsTZB->put_Collect((_variant_t)_T("bUserAdd"),_variant_t((short)1));
 				//用户添加的材料将不能被作为根部附件处理。因为可能添加管部等
 				//这样就不必修改GetPhsSumBom函数。
-				rsTZB.SetFieldValue(_T("IsSAPart"),COleVariant((long)-1));
-				rsTZB.SetFieldValue(_T("Index"),COleVariant((short)iClassIndex));
+				rsTZB->put_Collect((_variant_t)_T("IsSAPart"),_variant_t((long)-1));
+				rsTZB->put_Collect((_variant_t)_T("Index"),_variant_t((short)iClassIndex));
 				//添加的零件recno=最大记录号+1
-				rsTZB.SetFieldValue(_T("recno"),COleVariant((long)(maxrecno+1)));
-				rsTZB.SetFieldValue(_T("ClassID"),modPHScal::sFindFLD(_T("CustomID"),_T("ClassID"),strCustomID));
-				rsTZB.SetFieldValue(_T("CustomID"),STR_VAR(strCustomID));
-				rsTZB.SetFieldValue(_T("ID"),STR_VAR(strID));
-				rsTZB.SetFieldValue(_T("CLmc"),STR_VAR(strDesc));
-				rsTZB.SetFieldValue(_T("clcl"),STR_VAR(strMaterial));
-				rsTZB.SetFieldValue(_T("CLnum"),COleVariant((long)m_iNum));
-				rsTZB.SetFieldValue(_T("Cldz"),COleVariant((float)m_fWeight));
+				rsTZB->put_Collect((_variant_t)_T("recno"),_variant_t((long)(maxrecno+1)));
+				rsTZB->put_Collect((_variant_t)_T("ClassID"),modPHScal::sFindFLD(_T("CustomID"),_T("ClassID"),strCustomID));
+				rsTZB->put_Collect((_variant_t)_T("CustomID"),STR_VAR(strCustomID));
+				rsTZB->put_Collect((_variant_t)_T("ID"),STR_VAR(strID));
+				rsTZB->put_Collect((_variant_t)_T("CLmc"),STR_VAR(strDesc));
+				rsTZB->put_Collect((_variant_t)_T("clcl"),STR_VAR(strMaterial));
+				rsTZB->put_Collect((_variant_t)_T("CLnum"),_variant_t((long)m_iNum));
+				rsTZB->put_Collect((_variant_t)_T("Cldz"),_variant_t((float)m_fWeight));
 				if(iClassIndex==iOtherPART)
 				{
-					rsTZB.SetFieldValue(_T("Clgg"),STR_VAR(strBH));
-//					rsTZB.SetFieldValue(_T("BH"),STR_VAR(strBH));
+					rsTZB->put_Collect((_variant_t)_T("Clgg"),STR_VAR(strBH));
+//					rsTZB->put_Collect((_variant_t)_T("BH"),STR_VAR(strBH));
 				}
 				else
 				{
-					rsTZB.SetFieldValue(_T("Clgg"),STR_VAR(strClgg));
-//					rsTZB.SetFieldValue(_T("BH"),STR_VAR(strClgg));
-					rsTZB.SetFieldValue(_T("L1"),COleVariant((float)m_fLength));
-					rsTZB.SetFieldValue(_T("CLzz"),COleVariant((float)(m_iNum*m_fWeight)));
+					rsTZB->put_Collect((_variant_t)_T("Clgg"),STR_VAR(strClgg));
+//					rsTZB->put_Collect((_variant_t)_T("BH"),STR_VAR(strClgg));
+					rsTZB->put_Collect((_variant_t)_T("L1"),_variant_t((float)m_fLength));
+					rsTZB->put_Collect((_variant_t)_T("CLzz"),_variant_t((float)(m_iNum*m_fWeight)));
 				}
-				rsTZB.Update();
-				//判断是否有计算的材料或是仅有用户添加的材料
-				/*CString SQLx = _T("SELECT CLmc,CLgg,CLnum,CLdz,CLzz,bUserAdd,Index FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (not ISNULL(recno) OR (bUserAdd is not null and bUserAdd<>0 )) ");
-				if(rsTmp.IsOpen())
-					rsTmp.Close();
-				rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
-				rsTmp.Open(dbOpenSnapshot,SQLx);
-				if(rsTmp.IsBOF() && rsTmp.IsEOF())
-					;
-				else
-					//用户添加了材料，设置计算成功标志，以便统计材料
-					//FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect(_variant_t(_T("bCalSuccess")),-1);*/
+				rsTZB->Update();
 				//添加成功！
 				sTmp.Format(IDS_AddMaterialSuccess);
 				MessageBox(sTmp);
@@ -941,7 +957,7 @@ void CDlgAddMaterial::OnBtnAdd()
 				this->EndDialog(IDOK);
 			}
 		}
-		catch(CDaoException* e)
+		catch(CException *e)
 		{
 			e->ReportError();
 			e->Delete();
@@ -958,9 +974,9 @@ void CDlgAddMaterial::UpdateTmpCSLen()
 	try
 	{
 		strSQL.Format(_T("UPDATE tmpCSLen Set [BH]=\'%s\'"),m_strBH);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL,NULL,adCmdText);
 		strSQL.Format(_T("UPDATE tmpCSLen Set [L1]=%g"),m_fLength);
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL,NULL,adCmdText);
 		if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && ! FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 		{
 			modPHScal::gdw1=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("gdw1")));
@@ -971,9 +987,9 @@ void CDlgAddMaterial::UpdateTmpCSLen()
 			strSQL.Format(_T("UPDATE tmpCSLen Set [GDW1]=%g"),0.0);
 		}
 
-		EDIBgbl::dbPRJ.Execute(strSQL);
+		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL,NULL,adCmdText);
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
@@ -1048,8 +1064,9 @@ void CDlgAddMaterial::LoadListMaterial()
 			return;
 		int iClassIndex=m_piClassIndex[ix];
 
-		CDaoRecordset rs;
-		COleVariant vTmp;
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
+		_variant_t vTmp;
 		CString SQLx;
 		if(iClassIndex==iPA)
 			//管部材料直接从原始表中提取
@@ -1058,39 +1075,45 @@ void CDlgAddMaterial::LoadListMaterial()
 			//非管部材料从材料选择规范表提取
 			SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
 		this->m_comboMaterial.ResetContent();
-		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
-		rs.Open(dbOpenSnapshot,SQLx);
-		while(!rs.IsEOF())
+// 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
+// 		rs.Open(dbOpenSnapshot,SQLx);
+		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		while(!rs->adoEOF)
 		{
-			rs.GetFieldValue(_T("Material"),vTmp);
+			rs->get_Collect((_variant_t)_T("Material"), &vTmp);
 			m_comboMaterial.AddString(vtos(vTmp));
-			rs.MoveNext();
+			rs->MoveNext();
 		}
 		if(m_comboMaterial.GetCount()>0)
 			m_comboMaterial.SetCurSel(0);
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();
 	}
 }
 
-int CDlgAddMaterial::GetMaxSEQ(CString tbn, CDaoDatabase &db)
+int CDlgAddMaterial::GetMaxSEQ(CString tbn, _ConnectionPtr &db)
 {
 	try
 	{
-		CDaoRecordset rs(&db);
+//		 rs(&db);
+		_RecordsetPtr rs;
+		rs.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		strSQL.Format(_T("SELECT MAX(SEQ) FROM %s"),tbn);
-		rs.Open(dbOpenSnapshot,strSQL);
-		if(rs.IsEOF() && rs.IsBOF())
+// 		rs.Open(dbOpenSnapshot,strSQL);
+		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
+		if(rs->adoEOF && rs->BOF)
 			return 0;
-		COleVariant vTmp;
-		rs.GetFieldValue(0,vTmp);
+		_variant_t vTmp;
+		rs->get_Collect((_variant_t)0L, &vTmp);
 		return vtoi(vTmp);
 	}
-	catch(CDaoException * e)
+	catch(CException *e)
 	{
 		e->ReportError();
 		e->Delete();

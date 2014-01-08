@@ -401,9 +401,6 @@ void CPhsData::OnRowColChangeDBGbill(VARIANT FAR* LastRow, short LastCol)
 	{
 		e->Delete();
 	}
-	catch(...)
-	{
-	}
 	UpdateData(false);
 }
 
@@ -576,7 +573,9 @@ void CPhsData::OnAutoML()
 		m_ActiveRs->Close();
 	}
 	_variant_t tmpvar;
-	EDIBgbl::dbPRJDB.Execute(CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'");
+	CString strExecute;
+	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'";
+	EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	if(bf)
 		m_ActiveRs->Open(sour,pCon,adOpenStatic,adLockOptimistic,adCmdText);
    //InitDBbill

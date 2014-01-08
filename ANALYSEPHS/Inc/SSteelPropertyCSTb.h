@@ -18,7 +18,7 @@ public:
 	virtual ~SSteelPropertyCSTb();
 public:
 	//从数据库中获取数据
-	BOOL GetData( CDaoRecordset* pRs );
+	BOOL GetData( _RecordsetPtr pRs );
 public:
 	float J1y;
 	float J1z;

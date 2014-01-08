@@ -13,30 +13,30 @@ class EDIBDB
 {
 public:
 	static void CreateTableToAutoIPED(CString& strFileName,CString& strTblName,CString remark,double CLzz);
-	static bool OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, CDaoDatabase&  db, CString sSrcTableName, CString  Table_Format);
+	static bool OutPutTable(CString OutputTableName, CString DestFileName, CString  sCnnType, _ConnectionPtr  db, CString sSrcTableName, CString  Table_Format);
 	static void CloseExcel();
 	static _variant_t GridCol(CDataGrid& grid,LPCSTR ColName);
 	static void RefreshGrid(CDataGrid& grid,_RecordsetPtr rs);
 	//static void RefreshGrid(CDataGrid &grid, CAdodc& data);
     static void StartEXCEL(CString  FileName);
     static bool bExcelStart();
-    static bool DrawInfoIsNull(COleVariant);
+    static bool DrawInfoIsNull(_variant_t);
     static void DrawInfoMakeFile(CString PrjName, CString DrawName, CString DrawID);
     static void DrawInfoGet();
     static void MakeTmp2ToBom();
     static void GetTBsize();
     static void BackupDb(CString mdb);
     static void MakeTbn(CString /*ByVal*/ tbn);
-    static void AnalysisFieldsMAT(CString B, COleVariant fld());
+    static void AnalysisFieldsMAT(CString B, _variant_t fld());
     static void TxtMat2Mdb(CString FN);
-    static void MDB2Txt(COleVariant MyData);
+    static void MDB2Txt(_variant_t MyData);
     static void TBNTMP2Txt(CString DestFN);
     static void SumMaterial(CString  VlmID="");
     static void SumNumbers();
-    static void UpdTotalWeightAndMaterial(COleVariant tbn);
+    static void UpdTotalWeightAndMaterial(_variant_t tbn);
     static void Txt2Mdb(CString FN);
     static void AnalysisEngID(CString B);
-    static void AnalysisFields(CString B, COleVariant fld());
+    static void AnalysisFields(CString B, _variant_t fld());
     static void SetColumnsProperty(CDataGrid& DBGrid1, int  BILL);
     static CString GetOutputFields(int /*ByVal*/ BILL);
     static int	Qt;
@@ -69,13 +69,13 @@ protected:
 
 private:
 
-    static _ConnectionPtr	db;
-    static COleVariant	*tb;
-    static COleVariant	*Idx;
-    static COleVariant	*FD;
-    static COleVariant	*Qd;
-    static _RecordsetPtr	*rs;
-    static _RecordsetPtr	*rs1;
+	static _ConnectionPtr	db;
+//     static _variant_t	*tb;
+//     static _variant_t	*Idx;
+//     static _variant_t	*FD;
+//     static _variant_t	*Qd;
+//     static _RecordsetPtr	*rs;
+//     static _RecordsetPtr	*rs1;
 
 };
 
