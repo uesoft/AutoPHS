@@ -314,7 +314,7 @@ void CFrmPhsSamp::mnuDWGM_Click(int Index)
 	CString strFind;
 	strFind = "SampleID="+ ltos(modPHScal::iSelSampleID);
 	Data1->MoveFirst();
-	hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward);
+	hr = Data1->Find((_bstr_t)strFind, 0, adSearchForward);
 	if(!Data1->adoEOF && !Data1->BOF)
 		Data1->MoveFirst();
    //this->Data1_Reposition();
@@ -554,7 +554,7 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("SampleID="+sTmp);
-		hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward);
+		hr = Data1->Find((_bstr_t)strFind, 0, adSearchForward);
 		this->Data1_Reposition();
 	}
 	catch(CException *e)
@@ -1049,7 +1049,7 @@ void CFrmPhsSamp::UpdateRecordset()
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = "SampleID="+ ltos(modPHScal::iSelSampleID);
-		hr = Data1->Find((_bstr_t)strFind, 0, adSearchBackward);
+		hr = Data1->Find((_bstr_t)strFind, 0, adSearchForward);
 		if(!Data1->adoEOF)
 			Data1->MoveFirst();
 	}

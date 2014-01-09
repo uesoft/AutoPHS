@@ -64,10 +64,8 @@ BOOL CDlgExportVolume::OnInitDialog()
 	
 	_RecordsetPtr rsbackup;
 	rsbackup.CreateInstance(__uuidof(Recordset));
-//	rsbackup.m_pDatabase=&EDIBgbl::dbPRJ;
 	CString strSQL;
 	strSQL = "SELECT * FROM BackupDBTbl";
-//	rsbackup.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 	rsbackup->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		adOpenKeyset, adLockOptimistic, adCmdText); 
 	_variant_t varField;

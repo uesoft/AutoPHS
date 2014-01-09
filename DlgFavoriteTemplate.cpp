@@ -60,15 +60,10 @@ BOOL CDlgFavoriteTemplate::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	//选出所有常用模板
-// 	m_rsFavorite.m_pDatabase=&EDIBgbl::dbPRJ;
-// 	if( m_rsFavorite.IsOpen() )
 	if (m_rsFavorite->State == adStateOpen)
 	{
 		m_rsFavorite->Close();
 	}
-// 	m_rsFavorite.Open(
-// 		dbOpenDynaset,
-// 		"SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]");
 	m_rsFavorite->Open((_bstr_t)_T("SELECT * FROM PhsStructureName Where [Favorite]=-1 ORDER By [SampleID]"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		adOpenKeyset, adLockOptimistic, adCmdText); 
 
@@ -84,7 +79,6 @@ void CDlgFavoriteTemplate::InitFavoriteList()
 	long iSampleID=1;
 	_variant_t varTmp;
 
-//	if(m_rsFavorite.IsBOF() || m_rsFavorite.IsEOF() )
 	if(m_rsFavorite->BOF || m_rsFavorite->adoEOF )
 	{
 		return;

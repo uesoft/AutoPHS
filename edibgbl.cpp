@@ -379,8 +379,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 	   _variant_t tmpvar;
 		_variant_t v;
 		_variant_t v2;
-//		rs->put_ActiveConnection((_variant_t)conPRJDB);
-//		rs->Open((_bstr_t)(_T("Select * From [Volume] Where VolumeID=") + ltos(EDIBgbl::SelVlmID));
 		SQLx = _T("Select * From [Volume] Where VolumeID=") + ltos(EDIBgbl::SelVlmID);
 		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)conPRJDB,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -388,7 +386,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 		{
 
 			rs->Close();
-//			rs->Open((_bstr_t)(_T("Select * From [Volume] "));
 			rs->Open((_bstr_t)_T("Select * From [Volume] "),_variant_t((IDispatch*)conPRJDB,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			rs->get_Collect((_variant_t)(_T("VolumeID")),&v);
@@ -405,9 +402,7 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 		rs->get_Collect((_variant_t)(_T("SJJDID")),&v);
 		EDIBgbl::SelDsgnID=vtoi(v);
 		rs->Close();
-//		rs1.m_pDatabase=&EDIBgbl::dbDSize;//20071018 "dbSORT" 改为 "dbDSize"
 		SQLx.Format(_T("SELECT [zymc] FROM [Speciality] WHERE ZYID=%d "),EDIBgbl::SelSpecID);
-//		rs1->Open((_bstr_t)(dbOpenSnapshot,SQLx);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
@@ -424,7 +419,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 
 
 		SQLx.Format(_T("SELECT [sjjdmc] FROM [DesignStage] WHERE SJJDID=%d "),EDIBgbl::SelDsgnID);
-//		rs1->Open((_bstr_t)(dbOpenSnapshot,SQLx);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
@@ -440,7 +434,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 		rs1->Close();
 
 		SQLx.Format(_T("SELECT [SJHY] FROM [DrawSize] WHERE SJHYID=%d "),EDIBgbl::SelHyID);
-//		rs1->Open((_bstr_t)(dbOpenSnapshot,SQLx);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
@@ -475,8 +468,6 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 				SQLx = _T("SELECT * FROM [")+Btype[SelBillType]+_T("] WHERE VolumeID=") + ltos(SelVlmID);
 		}
 		 strSQL = SQLx;
-//		rs.m_ActiveConnection=conPRJDB;
-//		rs->Open((_bstr_t)(SQLx);
 		 rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)conPRJDB,true), 
 			 adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF )
@@ -611,16 +602,12 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		_variant_t ix;
 		ix.ChangeType(VT_I4);
 		ix.intVal =ColIndex;
-//		rs.m_pDatabase = &EDIBgbl::dbSORT;
 		
-//		rs->Open((_bstr_t)(dbOpenDynaset,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		CString sTmp;
 		sTmp=MyDBGrid.GetColumns().GetItem(ix).GetDataField();
 		sTmp.TrimLeft();sTmp.TrimRight();sTmp.MakeUpper();
-// 		_variant_t vTmp;
-// 		rs->Find((_bstr_t)(_T("((FieldName))=\'") + sTmp + _T("\'")), 0, adSearchBackward);
 		HRESULT hr = S_OK;
 		CString strFind;
 		strFind = _T("((FieldName))=\'") + sTmp + _T("\'");
@@ -629,7 +616,6 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		//twips/20->pixels
 		ix.ChangeType(VT_R4);
 		ix.fltVal=sngWidth;
-//		rs.Edit();
 		rs->put_Collect((_variant_t)_T("width"),ix);
 		rs->Update();
 	}
@@ -663,8 +649,6 @@ void EDIBgbl::SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn)
    CString sTmp;
 
 	try{
-	//   rs.m_pDatabase=&dbTable;//20071015 "dbSORT"改为"dbTable"
-	//   rs->Open((_bstr_t)(dbOpenSnapshot,SQLx);
 	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbTable,true), 
 		   adOpenKeyset, adLockOptimistic, adCmdText); 
 
@@ -936,11 +920,9 @@ void EDIBgbl::GetSelPrjName()
 
 		_variant_t tmpVar;
 		//取得工程名
-// 		if(dbPRJDB->State != adStateOpen)
+ 		if(dbPRJDB->State != adStateOpen)
 		{
 			SQLx = _T("SELECT * FROM engin WHERE ((EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND trim(gcmc)<>\'\'");
-// 			rs.m_pDatabase=&dbPRJDB;
-// 			rs->Open((_bstr_t)(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			_variant_t v;
@@ -964,9 +946,8 @@ void EDIBgbl::GetSelPrjName()
 		
 		//取得设计阶段
 		_variant_t v;
-// 		if(dbDSize->State != adStateOpen)//20071018 11:29(start)"dbDSize"改为"dbDSize"
+ 		if(dbDSize->State != adStateOpen)//20071018 11:29(start)"dbDSize"改为"dbDSize"
 		{
-//			rs2.m_pDatabase=&dbDSize;
 			SQLx = _T("SELECT * FROM DesignStage WHERE ((sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND trim(sjjddm)<>\'\'") + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -994,11 +975,9 @@ void EDIBgbl::GetSelPrjName()
 			rs2->Close();
 		}//20071018 11:29(end)"dbDSize"改为"dbDSize"
 		//取得卷册名称
-// 		if(dbPRJDB->State != adStateOpen)
+ 		if(dbPRJDB->State != adStateOpen)
 		{
 			SQLx = _T("SELECT * FROM [Volume] WHERE VolumeID=") + ltos(SelVlmID) + _T(" ORDER BY jcdm");
-// 			rs.m_pDatabase=&dbPRJDB;
-// 			rs->Open((_bstr_t)(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			_variant_t v;
@@ -1013,8 +992,6 @@ void EDIBgbl::GetSelPrjName()
 
 			SQLx.Format("SELECT SUM(CLzz) AS SumWeight FROM [ZB] WHERE [VolumeID]=%d AND [ZDJH]=%d AND IsSAPart<>-1",EDIBgbl::SelVlmID,modPHScal::zdjh);
 		
-// 			rs.m_pDatabase=&dbPRJDB;
-// 			rs->Open((_bstr_t)(dbOpenDynaset,SQLx);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs->adoEOF)
@@ -1062,7 +1039,6 @@ CString EDIBgbl::GetDBName(_ConnectionPtr db)
 bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 {
 	//11/3
-//	if(db.m_pDAODatabase==NULL||tbn.IsEmpty())
 	if(db ==NULL||tbn.IsEmpty())
 	{
 		return false;
@@ -1071,14 +1047,11 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 	TempSet.CreateInstance(__uuidof(Recordset));
 	CString strSQL;
 	strSQL="select * from ["+tbn+"]";
-//	strSQL = "SELECT * FROM from MSysObjects where name=\'"+tbn+"\'";
 	//11/3
 
 	try{
 
 		//11/3
-// 		TempSet.m_pDatabase=&db;
-// 		TempSet->Open((_bstr_t)(dbOpenSnapshot,strSQL);
 		TempSet->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		TempSet->Close();
@@ -1205,7 +1178,6 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 	sDB.CreateInstance(__uuidof(Connection));
 	dDB.CreateInstance(__uuidof(Connection));
 
-// 	sTDef(&sDB), dTDef(&dDB);
 	FieldPtr fieldInfo,fieldInfoS,fieldInfoD;
 	CString strSql;
 	try
@@ -1224,8 +1196,6 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 			CString strTableName = sListTableName->GetNext(pos);
 			if(StringInList(strTableName, dListTableName))
 			{
-// 				sTDef->Open((_bstr_t)(strTableName);
-// 				dTDef->Open((_bstr_t)(strTableName);
 				_RecordsetPtr sTDef;
 				sTDef = sDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
 
@@ -1392,7 +1362,6 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 	iLen = strFilter.GetLength();
 	try
 	{
-// 		db->Open((_bstr_t)(strDBPath, FALSE, FALSE, _T(";pwd=") + strPwd + _T(";"));
 		CString ConnectionString;
 
 		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strDBPath;
@@ -1489,15 +1458,12 @@ bool EDIBgbl::UpgradeDatabase()
 				sDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDir  +  _T("workprj.mdb");
 				dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
-// 				sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("workprj.mdb")));
-// 				dDb->Open((_bstr_t)(basDirectory::ProjectDir  +  _T("workprj.mdb")));
 				ChangeDatabase(dDb,sDb);
 				dDb->Close();
 				sDb->Close();
 			}
 			ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
 			dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
-// 			dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb")));//20071031 "ProjectDBDir" 改为 "DBShareDir"
 			if(!EDIBgbl::tdfExists(dDb,_T("ZA")) || !EDIBgbl::tdfExists(dDb,_T("ZB")))
 			{
 				dDb->Close();
@@ -1505,7 +1471,6 @@ bool EDIBgbl::UpgradeDatabase()
 				{
 					return false;
 				}
-// 				dDb->Open((_bstr_t)(basDirectory::DBShareDir+ _T("AllPrjDB.mdb")));//20071031 "ProjectDBDir" 改为 "DBShareDir"
 				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
 				dDb->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 			}
@@ -1531,15 +1496,12 @@ bool EDIBgbl::UpgradeDatabase()
 */
 			dDb->Execute((_bstr_t)"DROP INDEX PrimaryKey ON ML ", NULL, adCmdText);
 
-// 		sDb->Open((_bstr_t)(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")));
 			sDb->Open(_bstr_t(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")),_T(""),_T(""), adConnectUnspecified);//20071018"sort.mdb"改为"PHScode.mdb"
 		//按F4511s.mdb结构升级AllPrjdb.mdb中的表的结构
 		ChangeDatabase(dDb,sDb);
 		//升级ZB表中以前根部附件(recno=NULL)特性字段:recno=NULL升级为IsSAPart=-1,recno=根部recno依次+1
 		SQLx.Format(_T("SELECT recno,VolumeID,zdjh,seq,nth,IsSAPart FROM ZB ORDER BY VolumeID,zdjh,recno DESC"));
-// 		drsTmp.m_pDatabase=&dDb;
 		//recno按降序排列，则根部排在最前，根部附件排在最后
-// 		drsTmp->Open((_bstr_t)(dbOpenDynaset,SQLx);
 		drsTmp->Open(_variant_t(SQLx),(IDispatch*)dDb,adOpenKeyset, adLockOptimistic,adCmdText);
 		int maxRecno=1;//current zdjh maxmium recno
 		int iPrevZdjh=-1;//previous zdjh
@@ -1562,7 +1524,6 @@ bool EDIBgbl::UpgradeDatabase()
 			if(v.vt==VT_NULL)
 			{
 				//更新旧的根部附件
-//				drsTmp.Edit();
 				drsTmp->put_Collect((_variant_t)_T("IsSAPart"),_variant_t((short)-1));
 				drsTmp->put_Collect((_variant_t)_T("recno"),_variant_t((long)maxRecno));
 				drsTmp->Update();
@@ -1571,7 +1532,6 @@ bool EDIBgbl::UpgradeDatabase()
 			if(v.vt==VT_NULL)
 			{
 				//更新旧的根部附件
-//				drsTmp.Edit();
 				drsTmp->put_Collect((_variant_t)_T("nth"),_variant_t((short)1));//标准支吊架路数=1，包括对称双吊和共用根部双吊
 				drsTmp->Update();
 			}
@@ -1719,8 +1679,6 @@ bool EDIBgbl::UpdateAllPrjDB()
 		strSQL=CString(_T("INSERT INTO Engin IN \'")) + EDIBgbl::GetDBName(dDb) + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
 		sDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
-// 		sRsEngin.m_pDatabase=&sDb;
-// 		sRsEngin->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Engin"));
 		sRsEngin->Open(_variant_t(_T("Select * From Engin")),(IDispatch*)sDb,adOpenKeyset, adLockOptimistic,adCmdText);
 		sRsEngin->MoveLast();
 		sRsEngin->MoveFirst();
@@ -1739,8 +1697,6 @@ bool EDIBgbl::UpdateAllPrjDB()
 */
 		int VolumeID=1;
 
-// 		dRsVolume.m_pDatabase=&dDb;
-// 		dRsVolume->Open((_bstr_t)(dbOpenDynaset,_T("Select * From Volume"));
 		dRsVolume->Open(_variant_t(_T("Select * From Volume")),(IDispatch*)dDb,adOpenKeyset, adLockOptimistic,adCmdText);
 		_RecordsetPtr sRsData;
 		sRsData.CreateInstance(__uuidof(Recordset));
@@ -1754,10 +1710,6 @@ bool EDIBgbl::UpdateAllPrjDB()
 		_ConnectionPtr tmpSort;
 		tmpSort.CreateInstance(__uuidof(Connection));
 		tmpSort->Open((_bstr_t)(basDirectory::DBShareDir + _T("DrawingSize")), "", "", adConnectUnspecified);//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort"改为 "DrawingSize"
-// 		rsJD.m_pDatabase=&tmpSort;
-// 		rsZY.m_pDatabase=&tmpSort;
-// 		rsJD->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From DesignStage"));
-// 		rsZY->Open((_bstr_t)(dbOpenSnapshot,_T("Select * From Speciality"));
 		rsJD->Open(_variant_t(_T("Select * From DesignStage")),(IDispatch*)tmpSort,adOpenKeyset, adLockOptimistic,adCmdText);
 		rsZY->Open(_variant_t(_T("Select * From Speciality")),(IDispatch*)tmpSort,adOpenKeyset, adLockOptimistic,adCmdText);
 		int stc,sti;
@@ -1776,12 +1728,10 @@ bool EDIBgbl::UpdateAllPrjDB()
 			for(i=0;i<vc;i++)
 			{
 				tc=VoltabName[i].GetAt(VoltabName[i].GetLength()-1);
-//				_variant_t vTmp;
-// 				rsZY->Find((_bstr_t)(CString(_T("zydm=\'")) + tc + _T("\'")), 0, adSearchBackward);
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("zydm=\'") + CString(tc) + "\'";
-				hr = rsZY->Find((_bstr_t)strFind, 0, adSearchBackward);
+				hr = rsZY->Find((_bstr_t)strFind, 0, adSearchForward);
 				if(!rsZY->adoEOF)
 				{
 					rsZY->get_Collect((_variant_t)(_T("ZYID")), &vTmp);
@@ -1792,9 +1742,8 @@ bool EDIBgbl::UpdateAllPrjDB()
 				tf=VoltabName[i].Find(_T("-"));
 				tc=VoltabName[i].GetAt(tf-1);
 
-// 				rsJD->Find((_bstr_t)(CString(_T("sjjddm=\'")) + tc + _T("\'")), 0, adSearchBackward);
 				strFind = _T("sjjddm=\'") + CString(tc) + _T("\'");
-				hr = rsJD->Find((_bstr_t)strFind, 0, adSearchBackward);
+				hr = rsJD->Find((_bstr_t)strFind, 0, adSearchForward);
 				if(!rsJD->adoEOF)
 				{
 					rsJD->get_Collect((_variant_t)(_T("SJJDID")), &vTmp);
@@ -1803,9 +1752,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 				else VolumeDef.SJJDID=0;
 
 				VolumeDef.SJHYID=0;
-// 				sRsVolume.m_pDatabase=&sDb;
 				strSQL=_T("Select * From [") + VoltabName[i] + _T("]");
-// 				sRsVolume->Open((_bstr_t)(dbOpenSnapshot,strSQL,dbForwardOnly);
 				sRsVolume->Open(_variant_t(strSQL),(IDispatch*)sDb,adOpenKeyset, adLockOptimistic,adCmdText);
 				while(!sRsVolume->adoEOF)
 				{
@@ -1816,7 +1763,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 					
 					VolumeDef.VolumeID=VolumeID;
 /*					
-					// 此段没看懂
+					// TODO: 此段没看懂
 					if(VolTabAddRs(dRsVolume,VolumeDef)) 
 					{
 						VolumeID++;
@@ -2276,13 +2223,11 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 		SQLx=_T("SELECT * FROM ") + OutTblName;
 		if(rs1->State == adStateOpen)
 			rs1->Close();
-// 		rs1->Open((_bstr_t)(dbOpenDynaset,SQLx);
 		rs1->Open(_variant_t(SQLx),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 
 		SQLx=_T("SELECT * FROM ") + TblName;
 		if(rs->State == adStateOpen)
 			rs->Close();
-// 		rs->Open((_bstr_t)(dbOpenSnapshot,SQLx);
 		rs->Open(_variant_t(SQLx),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 		if(rs->BOF || rs->BOF)
 		{
@@ -2326,7 +2271,6 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 							}
 							else
 							{
-//								rs1.Edit();
 								rs1->put_Collect((_variant_t)_T("Data"),v);
 								rs1->Update();
 							}
@@ -2413,12 +2357,10 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _Conn
 		for ( long i = 0 ; i<iSourceCount;i++)
 		{
 			bFound = true;
-//			tabSource.GetFieldInfo(i,SourceDBFieldInfo,AFX_DAO_ALL_INFO);
 			tabSource->Fields->get_Item((_variant_t)i, &SourceDBFieldInfo);
 
 			for ( long j = 0; j<iDesCount;j++)
 			{
-//				tabDes.GetFieldInfo(j,DesDBFieldInfo,AFX_DAO_ALL_INFO);
 				tabDes->Fields->get_Item((_variant_t)i, &DesDBFieldInfo);
 				strSource = (LPTSTR)SourceDBFieldInfo->Name;
 				strDest = (LPTSTR)DesDBFieldInfo->Name;
@@ -2436,7 +2378,6 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _Conn
 			}
 			if ( bFound )
 			{				
-//				tabDes.CreateField(SourceDBFieldInfo);
 				tabDes->Fields->Append(SourceDBFieldInfo->Name, SourceDBFieldInfo->Type, SourceDBFieldInfo->DefinedSize, (adoFieldAttributeEnum)SourceDBFieldInfo->Attributes);
 			}
 		}

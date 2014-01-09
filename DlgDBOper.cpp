@@ -352,7 +352,7 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 			}
 			m_pRs->MoveFirst();
 		}
-		catch (CException *e)
+		catch (...)
 		{
 			m_strTemp.Format("%s表中没有记录且含有关键字段,请在ACCESS中添加记录!!!",m_strCurTbName);
 			m_TableDG.SetWindowText(m_strTemp);
@@ -459,7 +459,7 @@ int CDlgDBOper::SetTableDGFromListBox(int index,int iWarn)
 			}
 			//m_TableDG.SetRow(iRow);
 		}
-		catch (CException *e)
+		catch (...)
 		{
 			;
 		}
@@ -997,7 +997,6 @@ int CDlgDBOper::DisplayAllTable()
 
 	try
 	{
-// 		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strDBPassword);
 		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
 		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strDBPassword, adConnectUnspecified);
 		int i,c;
@@ -1166,7 +1165,7 @@ int CDlgDBOper::PromptSaveChange()
 			m_pDGCon->RollbackTrans();
 		}
 	}
-	catch (CException *e)
+	catch (...)
 	{
 		;
 	}
@@ -1176,7 +1175,7 @@ int CDlgDBOper::PromptSaveChange()
 		//if (m_pRs != NULL && m_pRs->State == adStateOpen)
 		//m_TableDG.Refresh();
 	}
-	catch (CException *e)
+	catch (...)
 	{
 		;
 	}

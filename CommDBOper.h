@@ -26,10 +26,10 @@ public:
 	static int ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDBPathName,const CString strDBFileName,CString &strPassword,int iWarn = 1);
 	static int ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &strPassword,int iWarn = 1);
 	static int ADOConExec(_ConnectionPtr &pCon,const CString strCmdSql,CString strDcrCmd = "",int iWarn = 1);
-	static int ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr &pRs,CString strOpenSql,CString strDcrOpen = "",int iWarn = 1);
+	static int ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr pRs,CString strOpenSql,CString strDcrOpen = "",int iWarn = 1);
 	static int ADOConIsOpened(_ConnectionPtr &pCon,int iWarn = 1);
 	static int ADOCloseConnectDB(_ConnectionPtr &pCon,int iWarn = 1);
-	static int ADOCloseRecordset(_RecordsetPtr &pRs,int iWarn = 1);
+	static int ADOCloseRecordset(_RecordsetPtr pRs,int iWarn = 1);
 	static int ADOTestTable(_ConnectionPtr &pCon,const CString strTableName,int iWarn = 1);
 	static int ADODelRecord(_ConnectionPtr pCon,const CString strTableName,const CString strDelCond,int iWarn = 1);
 	static int ADODropTable(_ConnectionPtr &pCon,const CString tableName,int iWarn = 1);

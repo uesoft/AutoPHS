@@ -1,101 +1,108 @@
-bool EDIBgbl::ChangeDatabase(_ConnectionPtr &dDb, _ConnectionPtr &sDb)
-{
-    bool bIsChange=false;
-	try
-	{
-		CDaoTableDef sTD(&sDb) , dTD(&dDb) ;
-		CDaoTableDefInfo sTDInfo,dTDInfo;
-		bool bFDexists =false, bTDexists =false;
-		FieldPtr sFD , dFD ;
-		DAOFields * pF;
-		DAOTableDefs * tdfs;
-		sDb.m_pDAODatabase ->get_TableDefs (&tdfs);
-		tdfs->Refresh();
-		tdfs->Release();
-		int sc=sDb.GetTableDefCount();
+========================================================================
+       MICROSOFT FOUNDATION CLASS LIBRARY : AutoPHS
+========================================================================
 
-		dDb.m_pDAODatabase ->get_TableDefs (&tdfs);
-		tdfs->Refresh();
-		tdfs->Release();
-		int dc=dDb.GetTableDefCount();
 
-		for ( int si=0;si<sc;si++)
-		{	
-			sDb.GetTableDefInfo(si,sTDInfo);
-			if((sTDInfo.m_lAttributes & dbSystemObject) == 0)
-			{
-				bTDexists=false;
-				sTDInfo.m_strName=_T("[")+sTDInfo.m_strName+_T("]");
-				sTD->Open((_bstr_t)(sTDInfo.m_strName);
-				for ( int di=0;di<dc;di++)
-				{	
-					dDb.GetTableDefInfo(di,dTDInfo);
-					dTDInfo.m_strName=_T("[")+dTDInfo.m_strName+_T("]");
-					sTDInfo.m_strName.MakeUpper();
-					dTDInfo.m_strName.MakeUpper();
-					if ( ((sTDInfo.m_lAttributes & dbSystemObject) == 0) && (sTDInfo.m_strName== dTDInfo.m_strName)  )
-					{
-						//表存在
-						bTDexists=true;
-						sTD.m_pDAOTableDef->get_Fields(&pF);
-						pF->Refresh();
-						pF->Release();
-						int sc1=sTD->RecordCount;
-						dTD->Open((_bstr_t)(dTDInfo.m_strName);
-						for (int i1=0;i1<sc1;i1++)
-						{
-							DAO_CHECK(dTD.m_pDAOTableDef->get_Fields(&pF));
-							pF->Refresh();
-							pF->Release();
-							int dc1=dTD->RecordCount;
-							sTD.GetFieldInfo(i1,sFD,AFX_DAO_ALL_INFO);
-							bFDexists = false;
-							for (int n1=0;n1<dc1;n1++)
-							{
-								dTD.GetFieldInfo(n1,dFD);
-								if ( dFD.m_strName == sFD.m_strName ) 
-								{
-									//字段存在，设置标志
-									bFDexists = true;
-									break;
-								}
-							}
-							if ( ! bFDexists )
-							{
-								//不存在这个字段，则修改项目库中的表结构
-								//dTD.Fields.Append dTD.CreateField(sFD.Name, sFD.Type, sFD.Size)
-								try
-								{
-									dTD.CreateField( sFD);
-									bIsChange=true;
-								}
-								catch(CException *e)
-								{
-									e->Delete();
-								}
-								//i = i + 1
-								i++;
-							}
-						}
-						
-						dTD->Close();
-						break;
-					}
-				}
-				if(!bTDexists)
-				{
-					SQLx.Format(_T("SELECT * INTO %s FROM %s IN \'%s\'"),sTDInfo.m_strName,sTDInfo.m_strName,sDb));
-					dDb->Execute((_bstr_t)SQLx);
-				}
-			}
-			sTD->Close();
-		}
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-		return false;
-	}
-	return bIsChange;
-}
+AppWizard has created this AutoPHS application for you.  This application
+not only demonstrates the basics of using the Microsoft Foundation classes
+but is also a starting point for writing your application.
+
+This file contains a summary of what you will find in each of the files that
+make up your AutoPHS application.
+
+AutoPHS.dsp
+    This file (the project file) contains information at the project level and
+    is used to build a single project or subproject. Other users can share the
+    project (.dsp) file, but they should export the makefiles locally.
+
+AutoPHS.h
+    This is the main header file for the application.  It includes other
+    project specific headers (including Resource.h) and declares the
+    CAutoPHSApp application class.
+
+AutoPHS.cpp
+    This is the main application source file that contains the application
+    class CAutoPHSApp.
+
+AutoPHS.rc
+    This is a listing of all of the Microsoft Windows resources that the
+    program uses.  It includes the icons, bitmaps, and cursors that are stored
+    in the RES subdirectory.  This file can be directly edited in Microsoft
+	Visual C++.
+
+AutoPHS.clw
+    This file contains information used by ClassWizard to edit existing
+    classes or add new classes.  ClassWizard also uses this file to store
+    information needed to create and edit message maps and dialog data
+    maps and to create prototype member functions.
+
+res\AutoPHS.ico
+    This is an icon file, which is used as the application's icon.  This
+    icon is included by the main resource file AutoPHS.rc.
+
+res\AutoPHS.rc2
+    This file contains resources that are not edited by Microsoft 
+	Visual C++.  You should place all resources not editable by
+	the resource editor in this file.
+
+AutoPHS.reg
+    This is an example .REG file that shows you the kind of registration
+    settings the framework will set for you.  You can use this as a .REG
+    file to go along with your application or just delete it and rely
+    on the default RegisterShellFileTypes registration.
+
+AutoPHS.odl
+    This file contains the Object Description Language source code for the
+    type library of your application.
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+For the main frame window:
+
+MainFrm.h, MainFrm.cpp
+    These files contain the frame class CMainFrame, which is derived from
+    CFrameWnd and controls all SDI frame features.
+
+/////////////////////////////////////////////////////////////////////////////
+
+AppWizard creates one document type and one view:
+
+AutoPHSDoc.h, AutoPHSDoc.cpp - the document
+    These files contain your CAutoPHSDoc class.  Edit these files to
+    add your special document data and to implement file saving and loading
+    (via CAutoPHSDoc::Serialize).
+
+AutoPHSView.h, AutoPHSView.cpp - the view of the document
+    These files contain your CAutoPHSView class.
+    CAutoPHSView objects are used to view CAutoPHSDoc objects.
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+Other standard files:
+
+StdAfx.h, StdAfx.cpp
+    These files are used to build a precompiled header (PCH) file
+    named AutoPHS.pch and a precompiled types file named StdAfx.obj.
+
+Resource.h
+    This is the standard header file, which defines new resource IDs.
+    Microsoft Visual C++ reads and updates this file.
+
+/////////////////////////////////////////////////////////////////////////////
+Other notes:
+
+AppWizard uses "TODO:" to indicate parts of the source code you
+should add to or customize.
+
+If your application uses MFC in a shared DLL, and your application is 
+in a language other than the operating system's current language, you
+will need to copy the corresponding localized resources MFC42XXX.DLL
+from the Microsoft Visual C++ CD-ROM onto the system or system32 directory,
+and rename it to be MFCLOC.DLL.  ("XXX" stands for the language abbreviation.
+For example, MFC42DEU.DLL contains resources translated to German.)  If you
+don't do this, some of the UI elements of your application will remain in the
+language of the operating system.
+
+/////////////////////////////////////////////////////////////////////////////

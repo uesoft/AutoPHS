@@ -726,7 +726,7 @@ void CSelTemplate::OpenTemplateRs()
 	}
 
 	_variant_t vTmp;
-	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchBackward);
+	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
 	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
 		m_rsTemplateName->MoveFirst();
 
@@ -1593,7 +1593,7 @@ try{	// TODO: Add your control notification handler code here
 			//下面2句容易造成级联事件，导致死机。
 			m_rsTemplateName->Requery(adExecuteRecord);
 			_variant_t vTmp;
-			m_iSavex = m_rsTemplateName->Find((_bstr_t)("SampleID=" + ltos(m_iLastSampleID)), 0, adSearchBackward);
+			m_iSavex = m_rsTemplateName->Find((_bstr_t)("SampleID=" + ltos(m_iLastSampleID)), 0, adSearchForward);
 			LoadListName();
 			DataReposition();
 			m_bSaveChange=TRUE;
@@ -2101,7 +2101,7 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 		sTmp.Format(_T("SampleID=%d"),iTmpID);
 
 		_variant_t vTmp;
-		this->m_rsTemplateName->Find((_bstr_t)(sTmp), 0, adSearchBackward);
+		this->m_rsTemplateName->Find((_bstr_t)(sTmp), 0, adSearchForward);
 
 		this->DataReposition();
 		
@@ -2314,7 +2314,7 @@ void CSelTemplate::initOpenTemplateRs()
 		adOpenKeyset, adLockOptimistic, adCmdText); 
 	strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	_variant_t vTmp;
-	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchBackward);
+	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
 	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
 		m_rsTemplateName->MoveFirst();
 	LoadListName();

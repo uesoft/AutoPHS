@@ -24,7 +24,6 @@ CString CrudePA::m_strTableName=_T("crudePA");
 
 CrudePA::CrudePA(_ConnectionPtr DataMdb)
 {
-//	m_pRs.m_pDatabase = &DataMdb;
 	m_pRs->put_ActiveConnection(DataMdb);
 }
 

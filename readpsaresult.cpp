@@ -1251,7 +1251,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 					CString strTmp;
 					strTmp.Format("%d",iPreINT[2]);
 					_variant_t vTmp;
-					rs1->Find((_bstr_t)("SEQ=" + ltos(iSPRSeq)), 0, adSearchBackward);
+					rs1->Find((_bstr_t)("SEQ=" + ltos(iSPRSeq)), 0, adSearchForward);
 					if(!rs1->adoEOF)
 					{
 						rs1->get_Collect((_variant_t)"G",&varTmp);
@@ -2632,7 +2632,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
 							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
+							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchForward);
 							if(!rs1->adoEOF)
 							{
 								rs1->get_Collect((_variant_t)"G", &varTmp);
@@ -3487,7 +3487,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 							iParelleNum=atoi(strTmp.Mid(1,1));
 							iSEQ=atoi(strTmp.Right(2));
 							_variant_t vTmp;
-							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchBackward);
+							rs1->Find((_bstr_t)("SEQ=" + ltos(iSEQ)), 0, adSearchForward);
 							if(!rs1->adoEOF)
 							{
 								rs1->get_Collect((_variant_t)"G", &varTmp);

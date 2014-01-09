@@ -77,7 +77,7 @@ BOOL CSelectXYZdlg::OnInitDialog()
 }
 
 #include "user.h"
-void ReadResult_Excel(_RecordsetPtr &pRs)
+void ReadResult_Excel(_RecordsetPtr pRs)
 {
 	CString strSQL=_T("");
 	CString x=_T("");
@@ -316,8 +316,6 @@ void ReadResult_Excel(_RecordsetPtr &pRs)
 	catch(_com_error e)
 	{
 		pRs->Filter="";
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 	}
 }

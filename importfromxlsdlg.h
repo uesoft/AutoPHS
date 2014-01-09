@@ -116,7 +116,7 @@ private:
 	CString m_strPrecFilePath;
 
 protected:
-	BOOL OpenExcelTable(_RecordsetPtr& pRsTbl, CString& strSheetName, CString strExcelFileName);
+	BOOL OpenExcelTable(_RecordsetPtr pRsTbl, CString& strSheetName, CString strExcelFileName);
 	BOOL ConnectExcelFile(const CString strExcelName, _ConnectionPtr & pConExcel);
 
 	// Generated message map functions

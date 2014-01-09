@@ -27,10 +27,10 @@ public:
 	void SaveApplication();
 	long GetCurProjectVolumeID();
 	void SetCurProjectVolumeID(long iVlmID);
-	const _ConnectionPtr& GetWorkPrjConnection();
-	const _ConnectionPtr& GetZdjcrudeConnection();
-	const _ConnectionPtr& GetSortConnection();
-	const _ConnectionPtr& GetAllPrjDBConnection();
+	const _ConnectionPtr GetWorkPrjConnection();
+	const _ConnectionPtr GetZdjcrudeConnection();
+	const _ConnectionPtr GetSortConnection();
+	const _ConnectionPtr GetAllPrjDBConnection();
 
 	CString GetWorkPrjDBPath();
 	CString GetZdjcrudeDBPath();

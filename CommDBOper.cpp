@@ -194,7 +194,7 @@ int CCommDBOper::ADOConExec(_ConnectionPtr &pCon,const CString strCmdSql,CString
 	return RET_OK;
 }
 
-int CCommDBOper::ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr &pRs,CString strOpenSql,CString strDcrOpen,int iWarn)
+int CCommDBOper::ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr pRs,CString strOpenSql,CString strDcrOpen,int iWarn)
 {
 	//函数说明:执行指定记录集对象指定SQL操作
 	//pCon 数据库连接对象
@@ -275,7 +275,7 @@ int CCommDBOper::ADOCloseConnectDB(_ConnectionPtr &pCon,int iWarn)
 }
 
 //关闭指定记录集对象
-int CCommDBOper::ADOCloseRecordset(_RecordsetPtr &pRs,int iWarn)
+int CCommDBOper::ADOCloseRecordset(_RecordsetPtr pRs,int iWarn)
 {
 	if ((pRs != NULL) && (pRs->State == adStateOpen))
 	{

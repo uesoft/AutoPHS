@@ -1125,12 +1125,11 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		long iPosATTBEGIN=0 ;
 		long i=0 ;
 		EDIBgbl::GetSelPrjName();
-//		bool bf=rs.FindFirst(_T("((LocalCaption))=\'ATTBEGIN\'"));
 		HRESULT hr = S_OK;
 		CString strFind;
-		strFind = _T("((LocalCaption))=\'ATTBEGIN\'");
+		strFind = _T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
-		bool bf = rs->adoEOF;
+		bool bf = !rs->adoEOF;
 
 		iPosATTBEGIN = rs->AbsolutePosition;
 		long count=0,ret=0;
@@ -1367,8 +1366,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		CString SQLx;
 		//首先从管理表t??中获取表格的高宽、每页行数等信息
 		SQLx = _T("SELECT * FROM TableINFO WHERE ID=") + ltos(BillID);
-// 		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		_variant_t vTmp;
@@ -1422,7 +1419,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		
 		
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("]");
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rs->MoveLast();
@@ -1432,7 +1428,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		
 		
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("] WHERE NOT ISNULL(CADFieldSeq) ORDER BY CADFieldSeq");
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbTable,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		rs->MoveLast();
@@ -1615,8 +1610,6 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 								CString SQLstr;
 								SQLstr.Format("SELECT * FROM ZA WHERE VolumeID = %d AND ZDJH = %d ",m_volumeID,m_zdjh);
 								
-// 								rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
-// 								rs1.Open(dbOpenSnapshot,SQLstr);
 								rs1->Open((_bstr_t)SQLstr, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
 								
@@ -1980,8 +1973,6 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 		DistY = 20;
 		
 		SQLx = _T("SELECT * FROM TableINFO WHERE ID=") + ltos(BillID);
-// 		rs.m_pDatabase=&EDIBgbl::dbTable;//20071109 "dbSORT" 改为 "dbTable"
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
 		_variant_t vTmp;
 		
@@ -1996,7 +1987,6 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 		rs->Close();
 	
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("]");
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
 	
 		//获得块属性值
@@ -2087,7 +2077,6 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 		strInsCell.Format(_T("%c%d"),(char)(objRange.GetColumn()-1) +_T('A'),objRange.GetRow());
 		//如果内容行数少于每页行数,则重新设定
 		SQLx = _T("SELECT * FROM [") + strTableName + _T("] WHERE NOT ISNULL(CADFieldSeq) ORDER BY CADFieldSeq");
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
 		rs->MoveLast();
 		//开始逐行画表格
@@ -2134,8 +2123,6 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 							CString SQLstr;
 							SQLstr.Format("SELECT * FROM ZA WHERE VolumeID = %d AND ZDJH = %d ",m_volumeID,m_zdjh);
 							
-// 							rs1.m_pDatabase=&EDIBgbl::dbPRJDB;
-// 							rs1.Open(dbOpenSnapshot,SQLstr);
 							rs1->Open(_variant_t(SQLstr),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 							
 							if(!rs1->adoEOF && !rs1->BOF)
@@ -2553,8 +2540,6 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 		modPHScal::giNumRod = Cavphs->GetPhsOneClassPartNumAndPartInfo(iROD, modPHScal::iSelSampleID, Ptype, mlPartClassID, mlPartIndex,lngLastPartNo);
 		//求出A4图零件明细表的上限位置
 		long rc =0;
-// 		rs.m_pDatabase=&EDIBgbl::dbPRJ;
-// 		rs.Open(dbOpenSnapshot,_T("SELECT count(*) AS rc FROM tmp2"));
 		strSql = _T("SELECT count(*) AS rc FROM tmp2");
 		rs->Open(_variant_t(strSql),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 		if( rs->BOF || rs->adoEOF )
@@ -2614,7 +2599,6 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 		mvMaxLugRatioOfHeight = 0;
 		mvMaxLugLen = 0;
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 AND NOT IsNull(SEQ) ORDER BY SEQ");
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		if(!rs->BOF && !rs->adoEOF)
 		{
@@ -2688,8 +2672,6 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 		
 		//选择记录集rsTZG以便记录图形内容
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") +ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID);
-// 		rsTZG.m_pDatabase=&EDIBgbl::dbPRJDB;
-// 		rsTZG.Open(dbOpenDynaset,SQLx );
 		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		//选择记录集rs以便查找图块名称
 		
@@ -2697,8 +2679,6 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 		SQLx = _T("SELECT * FROM phsBlkDimPos");
 		if(rs->State == adStateOpen)
 			rs->Close();
-// 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//"dbSORT" 改为 "dbPHScode"
-// 		rs.Open(dbOpenSnapshot,SQLx );
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPHScode,adOpenKeyset, adLockOptimistic,adCmdText);
 		float xGDW1=0,xSAxa=0,xL1=0;
 		bool bxSAxa_Null=false;
@@ -2751,13 +2731,11 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 				rsRefZB->get_Collect((_variant_t)_T("CustomID"),&vTmp);
 				tbn1 = modPHScal::sFindTBN(vtos(vTmp));
 				//*************************************************
-//				brsFind=rs.FindFirst(_T("Trim(BlkID)=\'")+blkID+_T("\'"));
 				_variant_t vTmp;
 				SQLx = _T("Trim(BlkID)=\'")+blkID+_T("\'");
-// 				rs->Find((_bstr_t)SQLx, 0, adSearchBackward);
 				HRESULT hr = S_OK;
 				hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
-
+				brsFind = !rs->adoEOF;
 				//获得双槽钢间距值xC
 				rs->get_Collect((_variant_t)_T("xC"),&vTmp);
 				tmpGBwidth=vtof(vTmp);
@@ -5324,13 +5302,11 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 										if( mlRot0 == 180 )
 										{
 											_variant_t vTmp;
-// 											rs->Find((_bstr_t)(_T("Trim(BlkID)=\'") + blkID + _T("0\'")), 0, adSearchBackward);
  											rs->MoveFirst();
 											HRESULT hr = S_OK;
 											CString strFind;
 											strFind = _T("Trim(BlkID)=\'") + blkID + _T("0\'");
 											hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
-
 											rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 											xGDW1=vtof(vTmp);
 											rs->get_Collect((_variant_t)_T("xSAxa"),&vTmp);
@@ -6050,8 +6026,6 @@ void EDIBAcad::DrawphsDataEdit()
 		FrmDataEDIT.m_DBGrid1.GetColumns().GetItem(_variant_t(_T("Index"))).SetVisible(FALSE);
 
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(iZdjhInDwg) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-// 		rsY.m_pDatabase=&EDIBgbl::dbPRJDB;
-// 		rsY.Open(dbOpenDynaset,SQLx);
 		rsY->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		if(!FrmDataEDIT.IsWindowVisible())
 			FrmDataEDIT.ShowWindow(SW_SHOW);
@@ -6067,16 +6041,14 @@ void EDIBAcad::DrawphsDataEdit()
 			{
 				_variant_t vTmp;
 				CString strSql = CString(_T("((Handle))=\'")) + sHandle + _T("\'");
-//				rsY->Find((_bstr_t)strSql, 0, adSearchBackward);
 				HRESULT hr = S_OK;
-				hr = rsY->Find((_bstr_t)strSql, 0, adSearchBackward);
+				hr = rsY->Find((_bstr_t)strSql, 0, adSearchForward);
 				if(!rsY->adoEOF)
 				{
 					sTmp=vtos(::GetFields(rsY,_T("recno")));
-// 					FrmDataEDIT.m_Data1->Find(_bstr_t(CString(_T("recno="))+sTmp),0,adSearchBackward);
 					CString strFind;
 					strFind = CString(_T("recno="))+sTmp;
-					hr = FrmDataEDIT.m_Data1->Find((_bstr_t)strSql, 0, adSearchBackward);
+					hr = FrmDataEDIT.m_Data1->Find((_bstr_t)strSql, 0, adSearchForward);
 				}
 			}
 		}
@@ -6113,8 +6085,6 @@ void EDIBAcad::DisplayDataZB()
 		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		SQLx = _T("SELECT SUM(CLzz) as SumWeight FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (IsSAPart<>-1 OR bUserAdd=-1 )");
-// 		rs.m_pDatabase=&EDIBgbl::dbPRJDB;
-// 		rs.Open (dbOpenSnapshot,SQLx);
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
    
 		//数据记录集Rsy=TZG
@@ -6302,11 +6272,9 @@ void EDIBAcad::DrawTagAll()
 		//设置是否绘制重复的件好 （巴威需要这个设置）
 		if(!EDIBAcad::g_bDimNumber)
 		{
-// 			 rsRefZB(&EDIBgbl::dbPRJDB);
 			_RecordsetPtr rsRefZB;
 			rsRefZB.CreateInstance(__uuidof(Recordset));
 			CString SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-// 			rsRefZB.Open(dbOpenDynaset,SQLx );
 			rsRefZB->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( rsRefZB->adoEOF || rsRefZB->BOF )
 			{
@@ -6319,18 +6287,14 @@ void EDIBAcad::DrawTagAll()
 				{
 					rsRefZB->MoveFirst();
 					str.Format(_T("seq=%d"), i);
-// 					_variant_t vTmp;
-// 					rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
 					HRESULT hr = S_OK;
-					hr = rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
+					hr = rsRefZB->Find((_bstr_t)str, 0, adSearchForward);
 					while( !rsRefZB->adoEOF )
 					{
-//							rsRefZB.Edit();
 						rsRefZB->put_Collect((_variant_t)_T("seq"),_variant_t());
 						rsRefZB->Update();
 
-// 						rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
-						hr = rsRefZB->Find((_bstr_t)str, 0, adSearchBackward);
+						hr = rsRefZB->Find((_bstr_t)str, 0, adSearchForward);
 
 					}
 
@@ -6346,8 +6310,6 @@ void EDIBAcad::DrawTagAll()
 		CVariantArray p3(12);				//Crossingpolygon选择集点阵
 		long iRecNo=0, iSEQ=0;
 		long iMaxSeq=0;
-// 		 rsTZG(&EDIBgbl::dbPRJDB);
-// 		 rsRefZB(&EDIBgbl::dbPRJDB);
 		_RecordsetPtr rsTZG;
 		rsTZG.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsRefZB;
@@ -6365,7 +6327,6 @@ void EDIBAcad::DrawTagAll()
 		
 		//选择支吊架结构记录集rsRefZB
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND IsSAPart<>-1 ORDER BY recno");
-// 		rsRefZB.Open(dbOpenDynaset,SQLx );
 		rsRefZB->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		if( rsRefZB->adoEOF || rsRefZB->BOF )
 		{
@@ -6377,7 +6338,6 @@ void EDIBAcad::DrawTagAll()
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] ;
 			SQLx+=_T("] WHERE zdjh=");
 			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY y");
-// 			rsTZG.Open(dbOpenDynaset,SQLx);
 			rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( rsTZG->adoEOF || rsTZG->BOF )
 			{
@@ -6543,12 +6503,10 @@ void EDIBAcad::DrawTagAll()
 					_variant_t vTmp;
 					rsTZG->get_Collect((_variant_t)_T("recno"),&vTmp);
 					iRecNo = vtoi(vTmp);
-
-// 					rsRefZB->Find((_bstr_t)(_T("recno=") + ltos(iRecNo)), 0, adSearchBackward);
 					HRESULT hr = S_OK;
 					CString strFind;
 					strFind = _T("recno=") + ltos(iRecNo);
-					hr = rsRefZB->Find((_bstr_t)strFind, 0, adSearchBackward);
+					hr = rsRefZB->Find((_bstr_t)strFind, 0, adSearchForward);
 					if( !rsRefZB->adoEOF)
 					{
 						rsRefZB->get_Collect((_variant_t)_T("seq"),&vTmp1);
@@ -6605,7 +6563,6 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 	{
 		//On Error Resume Next
 		CCadPoint p1, p2;
-// 		 rsTZG(&EDIBgbl::dbPRJDB);
 		_RecordsetPtr rsTZG;
 		rsTZG.CreateInstance(__uuidof(Recordset));
 		CString SQLx;
@@ -6619,7 +6576,6 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		
 		//选择记录集rsTZG以便记录图形内容
 		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY recno");
-// 		rsTZG.Open(dbOpenDynaset,SQLx);
 		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		
 		AddData2rsTZG(rsTZG, iRecNo, modPHScal::zdjh, _T("seq"), _T("X"), _T("POINT"), p0);
@@ -6784,7 +6740,6 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 		if(!EDIBgbl::dbSORT->State != adStateOpen)
 		{
 			EDIBgbl::dbSORT->Close();
-// 			EDIBgbl::dbSORT.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
 			EDIBgbl::dbSORT->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 		}
@@ -6850,8 +6805,6 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 		
 		CString SQLx;
 		SQLx=_T("SELECT * FROM DrawSize WHERE sjhyIndex=") + ltos(EDIBDB::SJHYIndex);
-// 		rs.m_pDatabase=&EDIBgbl::dbDSize;//20071018 "dbSort" 改为 "dbDSize"
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbDSize,adOpenKeyset, adLockOptimistic,adCmdText);
 		if(rs->BOF || rs->adoEOF)
 		{
@@ -6913,10 +6866,6 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 					sTmpDrawNo + _T(" AS DrawNo,") + sTmp1 + _T(" AS APHSCaption,") + sTmp2 + _T(" AS DrawNoPreFmt,") + 
 					sTmp3 + _T(" AS VolumeNoFmt,") + sTmp4 + _T(" AS PhsNoFmt FROM tmpDrawNameAndDrawNo");
 				//AfxMessageBox(EDIBgbl::SQLx);
-// 				rs.m_pDatabase=&EDIBgbl::dbPRJ;
-// 				rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-				
-//				EDIBgbl::SQLx = "SELECT zdjh & "号" & trim(PhsTypeChineseName) AS DrawNa,'INSTALLATION OF No. ' & zdjh & ' ' & trim(PhsTypeNameEnglish) AS DrawNaEnglish,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) & trim(jcdm) & "-" & Format(SEQ,IIF(seq>99,"000","00")) AS DrawNo,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) AS APHSCaption,trim(gcdm) & trim(sjjddm) & "-" & trim(zydm) & trim(jcdm) & "-" AS DrawNoPreFmt,trim(zydm) & trim(jcdm) & "-" & Format(SEQ,IIF(seq>99,"000","00")) AS VolumeNoFmt,zdjh AS PhsNoFmt FROM tmpDrawNameAndDrawNo.
 				_CommandPtr cmd;
 				cmd.CreateInstance(__uuidof(Command));
 				cmd->ActiveConnection = EDIBgbl::dbPRJ;
@@ -6924,7 +6873,6 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 				cmd->CommandType = adCmdText;
 
 				rs = cmd->Execute(NULL, NULL, adCmdText);
-//				rs->Open((_variant_t)cmd,(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 				//rs = EDIBgbl::dbPRJ.Execute  (_bstr_t(),&tmpvar,adCmdText);
 				if( rs->BOF || rs->adoEOF)
 				{

@@ -74,9 +74,7 @@ void CDataGridEx::InitToolTipControl()
 		}
 		catch(_com_error &e)
 		{
-			CString strErrorMsg;
-			strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-			AfxMessageBox(strErrorMsg);
+			AfxMessageBox(e.ErrorMessage());
 		}
 	}
 
@@ -387,9 +385,7 @@ void CDataGridEx::OnSortAsc()
 	}
 	catch(_com_error &e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.ErrorMessage());
 		return;
 	}
 	catch(COleDispatchException *e)
@@ -433,9 +429,7 @@ void CDataGridEx::OnSortDesc()
 	}
 	catch(_com_error &e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.ErrorMessage());
 		return;
 	}
 	catch(COleDispatchException *e)

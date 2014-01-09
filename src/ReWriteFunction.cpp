@@ -317,7 +317,7 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 	CString tmpSQL;
 
 	_RecordsetPtr rsX1;
-	rsX1.CreateInstance(__uuidof(_Recordset));
+	rsX1.CreateInstance(__uuidof(Recordset));
 	tmpSQL = _T("SELECT * FROM [") + modPHScal::tbnHDCrude + _T("] WHERE ") + tmpSQL ;
 	if(iSEQofSPR < modPHScal::SprInfoIndex)
 		sTmp.Format(_T(" dh=%d"),modPHScal::sSprInfo[iSEQofSPR].DH);
@@ -333,8 +333,6 @@ double GetSngDim(float sngH1xmax,float Height_SPRINGsL5,int iSEQofSPR,CString PT
 		sTmp=_T(" ");
 	}
 	tmpSQL+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND trim(CustomID)=\'") + PType + _T("\' ORDER BY dh,Weight");
-// 	rsX1.m_pDatabase=&modPHScal::dbZDJcrude;
-// 	rsX1.Open(dbOpenSnapshot,tmpSQL);
 	rsX1->Open((_bstr_t)tmpSQL, _variant_t((IDispatch*)EDIBgbl::dbZDJcrude,true), 
 		adOpenForwardOnly, adLockReadOnly, adCmdText); 
 	double sngDim = 0;

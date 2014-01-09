@@ -165,7 +165,6 @@ BOOL CDlgEditDB::ListTableName()
 		if(bIsRet) return FALSE;
 		pCon->Close();
 		pCon=NULL;
-// 		db.Open(m_strDBName,FALSE,TRUE,_T(";pwd=") + m_strPassword);
 		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + m_strDBName;
 		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strPassword, adConnectUnspecified);
 /*

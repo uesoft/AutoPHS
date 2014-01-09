@@ -83,6 +83,7 @@ BOOL CChangMaterilName::OnInitDialog()
 	_RecordsetPtr rsTmpEngin;
 	HRESULT hr = S_OK;
 	hr = rsTmpEngin.CreateInstance(__uuidof(Recordset));
+	_variant_t vTmp;
 	
 	try
 	{
@@ -99,9 +100,11 @@ BOOL CChangMaterilName::OnInitDialog()
 		while( !rsTmpEngin->adoEOF )
 		{
 			i = 0;
-			strVal = vtos(rsTmpEngin->GetCollect((_variant_t)"EnginID"));
+			rsTmpEngin->get_Collect((_variant_t)"EnginID", &vTmp);
+			strVal = vtos(vTmp);
 			m_workNameList.InsertItem(i,strVal);
-			strVal = vtos(rsTmpEngin->GetCollect((_variant_t)"gcmc"));
+			rsTmpEngin->get_Collect((_variant_t)"gcmc", &vTmp);
+			strVal = vtos(vTmp);
 			m_workNameList.SetItemText(i,1,strVal);
 			rsTmpEngin->MoveNext();
 			
@@ -118,7 +121,7 @@ BOOL CChangMaterilName::OnInitDialog()
 	{
 		rsTmpEngin->Close();
 	}
-
+	rsTmpEngin.Release();
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -146,6 +149,7 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 	_RecordsetPtr rsTmpVolume;
 	HRESULT hr = S_OK;
 	hr = rsTmpVolume.CreateInstance(__uuidof(Recordset));
+	_variant_t vTmp;
 
 	try
 	{	
@@ -159,9 +163,11 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 		while( !rsTmpVolume->adoEOF )
 		{
 			i = 0;
-			strVal = vtos(rsTmpVolume->GetCollect((_variant_t)"jcdm"));
+			rsTmpVolume->get_Collect((_variant_t)"jcdm", &vTmp);
+			strVal = vtos(vTmp);
 			m_volumeIdList.InsertItem(i,strVal);
-			strVal = vtos(rsTmpVolume->GetCollect((_variant_t)"jcmc"));
+			rsTmpVolume->get_Collect((_variant_t)"jcmc", &vTmp);
+			strVal = vtos(vTmp);
 			m_volumeIdList.SetItemText(i,1,strVal);
 			rsTmpVolume->MoveNext();
 			
@@ -177,6 +183,7 @@ void CChangMaterilName::OnClickListWorkname(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		rsTmpVolume->Close();
 	}
+	rsTmpVolume.Release();
 	
 
 	*pResult = 0;
@@ -231,6 +238,7 @@ void CChangMaterilName::OnClickListVolume(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		rsTmpMateril->Close();
 	}
+	rsTmpMateril.Release();
 
 
 	*pResult = 0;

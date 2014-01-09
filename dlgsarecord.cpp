@@ -264,7 +264,7 @@ void CDlgSARecord::OnOK()
 		if(m_pRs!=NULL && m_pRs->State==adStateOpen && (m_bAddNew || (!m_pRs->adoEOF && !m_pRs->BOF)) )
 		{
 			SQLx=_T("SELECT CustomID FROM [") + modPHScal::tbnSA + _T("] WHERE CustomID=\'") + m_strCustomID + _T("\' ");
-			_RecordsetPtr rs;//(&modPHScal::dbZDJcrude);	
+			_RecordsetPtr rs;	
 			rs.CreateInstance(__uuidof(Recordset));
 
 			if(count<=0)			
@@ -299,7 +299,6 @@ void CDlgSARecord::OnOK()
 			SQLx+=(_T(" AND PmaxH=") + ftos(m_fPMax));
 			if(rs->State != adOpenStatic)
 				rs->Close();
-//			rs.Open(dbOpenSnapshot,SQLx);
 			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs->BOF || !rs->adoEOF)
@@ -459,74 +458,72 @@ void CDlgSARecord::InitLab()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		CString strDesc=_T("Description");
-//		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" ¸ÄÎª "dbPHScode"
 		CString strSQL;
 		strSQL.Format(_T("Select %s ,FDName FROM FieldNameSizeVar WHERE ID=\'%s\'"),
 			strDesc,modPHScal::sFindID(m_strCustomID));
-//		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->BOF || rs->adoEOF) return;
 		_variant_t vTmp;
 		HRESULT hr = S_OK;
 		CString strFind;
-		strFind = _T("(FDName)=\'SIZEH\'");
+		strFind = _T("ucase(FDName)=\'SIZEH\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZEH)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'SIZE2\'");
+		strFind = _T("ucase(FDName)=\'SIZE2\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_SIZE2)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'M\'");
+		strFind = _T("ucase(FDName)=\'M\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_M)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'L1\'");
+		strFind = _T("ucase(FDName)=\'L1\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_L1)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'GDW1\'");
+		strFind = _T("ucase(FDName)=\'GDW1\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_GDW1)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'CHDIST\'");
+		strFind = _T("ucase(FDName)=\'CHDIST\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_CHDIST)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'C\'");
+		strFind = _T("ucase(FDName)=\'C\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_C)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'A\'");
+		strFind = _T("ucase(FDName)=\'A\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
 			GetDlgItem(IDC_LAB_A)->SetWindowText(vtos(vTmp));
 		}
-		strFind = _T("(FDName)=\'TJ\'");
+		strFind = _T("ucase(FDName)=\'TJ\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		if( !rs->adoEOF)
 		{

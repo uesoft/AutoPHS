@@ -50,9 +50,9 @@ private:
 
 
 
- extern "C" __declspec(dllexport) int GetAllowStressCase(_ConnectionPtr&,int**);///返回有许用应力的工况
- extern "C" __declspec(dllexport) BOOL GetStressForCase (_ConnectionPtr&,mPipeUnitList *,int);///按工况返回管系的对应节点的应力和许用应力
- __declspec(dllexport) MaxTable GetMaxWithTable(_ConnectionPtr&,CString ,int,CString ="LCASE_NUM",
+ extern "C" __declspec(dllexport) int GetAllowStressCase(_ConnectionPtr,int**);///返回有许用应力的工况
+ extern "C" __declspec(dllexport) BOOL GetStressForCase (_ConnectionPtr,mPipeUnitList *,int);///按工况返回管系的对应节点的应力和许用应力
+ __declspec(dllexport) MaxTable GetMaxWithTable(_ConnectionPtr,CString ,int,CString ="LCASE_NUM",
 														  CString ="OUTPUT_STRESSES");//按工况返回Table的最大值
 
  //__declspec(dllexport)VOID OperateCaseTable(CaseTable**,INT symbol);
@@ -68,7 +68,7 @@ private:
 		CsSouth = 5
 }CSType;
 
- int GetCaseTable(_ConnectionPtr&,CString**,int **,CString="CASE",CString ="LCASE_NUM",
+ int GetCaseTable(_ConnectionPtr,CString**,int **,CString="CASE",CString ="LCASE_NUM",
 														  CString ="OUTPUT_RESTRAINTS");//返回工况表格
 extern "C" __declspec(dllexport) int ReadPSAFileToListNoTransfer(mPipeUnitList *m_pPipeUnitList,CPipeGlobalData *m_PipeGlobalData,CString cFileName,_ConnectionPtr pRefInfoCon);//没有将单位转化为标准单位
 extern "C" __declspec(dllexport) int ReadPSAFileToList(mPipeUnitList *m_pPipeUnitList,CPipeGlobalData *m_PipeGlobalData,CString cFileName,_ConnectionPtr pRefInfoCon);

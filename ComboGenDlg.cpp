@@ -218,7 +218,6 @@ void CComboGenDlg::LoadComboBox(int i)
 		if(m_strFilter!="")
 			strSQL+=" WHERE " + m_strFilter;
 		_variant_t vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbPRJ;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
@@ -233,4 +232,5 @@ void CComboGenDlg::LoadComboBox(int i)
 	catch(_com_error *e)
 	{
 	}
+	rs.Release();
 }

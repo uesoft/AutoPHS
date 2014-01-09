@@ -62,9 +62,7 @@ BOOL CTBFormatDlg::OnInitDialog()
 		m_DataGrid.SetRefDataSource(m_rs->GetDataSource());
 	}catch(_com_error e)
 	{
-		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strErrorMsg);
+		AfxMessageBox(e.Description());
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

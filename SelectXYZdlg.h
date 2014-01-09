@@ -9,7 +9,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectXYZdlg dialog
-extern void ReadResult_Excel(_RecordsetPtr &pRs);
+extern void ReadResult_Excel(_RecordsetPtr pRs);
 class CSelectXYZdlg : public CDialog
 {
 // Construction

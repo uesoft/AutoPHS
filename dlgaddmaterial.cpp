@@ -151,8 +151,6 @@ void CDlgAddMaterial::LoadListClass()
 		{
 			SQLx=_T("SELECT [Index],[IndexName],[tbn] FROM ClassTypeDesc WHERE Index = 3 OR Index=4  OR Index=5  OR Index=2  OR Index=1 OR Index=6 ORDER BY seq ");
 		}
-// 		rs.m_pDatabase=&EDIBgbl::dbSORT;
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i;
@@ -271,8 +269,6 @@ void CDlgAddMaterial::LoadListDesc()
 		else
 			SQLx=_T("SELECT [CustomID],[Description],[ID] FROM ") + strTbn + _T(" WHERE ClassID<900 ORDER BY seq ");
 		
-// 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int count,i;
@@ -403,8 +399,6 @@ void CDlgAddMaterial::LoadListBH()
 			}			
 		}
 
-// 		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int count,i;
@@ -690,7 +684,6 @@ void CDlgAddMaterial::OnBtnAdd()
 		
 	if(m_bIsSA || MessageBox(sTmp,NULL,MB_YESNO)==IDYES)
 	{
-//		 rsTZB,rsDesc,rsTmp,rsBH;
 		_RecordsetPtr rsTZB;
 		rsTZB.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr rsDesc;
@@ -724,17 +717,14 @@ void CDlgAddMaterial::OnBtnAdd()
 			{
 				int iClassID=900;//其它类(index=iOtherPART=6)用户自定义零件,其ClassID从900开始
 				m_comboDesc.GetWindowText(strDesc);
-// 				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
 				m_strInpCustomID.TrimLeft();m_strInpCustomID.TrimRight();
 				strSQL.Format(_T("Select * FROM %s WHERE Description=\'%s\' AND ClassID>=900"),m_strDescTbn,strDesc);
-// 				rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if(rsDesc->adoEOF && rsDesc->BOF)
 				{
 					strSQL.Format(_T("Select * FROM %s WHERE ID LIKE \'UD*\' AND ClassID>=900 ORDER BY ID "),m_strDescTbn);
 					rsDesc->Close();
-//					rsDesc.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 					rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(rsDesc->BOF && rsDesc->adoEOF)
@@ -751,9 +741,7 @@ void CDlgAddMaterial::OnBtnAdd()
 					}
 					if(m_strInpCustomID==_T(""))
 						m_strInpCustomID=strID;
-// 					rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
 					strSQL.Format(_T("SELECT * FROM PictureClipData WHERE ID=\'%s\'"),strID);
-// 					rsTmp.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(rsTmp->adoEOF && rsTmp->BOF)
@@ -793,8 +781,6 @@ void CDlgAddMaterial::OnBtnAdd()
 				strCustomID=m_strInpCustomID;
 				m_comboBH.GetWindowText(strBH);
 				strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE CustomID=\'") + strCustomID + _T("\' AND BH=\'") + strBH +_T("\'");
-// 				rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
-// 				rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 				rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if(rsBH->BOF && rsBH->adoEOF)
@@ -829,8 +815,6 @@ void CDlgAddMaterial::OnBtnAdd()
 
 					strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE (BH=\'") + strBH + _T("\' OR BH=\'") + _strBH +_T("\') AND CustomID=\'")
 						+ strCustomID + _T("\'");
-// 					rsBH.m_pDatabase=&modPHScal::dbZDJcrude;
-// 					rsBH.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 					rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(rsBH->BOF && rsBH->adoEOF)
@@ -865,8 +849,6 @@ void CDlgAddMaterial::OnBtnAdd()
 				}
 				m_strBH=strBH;
 				strSQL.Format(_T("Select * FROM %s WHERE ID=\'%s\' AND Description=\'%s\' AND ClassID<900"),m_strDescTbn,strID,strDesc);
-// 				rsDesc.m_pDatabase=&modPHScal::dbZDJcrude;
-// 				rsDesc.Open(dbOpenSnapshot,strSQL);
 				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				rsDesc->get_Collect((_variant_t)_T("BHFormat"), &vTmp);
@@ -875,10 +857,8 @@ void CDlgAddMaterial::OnBtnAdd()
 				UpdateTmpCSLen();
 
 				strSQL.Format(_T("Select %s FROM tmpCSLen"),strBHFormat);
-//				rsTmp.m_pDatabase=&EDIBgbl::dbPRJ;
 				try
 				{
-// 					rsTmp.Open(dbOpenSnapshot,strSQL);
 					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					rsTmp->get_Collect((_variant_t)0L, &vTmp);
@@ -894,13 +874,11 @@ void CDlgAddMaterial::OnBtnAdd()
 			if(!m_bIsSA)
 			{
 				//如果不是在“添加根部的附件”状态
-// 				rsTZB.m_pDatabase=&EDIBgbl::dbPRJDB;
 				modPHScal::zdjh=vtoi(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("ZDJH")));
 				strSQL.Format(_T("SELECT * FROM %s WHERE VolumeID=%d AND ZDJH=%d ORDER BY recno"),
 					EDIBgbl::Btype[EDIBgbl::TZB],
 					EDIBgbl::SelVlmID,
 					modPHScal::zdjh);
-// 				rsTZB.Open(AFX_DAO_USE_DEFAULT_TYPE,strSQL);
 				rsTZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				int maxrecno=0;
@@ -944,6 +922,17 @@ void CDlgAddMaterial::OnBtnAdd()
 					rsTZB->put_Collect((_variant_t)_T("CLzz"),_variant_t((float)(m_iNum*m_fWeight)));
 				}
 				rsTZB->Update();
+				//判断是否有计算的材料或是仅有用户添加的材料
+				/*CString SQLx = _T("SELECT CLmc,CLgg,CLnum,CLdz,CLzz,bUserAdd,Index FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (not ISNULL(recno) OR (bUserAdd is not null and bUserAdd<>0 )) ");
+				if(rsTmp.IsOpen())
+					rsTmp.Close();
+				rsTmp.m_pDatabase=&EDIBgbl::dbPRJDB;
+				rsTmp.Open(dbOpenSnapshot,SQLx);
+				if(rsTmp.IsBOF() && rsTmp.IsEOF())
+					;
+				else
+					//用户添加了材料，设置计算成功标志，以便统计材料
+					//FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect(_variant_t(_T("bCalSuccess")),-1);*/
 				//添加成功！
 				sTmp.Format(IDS_AddMaterialSuccess);
 				MessageBox(sTmp);
@@ -1075,8 +1064,6 @@ void CDlgAddMaterial::LoadListMaterial()
 			//非管部材料从材料选择规范表提取
 			SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
 		this->m_comboMaterial.ResetContent();
-// 		rs.m_pDatabase=&EDIBgbl::dbPHScode;//20071101 "dbSORT" 改为 "dbPHScode"
-// 		rs.Open(dbOpenSnapshot,SQLx);
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
@@ -1099,12 +1086,10 @@ int CDlgAddMaterial::GetMaxSEQ(CString tbn, _ConnectionPtr &db)
 {
 	try
 	{
-//		 rs(&db);
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		CString strSQL;
 		strSQL.Format(_T("SELECT MAX(SEQ) FROM %s"),tbn);
-// 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF)

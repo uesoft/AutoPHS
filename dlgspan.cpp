@@ -138,10 +138,8 @@ void CDlgSpan::LoadListDW()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_variant_t vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "Material"
 		CString strSQL;
 		strSQL=_T("SELECT * FROM [PipeDiameter] ORDER BY [DW],[S]");
-//		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0;
@@ -179,10 +177,8 @@ void CDlgSpan::LoadListMedia()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_variant_t vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
 		CString strSQL;
 		strSQL=_T("SELECT [Media],[Density] FROM [MediaDensity] ORDER BY [SEQ]");
-//		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0,ix;
@@ -220,10 +216,8 @@ void CDlgSpan::LoadListMaterial()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		_variant_t vTmp;
-//		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 "dbMaterial"
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [Material] FROM [MechanicalOfMaterialEt] WHERE Material IN ( SELECT DISTINCT Material FROM [MechanicalOfMaterialSIGMAt] ) ");
-//		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		int i=0;
@@ -516,8 +510,6 @@ void CDlgSpan::LoadTemp()
 		_variant_t vTmp;
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [t] FROM [MechanicalOfMaterialEt] WHERE material=\'") + strMaterial + _T("\'ORDER BY [t]"); 
-// 		rs.m_pDatabase=&EDIBgbl::dbMaterial;//20071102 "dbSORT" 改为 ""
-// 		rs.Open(dbOpenSnapshot,strSQL);
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)

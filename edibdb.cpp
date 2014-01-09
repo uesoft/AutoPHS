@@ -146,16 +146,14 @@ void EDIBDB::GetTBsize()
 {
 	if(EDIBgbl::dbSORT->State != adStateOpen)
 	{
-		// 		EDIBgbl::dbSORT.Open(basDirectory::ProjectDBDir+_T("sort.mdb"));
 		db->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("sort.mdb")), "", "", adConnectUnspecified);
 	}
-// 	rs(&EDIBgbl::dbDSize);//20071101 "dbSORT" 改为 "dbDSize"
 	_RecordsetPtr rs;
 	rs.CreateInstance(__uuidof(Recordset));
-// 	rs.Open(dbOpenSnapshot,_T("SELECT * FROM DrawSize WHERE trim(sjhy)=\'")+EDIBgbl::SelHyName+_T("\'"));
 	CString strSQL;
 	strSQL = "SELECT * FROM DrawSize WHERE trim(sjhy)=\'"+EDIBgbl::SelHyName+_T("\'");
-	rs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+	rs->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbDSize,
+		adOpenKeyset, adLockOptimistic,adCmdText);
 	_variant_t vTmp;
 	if(!rs->adoEOF && !rs->BOF)
 	{
@@ -224,8 +222,7 @@ void EDIBDB::SumMaterial(CString  VlmID)
 		EDIBgbl::dbPRJ->Execute((_bstr_t)((_T("DROP TABLE TMP2 "))), NULL, adCmdText);
 	
 	EDIBgbl::SQLx = _T("SELECT * INTO TMP2 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T("]");
-   VlmID.TrimLeft();
-   VlmID.TrimRight();
+   VlmID.TrimLeft();VlmID.TrimRight();
    if(VlmID!=_T(""))
 	   EDIBgbl::SQLx+=CString(_T(" WHERE trim(VolumeID)=\'")) + VlmID+ _T("\'");
    EDIBgbl::dbPRJDB->Execute((_bstr_t)(EDIBgbl::SQLx), NULL, adCmdText);
@@ -264,10 +261,6 @@ void EDIBDB::SumNumbers()
       //如果是设备材料表
   // End If
    //以下重新赋单位、单重等
-// 	rs1.m_pDatabase=&EDIBgbl::dbPRJ;
-// 	rs1.Open(dbOpenDynaset ,_T("SELECT * FROM TMP1"));
-// 	rs2.m_pDatabase=&EDIBgbl::dbPRJ;
-// 	rs2.Open(dbOpenSnapshot ,_T("SELECT * FROM TMP2"));
 	rs1->Open(_variant_t(_T("SELECT * FROM TMP1")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 	rs2->Open(_variant_t(_T("SELECT * FROM TMP2")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
     _variant_t v1,v2;
@@ -284,16 +277,13 @@ void EDIBDB::SumNumbers()
 		   _T("\' AND Trim(CLID)=\'") + vtos(CLID) + _T("\'");
 	   //EDIBgbl::SQLx = _T(" trim(CLgg)=\'") + Trim((char*)CLgg.bstrVal) + _T("// AND trim(CLmc)=//") + Trim(rs1(_T("CLmc"))) + _T("// AND trim(CLcl)=//") + Trim(rs1(_T("CLcl"))) + _T("// AND trim(CLID)=//") + Trim(rs1(_T("CLID"))) + _T("//")
 	   
-// 	   _variant_t vTmp;
-// 	   rs2->Find((_bstr_t)(EDIBgbl::SQLx), 0, adSearchBackward);
 	   HRESULT hr = S_OK;
-	   hr = rs2->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchBackward);
+	   hr = rs2->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchForward);
 	   if( !rs2->adoEOF)
 	  {
 		  rs2->get_Collect((_variant_t)_T("CLdz"), &CLdz);
 		  rs2->get_Collect((_variant_t)_T("CLdw"), &CLdw);
 		  rs2->get_Collect((_variant_t)_T("CLnum1"), &CLnum1);
-//		  rs1.Edit();
 		  rs1->put_Collect((_variant_t)_T("CLdz"), CLdz);
 		  rs1->put_Collect((_variant_t)_T("CLdw"), CLdw);
 		  if(CLdz.vt!=VT_NULL && CLnum1.vt!=VT_NULL)
@@ -349,8 +339,6 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
    EDIBgbl::SQLx.Format(_T("SELECT * FROM tableINFO WHERE ID= %d "),BILL);
    try
    {
-// 	   rs.m_pDatabase=&EDIBgbl::dbTable;//20071015 "dbSORT"改为"dbTable"
-// 	   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
 	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
 	   CString sTmp;
 	   if(rs->BOF || rs->adoEOF)
@@ -367,7 +355,6 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		   return;
 		EDIBgbl::SQLx = CString(_T("SELECT * FROM ") )+ vtos(v) + _T(" WHERE NOT ISNULL(seq) ORDER BY seq");
 	   rs->Close();
-// 		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
 	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,
 		   adOpenKeyset, adLockOptimistic,adCmdText);
 	   if(rs->adoEOF && rs->BOF)
@@ -390,8 +377,6 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		  sTmp.TrimLeft();
 		  sTmp.TrimRight();
 		  sTmp.MakeUpper();
-// 		  _variant_t vTmp;
-// 		  rs->Find((_bstr_t)(CString(_T("trim(FieldName)=\'"))+sTmp+_T("\'")), 0, adSearchBackward);
 		  HRESULT hr = S_OK;
 		  CString strTmp;
 			strTmp = _T("(FieldName)=\'")+sTmp+_T("\'");
@@ -584,12 +569,9 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 		{	//查找导入数据到AutoIPED时，使用的一个管理库("Excel2Access.mdb").
 			//获得导出的数据字段名，Excel 文件名
 			strFileName = basDirectory::TemplateDir + "Excel2Access.mdb";
-//			db.Open(strFileName);
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFileName;
 			db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
-//			pRs.m_pDatabase = &db;
 			strSQL  = "SELECT * FROM TableExcelToAccess WHERE ID = 1";
-//			pRs.Open( dbOpenSnapshot, strSQL );
 			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( pRs->BOF || pRs->adoEOF )
 			{
@@ -612,11 +594,11 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 		{
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFileName;
 			dbExcel->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+			// TODO: 
 // 			dbExcel.Open(strFileName, FALSE, FALSE, "Excel 5.0;");
 			if( !EDIBgbl::tdfExists( dbExcel, strTblName) )
 			{
 				strSQL = "SELECT * FROM ["+strFieldTbl+"]";
-// 				pRs.Open(dbOpenSnapshot, strSQL);
 				pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 				//test create
 				strSQL = "CREATE TABLE ["+strTblName+"] ";
