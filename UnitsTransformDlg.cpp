@@ -81,7 +81,7 @@ void CUnitsTransformDlg::OnSave()
 		//清空原来记经显示的内容
 		m_ListConversion.DeleteAllItems();
 		strSQL=m_pRsUnits->GetSource();
-		m_pRsUnits->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		m_pRsUnits->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		if(m_pRsUnits&&m_pRsUnits->State==adStateOpen)
 		{
 			if((!m_pRsUnits->adoEOF)&&(!m_pRsUnits->BOF))

@@ -297,7 +297,7 @@ void CDlgSARecord::OnOK()
 				SQLx+=(_T(" AND ") + strFd + _T(" is NULL ") );
 			}
 			SQLx+=(_T(" AND PmaxH=") + ftos(m_fPMax));
-			if(rs->State != adOpenStatic)
+			if(rs->State != adOpenKeyset)
 				rs->Close();
 			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 

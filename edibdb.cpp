@@ -146,7 +146,7 @@ void EDIBDB::GetTBsize()
 {
 	if(EDIBgbl::dbSORT->State != adStateOpen)
 	{
-		db->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("sort.mdb")), "", "", adConnectUnspecified);
+		db->Open((_bstr_t)(basDirectory::ProjectDBDir+_T("sort.mdb")), "", "", adModeUnknown);
 	}
 	_RecordsetPtr rs;
 	rs.CreateInstance(__uuidof(Recordset));
@@ -529,7 +529,7 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 			}
 // 			db1.Open(DestFileName,FALSE,FALSE,(Table_Format == _T("ACAD") ? _T(";") : Table_Format));
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + DestFileName;
-			db1->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+			db1->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			//Set db1 = OpenDatabase(DestFileName, dbDriverNoPrompt, False, IIf(Table_Format = _T("ACAD"), _T(";"), Table_Format))
 			if( EDIBgbl::tdfExists(db1, OutputTableName) )
 			{
@@ -570,7 +570,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			//获得导出的数据字段名，Excel 文件名
 			strFileName = basDirectory::TemplateDir + "Excel2Access.mdb";
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFileName;
-			db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+			db->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			strSQL  = "SELECT * FROM TableExcelToAccess WHERE ID = 1";
 			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( pRs->BOF || pRs->adoEOF )
@@ -593,7 +593,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 		if( strFileName.Find(".xls",0) != -1 )
 		{
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFileName;
-			dbExcel->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+			dbExcel->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			// TODO: 
 // 			dbExcel.Open(strFileName, FALSE, FALSE, "Excel 5.0;");
 			if( !EDIBgbl::tdfExists( dbExcel, strTblName) )

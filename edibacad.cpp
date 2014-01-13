@@ -6017,7 +6017,7 @@ void EDIBAcad::DrawphsDataEdit()
 		else if(FrmDataEDIT.m_Data1->State==adStateOpen)
 			FrmDataEDIT.m_Data1->Close();
 		FrmDataEDIT.m_Data1->CursorLocation=adUseClient;
-		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		//图形数据记录集Rsy=TZG
 		FrmDataEDIT.m_DBGrid1.SetRefDataSource(FrmDataEDIT.m_Data1->GetDataSource());
 		EDIBDB::RefreshGrid(FrmDataEDIT.m_DBGrid1,FrmDataEDIT.m_Data1);
@@ -6082,7 +6082,7 @@ void EDIBAcad::DisplayDataZB()
 		if(FrmDataEDIT.m_Data1->State!=adStateClosed)
 			FrmDataEDIT.m_Data1->Close();
 		FrmDataEDIT.m_Data1->CursorLocation=adUseClient;
-		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		FrmDataEDIT.m_Data1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		SQLx = _T("SELECT SUM(CLzz) as SumWeight FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND zdjh=") + ltos(modPHScal::zdjh) + _T(" AND (IsSAPart<>-1 OR bUserAdd=-1 )");
 		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
@@ -6673,7 +6673,7 @@ _variant_t EDIBAcad::SetSelectionSet(CString /*ByVal*/ ssetName)
 		ssetName.TrimLeft();ssetName.TrimRight();
 		ssetName.MakeUpper();
 		CMObject see,si;
-		see=objAcadDoc.GetPropertyByName(_T("SelectionSets")).pdispVal;
+		see=objAcadDoc.GetPropertyByName(_T("SelectionSets"));
 		int C=(long)see.GetPropertyByName(_T("Count"));
 		CString siN;
 		for (int i = 0 ;i<C;i++)
@@ -6741,7 +6741,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 		{
 			EDIBgbl::dbSORT->Close();
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
-			EDIBgbl::dbSORT->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+			EDIBgbl::dbSORT->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 		}
 		CString strSQL;
 		if( EDIBAcad::g_bDrawNameWithoutNo )

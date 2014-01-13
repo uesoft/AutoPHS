@@ -261,7 +261,7 @@ void CFrmDatabaseIn::OnDataIn()
 					{
 						EDIBgbl::dbPRJDB->Execute((_bstr_t)strSQL, NULL, adCmdText);
 					}
-					catch(CException *e)
+					catch(...)
 					{
 					}
 				}

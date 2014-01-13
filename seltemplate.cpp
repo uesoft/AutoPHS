@@ -237,7 +237,7 @@ void CSelTemplate::UpdateRecordset()
    //CString strTmp;
    //CString strTmp2;
 
-   //_variant_t vTmp;
+   //COleVariant vTmp;
    if(!m_bIsSelPA)
    {
 	   LoadListPA();
@@ -695,9 +695,6 @@ void CSelTemplate::OpenTemplateRs()
 
 	if(m_rsTemplateName != NULL)
 		m_rsTemplateName->Close();
-// 	m_rsTemplateName.m_strFilter=_T("");
-// 	m_rsTemplateName.m_strSort=_T("");
-// 	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
 
 	strSQL=_T("SELECT * FROM phsStructureName ");
 
@@ -727,7 +724,7 @@ void CSelTemplate::OpenTemplateRs()
 
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
-	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
+	if(!m_rsTemplateName->adoEOF)
 		m_rsTemplateName->MoveFirst();
 
 	m_listctrlStruct.m_prsNAME = m_rsTemplateName;
@@ -746,6 +743,10 @@ void CSelTemplate::LoadListName()
 		m_listctrlStruct.SetRedraw(FALSE);
 		m_listctrlStruct.DeleteAllItems();
 		m_listctrlStruct.DeleteAllColumns();
+		if(m_rsTemplateName->State != adStateOpen)
+			return;
+		if(m_rsTemplateName->BOF && m_rsTemplateName->adoEOF)
+			return;
 		_variant_t v;
 		_variant_t book;
 
@@ -803,8 +804,8 @@ void CSelTemplate::LoadListName()
 				return;
 			if(m_rsTemplateName.IsBOF() && m_rsTemplateName.IsEOF())
 				return;
-			_variant_t v;
-			_variant_t book;
+			COleVariant v;
+			COleVariant book;
 			m_rsTemplateName.GetFieldValue(_T("SampleID"),v);
 			long id=vtoi(v);
 			book=m_rsTemplateName.GetBookmark();
@@ -907,7 +908,7 @@ void CSelTemplate::LoadListPA()
 
 		_variant_t vTmp;
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenKeyset, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -971,7 +972,7 @@ void CSelTemplate::LoadListSA()
 			strSQL+=" WHERE " + m_strFilter;
 		_variant_t vTmp;
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenKeyset, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -1262,12 +1263,12 @@ void CSelTemplate::DataReposition()
 
 		m_rsTemplateName->get_Collect((_variant_t)"SampleID", &v);
 		//if(vtoi(v) == m_iCurSampleID)  LFX 注掉
-		if (false)    //LFX  不执行下面语句，避免结构框不刷新
-		{
-			m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE", &v);   //LFX 2005.3.25   加
-			strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName->AbsolutePosition+1,m_rsTemplateName->RecordCount,vtoi(v)); //LFX 2005.3.25 加
-			return;   //原
-		}
+// 		if (false)    //LFX  不执行下面语句，避免结构框不刷新
+// 		{
+// 			m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE", &v);   //LFX 2005.3.25   加
+// 			strTemp.Format(IDS_SelSampleIDNoXSumXFRQx,m_iCurSampleID,m_rsTemplateName->AbsolutePosition+1,m_rsTemplateName->RecordCount,vtoi(v)); //LFX 2005.3.25 加
+// 			return;   //原
+// 		}
 		this->m_iCurSampleID = vtoi(v);
 		//FrameSelPhs.Caption = "选择支吊架组装模板" & modPHScal::iSelSampleID & " (第" & (m_rsTemplateName.Recordset.AbsolutePosition + 1) & "项 共" & m_rsTemplateName.Recordset.RecordCount & "项 使用频度" & m_rsTemplateName.Recordset.Fields("FREQUENCE") & ")"
 		m_rsTemplateName->get_Collect((_variant_t)"FREQUENCE", &v);
@@ -1283,7 +1284,7 @@ void CSelTemplate::DataReposition()
 		strSQL.Format(_T("SELECT CustomID FROM phsStructureREF WHERE SampleID=%d ORDER BY SEQ"),
 			this->m_iCurSampleID);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenKeyset, adLockReadOnly, adCmdText); 
 		m_lstStruct.ResetContent();
 		while(!rs->adoEOF)
 		{
@@ -1593,7 +1594,8 @@ try{	// TODO: Add your control notification handler code here
 			//下面2句容易造成级联事件，导致死机。
 			m_rsTemplateName->Requery(adExecuteRecord);
 			_variant_t vTmp;
-			m_iSavex = m_rsTemplateName->Find((_bstr_t)("SampleID=" + ltos(m_iLastSampleID)), 0, adSearchForward);
+			m_rsTemplateName->Find((_bstr_t)("SampleID=" + ltos(m_iLastSampleID)), 0, adSearchForward);
+			m_iSavex = m_rsTemplateName->AbsolutePosition;
 			LoadListName();
 			DataReposition();
 			m_bSaveChange=TRUE;
@@ -1870,7 +1872,7 @@ void CSelTemplate::OnCheckPa()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(); 
-	if(m_bRePA == true)
+	if(m_bRePA == TRUE)
 	{
 		for(int i=0;i<6;i++)
 			GetDlgItem(m_CheckID[i])->EnableWindow(TRUE);
@@ -2023,7 +2025,7 @@ BOOL CSelTemplate::IsFavoriteTemplate(long lSampleID)
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		if( rs->BOF || rs->adoEOF )
 		{
 			bFavorite = FALSE;
@@ -2053,7 +2055,7 @@ BOOL CSelTemplate::IsDefaultFavoriteTemplate(long lSampleID)
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		if( rs->BOF || rs->adoEOF )
 		{
 			m_btnDefaultFavoriteTemplate.SetWindowText(GetResStr(IDS_SET_NOT_DEFAULT_FAVORITE));
@@ -2079,7 +2081,7 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 	// TODO: Add your control notification handler code here
 	try
 	{
-	    if(m_rsTemplateName->State != adStateOpen)
+	    if(!m_rsTemplateName->State)
 			return;
 
 		CString sTmp;
@@ -2289,11 +2291,8 @@ void CSelTemplate::initOpenTemplateRs()
 	UpdateData();
 	m_strSortFieldName=theSortName[this->m_iSortType];
 
-	if(m_rsTemplateName->State == adStateOpen)
+	if(m_rsTemplateName->State)
 		m_rsTemplateName->Close();
-// 	m_rsTemplateName.m_strFilter=_T("");
-// 	m_rsTemplateName.m_strSort=_T("");
-// 	m_rsTemplateName.m_pDatabase=&EDIBgbl::dbPRJ;
 
 	strSQL=_T("SELECT * FROM phsStructureName ");
 
@@ -2311,7 +2310,7 @@ void CSelTemplate::initOpenTemplateRs()
 			strSQL += _T(" DESC ");
 	}
 	m_rsTemplateName->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+		adOpenDynamic, adLockPessimistic, adCmdText); 
 	strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);

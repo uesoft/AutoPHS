@@ -128,9 +128,10 @@ BOOL CCalStructDlg::OnInitDialog()
 		m_connMaterial.CreateInstance(__uuidof(Connection));
 		m_connSort.CreateInstance(__uuidof(Connection));
 		m_connSASCal.CreateInstance(__uuidof(Connection));
-		m_connMaterial->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Material.mdb"))),(_T("")),(_T("")),adConnectUnspecified);//20071102
-		m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")),adConnectUnspecified);
-		m_connSASCal->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("SAStructureCal.mdb"))),(_T("")),(_T("")),adConnectUnspecified);//20071103
+
+		m_connMaterial->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Material.mdb"))),(_T("")),(_T("")),adModeUnknown);//20071102
+		m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")),adModeUnknown);
+		m_connSASCal->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("SAStructureCal.mdb"))),(_T("")),(_T("")),adModeUnknown);//20071103
 		m_ComGrid.SetTextBkColor(::GetSysColor(COLOR_INFOBK));
 		m_PjgGrid.SetTextBkColor(::GetSysColor(COLOR_INFOBK));
 		m_editOk.SetBkColor(::GetSysColor(COLOR_3DFACE));
@@ -198,7 +199,7 @@ void CCalStructDlg::OnSelChangeListImg()
 		CalComLen();
 		strSQL.Format((_T("SELECT [StructID],[VarName],[VarValue],[Caption],[bMainDim],[VarNameInImage] FROM [SAStructVariable] WHERE [StructID]=%d AND bMainDim<>-1")),m_lStructID);		
 		m_rsVariable->CursorLocation=adUseClient;
-		m_rsVariable->Open(_variant_t(strSQL),(IDispatch*)m_connSASCal,adOpenStatic,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
+		m_rsVariable->Open(_variant_t(strSQL),(IDispatch*)m_connSASCal,adOpenKeyset,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
 
 		m_gridVar.SetRefDataSource(m_rsVariable->GetDataSource());
 		m_gridVar.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
@@ -214,7 +215,7 @@ void CCalStructDlg::OnSelChangeListImg()
 
 		strSQL.Format((_T("SELECT [StructID],[VarName],[VarValue],[Caption],[bMainDim],[VarNameInImage] FROM [SAStructVariable] WHERE [StructID]=%d AND bMainDim is not null AND bMainDim <> 0")),m_lStructID);		
 		m_rsMainDim->CursorLocation=adUseClient;
-		m_rsMainDim->Open(_variant_t(strSQL),(IDispatch*)m_connSASCal,adOpenStatic,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
+		m_rsMainDim->Open(_variant_t(strSQL),(IDispatch*)m_connSASCal,adOpenKeyset,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
 
 		m_gridMainDim.SetRefDataSource(m_rsMainDim->GetDataSource());
 		m_gridMainDim.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
@@ -588,7 +589,7 @@ void CCalStructDlg::InitVar(int iComNo,BOOL bCurComNo,BOOL bOther,BOOL bUpdMater
 		EDIBgbl::dbSACal->Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")), NULL, adCmdText);
 		m_rsVariable.CreateInstance(__uuidof(Recordset));
 		m_rsVariable->CursorLocation=adUseClient;
-		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSASCal,adOpenStatic,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
+		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSASCal,adOpenKeyset,adLockOptimistic,adCmdText);//20071103 "m_connSort" 改为 "m_connSASCal"
 		m_gridVar.SetRefDataSource(m_rsVariable->GetDataSource());
 		m_gridVar.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 		m_gridVar.GetColumns().GetItem(_variant_t(4L)).SetVisible(FALSE);
@@ -603,7 +604,7 @@ void CCalStructDlg::InitVar(int iComNo,BOOL bCurComNo,BOOL bOther,BOOL bUpdMater
 
 		m_rsMainDim.CreateInstance(__uuidof(Recordset));
 		m_rsMainDim->CursorLocation=adUseClient;
-		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_gridMainDim.SetRefDataSource(m_rsMainDim->GetDataSource());
 		m_gridMainDim.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 		m_gridMainDim.GetColumns().GetItem(_variant_t(4L)).SetVisible(FALSE);
@@ -1673,10 +1674,10 @@ void CCalStructDlg::OnButtonLoopCal()
 	LoopSelCom(this->m_lStructID);
 	try
 	{
-		m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")),adConnectUnspecified);
+		m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")), adModeUnknown);
 		m_rsVariable.CreateInstance(__uuidof(Recordset));
 		m_rsVariable->CursorLocation=adUseClient;
-		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_gridVar.SetRefDataSource(m_rsVariable->GetDataSource());
 		m_gridVar.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 		m_gridVar.GetColumns().GetItem(_variant_t(4L)).SetVisible(FALSE);
@@ -1691,7 +1692,7 @@ void CCalStructDlg::OnButtonLoopCal()
 
 		m_rsMainDim.CreateInstance(__uuidof(Recordset));
 		m_rsMainDim->CursorLocation=adUseClient;
-		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_gridMainDim.SetRefDataSource(m_rsMainDim->GetDataSource());
 		m_gridMainDim.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 		m_gridMainDim.GetColumns().GetItem(_variant_t(4L)).SetVisible(FALSE);
@@ -2109,10 +2110,9 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	try
 	{
 		EDIBgbl::dbSACal->Execute((_T("UPDATE [SAStructVariable] SET [VarValue]=[VarValue]")), NULL, adCmdText);
-		//m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDBDir + (_T("Sort.mdb"))),(_T("")),(_T("")),adConnectUnspecified);
 		m_rsVariable.CreateInstance(__uuidof(Recordset));
 		m_rsVariable->CursorLocation=adUseClient;
-		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_rsVariable->Requery(-1);
 		m_gridVar.SetRefDataSource(m_rsVariable->GetDataSource());
 		m_gridVar.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
@@ -2128,7 +2128,7 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 
 		m_rsMainDim.CreateInstance(__uuidof(Recordset));
 		m_rsMainDim->CursorLocation=adUseClient;
-		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rsMainDim->Open(_variant_t((LPCTSTR)strVarSQLMainDim),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_rsMainDim->Requery(-1);
 		m_gridMainDim.SetRefDataSource(m_rsMainDim->GetDataSource());
 		m_gridMainDim.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
@@ -2306,7 +2306,7 @@ void CCalStructDlg::OnAfterColUpdateDatagridMaindim(short ColIndex)
 			{
 				m_rsVariable.CreateInstance(__uuidof(Recordset));
 				m_rsVariable->CursorLocation=adUseClient;
-				m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+				m_rsVariable->Open(_variant_t((LPCTSTR)strVarSQL),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 				m_gridVar.SetRefDataSource(m_rsVariable->GetDataSource());
 				m_gridVar.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 				m_gridVar.GetColumns().GetItem(_variant_t(4L)).SetVisible(FALSE);

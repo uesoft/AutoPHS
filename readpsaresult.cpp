@@ -650,7 +650,7 @@ void ReadYljsResult(_Recordset* rs)
 			//rs->Close();此句必须移至下面带 ***处，否则出错后导致“对象关闭后不能执行这个操作”，死锁
 			_RecordsetPtr rs1;
 			rs1.CreateInstance(__uuidof(Recordset));
-			rs1->Open(SQLx,pCon,adOpenStatic,adLockOptimistic,adCmdText);
+			rs1->Open(SQLx,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 			
 			CString temp;
 			temp = DataFileName.Right(3);
@@ -931,7 +931,7 @@ void ReadYljsResult(_Recordset* rs)
 			rs1=NULL;
 			//********注意下句不能移动到函数开头,否则死锁
 			//rs->Close();
-			rs->Open(SQLx,pCon,adOpenStatic,adLockOptimistic,adCmdText);
+			rs->Open(SQLx,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 			FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 			FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(rs);
 			FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);
@@ -1316,7 +1316,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -1857,7 +1857,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -2698,7 +2698,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -3547,7 +3547,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
 		{
@@ -3635,7 +3635,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Format(_T("SELECT DISTINCT [JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
       //用此方法打开的记录集才能调用GetRecodsetCount()获得记录数
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText); 
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText); 
 		//在对话框的列表框中加入工程文件名,组合框加入工况名，并获取用户的选择
 		m_selDlg = new CSelPSAProjectNameDlg;
  
@@ -3653,7 +3653,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Empty();
 		m_strSQL.Format(_T("SELECT DISTINCT [CASE] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		n = m_prsJOBNAME->GetRecordCount();
 		m_selDlg->GKNum = n;
@@ -3703,7 +3703,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_prsBasicData->Close();
 
 		m_strSQL.Format(_T("SELECT * FROM [OUTPUT_LOCAL_ELEMENT_FORCES] WHERE [JOBNAME] = '%s' AND   [CASE] = '%s' "),m_strJOBNAME_P,m_strRGKname);
-		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		iCount = m_prsCASENUM->GetRecordCount();
 
@@ -4367,7 +4367,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Format(_T("SELECT DISTINCT [JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
       //用此方法打开的记录集才能调用GetRecodsetCount()获得记录数
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText); 
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText); 
 		//在对话框的列表框中加入工程文件名,组合框加入工况名，并获取用户的选择
 		m_selDlg = new CSelPSAProjectNameDlg;
  
@@ -4385,7 +4385,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Empty();
 		m_strSQL.Format(_T("SELECT DISTINCT [CASE] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		n = m_prsJOBNAME->GetRecordCount();
 		m_selDlg->GKNum = n;
@@ -4435,7 +4435,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_prsBasicData->Close();
 
 		m_strSQL.Format(_T("SELECT * FROM [OUTPUT_LOCAL_ELEMENT_FORCES] WHERE [JOBNAME] = '%s' AND   [CASE] = '%s' "),m_strJOBNAME_P,m_strRGKname);
-		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		iCount = m_prsCASENUM->GetRecordCount();
 
@@ -6049,7 +6049,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID"); 
 		//strSQL.Replace("SElECT * FROM za");
 		rsResult->Close();
-		rsResult->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		rsResult->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsResult->adoEOF)

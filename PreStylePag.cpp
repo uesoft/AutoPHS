@@ -480,7 +480,7 @@ void CPreStylePag::OnSelchangeComboStyle()
     CString    strStyleName, strShxFile, strBigFile;
     CString    tmpstr;
     short      iGenerationFlag;
-    int        oldStyle, nIndex;
+    int        oldStyle;
 
     //获取旧样式
     oldStyle = m_nStyle;

@@ -533,7 +533,7 @@ _variant_t modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*/
    //rs=EDIBgbl::dbPRJ->Execute(_bstr_t(sTmp),NULL,adCmdText);
    rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 	   adOpenKeyset, adLockOptimistic, adCmdText); 
-   if(rs->BOF)
+   if(rs->adoEOF)
          return _variant_t((long)0);
      else
      {
@@ -589,7 +589,7 @@ _variant_t modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSourceT
 		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)db,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
-		if(rs->BOF)
+		if(rs->adoEOF)
 			return ret;
 		rs->get_Collect((_variant_t)strDestFLD,&tmpvar);
 		rs->Close();
@@ -684,6 +684,9 @@ CString modPHScal::sFindCustomID(CString ID)
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 	}
 	return _T("");
 }
@@ -834,6 +837,9 @@ bool  modPHScal::bPAIsHanger()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
    if(sngSEL > sngPEL)
 		return true;
 	else return false;
@@ -944,11 +950,13 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		frmStatus.UpdateData(false);
 		frmStatus.ShowWindow(SW_SHOW);
 
-		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
-		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
-		
-		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
-		db1->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			basDirectory::ProjectDBDir + _T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
+		db->Open((_bstr_t)strConnect, "", "", adModeUnknown);
+
+		strConnect="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("sort.mdb");
+		db1->Open((_bstr_t)strConnect, "", "", adConnectUnspecified);
 		//正在获取管部信息...
 		frmStatus.UpdateStatus(1.0 /9.0,true);
 		frmStatus.UpdateData(false);
@@ -970,7 +978,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		{
 			_variant_t vTmp;
 			strTmp = (_T("standard=\'")+gsPhsPASel+_T("\'"));
-			if( !rsX->adoEOF)
+			if( rsX->adoEOF)
 			{
 				rsX->MoveFirst();
 				inttbExist=2;
@@ -982,7 +990,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			inttbExist=2;
 		}
 		//以下判断管部原始数据表在数据库中是否存在
-		while((inttbExist!=1)&&(!rsX->BOF))
+		while((inttbExist!=1)&&(!rsX->adoEOF))
 		{
 			rsX->get_Collect((_variant_t)_T("standard"),&tmpvar);
 			if(tmpvar.vt==VT_NULL)
@@ -1102,7 +1110,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			rsX->MoveFirst();
 			strTmp = (_T("standard=\'")+gsPhsPARTSel+_T("\'"));
 			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward);
-			if( !rsX->adoEOF)
+			if( rsX->adoEOF)
 			{
 				rsX->MoveFirst();
 				inttbExist=2;
@@ -1254,7 +1262,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 			rsX->MoveFirst();
 			strTmp = _T("standard=\'")+gsPhsSASel+_T("\'");
 			hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward);
-			if( !rsX->adoEOF)
+			if( rsX->adoEOF)
 			{
 				rsX->MoveFirst();
 				inttbExist=2;
@@ -1473,7 +1481,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		rsX->MoveFirst();
 		strTmp = _T("standard=\'")+gsPhsBoltsNutsSel+_T("\'");
 		hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward);
-		if( !rsX->adoEOF)
+		if( rsX->adoEOF)
 		{
 			rsX->MoveFirst();
 			inttbExist=2;
@@ -1584,7 +1592,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		  rsX->MoveFirst();
 		  strTmp = _T("standard=\'")+gsPhsSPRINGSel+_T("\'");
 		  hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward);
-		  if( !rsX->adoEOF)
+		  if( rsX->adoEOF)
 		{
 			rsX->MoveFirst();
 			inttbExist=2;
@@ -1904,7 +1912,7 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 		   rsX->MoveFirst();
 		   strTmp = _T("standard=\'")+gsPhsConstantSpringSel+_T("\'");
 		   hr = rsX->Find((_bstr_t)strTmp, 0, adSearchForward);
-		   if( !rsX->adoEOF)
+		   if( rsX->adoEOF)
 		   {			
 			   rsX->MoveFirst();
 				inttbExist=2;
@@ -2871,6 +2879,10 @@ catch(CString e)
 catch(CException *e)
 {
 	e->Delete();
+	return 0;
+}
+catch(...)
+{
 	return 0;
 }
 }
@@ -5650,6 +5662,8 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 	float fTmpPgz=0.0;
 	float fTmpPaz=0.0;
 
+   _RecordsetPtr rs;
+   rs.CreateInstance(__uuidof(Recordset));
   bool bTmp=false;
   long lngErrNum=0;
   _variant_t tmpvar;
@@ -5891,7 +5905,6 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 	   //获取管部根部及其通用代号
 	   if(vtos(rstbl->GetCollect(_T("dn1")))==_T(""))
 		{
-			
 		   SQLx = _T("SELECT DISTINCT CustomID FROM PictureClipData IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
 					_T("\' WHERE CustomID IN (SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] IN \"\" [\; DATABASE=") 
 								+ EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T(" ;PWD=") + ModEncrypt::gstrDBZdjCrudePassWord + _T("] WHERE (Pmax >=") 
@@ -5899,8 +5912,17 @@ void modPHScal::PreCalCrudeData(_RecordsetPtr rstbl,int nth)
 								+ _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ1) + _T(" OR PictureClipData.ClassID=") + ltos(iPAfixZ2) + _T(") AND (Dw >= ") + ftos(modPHScal::dj* (1 - modPHScal::gnDW_delta * 0.01))
 								+ _T(" AND Dw <= ") + ftos(modPHScal::dj* (1 + modPHScal::gnDW_delta * 0.01)) 
 								+ _T(" AND Dw>0 OR Dw IS NULL OR Dw=0) AND tj >= ") + ftos(modPHScal::t0) + _T(")");
-			if(rs->State == adStateOpen)
+			if(rs->State)
 				rs->Close();
+
+			_CommandPtr cmd;
+			cmd.CreateInstance(__uuidof(Command));
+			cmd->ActiveConnection = modPHScal::dbZDJcrude;
+			cmd->CommandText = (_bstr_t)SQLx;
+			cmd->CommandType = adCmdText;
+			
+			AfxMessageBox(SQLx);
+//			rs = cmd->Execute(NULL, NULL, adCmdText);
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(rs->adoEOF && rs->BOF)
@@ -8466,7 +8488,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 		ShowMessage(e);
 
 	}
-	catch(CException *e)
+	catch(CException e)
 	{
 		AfxMessageBox(_T("Other general error!"));
 	}
@@ -8876,8 +8898,8 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
     float ml, mr    ; //固定支架Z2的合成力矩,kgf.m
     float pxl, pyl, pzl, pxr,pyr, pzr;   //固定支架冷热态承受的力,kgf
     float mxl, myl, mzl, mxr, myr, mzr;
-    float Sigma0,  t1, t2, Sigmat,Sigma100;
-    float wk, wkl, wkr1, wkr2, fw1;  
+    float Sigma0, Sigmat,Sigma100;
+    float wk, wkl, wkr1, wkr2;  
     float sngCoef;   //固定支架的系数
     long k ;
 	 //CString sXYZ;	//记录坐标系转换前的坐标方向
@@ -9779,7 +9801,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 				  else
 				  {
 						rsX->MoveNext();
-						if(rsX->BOF)
+						if(rsX->adoEOF)
 						{
 							//已经到记录尾，重新循环一次，以便报警
 							bEOF=true;
@@ -10607,13 +10629,7 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		{
 			//不要建立唯一索引，可能冲突
 			strSQL = _T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)");
-			try {
-				hr = EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
-			} catch (_com_error &e)
-			{
-				e.Description();
-			}
-
+			hr = EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
@@ -10700,6 +10716,11 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		e->Delete();
 		return false;
 	}
+	catch(...)
+	{
+		return false;
+	}
+
 }
 
 void modPHScal::CreatePhsStructureNameAndREFIndbPRJ()
@@ -10907,8 +10928,6 @@ int modPHScal::SumLugNum()
    dh1=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("DH1")));
 //   strSQL.Format(_T("SELECT * FROM [%s] WHERE ID='L1'"
   strSQL = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE ID=\'L1\'");
-//    rs.m_pDatabase=&dbZDJcrude;
-//    rs.Open(dbOpenDynaset,strSQL);
    rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)dbZDJcrude,true), 
 	   adOpenKeyset, adLockOptimistic, adCmdText); 
    if(!(rs->BOF && rs->adoEOF))

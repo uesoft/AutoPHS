@@ -211,7 +211,7 @@ void CSelPSAProjectNameDlg::OnDrowUnitsBUTTON()
 	pRs.CreateInstance(__uuidof(Recordset));
 	try
 	{
-		pRs->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		pRs->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		CUnitsTransformDlg dlg;
 		dlg.m_pRsUnits=pRs;
 		dlg.DoModal();

@@ -170,8 +170,6 @@ void CFrmListBox::OnCmdApply()
 				CString sTmp,sTmp2;
 				sTmp.Format("%d",modPHScal::iSelSampleID);
 				_variant_t v;
-//				_variant_t vTmp;
-// 				FrmPhsSamp.Data1->Find((_bstr_t)(_T("SampleID= ")+ sTmp), 0, adSearchForward);
 				HRESULT hr = S_OK;
 				CString strFind;
 				strFind = _T("SampleID= ")+ sTmp;
@@ -179,7 +177,6 @@ void CFrmListBox::OnCmdApply()
 				if (!FrmPhsSamp.Data1->adoEOF)
 				{
 					  FrmPhsSamp.Data1->get_Collect((_variant_t)"FREQUENCE",&v);
-				//							  FrmPhsSamp.Data1->Edit();
 					int vi=vtoi(v);
 					v.lVal=vi+1;
 					FrmPhsSamp.Data1->put_Collect((_variant_t)"FREQUENCE",v);
@@ -191,13 +188,13 @@ void CFrmListBox::OnCmdApply()
 						sTmp2.Format(sTmp,modPHScal::zdjh,modPHScal::iSelSampleID);
 						MessageBox(sTmp2);
 						FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("iSelSampleID",_variant_t((long)modPHScal::iSelSampleID));
-						Cavphs->SourceObj = &m_ListPhsStruEDIT;
-						i = Cavphs->SavephsStructTorsTmpREF();
-					}
+                         Cavphs->SourceObj = &m_ListPhsStruEDIT;
+                        i = Cavphs->SavephsStructTorsTmpREF();
+						  }
+						}
 				}
 			}
-		}
-	}
+			}
 	catch(CException *e)
 	{
 		e->Delete();

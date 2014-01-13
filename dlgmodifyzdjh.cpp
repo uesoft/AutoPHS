@@ -638,7 +638,7 @@ void CDlgModifyZdjh::OnOK()
 	}
 	try
 	{
-		FrmTxsr.m_pViewTxsr->m_ActiveRs->Open(vSQL,(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		FrmTxsr.m_pViewTxsr->m_ActiveRs->Open(vSQL,(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 		FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(FrmTxsr.m_pViewTxsr->m_ActiveRs);
 		FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);

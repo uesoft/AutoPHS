@@ -342,25 +342,25 @@ void CPrePointPag::SetBasePoint()
 			{
 					if(bGetPos)
 					{
-							rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
+						rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if( bSetPrevious)
 					{
-							rs->get_Collect((_variant_t)(strCurAx + "old"), &vTmp);
-							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
-							rs->Update();
+						rs->get_Collect((_variant_t)(strCurAx + "old"), &vTmp);
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
 					}
 					else if(bSetDefault)
 					{
-							rs->get_Collect((_variant_t)(strCurAx + "Default"), &vTmp);
-							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
-							rs->Update();
+						rs->get_Collect((_variant_t)(strCurAx + "Default"), &vTmp);
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 						if(vTmp.vt==VT_NULL)
 							m_posFld[i].FldValue=10;
 						else m_posFld[i].FldValue=vtoi(vTmp);
@@ -368,12 +368,12 @@ void CPrePointPag::SetBasePoint()
 					else if (bSetBPOK )
 					{
 						vTmp=_variant_t((long)m_posFld[i].FldValue);
-							rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
-							rs->Update();
+						rs->put_Collect((_variant_t)(strCurAx + "pos"), vTmp);
+						rs->Update();
 					}
 					else
 					{
-							rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
+						rs->get_Collect((_variant_t)(strCurAx + "pos"), &vTmp);
 						if(iSetBPbegan == 1 )
 						{
 								rs->put_Collect((_variant_t)(strCurAx + "old"), vTmp);
@@ -392,7 +392,7 @@ void CPrePointPag::SetBasePoint()
 		iSetBPbegan = iSetBPbegan + 1;
 	}
 	}
-	catch(_com_error &e)
+	catch(_com_error e)
 	{
 // 		char ss[256];
 // 		e->GetErrorMessage(ss,255);

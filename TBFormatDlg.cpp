@@ -56,9 +56,12 @@ BOOL CTBFormatDlg::OnInitDialog()
 	{
 		m_rs.CreateInstance(__uuidof(Recordset));
 		m_rs->CursorLocation = adUseClient;
-		m_connSort->Open(_bstr_t(::dbConnectionString + basDirectory::DBShareDir + (_T("DrawingSize.mdb"))),(_T("")),(_T("")),adConnectUnspecified);//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort.mdb" 改为 "DrawingSize.mdb"
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			::dbConnectionString + basDirectory::DBShareDir + _T("DrawingSize.mdb"), _T(""));
+		m_connSort->Open((_bstr_t)strConnect, "", "", adModeUnknown);
 		strSQL.Format(_T("SELECT SJHY AS 行业名称,TB0LEN AS A0图标的宽度,TB0HEI AS A0图标的高度,TB2LEN AS A2图标的宽度,TB2HEI AS A2图标的高度,A0PrjNameWidth AS A0图工程名称宽度,A2PrjNameWidth AS A2图工程名称宽度,A0DrawNoWidth AS A0图图纸图号宽度,A2DrawNoWidth AS A2图图纸图号宽度,A0VlmNameWidth AS A0图卷册名称宽度,A2VlmNameWidth AS A2图卷册名称宽度,A0DrawNameWidth AS A0图图纸名称宽度,A2DrawNameWidth AS A2图图纸名称宽度 FROM [DRAWSIZE] ORDER BY [SJHYID]"));
-		m_rs->Open(_variant_t(strSQL),(IDispatch*)m_connSort,adOpenStatic,adLockOptimistic,adCmdText);
+		m_rs->Open(_variant_t(strSQL),(IDispatch*)m_connSort,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_DataGrid.SetRefDataSource(m_rs->GetDataSource());
 	}catch(_com_error e)
 	{

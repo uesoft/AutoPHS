@@ -133,14 +133,18 @@ void CFrmPreferences::OnOK()
 		long  lngErrNum ;
 		CString sTmp;
 
-		db->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source="+basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),
-			(_bstr_t)"", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			basDirectory::DBShareDir + _T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
+		db->Open((_bstr_t)strConnect, "", "", adModeUnknown);
+
 		db1->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source="+basDirectory::ProjectDBDir+_T("sort.mdb")),
-			(_bstr_t)"", (_bstr_t)"",adConnectUnspecified);
+			(_bstr_t)"", (_bstr_t)"",adModeUnknown);
 
 		if(rsX->State == adStateOpen)
 			rsX->Close();
-		rsX->Open((_bstr_t)_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+		rsX->Open((_bstr_t)_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"), 
+			_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		modPHScal::gsPhsSPRINGSel.TrimLeft();modPHScal::gsPhsSPRINGSel.TrimRight(); 
 		if( rsX->adoEOF && rsX->BOF )

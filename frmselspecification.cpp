@@ -137,7 +137,10 @@ void CFrmSelSpecification::Option1_Click(int Index)
 	try
 	{
 		long i,ix;
-		db->Open(_bstr_t("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb")),_T(""), (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord,adConnectUnspecified);
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			basDirectory::ProjectDBDir+_T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
+		hr = db->Open((_bstr_t)strConnect, "", "", adModeUnknown);
 		m_iSelIndex = Index;
 		m_List2.SetCurSel(m_iSelIndex);
 		for(i=0;i<6;i++)

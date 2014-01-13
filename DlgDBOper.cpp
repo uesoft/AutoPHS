@@ -997,8 +997,10 @@ int CDlgDBOper::DisplayAllTable()
 
 	try
 	{
-		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
-		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strDBPassword, adConnectUnspecified);
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			basDirectory::ProjectDBDir+_T("zdjcrude.mdb"), m_strDBPassword);
+		db->Open((_bstr_t)strConnect, "", "", adModeUnknown);
 		int i,c;
 /*
 		c=db.GetTableDefCount();

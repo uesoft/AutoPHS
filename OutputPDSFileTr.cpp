@@ -78,7 +78,7 @@ void OutputPDSFileTr::OutPutText( int iVolumeID,CArray<int,int>& mPHSNumberArray
 			iGNum = mGNumArray.GetAt(i);
 			strSQL.Format( _T("SELECT * FROM ZB where VolumeID=%d AND ZDJH = %d AND IsSAPart = FALSE ORDER BY recno "),iVolumeID, iPHSNumber );
 			//´ò¿ª¼ÇÂ¼¼¯ µÚÒ»¸ö²ÎÊý£ºsqlÓï¾ä µÚ¶þ¸ö²ÎÊý£ºÊý¾Ý¿âÁ¬½Ó 
-			pRs->Open( _variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenStatic,adLockOptimistic,adCmdText  );
+			pRs->Open( _variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenKeyset,adLockOptimistic,adCmdText  );
 			
 			//µÃµ½IDºÅ
 			CString strID;
@@ -186,7 +186,7 @@ BOOL OutputPDSFileTr::GetZDJInfo( int iVolumeID,int iPHSNumber,CString& strType,
 	{
 		strSQL.Format( _T("SELECT * FROM ZA where VolumeID=%d AND ZDJH = %d"),iVolumeID, iPHSNumber );
 		//´ò¿ª¼ÇÂ¼¼¯ µÚÒ»¸ö²ÎÊý£ºsqlÓï¾ä µÚ¶þ¸ö²ÎÊý£ºÊý¾Ý¿âÁ¬½Ó 
-		pRs->Open( _variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenStatic,adLockOptimistic,adCmdText  );
+		pRs->Open( _variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenKeyset,adLockOptimistic,adCmdText  );
 		if ( !pRs->adoEOF )
 		{
 			dPB = vtof( pRs->GetCollect( _variant_t( _T("DH1") )) ); //¹Ü²¿
@@ -218,7 +218,7 @@ int OutputPDSFileTr::GetParalleledNum( const CString& strID ) //µÃµ½Ö§µõ¼ÜµÄ²¢Áª
 	int iRt =0 ;
 	try
 	{
-		pRs->Open( _variant_t(strSql),(IDispatch*)::conZDJCrude ,adOpenStatic,adLockOptimistic,adCmdText );
+		pRs->Open( _variant_t(strSql),(IDispatch*)::conZDJCrude ,adOpenKeyset,adLockOptimistic,adCmdText );
 		if ( !pRs->adoEOF )
 		{
 			iRt = vtoi( pRs->GetCollect( _variant_t("ParalleledNum") ) );
@@ -243,7 +243,7 @@ CString OutputPDSFileTr::GetCustomIDOutText( int iVolumeID,int iPHSNumber,const 
 	pOutCfgRs.CreateInstance( __uuidof(Recordset) );
 	///	strSQL.Format(_T("select BH,SIZE2 from ZB inner join crudePA on ZB.CustomID=crudePA.CustomID"););
 	strSQL.Format( _T("SELECT * FROM OutPutPDSCfg WHERE CustomID = '%s' ORDER BY OutSEQ"),strCustomID );
-	pOutCfgRs->Open( _variant_t(strSQL),(IDispatch*)::conPHSConfig ,adOpenStatic,adLockOptimistic,adCmdText );
+	pOutCfgRs->Open( _variant_t(strSQL),(IDispatch*)::conPHSConfig ,adOpenKeyset,adLockOptimistic,adCmdText );
 	int iIndex = 0;
 	CString strText,strTmp;
 	strText.Format( _T(",%d"),iPHSNumber );
@@ -343,7 +343,7 @@ CString OutputPDSFileTr::GetStrandStr( const CString& strCustomID) //µÃµ½Êý¾Ý¿â±
 	strSQL.Format( _T("SELECT * FROM OutPutPDSCfg WHERE CustomID = '%s' ORDER BY OutSEQ"),strCustomID );
 	try
 	{
-		pOutCfgRs->Open( _variant_t(strSQL),(IDispatch*)::conPHSConfig ,adOpenStatic,adLockOptimistic,adCmdText );
+		pOutCfgRs->Open( _variant_t(strSQL),(IDispatch*)::conPHSConfig ,adOpenKeyset,adLockOptimistic,adCmdText );
 	}
 	catch( _com_error e )
 	{
@@ -373,7 +373,7 @@ CString OutputPDSFileTr::GetValue( int iVolumeID,int iPHSNumber, const CString& 
 			m_pRs->Close();
 		CString strSql;
 		strSql.Format( _T("SELECT * FROM %s WHERE VolumeID = %d AND ZDJH = %d"),strTableName,iVolumeID,iPHSNumber );
-		m_pRs->Open( _variant_t(strSql),(IDispatch*)::conPRJDB ,adOpenStatic,adLockOptimistic,adCmdText );
+		m_pRs->Open( _variant_t(strSql),(IDispatch*)::conPRJDB ,adOpenKeyset,adLockOptimistic,adCmdText );
 
 		m_strBH = strBH;
 		m_strTableName = strTableName;
@@ -386,7 +386,7 @@ CString OutputPDSFileTr::GetValue( int iVolumeID,int iPHSNumber, const CString& 
 			m_pRs->Close();
 		CString strSql;
 		strSql.Format( _T("SELECT * FROM %s WHERE BH = '%s'"),strTableName,strBH );
-		m_pRs->Open( _variant_t(strSql),(IDispatch*)::conZDJCrude ,adOpenStatic,adLockOptimistic,adCmdText );
+		m_pRs->Open( _variant_t(strSql),(IDispatch*)::conZDJCrude ,adOpenKeyset,adLockOptimistic,adCmdText );
 		
 		m_strBH = strBH;
 		m_strTableName = strTableName;

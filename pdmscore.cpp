@@ -531,7 +531,7 @@ BOOL PDMSToPHS(_RecordsetPtr rsZA,CString strFileName)
 				{
 					//ÊÇË«µõ
 					strSQL.Format(_T("SELECT * FROM [Z1] WHERE VolumeID=%d AND Zdjh=%d ORDER BY nth"),EDIBgbl::SelVlmID,PDMSINFO.iZdjh);
-					rs1->Open(_variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenStatic,adLockOptimistic,adCmdText);
+					rs1->Open(_variant_t(strSQL),(IDispatch*)::conPRJDB ,adOpenKeyset,adLockOptimistic,adCmdText);
 					rs1->Find(_T("nth=1"),0,adSearchForward);
 					if(rs1->adoEOF)
 					{

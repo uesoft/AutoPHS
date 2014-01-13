@@ -64,7 +64,7 @@ bool Cphs::bFirstPartIsPA()
 	
 	try
 	{
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 //			rsID->Close();
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
@@ -100,7 +100,7 @@ long Cphs::SetPhsPATypeToListBox()
 	try
 	{
 		int	i;
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -219,7 +219,7 @@ long Cphs::SetPhsTypeToListBox()
 	try
 	{
 		//假设3个零件要同时匹配
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -473,7 +473,7 @@ long Cphs::SetPhsCheckedTypeToListBox()
 					//MakeRsTZB(idbPRJ, _T("rsTmp"));
 					//开始步骤3:
 					EDIBgbl::SQLx = _T("SELECT * FROM rsTmpREF");
-					if(rsTmpREF->State == adOpenStatic)
+					if(rsTmpREF->State == adOpenKeyset)
 						rsTmpREF->Close();
 					rsTmpREF->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -541,7 +541,7 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 
 		_RecordsetPtr rs;
 		hr = rs.CreateInstance(__uuidof(Recordset));
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -813,13 +813,14 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 		CString sTmp;
 		char sID[64];
 		ltoa(SampleID,sID,10);
-		if(rsID->State != adOpenStatic)
+		if(rsID->State)
 		{
-			SQLx=_T("SELECT * FROM PictureClipData");
-			rsID.CreateInstance(__uuidof(Recordset));
-			rsID->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+			rsID->Close();
 		}
+		SQLx=_T("SELECT * FROM PictureClipData");
+		rsID.CreateInstance(__uuidof(Recordset));
+		rsID->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenKeyset, adLockOptimistic, adCmdText); 
 		brsIDStatus=TRUE;
 		if( rsID->adoEOF && rsID->BOF )
 		{
@@ -848,7 +849,7 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 					rs1->get_Collect((_variant_t)_T("ID"), &v);
 					if( v.vt!=VT_NULL)
 					{
-						CString strSql = (_T("Trim(ID)=\'") + vtos(v) + _T("\'"));
+						CString strSql = (_T("(ID)=\'") + vtos(v) + _T("\'"));
 						HRESULT hr = S_OK;
 						hr = rsID->Find((_bstr_t)strSql, 0, adSearchForward);
 						if( !rsID->adoEOF)
@@ -979,7 +980,7 @@ long Cphs::GetphsStructIDsemiAuto()
 			//限制管部,限制管部必须存在，限制根部/根部必须存在，没有
 			SQLx.Format(_T("SELECT * FROM phsStructureName WHERE %s ORDER BY Frequence DESC,iNumOfPart"),
 				SQL1 + _T(" AND ") + strPAexists + _T(" AND ")  + strSA + _T(" AND ") + strSAexists );
-			if(rs1->State == adOpenStatic) rs1->Close();
+			if(rs1->State == adOpenKeyset) rs1->Close();
 			rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if( !(rs1->adoEOF && rs1->BOF) )
@@ -991,7 +992,7 @@ long Cphs::GetphsStructIDsemiAuto()
 				//不限制管部,限制管部必须存在，限制根部/根部必须存在，没有
 				SQLx.Format(_T("SELECT * FROM phsStructureName WHERE %s ORDER BY Frequence DESC,iNumOfPart"),
 					SQL1 + _T(" AND ") + strSA + _T(" AND ") + strSAexists );
-				if(rs1->State == adOpenStatic) rs1->Close();
+				if(rs1->State == adOpenKeyset) rs1->Close();
 				rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( !(rs1->adoEOF && rs1->BOF) )
@@ -1003,7 +1004,7 @@ long Cphs::GetphsStructIDsemiAuto()
 					//不限制管部,不限制管部必须存在，限制根部/根部必须存在，没有
 					SQLx.Format(_T("SELECT * FROM phsStructureName WHERE %s ORDER BY Frequence DESC,iNumOfPart"),
 						SQL1 + _T(" AND ") + strSAexists );
-					if(rs1->State == adOpenStatic) rs1->Close();
+					if(rs1->State == adOpenKeyset) rs1->Close();
 					rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( !(rs1->adoEOF && rs1->BOF) )
@@ -1015,7 +1016,7 @@ long Cphs::GetphsStructIDsemiAuto()
 						//不限制管部,不限制管部必须存在，不限制根部，限制根部必须存在，没有
 						SQLx.Format(_T("SELECT * FROM phsStructureName WHERE %s ORDER BY Frequence DESC,iNumOfPart"),
 							SQL1 );
-						if(rs1->State == adOpenStatic) rs1->Close();
+						if(rs1->State == adOpenKeyset) rs1->Close();
 						rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
 						if( !(rs1->adoEOF && rs1->BOF) )
@@ -1028,7 +1029,7 @@ long Cphs::GetphsStructIDsemiAuto()
 							SQL1=(modPHScal::ZdjType == _T("9999") || modPHScal::ZdjType == _T("5000") ? _T("iNumCSPR>=1") : _T("iNumSPR>=1"));
 							SQLx.Format(_T("SELECT * FROM phsStructureName WHERE %s ORDER BY Frequence DESC,iNumOfPart"),
 								SQL1 );
-							if(rs1->State == adOpenStatic) rs1->Close();
+							if(rs1->State == adOpenKeyset) rs1->Close();
 							rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
 							if( !(rs1->adoEOF && rs1->BOF) )
@@ -1047,7 +1048,7 @@ long Cphs::GetphsStructIDsemiAuto()
 			}
 		}
 		
-		if(rs1->State != adOpenStatic || rs1->adoEOF||rs1->BOF)
+		if(rs1->State != adOpenKeyset || rs1->adoEOF||rs1->BOF)
 			return -1;
 		rs1->MoveFirst();
 		rs1->get_Collect((_variant_t)_T("SampleID"), &vTmp);
@@ -1132,7 +1133,7 @@ long Cphs::SavephsStructTorsTmpREF()
 		{
 			rs->MoveLast();
 			rs->MoveFirst();
-			if(rsTmpREF->State == adOpenStatic)
+			if(rsTmpREF->State == adOpenKeyset)
 				rsTmpREF->Close();
 			if( EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("rsTmpREF")))
 				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM rsTmpREF"), NULL, adCmdText);
@@ -1193,7 +1194,7 @@ long Cphs::SavephsAllStructToTZB(long& zdjh, int nth, int& /*Optional*/ AttachIn
 		_RecordsetPtr rsX;
 		hr = rsX.CreateInstance(__uuidof(Recordset));
 		//连接表，保存的是ID值
-		if(rsConnect->State != adOpenStatic)
+		if(rsConnect->State != adOpenKeyset)
 		{
 			SQLx = _T("SELECT *  FROM connect");
 			rsConnect->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -1402,7 +1403,7 @@ void Cphs::MakeRsTZB(long /*ByVal*/ iDbID, CString /*ByVal*/ rsPrefixName,CStrin
 			SQLx = CString(_T("DELETE  FROM [rstmp")) +EDIBgbl::Btype[EDIBgbl::TZB]+ _T("] WHERE zdjh=") + sTmp + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 		}
-		if(rsTZB->State == adOpenStatic)
+		if(rsTZB->State == adOpenKeyset)
 			rsTZB->Close();
 		if( iDbID == idbPRJDB )
 		{
@@ -1536,13 +1537,13 @@ bool Cphs::GetphsBHandSizesTest()
 		iSEQofPart = 1;
 		CString SQLx,SQLx2;
 		_variant_t v,v1,v2;
-		if( rsTmpREF->State != adOpenStatic || (rsTmpREF->adoEOF && rsTmpREF->BOF )){
+		if( rsTmpREF->State != adOpenKeyset || (rsTmpREF->adoEOF && rsTmpREF->BOF )){
 			throw (GetResStr(IDS_Null_rsTmpREF));
 			return false;
 		}
 		//上面Ptype数组保留了mvarrsTmpREF的拷贝
 		//以便取得支吊架组合的任意2个相邻零件,进行查找
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -1845,7 +1846,7 @@ bool Cphs::GetphsBHandSizesTest()
 						SQLx+=sTmp;
 						SQLx+= _T(" AND Tj>=") + stmpT0 + _T(" AND trim(CustomID)=\'") + sv + _T("\' ORDER BY tj,Dw,Pmax,Weight");
 						//Debug.Print SQLx
-						if(rsX->State == adOpenStatic)
+						if(rsX->State == adOpenKeyset)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1876,7 +1877,7 @@ bool Cphs::GetphsBHandSizesTest()
 						sTmp.Format(_T("%g"),tmpSelPJG / iNumPart);
 						SQLx+=sTmp;
 						SQLx+= (_T(" AND Tj>=") + stmpT0 + _T(" AND trim(CustomID)=\'") + sv + _T("\' ORDER BY tj,Dw,Weight"));
-						if(rsX->State == adOpenStatic)
+						if(rsX->State == adOpenKeyset)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1900,7 +1901,7 @@ bool Cphs::GetphsBHandSizesTest()
 							sTmp.Format(_T("%g"),modPHScal::dj * (1 + k * 0.01));
 							SQLx+=(_T(" AND Dw<= ") + sTmp + _T(" AND Pmax IS NULL ")) ;
 							SQLx+= (_T(" AND Tj>=") + stmpT0 + _T(" AND trim(CustomID)=\'") + sv + _T("\' ORDER BY tj,Dw,Weight"));
-							if(rsX->State == adOpenStatic)
+							if(rsX->State == adOpenKeyset)
 								rsX->Close();
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2059,7 +2060,7 @@ commonHandle:
          if( modPHScal::glClassID == iPAfixZ1 || modPHScal::glClassID == iPAfixZ2 );
          else 
 		 {
-			 if(rsX->State == adOpenStatic)
+			 if(rsX->State == adOpenKeyset)
 				 rsX->Close();
 			 rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				 adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2106,7 +2107,7 @@ spZ1Z2:
 		 else 
 		 {//1
 			 rsX->MoveFirst();
-			 if(phsAvailableTypeRs->State == adOpenStatic)
+			 if(phsAvailableTypeRs->State == adOpenKeyset)
 				 phsAvailableTypeRs->Close();
 			// TODO:
 			 phsAvailableTypeRs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -2408,9 +2409,9 @@ void Cphs::CheckDuplicateIndex()
 	}
 errH:
 	AfxGetApp()->EndWaitCursor();
-	if(rs->State == adOpenStatic)
+	if(rs->State == adOpenKeyset)
 		rs->Close();
-	if(rs1->State == adOpenStatic)
+	if(rs1->State == adOpenKeyset)
 		rs1->Close();
 }
 
@@ -2683,7 +2684,7 @@ void Cphs::CheckAllCustomIDandIDinPhsStructureREF()
 	//CString SQLx = _T("SELECT CustomID,ID  FROM PictureClipData");
 	//rsID.m_pDatabase=&EDIBgbl::dbPRJ;
 	//rsID.Open(dbOpenSnapshot,SQLx);
-	if(!rsID->State == adOpenStatic)
+	if(!rsID->State == adOpenKeyset)
 	{
 	EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 	rsID.m_pDatabase=&EDIBgbl::dbPRJ;
@@ -2905,7 +2906,7 @@ void Cphs::ChangeNameInphsStructureName()
 
 
 
-	if(rsID->State != adOpenStatic)
+	if(rsID->State != adOpenKeyset)
 	{
 		EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 		//if(Cavphs->rsID==NULL)
@@ -3236,9 +3237,9 @@ void Cphs::ChangeNameInphsStructureName()
 	}
 	//errH:
 	AfxGetApp()->EndWaitCursor();
-	if(rs2->State == adOpenStatic)
+	if(rs2->State == adOpenKeyset)
 	rs2->Close();
-	if(rs3->State == adOpenStatic)
+	if(rs3->State == adOpenKeyset)
 	rs3->Close();
 	//	timee=CTime::GetCurrentTime();
 	//CTimeSpan t=timee-timeb;
@@ -3385,7 +3386,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 		//并且从管部到根部依次给零件编号
 		//同时生成零件明细表到tmp2和材料汇总表到F????S-JCL
 		SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT ISNULL(seq) ORDER BY recno");
-		if(rsTmpZB->State == adOpenStatic)
+		if(rsTmpZB->State == adOpenKeyset)
 			rsTmpZB->Close();
 		rsTmpZB->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -3555,7 +3556,7 @@ void Cphs::GetphsSumBom()
 		//拷贝TCL到TmpTCL，以便可以删除其中的选择过的材料。
 		SQLx = _T("SELECT * INTO TmpTCL IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::TCL] + _T("] WHERE VolumeID=-1");
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
-		if(rsID->State != adOpenStatic)
+		if(rsID->State != adOpenKeyset)
 		{
 			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -5333,7 +5334,7 @@ Cphs::Cphs()
 
 Cphs::~Cphs()
 {
-	if(rsID->State == adOpenStatic)
+	if(rsID->State == adOpenKeyset)
 		rsID->Close();
 }
 
@@ -5413,9 +5414,9 @@ void Cphs::CloseRecordsets()
 	//关闭rsConnect和rsUnCheckedType
 	try
 	{
-		if((rsConnect != NULL) && (rsConnect->State == adOpenStatic))
+		if((rsConnect != NULL) && (rsConnect->State == adOpenKeyset))
 			rsConnect->Close();
-		if((rsUnCheckedType != NULL) && (rsUnCheckedType->State == adOpenStatic))
+		if((rsUnCheckedType != NULL) && (rsUnCheckedType->State == adOpenKeyset))
 			rsUnCheckedType->Close();
 	}
 	catch(CException *e)
@@ -6497,7 +6498,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 		
 		SQLx.Format("SELECT * FROM [ZB] WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [Index]=%d ORDER BY recno",
 			EDIBgbl::SelVlmID,modPHScal::zdjh,nth,iSA);
-		if( rsTmpZB->State == adOpenStatic )
+		if( rsTmpZB->State == adOpenKeyset )
 			rsTmpZB->Close();
 		rsTmpZB->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -6572,7 +6573,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 	{
 	}
 
-	if(rsTmpZB->State == adOpenStatic)
+	if(rsTmpZB->State == adOpenKeyset)
 		rsTmpZB->Close();
 
 	if(NewPtypeClassID!=NULL)

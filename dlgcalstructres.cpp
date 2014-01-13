@@ -98,7 +98,7 @@ BOOL CDlgCalStructRes::OnInitDialog()
 			return TRUE;
 		}
 		m_pConnPrj.CreateInstance(__uuidof(Connection));
-		m_pConnPrj->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDir + _T("Workprj.mdb")),_T(""),_T(""),adConnectUnspecified);
+		m_pConnPrj->Open(_bstr_t(::dbConnectionString + basDirectory::ProjectDir + _T("Workprj.mdb")),_T(""),_T(""),adModeUnknown);
 		m_rs.CreateInstance(__uuidof(Recordset));
 		m_rs->CursorLocation=adUseClient;
 		CString strSQL,strFDs,strTemp;
@@ -112,7 +112,7 @@ BOOL CDlgCalStructRes::OnInitDialog()
 		}
 		strSQL.Format(IDS_SQL_CALRES,strFDs);
 		//AfxMessageBox(strSQL);
-		m_rs->Open(_variant_t(strSQL),(IDispatch*)m_pConnPrj,adOpenStatic,adLockReadOnly,adCmdText);
+		m_rs->Open(_variant_t(strSQL),(IDispatch*)m_pConnPrj,adOpenKeyset,adLockReadOnly,adCmdText);
 		m_grid.SetRefDataSource(m_rs->GetDataSource());
 		m_grid.GetColumns().GetItem(_variant_t(0L)).SetVisible(FALSE);
 		if(!m_rs->adoEOF)
@@ -150,7 +150,7 @@ void CDlgCalStructRes::OnRowColChangeDatagrid1(VARIANT FAR* LastRow, short LastC
 		strSQL.Format(IDS_SQL2_CALRES,
 			vtoi(m_rs->GetCollect(/*_variant_t(GetResStr(IDS_SELECTMODE))*/_T("SelType"))));
 		m_rs1.CreateInstance(__uuidof(Recordset));
-		m_rs1->Open(_variant_t(strSQL),(IDispatch*)m_pConnPrj,adOpenStatic,adLockReadOnly,adCmdText);
+		m_rs1->Open(_variant_t(strSQL),(IDispatch*)m_pConnPrj,adOpenKeyset,adLockReadOnly,adCmdText);
 		m_grid1.SetRefDataSource(m_rs1->GetDataSource());
 	}
 	catch(_com_error & e)

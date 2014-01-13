@@ -165,8 +165,11 @@ BOOL CDlgEditDB::ListTableName()
 		if(bIsRet) return FALSE;
 		pCon->Close();
 		pCon=NULL;
-		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + m_strDBName;
-		db->Open((_bstr_t)ConnectionString, "", (_bstr_t)m_strPassword, adConnectUnspecified);
+		CString strConnect;
+		strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+			m_strDBName, m_strPassword);
+		db->Open((_bstr_t)strConnect, "", "", adModeUnknown);
+		
 /*
 		int i,c;
 		c=db.GetTableDefCount();

@@ -167,6 +167,9 @@ void CPagTxsrOption::OnBtnSanum()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 

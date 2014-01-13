@@ -169,7 +169,7 @@ void CFrmSelPDSV::InitENG()
 		m_DataEng.CreateInstance(__uuidof(Recordset));
 		m_DataEng->CursorLocation=adUseClient;
 
-		m_DataEng->Open(_bstr_t(_T("Select * From engin")),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_DataEng->Open(_bstr_t(_T("Select * From engin")),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 
 		CString sTmp=CString(_T("EnginID = \'"))+Trim(m_SelPrjID)+_T("\'");
 
@@ -208,7 +208,7 @@ void CFrmSelPDSV::InitDBVlm()
 		tmpSQL +=_T(" AND SJJDID=") + ltos(EDIBgbl::SelDsgnID);
 		tmpSQL +=_T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID);
 		tmpSQL +=_T(" ORDER BY jcdm ");
-	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchForward);
 		if(m_DataVlm->adoEOF)
 		{
@@ -606,9 +606,8 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 				m_DataVlm->Update();
 			}
 		}
-		catch (CException *e)
+		catch (...)
 		{
-			e->Delete();
 			//很可能是更新时出错
 			m_DataVlm->CancelUpdate();
 		}
@@ -633,7 +632,7 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 		//如果是打开的，必须先关闭,否则出错。关闭前，所有正在编辑的记录必须update,否则出错。
 		if(m_DataVlm->State==adStateOpen)
 			m_DataVlm->Close();
-	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 
 	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchForward);
 		
@@ -806,6 +805,10 @@ void CFrmSelPDSV::OnBeforeDeleteDbgvim(short FAR* Cancel)
 	catch(CException *e)
 	{
 		e->Delete();
+		*Cancel=1;
+	}
+	catch(...)
+	{
 		*Cancel=1;
 	}
 }

@@ -1090,7 +1090,7 @@ void CViewTxsr::DisPlaySANum()
 			fs.Format(GetResStr(IDS_MsgBox_60627)+"%d",modPHScal::glNumSA);
 			m_PagOption->m_CmdSAnum.SetWindowText(fs);
 	}
-	catch(_com_error & e)
+	catch(_com_error e)
 	{
 		//ShowMessage(e.Description());
 	}
@@ -1369,7 +1369,7 @@ void CViewTxsr::RefreshBoundData()
 		}
 		m_comboZDJH1.SetCurSel(ix);
 	}
-	catch(_com_error& e)
+	catch(_com_error e)
 	{
 	}
 	UpdateData(FALSE);
@@ -1423,7 +1423,9 @@ void CViewTxsr::UpdateBoundData()
 
 		if(m_ActiveRs==NULL || m_ActiveRs->State==adStateClosed)
 			return;
-		if(m_ActiveRs->Fields->Item[_variant_t("iSelSampleID")]->Value!=_variant_t((long)m_lSelSampleID))
+		_variant_t vSel;
+		vSel = m_ActiveRs->Fields->Item[_variant_t("iSelSampleID")]->Value;
+		if(vSel !=_variant_t((long)m_lSelSampleID))
 			m_ActiveRs->Fields->Item[_variant_t("iSelSampleID")]->Value=_variant_t((long)m_lSelSampleID);
 		if(m_ActiveRs->Fields->Item[_variant_t("T01")]->Value!=_variant_t((float)atof(m_csT01)))
 			m_ActiveRs->Fields->Item[_variant_t("T01")]->Value=_variant_t((float)atof(m_csT01));
@@ -1918,7 +1920,7 @@ void CViewTxsr::DatabillReposition()
 		UpdateData(false);
 		m_PagOption->UpdateData(FALSE);
 	}
-   catch(_com_error & e)
+   catch(_com_error e)
    {
 	   //ShowMessage(e.Description());
    }
@@ -2062,7 +2064,6 @@ void CViewTxsr::LoadTJItem2ComboT01()
    
    CDaoRecordset rs;
    CString comboT01Current;
-   _variant_t tmpvar;
    CString sTmp;
    
    rs.m_pDatabase=&modPHScal::dbZDJcrude;
@@ -2124,7 +2125,7 @@ void CViewTxsr::CloseRs()
 			m_ActiveRs->Close();
 		}
 	}
-	catch(_com_error &e)
+	catch(_com_error e)
 	{
 		//ShowMessage(e.Description());
 	}
@@ -2171,7 +2172,7 @@ void CViewTxsr::InitRs()
 		m_popMenu.GetSubMenu(0)->CheckMenuRadioItem(2,12,2,MF_BYPOSITION);
 		m_ActiveRs->Filter=_variant_t((long)adFilterNone);
 		m_popMenu.GetSubMenu(0)->CheckMenuRadioItem(3,12,3,MF_BYPOSITION);
-		m_ActiveRs->Open(_variant_t(m_SQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenStatic,adLockOptimistic,adCmdText);
+		m_ActiveRs->Open(_variant_t(m_SQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenKeyset,adLockOptimistic,adCmdText);
 		m_Databill.SetRefRecordset(m_ActiveRs);
 		this->RefreshBoundData();
 		if(IsWindow(FrmPhsData.m_hWnd))
@@ -2180,7 +2181,7 @@ void CViewTxsr::InitRs()
 		
 		SetUndoCount();
 	}
-	catch(_com_error& e)
+	catch(_com_error e)
 	{
 		//ShowMessage(e.Description());
 	}
@@ -2299,9 +2300,7 @@ void CViewTxsr::OnImgXy0()
 
 void CViewTxsr::SetUndoCount()
 {
-//	long i;
 	VARIANT vRecord;
-//	long nCountColforCopy;
 	short nCount = 0;
 	
 	_RecordsetPtr pRsUndo;
@@ -2434,7 +2433,6 @@ void CViewTxsr::UndoPaste(void)
 {
 	long i;
 	VARIANT vRecord;
-	VARIANT vBookMark;
 	_RecordsetPtr pRsUndo;
 	long nCountColforCopy;
 	
@@ -2511,10 +2509,7 @@ void CViewTxsr::UndoPaste(void)
 
 void CViewTxsr::UndoDelete()
 {
-//	long i;
-//	VARIANT vRecord;
 	_RecordsetPtr pRsUndo;
-//	long nCountColforCopy;
 	
 	CString strSQL;
 	strSQL.Format("SELECT * FROM Undo WHERE VolumeID=%ld AND Times=%d", EDIBgbl::SelVlmID, m_UndoCount);
@@ -2751,7 +2746,7 @@ catch(_com_error *e)
 
 void CViewTxsr::EditPaste()
 {
-	long i, j;
+	long j;
 	long lno;
 	long nCountColforCopy;
     long startColIndex = 3;	//The program haven't copy fields VolumeId, ZDJH and JSDBH1
@@ -3542,7 +3537,7 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
    
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
-		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs->Open(_variant_t(SQLx),(IDispatch*)modPHScal::dbZDJcrude,adOpenKeyset, adLockOptimistic,adCmdText);
 		m_comboGDW1.GetWindowText(ComboGDW1Current);
 		m_comboGDW1.ResetContent();
 		_variant_t vTmp;

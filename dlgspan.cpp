@@ -435,7 +435,7 @@ void CDlgSpan::Cal()
 	fTemp=_tcstod(m_strTemp,NULL);
 	CString strSQL;
 	float fS,fDw,fQp,fQw,fQi,fDensity=7850.0,fMediaDensity,fQ;
-	float PI=3.1416;
+	double PI=3.1416;
 	fMediaDensity=_tcstod(this->m_strMD,NULL);
 	fS=_tcstod(m_lstDW.GetItemText(m_iDWHotIndex,2),NULL);
 	fDw=_tcstod(m_lstDW.GetItemText(m_iDWHotIndex,1),NULL);

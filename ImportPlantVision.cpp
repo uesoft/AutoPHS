@@ -176,7 +176,7 @@ BOOL CImportPlantVision::InitPropertyWnd()
 		
 		//打开结构表
 		strSQL = "SELECT * FROM [TZA1] WHERE CADFieldSeq >= 0 ORDER BY CADFieldSeq";
-		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
+		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
 		if ( pRsInfo->adoEOF && pRsInfo->BOF )
 		{
 			return FALSE;
@@ -270,7 +270,7 @@ void CImportPlantVision::SaveSetToReg()
 		
 		//打开结构表
 		strSQL = "SELECT * FROM [TZA1] WHERE CADFieldSeq >= 0 ORDER BY CADFieldSeq";
-		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
+		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
 		if ( pRsInfo->adoEOF && pRsInfo->BOF )
 		{
 			return ;

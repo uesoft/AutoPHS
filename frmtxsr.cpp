@@ -208,7 +208,7 @@ void CFrmTxsr::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 					{
 						m_pViewTxsr->m_ActiveRs->Update();
 					}
-					catch(CException *e)
+					catch(...)
 					{
 						m_pViewTxsr->m_ActiveRs->CancelUpdate();
 					}

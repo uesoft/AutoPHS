@@ -57,10 +57,7 @@ DWORD glngVersion=0;
 const DWORD glngAppVersion=0x0700;//pfg20050609
 long ModEncrypt::glngMicroDogID = 0;
 long ModEncrypt::gLngSavedMicroDogID =0;
-
-// 从测试版本来看，不需要密码
-//CString ModEncrypt::gstrDBZdjCrudePassWord="ProductDB888";
-CString ModEncrypt::gstrDBZdjCrudePassWord="";
+CString ModEncrypt::gstrDBZdjCrudePassWord="ProductDB888";
 CString ModEncrypt::gstrDBProductPassWord="";
 const char* ModEncrypt::conStrDBPasswordSuffix =  "DB888";
 
@@ -312,7 +309,7 @@ bool ModEncrypt::CheckLegalUser()
 			//VerifyEncryptFile(strPassWord);
 			VerifyEncryptFile();
 			//gstrDBZdjCrudePassWord = strPassWord + conStrDBPasswordSuffix
-//			gstrDBProductPassWord =CString( "Product") + conStrDBPasswordSuffix;
+			gstrDBProductPassWord =CString( "Product") + conStrDBPasswordSuffix;
 			gstrDBZdjCrudePassWord = gstrDBProductPassWord;
 		}
 	}

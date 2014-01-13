@@ -559,7 +559,7 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 	}
 	catch(CException *e)
 	{
-		e->ReportError();
+		//e->ReportError();
 		e->Delete();
 	}
 }
@@ -1044,14 +1044,7 @@ void CFrmPhsSamp::UpdateRecordset()
 		UpdateData();
 		GetDlgItem(IDC_CHECK_CURENTSA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvSA);
 		GetDlgItem(IDC_CHECK_CURRENTPA)->EnableWindow(m_bFilter && m_bCurrentZdjhAvPA);
-		//if(!Data1->Find((_bstr_t)("SampleID="+ ltos(modPHScal::iSelSampleID)))
 		//	Data1->MoveFirst();
-		HRESULT hr = S_OK;
-		CString strFind;
-		strFind = "SampleID="+ ltos(modPHScal::iSelSampleID);
-		hr = Data1->Find((_bstr_t)strFind, 0, adSearchForward);
-		if(!Data1->adoEOF)
-			Data1->MoveFirst();
 	}
 
    //this->Data1_Reposition();

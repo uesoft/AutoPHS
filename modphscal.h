@@ -444,7 +444,7 @@ public:
     static CString	ZdjType;
     static bool	gbPhsIsCSPR;
     /*
-     * 全局字符串不能TRIM掉其后的空格，换成_variant_t试试。
+     * 全局字符串不能TRIM掉其后的空格，换成COleVariant试试。
      */
     static CString	gsOldPhsPASel;
     static CString	gsOldPhsPARTSel;

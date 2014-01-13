@@ -425,7 +425,7 @@ void CMainFrame::OnSelPDSV()
 		strSQL=("SELECT *   FROM [Volume] WHERE volumeid="+str+"");
 	    try
 		{
-			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 			key=selSVPtr->GetCollect("jcdm");
 			if(key.vt==VT_EMPTY)
 			{
@@ -456,7 +456,7 @@ void CMainFrame::OnSelPDSV()
 		{
 			if(selSVPtr->State==adStateOpen)
 			{selSVPtr->Close();}
-			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 			key=selSVPtr->GetCollect("gcmc");
 			if(key.vt==VT_EMPTY)
 			{
@@ -592,8 +592,8 @@ void CMainFrame::OnSampleManage()
 	if (EDIBgbl::SelBillType != EDIBgbl::TZA)
 		return;
    //选择模板之前必须处理数据，以便获得管径、荷载、温度等必要数据。
-	try
-	{
+// 	try
+// 	{
 		if(FrmTxsr.m_pViewTxsr->m_ActiveRs!=NULL && FrmTxsr.m_pViewTxsr->m_ActiveRs->State!=adStateClosed )
 		{
 			if(FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
@@ -608,15 +608,27 @@ void CMainFrame::OnSampleManage()
 				FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect(_T("iSelSampleID"),_variant_t((long)1));
 				FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 			}
-			modPHScal::PreCalCrudeData(FrmPhsData.m_DataBillRs);
+			try
+			{
+				modPHScal::PreCalCrudeData(FrmPhsData.m_DataBillRs);
+			}
+			catch(_com_error e)
+			{
+				CString strMsg;
+				strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+				ShowMessage(strMsg);
+			}
+
 			CSelTemplate dlg;
 			dlg.DoModal();
 		}
-	}
-	catch(_com_error e)
-	{
-		ShowMessage(e.Description());
-	}
+// 	}
+// 	catch(_com_error e)
+// 	{
+// 		CString strMsg;
+// 		strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+// 		ShowMessage(strMsg);
+// 	}
 }
 
 void CMainFrame::OnInputSArec() 
@@ -676,6 +688,11 @@ void CMainFrame::OnCalcZdjh()
 	catch(CException *e)
 	{
 		e->Delete();
+		AfxGetApp()->EndWaitCursor();
+		frmStatus.ShowWindow(SW_HIDE);
+	}
+	catch(...)
+	{
 		AfxGetApp()->EndWaitCursor();
 		frmStatus.ShowWindow(SW_HIDE);
 	}
@@ -1018,7 +1035,7 @@ void CMainFrame::SumCL(int Index)
 		long i1,i2;
 		rs1.CreateInstance(__uuidof(Recordset));
 
-		rs1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		i1=vtoi(rs1->GetCollect(_variant_t((long)0)));
 		rs1->Close();
 
@@ -1031,7 +1048,7 @@ void CMainFrame::SumCL(int Index)
 		{
 			SQLx +=_T(" VolumeID =") + ltos(EDIBgbl::SelVlmID);
 		}
-		rs1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs1->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenForwardOnly,adLockReadOnly,adCmdText);
 		i2=vtoi(rs1->GetCollect(_variant_t((long)0)));
 		rs1->Close();
 		rs1=NULL;
@@ -1180,7 +1197,7 @@ void CMainFrame::SumCL(int Index)
 					{
 						if( FileExists(strXls) )
 						{
-							db->Open((_bstr_t)strXls, "", "", adConnectUnspecified);
+							db->Open((_bstr_t)strXls, "", "", adModeUnknown);
 							strTbn = vtos(rs->GetCollect((_variant_t)"BomName"));
 							if( EDIBgbl::tdfExists(db, strTbn) )
 							{
@@ -1356,6 +1373,9 @@ void CMainFrame::OnIntPipeana()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 }
 
 void CMainFrame::OnFileSelDir() 
@@ -1520,6 +1540,9 @@ void CMainFrame::OnCalAllzdj()
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+	}
 	if(thr!=NULL)
 	{
 		//::SendMessage(thr->m_StatusBar.GetSafeHwnd(),WM_CLOSEWINDOW1,0,0);
@@ -1639,6 +1662,8 @@ void CMainFrame::DrawZdjTab(int index)
 			EDIBDB::MakeTmp2ToBom();
 			p0.SetPoint(modPHScal::pt2x,modPHScal::pt2y);
 			EDIBAcad::DeleteAllEntitiesInLayers(1,_T("bom"));
+			SQLx = _T("SELECT * FROM TMP2");
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
 			
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TLJ, atan(1.0) * 0.0, rs,0,1.0f,_T("Bom"),_T("Bom"),_T("%g"),modPHScal::iAlignLjmx);
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TCL].MnuCaption);
@@ -1667,7 +1692,6 @@ void CMainFrame::DrawZdjTab(int index)
 				//每次计算一个支吊架时生成当前当前支吊架一览表，计算完成后总的一览表就生成了。
 				//每次计算一个支吊架时生成当前当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			SQLx = _T("SELECT * FROM TMP2");
 			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
@@ -1846,15 +1870,14 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				_variant_t vTmp;
 				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward);
-				if(!rs->adoEOF)
+				if(rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"), &varTmp);
 				k = vtoi(varTmp);
 				for( i = 1 ;i< k ;i++)
 				{
-					_variant_t vTmp;
 					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward);
-					if(!rs->adoEOF)
+					if(rs->adoEOF)
 					{
 						rs->AddNew();
 						rs->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)i));
@@ -1899,7 +1922,7 @@ void CMainFrame::DrawZdjTab(int index)
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
 				_variant_t vTmp;
 				rs->Find((_bstr_t)(_T("ZDJH <> NULL")), 0, adSearchForward);
-				if(!rs->adoEOF)
+				if(rs->adoEOF)
 					return;
 				rs->get_Collect((_variant_t)_T("SEQ"), &varTmp);
 				k = vtoi(varTmp);
@@ -1907,7 +1930,7 @@ void CMainFrame::DrawZdjTab(int index)
 				{
 					_variant_t vTmp;
 					rs->Find((_bstr_t)(_T("SEQ=") + ltos(i)), 0, adSearchForward);
-					if(!rs->adoEOF)
+					if(rs->adoEOF)
 					{
 						rs->AddNew();
 						rs->put_Collect((_variant_t)_T("SEQ"),_variant_t((long)i));
@@ -2377,9 +2400,8 @@ void CMainFrame::OnToolWblock()
 	{
 		EDIBAcad::objAcadDoc.Invoke( _T("SendCommand"),1,&_variant_t(_T("phsw\n")));
 	}
-	catch(CException *e)
+	catch(...)
 	{
-		e->Delete();
 	}
 }
 
@@ -2557,15 +2579,11 @@ BOOL CMainFrame::Start()
 	{
 		hr = modPHScal::dbZDJcrude.CreateInstance(__uuidof(Connection));
 	}
+	CString strConnect;
+	strConnect.Format(_T("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Jet OLEDB:Database Password=%s"),
+		basDirectory::ProjectDBDir+_T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
 	//以下两句打开了所有的数据库连接
-// 	try {
-		hr = modPHScal::dbZDJcrude->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
-			basDirectory::ProjectDBDir+_T("zdjcrude.mdb")), "", 
-			(_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
-// 	} catch (_com_error &e)
-// 	{
-// 		AfxMessageBox(e.Description());
-// 	}
+	hr = modPHScal::dbZDJcrude->Open((_bstr_t)strConnect, "", "", adModeUnknown);
 	EDIBgbl::InitCurrWork();
 
 	modPHScal::InitZdjTxName();
@@ -2671,7 +2689,7 @@ void CMainFrame::OnImportVolume()
 	//_bstr_t(dbConnectionString + m_strPrjDBDir + "AllPrjDB.mdb"),
 
 
-//	rsRefresh->Open(strSQL,pCon,adOpenStatic,adLockOptimistic,adCmdText);
+//	rsRefresh->Open(strSQL,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 	FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 	FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(rsRefresh);
 	FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);
@@ -2780,7 +2798,7 @@ void CMainFrame::OnDrawZdjArx()
 		{
 			mlSet.CreateInstance(__uuidof(Recordset));
 			strSQL="select * from ml where Volumeid="+strVolumeID+" and zdjh="+strZdjh+"";
-			mlSet->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenStatic,adLockOptimistic,adCmdText);
+			mlSet->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenKeyset,adLockOptimistic,adCmdText);
 			key=mlSet->GetCollect(_T("DRAWNA"));
 			if(!(key.vt==VT_NULL||key.vt==VT_EMPTY))
 			{
@@ -2961,6 +2979,9 @@ BOOL gStartAcad()
 	catch(CException *e)
 	{
 		e->Delete();
+	}
+	catch(...)
+	{
 		CString str;
 		str.LoadString(IDS_AUTOCAD_INITIALIZE_ERROR);
 		ShowMessage(str);
@@ -3039,6 +3060,11 @@ void CMainFrame::OnUpdateDrawZdj(CCmdUI* pCmdUI)
 	{
 		e->Delete();
 	}
+	catch(...)
+	{
+		AfxMessageBox("Error OnUpdateDrawZDj");
+	}
+	
 }
 
 void CMainFrame::OnZdjDrawepHsy() 

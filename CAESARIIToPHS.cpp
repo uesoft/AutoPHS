@@ -100,7 +100,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 
 		m_strSQL.Format(_T("SELECT DISTINCT [JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
       //用此方法打开的记录集才能调用GetRecodsetCount()获得记录数
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText); 
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText); 
 		//在对话框的列表框中加入工程文件名,组合框加入工况名，并获取用户的选择
 		m_selDlg = new CSelPSAProjectNameDlg;
  
@@ -124,7 +124,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 
 		m_strSQL.Empty();
 		m_strSQL.Format(_T("SELECT DISTINCT [CASE],[JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		int ii = m_prsJOBNAME->GetRecordCount();
 		m_selDlg->GKNum = ii;
@@ -169,7 +169,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		m_prsBasicData->Close();
 
 		m_strSQL.Format(_T("SELECT * FROM [OUTPUT_LOCAL_ELEMENT_FORCES] WHERE [JOBNAME] = '%s' AND   [CASE] = '%s' "),m_strJOBNAME_P,m_strRGKname);
-		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		iCount = m_prsCASENUM->GetRecordCount();
 		if(iCount==0)//pfg20050704没有记录返回
@@ -197,7 +197,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		m_strSQL.Format("select * from input_hangers where jobname='%s'",m_strJOBNAME_A);
 		try
 		{
-			prsInputHangers->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+			prsInputHangers->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 			if(prsInputHangers->GetRecordCount()>0)
 			{
 				prsInputHangers->MoveFirst();
@@ -211,7 +211,7 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 		m_strSQL.Format("select * from input_restraints where jobname='%s'",m_strJOBNAME_A);
 		try
 		{
-			prsInputRestraints->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+			prsInputRestraints->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 			if(prsInputRestraints->GetRecordCount()>0)
 			{
 				prsInputRestraints->MoveFirst();
@@ -864,19 +864,19 @@ void CAESARIIToPHS::ImportDiameter(_RecordsetPtr rsData,long node,CString strJOB
 		//先找起点号
 		pRs->Close();
 		strSQL.Format(_T("SELECT * FROM [INPUT_BASIC_ELEMENT_DATA] WHERE [JOBNAME] =  '%s' AND [FROM_NODE] = %d"),strJOBNAME_A,node);
-		pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		if ( pRs->BOF && pRs->adoEOF ) //没有找到记录
 		{
 			pRs->Close();
 			//找末点
 			strSQL.Format(_T("SELECT * FROM [INPUT_BASIC_ELEMENT_DATA] WHERE [JOBNAME] =  '%s' AND [TO_NODE] = %d"),strJOBNAME_A,node);
-			pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+			pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 			if ( pRs->BOF && pRs->adoEOF ) //没有找到记录
 			{
 				pRs->Close();
 				strSQL.Format(_T("SELECT * FROM [INPUT_BASIC_ELEMENT_DATA],[INPUT_BENDS] WHERE [INPUT_BENDS].[JOBNAME] =  '%s' AND  ( [INPUT_BENDS].NODE1 = %d OR [INPUT_BENDS].NODE2 = %d OR [INPUT_BENDS].NODE3 = %d ) AND [INPUT_BASIC_ELEMENT_DATA].BEND_PTR = [INPUT_BENDS].BEND_PTR"),
 					strJOBNAME_A,node,node,node);
-				pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+				pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 				if ( pRs->BOF && pRs->adoEOF ) //没有找到记录
 				{
 					pRs->Close();
@@ -998,7 +998,7 @@ void CAESARIIToPHS::ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long node,CSt
 	try
 	{
 		strSQL.Format(_T("SELECT * FROM [OUTPUT_RESTRAINTS] WHERE [NODE] = %d AND [CASE] = '%s' and JOBNAME='%s' "),node,strGKname,strJOBNAME_P);
-		pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
+		pRs->Open(_variant_t(strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		
 		while ( !pRs->adoEOF )
 		{
@@ -1150,7 +1150,7 @@ double CAESARIIToPHS::UnitsToUeUnits(_RecordsetPtr rsData,CString SourceUnits,CS
 	try
 	{
 		pCon=rsData->GetActiveConnection();
-		pRs->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		pRs->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
 		pRs->Filter=_variant_t("Units='"+SourceUnits+"' and UeUnits='"+UeUnits+"'");//pfg20050629
 		if(pRs->GetRecordCount()>0)
 		{

@@ -577,7 +577,7 @@ void CPhsData::OnAutoML()
 	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'";
 	EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	if(bf)
-		m_ActiveRs->Open(sour,pCon,adOpenStatic,adLockOptimistic,adCmdText);
+		m_ActiveRs->Open(sour,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
    //InitDBbill
 	CString sTmp,sz;
 	int i=0;
@@ -685,7 +685,7 @@ void CPhsData::OnSumDisplay()
 	//this->m_DataSumRs->CursorLocation=adUseClient;
 		if(m_DataSumRs->State!=adStateClosed)
 			m_DataSumRs->Close();
-		this->m_DataSumRs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		this->m_DataSumRs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
    //m_DBGbill.UpdateData();
 		EDIBDB::RefreshGrid(m_DBGbill,this->m_DataSumRs);
 		m_ActiveRs=this->m_DataSumRs;
@@ -883,12 +883,12 @@ void CPhsData::OnEditDelTab()
 		//conPRJDB->Close();
 		//conPRJDB->Open(_bstr_t(::dbConnectionString+basDirectory::ProjectDBDir+"AllPrjDB.mdb"),
 		//   "","",0);
-		//m_ActiveRs->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
+		//m_ActiveRs->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
 		//for(int i=0 ;i<10000;i++)
 		//	for(int j=0;j<100;j++)
 		//		;
 		//m_ActiveRs->Requery(-1);
-		m_ActiveRs->Open(tmpsur,tmpcon,adOpenDynamic/*adOpenStatic*//*,adLockOptimistic,adCmdText);
+		m_ActiveRs->Open(tmpsur,tmpcon,adOpenDynamic/*adOpenKeyset*//*,adLockOptimistic,adCmdText);
 		//m_ActiveRs->Requery(-1);
 		EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
 		if(EDIBgbl::SelBillType==EDIBgbl::TZA)
@@ -1339,7 +1339,7 @@ void CPhsData::OnMouseDownDatagrid1(short Button, short Shift, long X, long Y)
 			if (Y>26)
 				PositionLT=Y;
 			else
-				PositionLT==-100;
+				PositionLT=-100;
 			SetTimer(2000,300,0);
 			return;
 		}
@@ -1558,7 +1558,7 @@ void CPhsData::ShowComboBox(long X, long Y)
 	short row,col;
 	VARIANT val;
 	float posXS=20;
-	float ratio,preadd,ratio1;
+	float ratio,ratio1;
 	CSize sizeScreen;
 	sizeScreen.cx=GetSystemMetrics(SM_CXSCREEN);
 	sizeScreen.cy=GetSystemMetrics(SM_CYSCREEN);
@@ -1937,7 +1937,7 @@ void CPhsData::OnExportToExcel()
 		_RecordsetPtr pRsClip;
 		pRsClip.CreateInstance(__uuidof(Recordset));
 		pRsClip->Open(_variant_t("SELECT * FROM [Clip]"), conPRJDB.GetInterfacePtr(),
-			adOpenStatic, adLockOptimistic, adCmdText);
+			adOpenKeyset, adLockOptimistic, adCmdText);
 		if (pRsClip->GetRecordCount() <= 0)
 		{
 			AfxMessageBox("ÇëÑ¡Ôñ¼ÇÂ¼£¡");

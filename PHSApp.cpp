@@ -28,7 +28,7 @@ CPHSApp::~CPHSApp()
 	this->CloseConnection();
 }
 
-const _ConnectionPtr CPHSApp::GetAllPrjDBConnection()
+const _ConnectionPtr& CPHSApp::GetAllPrjDBConnection()
 {
 	try
 	{
@@ -44,7 +44,7 @@ const _ConnectionPtr CPHSApp::GetAllPrjDBConnection()
 	return m_pConAllPrj;
 }
 
-const _ConnectionPtr CPHSApp::GetSortConnection()
+const _ConnectionPtr& CPHSApp::GetSortConnection()
 {
 	if(m_pConSort==NULL)
 		m_pConSort.CreateInstance(__uuidof(Connection));
@@ -54,7 +54,7 @@ const _ConnectionPtr CPHSApp::GetSortConnection()
 	return m_pConSort;
 }
 
-const _ConnectionPtr CPHSApp::GetZdjcrudeConnection()
+const _ConnectionPtr& CPHSApp::GetZdjcrudeConnection()
 {
 	if(m_pConZdjCrude==NULL)
 		m_pConZdjCrude.CreateInstance(__uuidof(Connection));
@@ -64,7 +64,7 @@ const _ConnectionPtr CPHSApp::GetZdjcrudeConnection()
 	return m_pConZdjCrude;
 }
 
-const _ConnectionPtr CPHSApp::GetWorkPrjConnection()
+const _ConnectionPtr& CPHSApp::GetWorkPrjConnection()
 {
 	if(m_pConWorkPrj==NULL)
 		m_pConWorkPrj.CreateInstance(__uuidof(Connection));
