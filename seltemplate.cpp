@@ -712,6 +712,7 @@ void CSelTemplate::OpenTemplateRs()
 			strSQL += _T(" DESC ");
 	}
 	m_rsTemplateName.CreateInstance(__uuidof(Recordset));
+	m_rsTemplateName->CursorLocation = adUseClient;
 	m_rsTemplateName->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		adOpenKeyset, adLockOptimistic, adCmdText); 
 	if (m_iSaveID == -1)
@@ -724,7 +725,7 @@ void CSelTemplate::OpenTemplateRs()
 
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
-	if(!m_rsTemplateName->adoEOF)
+	if(m_rsTemplateName->adoEOF)
 		m_rsTemplateName->MoveFirst();
 
 	m_listctrlStruct.m_prsNAME = m_rsTemplateName;
@@ -743,7 +744,7 @@ void CSelTemplate::LoadListName()
 		m_listctrlStruct.SetRedraw(FALSE);
 		m_listctrlStruct.DeleteAllItems();
 		m_listctrlStruct.DeleteAllColumns();
-		if(m_rsTemplateName->State != adStateOpen)
+		if(!m_rsTemplateName->State)
 			return;
 		if(m_rsTemplateName->BOF && m_rsTemplateName->adoEOF)
 			return;
@@ -754,6 +755,7 @@ void CSelTemplate::LoadListName()
 		long id=vtoi(v);		
 		long iSelItem = m_rsTemplateName->AbsolutePosition;
 
+		book=m_rsTemplateName->Bookmark;
 		m_rsTemplateName->MoveLast();
 		long count = m_rsTemplateName->RecordCount;
 		//			m_rsTemplateName->MoveFirst();
@@ -782,6 +784,7 @@ void CSelTemplate::LoadListName()
 		m_listctrlStruct.SetItemCount(count);
 		m_listctrlStruct.SetRedraw();	
 		
+		m_rsTemplateName->Bookmark = book;
 		//if(this->m_ListTmpName.GetCount()>0)
 		//	this->m_ListTmpName.SetCurSel(iSelItem);
 		if(m_listctrlStruct.GetItemCount()>0)

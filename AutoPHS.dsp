@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /pdb:"..\Release/AutoPHS.pdb" /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS.exe"
+# ADD LINK32 DataFormatDlg.lib version.lib SelEngineVolume.lib FillExcelDll.lib PSAPointElevation.lib interfaceAndStruct.lib /nologo /subsystem:windows /pdb:"..\Release/AutoPHS.pdb" /debug /machine:I386 /out:"C:\Program Files\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS.exe"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "AutoPHS - Win32 Debug"
@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 htmlhelp.lib FillExcelDll.lib DataFormatDlg.lib version.lib SelEngineVolume.lib InterfaceAndStruct.lib PSAPointElevation.lib /nologo /subsystem:windows /debug /machine:I386 /out:"D:\Program Files (x86)\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
+# ADD LINK32 htmlhelp.lib FillExcelDll.lib DataFormatDlg.lib version.lib SelEngineVolume.lib InterfaceAndStruct.lib PSAPointElevation.lib /nologo /subsystem:windows /pdb:"c:\Program Files\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS7.0.pdb" /debug /machine:I386 /out:"c:\Program Files\长沙优易软件开发有限公司\AutoPDMS3.0\2002\AutoPHS7.0.exe" /implib:"Debug\AutoPHS7.0.lib" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

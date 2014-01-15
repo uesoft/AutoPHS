@@ -293,13 +293,13 @@ void EDIBgbl::InitCurrWork()
 		{
 			hr = dbPRJDB.CreateInstance(__uuidof(Connection));
 //			dbPRJDB->PutDefaultDatabase((_bstr_t)(basDirectory::DBShareDir+_T("AllPrjDB.mdb")));
-			hr = dbPRJDB->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.3.51;Data Source=" + 
+			hr = dbPRJDB->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
 				basDirectory::DBShareDir+_T("AllPrjDB.mdb")), "", "", adModeUnknown);//20071025 "ProjectDBDir" 改为 "DBShareDir"
 		}
 		if(dbPRJ== NULL)
 		{
 			dbPRJ.CreateInstance(__uuidof(Connection));
-			hr = dbPRJ->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.3.51;Data Source=" + 
+			hr = dbPRJ->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
 				basDirectory::ProjectDir+_T("WorkPrj.mdb")), "", "", adModeUnknown);
 //			dbPRJDB->DefaultDatabase = (_bstr_t)(basDirectory::DBShareDir+_T("WorkPrj.mdb"));
 		}
@@ -1147,31 +1147,24 @@ CStringList* GetTableNameList(_ConnectionPtr pDB)
 //	ASSERT_VALID(pDB);
 	CStringList *tableNameList;
 	tableNameList = new CStringList();
-/*
-	int iCount = pDB->GetTableDefCount();
-	for(int i=0; i<iCount; i++)
-	{
-		pDB->GetTableDefInfo(i, tDefInfo);
-		CString strTemp = tDefInfo.m_strName;
-		if((tDefInfo.m_lAttributes & dbSystemObject) == 0)
-		{			
-			tableNameList->AddTail(tDefInfo.m_strName);
-		}
-	}
-*/
+
 	_bstr_t bt;
 	_RecordsetPtr rs(__uuidof(Recordset));
-	rs = pDB->Execute((_bstr_t)_T("SELECT * FROM sysobjects"), NULL, adCmdText);
-	while (!rs->adoEOF)
+	rs = pDB->OpenSchema(adSchemaTables);
+	while (!(rs->adoEOF))
 	{
-		bt = rs->Fields->GetItem(_T("TABLE_TYPE"))->Value;
-		if (!strcmp((char*)bt, "TABLE"))
+		CString strTableType;
+		_bstr_t table_name = rs->Fields->GetItem("TABLE_NAME")->Value;
+		_bstr_t table_type = rs->Fields->GetItem("TABLE_TYPE")->Value;
+
+		strTableType.Format(_T("%s"), (LPCSTR)table_type);
+		if (!strcmp(strTableType, _T("TABLE")))
 		{
-			bt = rs->Fields->GetItem(_T("TABLE_NAME"))->Value;
-			tableNameList->AddTail((char*)bt);
+			tableNameList->AddTail(table_name);
 		}
 		rs->MoveNext();
 	}
+	rs->Close();
 	return tableNameList;
 }
 
@@ -1259,42 +1252,39 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 			CString strTableName = sListTableName->GetNext(pos);
 			if(StringInList(strTableName, dListTableName))
 			{
-				_RecordsetPtr sTDef;
-				sTDef = sDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
+				_RecordsetPtr sTDef(__uuidof(Recordset));
+				strSql.Format("SELECT * FROM [%s]", strTableName);
+				sTDef->Open(_variant_t(strSql),(IDispatch*)sDB,adOpenKeyset, adLockOptimistic,adCmdText);
 
-				_RecordsetPtr dTDef;
-				dTDef = dDB->Execute((_bstr_t)("SELECT * FROM " + strTableName), NULL, adCmdText);
+				_RecordsetPtr dTDef(__uuidof(Recordset));
+				strSql.Format("SELECT * FROM [%s]", strTableName);
+				dTDef->Open(_variant_t(strSql),(IDispatch*)dDB,adOpenKeyset, adLockOptimistic,adCmdText);
 
 				sListFieldName = GetFieldNameList(sTDef);
 				dListFieldName = GetFieldNameList(dTDef);	
 				for(POSITION pos = sListFieldName->GetHeadPosition(); pos != NULL; )
 				{
 					CString strFieldName = sListFieldName->GetNext(pos);
-					if(!StringInList(strFieldName, dListFieldName))
-					{
-// 						fieldInfo.m_bAllowZeroLength = FALSE;
-// 						fieldInfo.m_bRequired = FALSE;
-// 						_variant_t fieldValue;
-// 						dTDef->GetFields()->Append(fieldInfo->Name, fieldInfo->Type, fieldInfo->DefinedSize, 
-// 							fieldInfo->Attributes, (_variant_t)fieldValue);
-						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfo);
-						//添加字段
-						sTDef->Fields->Append(fieldInfo->Name, fieldInfo->Type, fieldInfo->DefinedSize, (adoFieldAttributeEnum)fieldInfo->Attributes);
-					}
-					else
+					if(StringInList(strFieldName, dListFieldName))
 					{
 						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfoS);
 						dTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfoD);
-// 						sTDef.GetFieldInfo(strFieldName, fieldInfoS);
-// 						dTDef.GetFieldInfo(strFieldName, fieldInfoD);
-						if(fieldInfoS->ActualSize != fieldInfoD->ActualSize)
+
+						int s = fieldInfoS->DefinedSize;
+						int d = fieldInfoD->DefinedSize;
+						if( s != d)
 						{
 							//改变字段大小
 							strSql.Format("ALTER TABLE %s ALTER COLUMN %s VARCHAR(%d)",strTableName,strFieldName,fieldInfoS->DefinedSize );
 							
 							::conPRJDB4->Execute(_bstr_t(strSql),NULL,adCmdText);
 						}
-					
+					}
+					else
+					{
+						sTDef->GetFields()->get_Item((_variant_t)strFieldName, &fieldInfo);
+						//添加字段
+						sTDef->Fields->Append(fieldInfo->Name, fieldInfo->Type, fieldInfo->DefinedSize, (adoFieldAttributeEnum)fieldInfo->Attributes);
 					}
 				}
 				sListFieldName->RemoveAll();
@@ -1474,8 +1464,6 @@ bool EDIBgbl::UpgradeDatabase()
 			//首先升级sort.mdb
 			//升级sort.mdb/workprj.mdb的最好办法是拷贝
 			bool sortCrtFd=false;
-			_RecordsetPtr drsTmp;
-			drsTmp.CreateInstance(__uuidof(Recordset));
 			//20071031 "TemplateDir" 改为 "CommonDir" ; "ProjectDBDir" 改为 "DBShareDir"
 			if ( FileExists(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")) && FileExists(basDirectory::DBShareDir  +  _T("AllPrjDB.mdb")) )  
 			{
@@ -1516,18 +1504,12 @@ bool EDIBgbl::UpgradeDatabase()
 				UpgradeDB(basDirectory::ProjectDBDir  +   _T("sort.mdb"), basDirectory::ProjectDBDir  +  _T("Zdjcrude.mdb"), listTable, _T(""), _T("ProductDB888"));
 
 			}     
-			CString ConnectionString;
 			//其次升级workprj.mdb
 			if ( FileExists(basDirectory::TemplateDir  +  _T("workprj.mdb")) && FileExists(basDirectory::ProjectDir  +  _T("workprj.mdb")) ) 
 			{
-				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::TemplateDir  +  _T("workprj.mdb");
-				sDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
-				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDir  +  _T("workprj.mdb");
-				dDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
-				ChangeDatabase(dDb,sDb);
-				dDb->Close();
-				sDb->Close();
+				UpgradeDB(basDirectory::ProjectDir  +  _T("workprj.mdb"), basDirectory::TemplateDir  +  _T("workprj.mdb"));
 			}
+			CString ConnectionString;
 			ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
 			dDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			if(!EDIBgbl::tdfExists(dDb,_T("ZA")) || !EDIBgbl::tdfExists(dDb,_T("ZB")))
@@ -1540,7 +1522,10 @@ bool EDIBgbl::UpgradeDatabase()
 				ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
 				dDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			}
-
+			// TODO: 重建索引
+//			dDb->Execute((_bstr_t)"DROP INDEX PrimaryKey ON ML ", NULL, adCmdText);
+			dDb->Close();
+			
 			// 删除索引
 /*
 		::CDaoTableDef tmptdf(&dDb);
@@ -1559,15 +1544,19 @@ bool EDIBgbl::UpgradeDatabase()
 			e->Delete();
 		}
 		tmptdf->Close();
+		
+		  sDb->Open(_bstr_t(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")),_T(""),_T(""), adModeUnknown);//20071018"sort.mdb"改为"PHScode.mdb"
 */
-			dDb->Execute((_bstr_t)"DROP INDEX PrimaryKey ON ML ", NULL, adCmdText);
-
-			sDb->Open(_bstr_t(basDirectory::TemplateDir  +  _T("AllPrjdb.mdb")),_T(""),_T(""), adModeUnknown);//20071018"sort.mdb"改为"PHScode.mdb"
 		//按F4511s.mdb结构升级AllPrjdb.mdb中的表的结构
-		ChangeDatabase(dDb,sDb);
+		UpgradeDB(basDirectory::DBShareDir  +  _T("AllPrjDB.mdb"), basDirectory::TemplateDir  +  _T("AllPrjdb.mdb"));
+
+
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::DBShareDir  +  _T("AllPrjDB.mdb");
+		dDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 		//升级ZB表中以前根部附件(recno=NULL)特性字段:recno=NULL升级为IsSAPart=-1,recno=根部recno依次+1
 		SQLx.Format(_T("SELECT recno,VolumeID,zdjh,seq,nth,IsSAPart FROM ZB ORDER BY VolumeID,zdjh,recno DESC"));
 		//recno按降序排列，则根部排在最前，根部附件排在最后
+		_RecordsetPtr drsTmp(__uuidof(Recordset));
 		drsTmp->Open(_variant_t(SQLx),(IDispatch*)dDb,adOpenKeyset, adLockOptimistic,adCmdText);
 		int maxRecno=1;//current zdjh maxmium recno
 		int iPrevZdjh=-1;//previous zdjh
@@ -1604,8 +1593,8 @@ bool EDIBgbl::UpgradeDatabase()
 			
 			drsTmp->MoveNext();
 		}
-
 		// 修改表字段长度
+		dDb->Execute((_bstr_t)"ALTER TABLE [ZA] ALTER COLUMN [DwgName] Text(255)", NULL, adCmdText);
 /*
 		CDaoFieldInfo fi;
 		tmptdf->Open((_bstr_t)(_T("ZA"));
@@ -1631,9 +1620,9 @@ bool EDIBgbl::UpgradeDatabase()
 		}
 		tmptdf->Close();
 */
-		dDb->Execute((_bstr_t)"ALTER TABLE [ZA] ALTER COLUMN [DwgName] Text(255)", NULL, adCmdText);
-/*
-// 		tmptdf->Open((_bstr_t)(_T("ZG"));
+		dDb->Execute((_bstr_t)"ALTER TABLE [ZG] ALTER COLUMN [Handle] Text(16)", NULL, adCmdText);
+
+/* 		tmptdf->Open((_bstr_t)(_T("ZG"));
 		tmptdf = dDb->Execute((_bstr_t)"SELECT * FROM ZG")->GetFields();
 
 		tmptdf->get_Item((_variant_t)_T("Handle"), &fi);
@@ -1664,9 +1653,8 @@ bool EDIBgbl::UpgradeDatabase()
 		}
 // 		tmptdf->Close();
 */
-		dDb->Execute((_bstr_t)"ALTER TABLE [ZG] ALTER COLUMN [DwgName] Text(16)", NULL, adCmdText);
-
 		::SetRegValue(_T("Status"), _T("Install"), CString("1"));
+		return true;
 		}
 		return true;
 	}
@@ -2361,9 +2349,14 @@ BOOL EDIBgbl::UpdateSortDB()
 {
 	try
 	{
-		_ConnectionPtr sDb,dDb;
+		_ConnectionPtr sDb;
+		sDb.CreateInstance(__uuidof(Connection));
+
+		CString ConnectionString;
+		ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::TemplateDir + _T("PHScode.mdb");
+		sDb->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
+
 		CString strSQL;
-		sDb->Open((_bstr_t)(basDirectory::TemplateDir + _T("PHScode.mdb")), "", "", adConnectUnspecified);//20071031 "sort" 改为 "PHScode.mdb"
 		strSQL=_T("DELETE FROM [PhsStructureNAME]");
 		sDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		strSQL=_T(" INSERT INTO [PhsStructureNAME] SELECT * FROM [PhsStructureNAME] IN \'") + basDirectory::ProjectDBDir + _T("PHScode.mdb\'");

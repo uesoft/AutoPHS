@@ -93,7 +93,7 @@ int CCommDBOper::ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &
 	//	strPassword  密码 iWarn 出错警告方式  0,不警告,1,警告,2,警告且退出程序
 	//作者  LFX
 	CString strCon;
-	_TCHAR dbConnectionString[]=_T("Provider=Microsoft.Jet.OLEDB.3.51;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s");
+	_TCHAR dbConnectionString[]=_T("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s");
 	strCon.Format(dbConnectionString,strDB,strPassword);
 	if(!PathFileExists(_T(strDB)))
 	{

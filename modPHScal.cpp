@@ -4419,7 +4419,12 @@ void modPHScal::CreateTmpConnectTable()
 	{
 		//如果Cphs.rsConnect对象打开，关闭它。以便删除。
 		Cavphs->CloseRecordsets();
-		EDIBgbl::dbPRJ->Execute((_bstr_t) _T("DROP TABLE [connect]"), NULL, adCmdText);
+		try 
+		{
+			EDIBgbl::dbPRJ->Execute((_bstr_t) _T("DROP TABLE [connect]"), NULL, adCmdText);
+		} catch (...)
+		{
+		}
 	}
     //20071018(start) "dbSORT" 改为 "dbPHScode"
 	EDIBgbl::SQLx = _T("SELECT * INTO [connect] FROM connectPASA IN \'");
