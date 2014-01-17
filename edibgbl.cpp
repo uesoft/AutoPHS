@@ -1076,28 +1076,14 @@ void EDIBgbl::GetSelPrjName()
 
 CString EDIBgbl::GetDBName(_ConnectionPtr db)
 {
-	CString strDefaultDatabase;
-	CString strContext;
-	strDefaultDatabase = (LPTSTR)db->GetDefaultDatabase();
-	strDefaultDatabase = (LPTSTR)db->ConnectionString;
+	if(db==NULL || db->GetState()==adStateClosed)
+		return _T("");
+		  PropertiesPtr prP;
 
-	for (int i = 0; i < 10; i++)
-	{
-		AfxExtractSubString(strContext, strDefaultDatabase, i, ';');
-		if (strContext.Find(_T("Data Source")) >= 0)
-		{
-			break;
-		}
-	}
+		  prP=db->GetProperties();
+		  CString dbName=vtos(prP->GetItem( _variant_t(_T("Data Source")))->GetValue());
+		  return dbName;
 
-	if (strContext.IsEmpty())
-	{
-		return "";
-	}
-
-	AfxExtractSubString(strDefaultDatabase, strContext, 1, '=');
-	
-	return strDefaultDatabase;
 }
 /*
 bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
@@ -1119,7 +1105,6 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 		TempSet->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 		TempSet->Close();
-		TempSet.Release();
 		return true;
 		//11/3
 

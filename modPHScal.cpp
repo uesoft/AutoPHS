@@ -5191,7 +5191,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 						  {
 								//只能选择AutoPHS计算的弹簧
 								nRepZdjType=1;
-								//前面已经选择了一次
+								//前?嬉丫≡窳艘淮?
 						  }
 						}
 				   }
@@ -10617,25 +10617,29 @@ bool modPHScal::CreateTmpCustomIDForPART()
 {
 	// 目的:为加快过滤可用模板的速度，先设置三个临时表，存储PA/PART/SA/SPR/CSPR的CustomID,
 	// 每次只要找这几个表，即可确定零件是否可用于当前标准
+	FILE* fp;
+	fp = fopen("CreateTmpCustomIDForPART.txt", "w");
+
 	CString strSQL;
 	HRESULT hr = S_OK;
 	try
 	{
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPA")))
 		{
+			fprintf(fp, "%d: dbPRJ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPA"), NULL, adCmdText);			
-			strSQL = _T("INSERT INTO tmpCustomIDPA IN \'");
-			strSQL += EDIBgbl::GetDBName(EDIBgbl::dbPRJ);
-			strSQL += _T("\' SELECT DISTINCT CustomID FROM [");
-			strSQL += modPHScal::tbnPA+_T("]");
+			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
+			fprintf(fp, "%d: dbZDJcrude->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		else
 		{
 			//不要建立唯一索引，可能冲突
 			strSQL = _T("CREATE TABLE tmpCustomIDPA (CustomID Char(20) CONSTRAINT index1 UNIQUE)");
+			fprintf(fp, "%d: dbPRJ->Execute\n", __LINE__);
 			hr = EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL, NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPA+_T("]");
+			fprintf(fp, "%d: dbZDJcrude->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);
 		}
 		//建立固定支架数据表tbnPAfix时，绝对不能出现管部数据表tbnPA中已经出现的CustomID，否则出错.
@@ -10643,58 +10647,75 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		{
 			//strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] WHERE CustomID NOT IN ( SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPA + _T("] ) ");
 			strSQL=_T("INSERT INTO tmpCustomIDPA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnPAfix+_T("] ");
+			fprintf(fp, "%d: dbZDJcrude->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSA")))
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSA"), NULL, adCmdText);			
 			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		else
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSA (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDSA IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSA+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDPART")))
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDPART"), NULL, adCmdText);			
 			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			fprintf(fp, "%d: ->Execute: %s\n", __LINE__, strSQL);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDPART (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDPART IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [") + modPHScal::tbnPART+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDSPR")))
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDSPR"), NULL, adCmdText);			
 			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnSPRINGCrude+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDCSPR")))
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDCSPR"), NULL, adCmdText);			
 			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDCSPR (CustomID Char(20) CONSTRAINT index1 UNIQUE)"), NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDCSPR IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID FROM [")+ modPHScal::tbnHDCrude+_T("]");
+			fprintf(fp, "%d: ->Execute\n", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 
@@ -10704,27 +10725,35 @@ bool modPHScal::CreateTmpCustomIDForPART()
 		//而临时表tmpCustomID_GDW1只有300条左右记录，速度可提高7000/300=23倍以上。
 		if(EDIBgbl::tdfExists(EDIBgbl::dbPRJ ,_T("tmpCustomIDGDW1")))
 		{
+			fprintf(fp, "%d: ->Execute", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM tmpCustomIDGDW1"), NULL, adCmdText);			
 			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			fprintf(fp, "%d: ->Execute", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}		
 		else
 		{
+			fprintf(fp, "%d: ->Execute", __LINE__);
 			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("CREATE TABLE tmpCustomIDGDW1 (CustomID Char(20),GDW1 single)"), NULL, adCmdText);
 			strSQL=_T("INSERT INTO tmpCustomIDGDW1 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\'  SELECT DISTINCT CustomID,GDW1 FROM [")+ modPHScal::tbnSA+_T("]");
+			fprintf(fp, "%d: ->Execute", __LINE__);
 			modPHScal::dbZDJcrude->Execute((_bstr_t)strSQL, NULL, adCmdText);		
 		}
 		return true;
 	}
-	catch(CException *e)
+	catch(_com_error e)
 	{
-		e->Delete();
+		fprintf(fp, "%d: _com_error: %s", __LINE__, (LPCSTR)e.Description());
+		fclose(fp);
 		return false;
 	}
 	catch(...)
 	{
+		fprintf(fp, "...");
+		fclose(fp);
 		return false;
 	}
+	fclose(fp);
 
 }
 
