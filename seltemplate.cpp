@@ -37,6 +37,8 @@ CSelTemplate::CSelTemplate(CWnd* pParent /*=NULL*/)
 	, m_iCurSampleID(0)
 	, m_iSaveID(-1)
 {
+	m_rsTemplateName.CreateInstance(__uuidof(Recordset));
+	m_rsTemplateName->CursorLocation = adUseClient;
 	m_bLoadPA=FALSE;
 	m_bLoadSA=FALSE;
 	m_bIsSelPA=FALSE;
@@ -693,7 +695,7 @@ void CSelTemplate::OpenTemplateRs()
 	UpdateData();
 	m_strSortFieldName=theSortName[this->m_iSortType];
 
-	if(m_rsTemplateName != NULL)
+	if(m_rsTemplateName->State == adStateOpen)
 		m_rsTemplateName->Close();
 
 	strSQL=_T("SELECT * FROM phsStructureName ");
@@ -711,10 +713,8 @@ void CSelTemplate::OpenTemplateRs()
 		if(this->m_bDesc)
 			strSQL += _T(" DESC ");
 	}
-	m_rsTemplateName.CreateInstance(__uuidof(Recordset));
-	m_rsTemplateName->CursorLocation = adUseClient;
 	m_rsTemplateName->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+		adOpenStatic, adLockOptimistic, adCmdText); 
 	if (m_iSaveID == -1)
 		strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	else
@@ -726,8 +726,12 @@ void CSelTemplate::OpenTemplateRs()
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
 	if(m_rsTemplateName->adoEOF)
-		m_rsTemplateName->MoveFirst();
-
+	{
+		if (!m_rsTemplateName->BOF)
+		{
+			m_rsTemplateName->MoveFirst();
+		}
+	}
 	m_listctrlStruct.m_prsNAME = m_rsTemplateName;
 
 	LoadListName();
@@ -2317,7 +2321,7 @@ void CSelTemplate::initOpenTemplateRs()
 	strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	_variant_t vTmp;
 	m_rsTemplateName->Find((_bstr_t)(strTemp), 0, adSearchForward);
-	if(!m_rsTemplateName->adoEOF && !m_rsTemplateName->BOF)
+	if(m_rsTemplateName->adoEOF)
 		m_rsTemplateName->MoveFirst();
 	LoadListName();
 	DataReposition();

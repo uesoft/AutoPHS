@@ -21,9 +21,10 @@ CVirtualListCtrl::CVirtualListCtrl()
 	try
 	{
 		m_prsREF.CreateInstance(__uuidof(Recordset));
-		// TODO: 
-		CString strSQL=_T("SELECT [SampleID], [CustomID] FROM PhsStructureREF ORDER BY [SampleID]");
-// 		m_prsREF->m_strSort = _T("[SampleID], [SEQ]");
+//		m_prsREF->CursorLocation = adUseClient;
+		CString strSQL=_T("SELECT [SampleID], [CustomID] FROM PhsStructureREF ORDER BY [SampleID], [SEQ]");
+// 		m_prsREF->Sort = "[SampleID]";
+// 		m_prsREF->Filter = _variant_t("");
 		m_prsREF->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
@@ -74,9 +75,7 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 			{
 				if (subItem < m_lRefRecords + 2)
 				{
-//					m_prsREF->SetAbsolutePosition(subItem - 2);
-					LONG var = subItem - 2;
-//					m_prsREF->AbsolutePosition = (PositionEnum)var;
+					m_prsREF->AbsolutePosition = (PositionEnum)(subItem-1);
 					m_prsREF->get_Collect((_variant_t)(_T("CustomID")), &varValue);
 					str = vtos(varValue);
 				}
@@ -84,36 +83,35 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 					str = _T("");
 			}
 			else
-				if (subItem ==0)
+			if (subItem ==0)
+			{
+				m_prsNAME->AbsolutePosition = (PositionEnum)(index+1);//Set the file to desired index
+				m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &varValue);
+				str = vtos(varValue);
+				CString strFilter;
+				strFilter.Format(_T("SampleID = %s"), str);
+ 				m_prsREF->Filter = (_variant_t)strFilter;
+ 				m_prsREF->Requery(adOptionUnspecified);
+				m_lRefRecords = m_prsREF->GetRecordCount();
+			}
+			else 
+			if (subItem == 1)
+			{
+				if (index == 0)
 				{
-					LONG var = index;
-//					m_prsNAME->AbsolutePosition = (PositionEnum)var;//Set the file to desired index
-					m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &varValue);
-					str = vtos(varValue);
-					CString strFilter;
-					strFilter.Format(_T("SampleID = %s"), str);
-//					m_prsREF->Find((_bstr_t)strFilter, 0, adSearchForward);
-// 					m_prsREF->put_Filter((_variant_t)strFilter);
-// 					if (m_prsREF->Requery())
-// 						m_prsREF->Requery(adExecuteRecord);
-					m_lRefRecords = m_prsREF->GetRecordCount();
-				}
-				else 
-					if (subItem == 1)
-					{
-						LONG var = index;
-//						m_prsREF->AbsolutePosition = (PositionEnum)var;
-						m_prsNAME->get_Collect((_variant_t)_T("SampleName"), &varValue);
-						str = vtos(varValue);
-					}
-					
-					//			SetItemText(index, 0, str);
+					m_prsNAME->AbsolutePosition = (PositionEnum)1;
+				} else 
+					m_prsNAME->AbsolutePosition = (PositionEnum)index;						
+
+				m_prsNAME->get_Collect((_variant_t)_T("SampleName"), &varValue);
+				str = vtos(varValue);
+			}
+			
+			//			SetItemText(index, 0, str);
 					
 		}
-		catch(CException * ep)
+		catch(_com_error e)
 		{
-			ep->ReportError();
-			ep->Delete();
 			return;
 		}
 		
@@ -141,9 +139,7 @@ DWORD CVirtualListCtrl::GetItemData(int nItem) const
 {
 	try
 	{
-//		m_prsNAME->SetAbsolutePosition(nItem);
-		LONG var = nItem;
-		m_prsREF->Index = (_bstr_t)var;
+		m_prsNAME->AbsolutePosition = (PositionEnum)nItem;
 		_variant_t v;
 		m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &v);
 		return (DWORD)vtoi(v);

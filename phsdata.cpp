@@ -574,7 +574,7 @@ void CPhsData::OnAutoML()
 	}
 	_variant_t tmpvar;
 	CString strExecute;
-	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(drawNa)=\'\'";
+	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (drawNa)=\'\'";
 	EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	if(bf)
 		m_ActiveRs->Open(sour,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
@@ -874,11 +874,11 @@ void CPhsData::OnEditDelTab()
 	catch(...)
 	{
 	}
-		/*conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=" + ltos(EDIBgbl::SelVlmID) ),&varTmp,adCmdText);
+		/*conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (VolumeID)=" + ltos(EDIBgbl::SelVlmID) ),&varTmp,adCmdText);
 		//CString SQLx=(char*)(_bstr_t)m_ActiveRs->GetSource();
 		//m_ActiveRs->Update();
 		//m_ActiveRs->Close();
-		//EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
+		//EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
 		//EDIBgbl::dbPRJDB.
 		//conPRJDB->Close();
 		//conPRJDB->Open(_bstr_t(::dbConnectionString+basDirectory::ProjectDBDir+"AllPrjDB.mdb"),
@@ -925,8 +925,8 @@ try
 					m_ActiveRs->MoveFirst();
 				}
 */
-//	EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
-	conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE trim(VolumeID)=" + ltos(EDIBgbl::SelVlmID)),NULL,adCmdText);
+//	EDIBgbl::dbPRJDB.Execute("DELETE * FROM [" + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (VolumeID)=\'" + EDIBgbl::SelVlmID + "\'");
+	conPRJDB->Execute(_bstr_t(CString("DELETE * FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (VolumeID)=" + ltos(EDIBgbl::SelVlmID)),NULL,adCmdText);
 	m_ActiveRs->Requery(-1);
 			m_DBGbill.SetRefDataSource(m_ActiveRs);
 			m_DBGbill.ReBind();

@@ -2732,7 +2732,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 				tbn1 = modPHScal::sFindTBN(vtos(vTmp));
 				//*************************************************
 				_variant_t vTmp;
-				SQLx = _T("Trim(BlkID)=\'")+blkID+_T("\'");
+				SQLx = _T("(BlkID)=\'")+blkID+_T("\'");
 				HRESULT hr = S_OK;
 				hr = rs->Find((_bstr_t)SQLx, 0, adSearchForward);
 				brsFind = !rs->adoEOF;
@@ -5305,7 +5305,7 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
  											rs->MoveFirst();
 											HRESULT hr = S_OK;
 											CString strFind;
-											strFind = _T("Trim(BlkID)=\'") + blkID + _T("0\'");
+											strFind = _T("(BlkID)=\'") + blkID + _T("0\'");
 											hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 											rs->get_Collect((_variant_t)_T("xGDW1"),&vTmp);
 											xGDW1=vtof(vTmp);
@@ -6337,7 +6337,7 @@ void EDIBAcad::DrawTagAll()
 			//选择记录集rsTZG以便确定编号指向线起点坐标，同时记录图形内容
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZG] ;
 			SQLx+=_T("] WHERE zdjh=");
-			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY y");
+			SQLx+=ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND (EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY y");
 			rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 			if( rsTZG->adoEOF || rsTZG->BOF )
 			{
@@ -6575,7 +6575,7 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		AcObj = MoSpace.Invoke(_T("AddPoint"),1,(LPVARIANT)p0).pdispVal;
 		
 		//选择记录集rsTZG以便记录图形内容
-		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND trim(EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY recno");
+		SQLx = _T("SELECT * FROM [")+EDIBgbl::Btype[EDIBgbl::TZG] + _T("] WHERE zdjh=") + ltos(modPHScal::zdjh) + _T(" AND VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND  ((Layer))=\'TAG\' AND (EntityName)=\'AcDbPoint\' AND ((FieldName))=\'SEQ\' ORDER BY recno");
 		rsTZG->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
 		
 		AddData2rsTZG(rsTZG, iRecNo, modPHScal::zdjh, _T("seq"), _T("X"), _T("POINT"), p0);

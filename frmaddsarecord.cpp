@@ -157,7 +157,7 @@ void CFrmAddSArecord::OnSelchangeList1()
 				GetDlgItem(IDC_BTN_REMOVE)->EnableWindow(FALSE);
 			}
 			m_DBGrid1.SetRefDataSource(NULL);
-			CString SQL = _T("SELECT * FROM [") + modPHScal::tbnSA + _T("] WHERE trim(CustomID)=\'") + sTmp + _T("\' ORDER BY dh");
+			CString SQL = _T("SELECT * FROM [") + modPHScal::tbnSA + _T("] WHERE (CustomID)=\'") + sTmp + _T("\' ORDER BY dh");
 			m_Data1.SetRecordSource(SQL);
 			m_Data1.Refresh();
 			m_DBGrid1.SetRefDataSource(m_Data1.GetRecordset().GetDataSource());

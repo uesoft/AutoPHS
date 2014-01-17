@@ -1,7 +1,0 @@
-; AnalysePHS.def : Declares the module parameters for the DLL.
-
-LIBRARY      "AnalysePHS"
-DESCRIPTION  'AnalysePHS Windows Dynamic Link Library'
-
-EXPORTS
-    ; Explicit exports can go here

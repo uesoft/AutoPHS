@@ -232,7 +232,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				Ptype[i] = vtos(vTmp1);
 				HRESULT hr = S_OK;
 				rsID->MoveFirst();
-				strTmp = _T("trim(CustomID)=\'" + vtos(vTmp1) + _T("\'"));
+				strTmp = _T("(CustomID)=\'" + vtos(vTmp1) + _T("\'"));
 				hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 				if( rsID->adoEOF)
 				{
@@ -267,7 +267,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			
 			HRESULT hr = S_OK;
 			rsID->MoveFirst();
-			strTmp = _T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'");
+			strTmp = _T("(CustomID)=\'") + vtos(vTmp1) + _T("\'");
 			hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 			if( rsID->adoEOF)
 			{
@@ -401,7 +401,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						{
 							HRESULT hr = S_OK;
 							rsID->MoveFirst();
-							strTmp = _T("trim(CustomID)=\'") + Ptype[i + 1] + _T("\'");
+							strTmp = _T("(CustomID)=\'") + Ptype[i + 1] + _T("\'");
 							hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 							if( rsID->adoEOF)
 							{
@@ -413,7 +413,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							//从Connect表中检索其是否存在及其匹配的尺寸信息
 							
 							rsConnect->MoveFirst();
-							strTmp = _T("trim(cntb)=\'") + tmpID0 + _T("\' AND trim(cnte)=\'") + tmpID1 + _T("\'");
+							strTmp = _T("(cntb)=\'") + tmpID0 + _T("\' AND (cnte)=\'") + tmpID1 + _T("\'");
 							hr = rsConnect->Find((_bstr_t)strTmp, 0, adSearchForward);
 							if( rsConnect->adoEOF)
 							{
@@ -505,7 +505,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						if( iNumPart <= 0 ) iNumPart = modPHScal::gintParallelNum;
 						//管部以外的零件的材料，较细致的做法是按照材料规范选择表按不同类别零件分别选择；此处简单地取默认值；
 						SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
-						if(rs3->State == adOpenKeyset)
+						if(rs3->State == adStateOpen)
 							rs3->Close();
 						rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -591,8 +591,8 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							sTmp.Format(_T("%g"),tmpSelPJG / iNumPart);
 							SQLx+=sTmp  + _T(" AND Tj>=");
 							sTmp.Format(_T("%g"),tmpT0);
-							SQLx+= sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Pmax,Weight");
-							if(rsX->State == adOpenKeyset)
+							SQLx+= sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Pmax,Weight");
+							if(rsX->State == adStateOpen)
 								rsX->Close();
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -620,8 +620,8 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							sTmp.Format(_T("%g"),tmpSelPJG/iNumPart);
 							SQLx+=sTmp + _T(" AND Tj>=");
 							sTmp.Format(_T("%g"),tmpT0);
-							SQLx+= sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Weight");
-							if(rsX->State == adOpenKeyset)
+							SQLx+= sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Weight");
+							if(rsX->State == adStateOpen)
 								rsX->Close();
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -642,8 +642,8 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								SQLx+= sTmp + _T(" AND Pmax IS NULL");
 								SQLx+= _T(" AND Tj>=");
 								sTmp.Format(_T("%g"),tmpT0);
-								SQLx+= sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Weight");
-								if(rsX->State == adOpenKeyset)
+								SQLx+= sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Dw,Weight");
+								if(rsX->State == adStateOpen)
 									rsX->Close();
 								rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -670,8 +670,8 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						sTmp.Format(_T("%g"),tmpSelPJG/iNumPart);
 						SQLx+=sTmp+ _T(" AND Tj>=");
 						sTmp.Format(_T("%g"),tmpT0);
-						SQLx+=sTmp+_T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Pmax,Weight");
-						if(rsX->State == adOpenKeyset)
+						SQLx+=sTmp+_T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,Pmax,Weight");
+						if(rsX->State == adStateOpen)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -709,7 +709,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						//modPHScal::PtypeDiameter[i] 
 						
 						sTmp=(modPHScal::gbLimitLugMinDia ? (modPHScal::dj >= 76 ? _T(" AND size2>=12") : (modPHScal::dj >= 57 ? _T(" AND size2>=10") : _T(" AND size2>=10"))) : _T(" "));
-						SQLx+= sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
+						SQLx+= sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
 						
 						break; 
 						
@@ -847,7 +847,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							SQLx+=sTmp;
 							sTmp=(modPHScal::gbLimitLugMinDia ? (modPHScal::dj >= 76 ? _T(" AND size2>=12") : (modPHScal::dj >= 57 ? _T(" AND size2>=10") : _T(""))): _T(""));
 							
-							SQLx+=sTmp  + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
+							SQLx+=sTmp  + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
 							
 						}
 						else if(PtypeID[i]==_T("L15"))
@@ -862,7 +862,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							//钢板重量kg
 							float fPSWeight=modPHScal::gfPSThickness * modPHScal::gfPSWidth * modPHScal::gfPSLength * 7850e-9;
 							SQLx = _T("SELECT * FROM ") + modPHScal::tbnAttachment + _T(" WHERE CustomID=\'PS\' AND BH=\'") + sTmp + _T("\' ORDER BY BH,Weight");
-							if(rsTmp->State == adOpenKeyset)
+							if(rsTmp->State == adStateOpen)
 								rsTmp->Close();
 							rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -884,25 +884,25 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							//下孔径size3按升序排列，即可首先选择到小孔的双孔吊板
 							SQLx = _T("SELECT * FROM ") + modPHScal::tbnPART + _T(" WHERE ") + tmpSQL + _T(" Pmax>=");
 							sTmp.Format(_T("%g"),tmpSelPJG / iNumPart * (vtob(rsza->GetCollect(_T("ifLongVertPipe")))? iNumPart : 1));
-							SQLx+=sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,size3,size2,Weight");
+							SQLx+=sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY tj,size3,size2,Weight");
 						}
 						else
 						{
 							SQLx = _T("SELECT * FROM ") + modPHScal::tbnPART + _T(" WHERE ") + tmpSQL + _T(" Pmax>=");
 							sTmp.Format(_T("%g"),tmpSelPJG / iNumPart * (vtob(rsza->GetCollect(_T("ifLongVertPipe")))? iNumPart : 1));
-							SQLx+=sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
+							SQLx+=sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
 						}
 			   break;
 	case iSPR:
 		//弹簧的吊杆直径孔自动加大时，需要取消直径孔检查
 		//取该类弹簧的最后一个规格
-		//SQLx = _T("SELECT TOP 1 * FROM [") + tbnSPRINGCrude + _T("] WHERE ") + IIf(tmpSQL <> _T(""), IIf(gbSPRAutoLugDia, _T(""), tmpSQL), _T("")) + _T(" (dh mod 100)=") + modPHScal::sSprInfo[iSEQofSPR].SprNo + _T(" AND int(dh/100)<=") + (giSumSerialNum - iSumSerialNum) + _T(" AND trim(CustomID)=//") + Ptype[i] + _T("// ORDER BY dh DESC,Weight")
+		//SQLx = _T("SELECT TOP 1 * FROM [") + tbnSPRINGCrude + _T("] WHERE ") + IIf(tmpSQL <> _T(""), IIf(gbSPRAutoLugDia, _T(""), tmpSQL), _T("")) + _T(" (dh mod 100)=") + modPHScal::sSprInfo[iSEQofSPR].SprNo + _T(" AND int(dh/100)<=") + (giSumSerialNum - iSumSerialNum) + _T(" AND (CustomID)=//") + Ptype[i] + _T("// ORDER BY dh DESC,Weight")
 		SQLx = _T("SELECT * FROM [") + modPHScal::tbnSPRINGCrude + _T("] WHERE ") + (tmpSQL != _T("") ? (modPHScal::gbSPRAutoLugDia ? _T("") : tmpSQL) : _T(""));
 		if(iSEQofSPR < modPHScal::SprInfoIndex)
 			sTmp.Format(_T(" dh=%d "),modPHScal::sSprInfo[iSEQofSPR].DH);
 		else
 			sTmp=_T(" ");
-		SQLx+=sTmp + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
+		SQLx+=sTmp + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
 		if ( sPartID == _T("T5") && FirstCal >=2 )
 		{
 			if(!modPHScal::gbAddPartWeight2SPRPgz) //pfg2007.08.21
@@ -943,7 +943,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			Tmpyr = fabs(Tmpyr) * (1 + modPHScal::gUseConstantSpringPercentSurplusDist);
 		}
 		SQLx = _T("SELECT * FROM [") + modPHScal::tbnHDproperty + _T("] ORDER BY Capacity");
-		if(rs->State == adOpenKeyset)
+		if(rs->State == adStateOpen)
 			rs->Close();
 		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -967,7 +967,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			iSumSerialNum = iSumSerialNum + 1;
 			tmpDist = Tmpyr / modPHScal::giWholeSprNum;
 			//查位移系列值，按就近上靠原则确定位移系列。
-			if(rs1->State == adOpenKeyset)
+			if(rs1->State == adStateOpen)
 				rs1->Close();
 			sTmp.Format(_T("%g"),tmpDist);
 			SQLx = _T("SELECT * FROM [") + modPHScal::tbnDisplacementSerial + _T("] WHERE DisplacementSerial>=") + sTmp + _T(" ORDER BY DisplacementSerial");
@@ -1126,10 +1126,10 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	   {
 		   sTmp=_T(" ");
 	   }
-	   SQLx+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
+	   SQLx+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
 	   break;
 	case iSAh:
-		SQLx.Format(_T("SELECT * FROM  %s  WHERE  + %s %s >=  %g  AND trim(CustomID)=\'%s\' ORDER BY GDW1,%s"),
+		SQLx.Format(_T("SELECT * FROM  %s  WHERE  + %s %s >=  %g  AND (CustomID)=\'%s\' ORDER BY GDW1,%s"),
 			modPHScal::tbnSA,
 			tmpSQL,
 			SAfDPmax,
@@ -1139,7 +1139,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		break;
 	case iSACantilever:
 	case iSALbrace:
-		SQLx.Format(_T("SELECT * FROM  %s  WHERE GDW1>= %g AND %s >=%g AND trim(CustomID)=\'%s\' %s ORDER BY GDW1,%s"),
+		SQLx.Format(_T("SELECT * FROM  %s  WHERE GDW1>= %g AND %s >=%g AND (CustomID)=\'%s\' %s ORDER BY GDW1,%s"),
 			modPHScal::tbnSA,
 			modPHScal::gdw,
 			SAfDPmax ,
@@ -1151,7 +1151,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	case iG51:
 	case iG56:
 	case iG57:
-		SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>= %g AND size2>=%g AND %s >=%g AND trim(CustomID)=\'%s\' %s ORDER BY GDW1,size2,%s"),
+		SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>= %g AND size2>=%g AND %s >=%g AND (CustomID)=\'%s\' %s ORDER BY GDW1,size2,%s"),
 			modPHScal::tbnSA,
 			modPHScal::gdw,
 			modPHScal::gdw/modPHScal::WidthB,
@@ -1172,7 +1172,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		if( iNumPart == 2 )
 		{
 			//两个根部梁承担所有荷载
-			SQLx.Format(_T("SELECT * FROM %s WHERE GDW1 >= IIF(%g > L1/2 , L1-%g , %g) AND L1>= %g AND %s >=%g AND trim(CustomID)=\'%s\' %s ORDER BY DH"),
+			SQLx.Format(_T("SELECT * FROM %s WHERE GDW1 >= IIF(%g > L1/2 , L1-%g , %g) AND L1>= %g AND %s >=%g AND (CustomID)=\'%s\' %s ORDER BY DH"),
 				modPHScal::tbnSA,
 				modPHScal::gdw+(modPHScal::glNumSA==1 ? modPHScal::DblHangerRodDist : 0)/2,
 				modPHScal::gdw+(modPHScal::glNumSA==1 ? modPHScal::DblHangerRodDist : 0) / 2,
@@ -1187,7 +1187,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 			//一个根部梁承担所有荷载
 			//假定荷载作用在一点，这样选择出来的根部偏于安全。
-			SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF(%g > L1/2 , L1-%g , %g) AND L1>=%g AND %s>=%g AND trim(CustomID)=\'%s\' %s ORDER BY DH"),
+			SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF(%g > L1/2 , L1-%g , %g) AND L1>=%g AND %s>=%g AND (CustomID)=\'%s\' %s ORDER BY DH"),
 				modPHScal::tbnSA,
 				modPHScal::gdw+(modPHScal::glNumSA==1 ? modPHScal::DblHangerRodDist : 0)/2,
 				modPHScal::gdw+(modPHScal::glNumSA==1 ? modPHScal::DblHangerRodDist : 0)/2,
@@ -1219,13 +1219,13 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			//开始循环查找合适的固定支架G47、G48
 			//查槽钢特性表，找F1ToWx1
 			SQLx = _T("SELECT * FROM SSteelPropertyCS WHERE F1toWx1 is not null ORDER BY ID");
-			if(rsTmp->State == adOpenKeyset)
+			if(rsTmp->State == adStateOpen)
 				rsTmp->Close();
 			rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			//按照西北电力设计院支吊架手册1983年版117页解释,把"GDW1>="改为"GDW1=". lgb and pfg20050927
-			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1= ") + ftos(int((modPHScal::gdw+99)/100)*100) + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
-			if(rsX->State == adOpenKeyset)
+			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1= ") + ftos(int((modPHScal::gdw+99)/100)*100) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
+			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1262,7 +1262,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						{
 							//冷态、热态当量力均满足了
 							SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND PmaxSF>=")
-								+ ftos(sngSAfixP)+ _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
+								+ ftos(sngSAfixP)+ _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
 							break;
 						}
 						else
@@ -1276,7 +1276,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				{
 					//按照西北电力设计院支吊架手册1983年版117页解释,把"GDW1>="改为"GDW1=".lgb and pfg20050927
 					SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1= ") + ftos(int((modPHScal::gdw+99)/100)*100) + _T(" AND PmaxSF>=")
-						+ ftos((sngSAfixPl>sngSAfixPr)?sngSAfixPl:sngSAfixPr)+ _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
+						+ ftos((sngSAfixPl>sngSAfixPr)?sngSAfixPl:sngSAfixPr)+ _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
 				}
 			}
 		}
@@ -1286,7 +1286,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			
 			//管部以外的零件的材料，较细致的做法是按照材料规范选择表按不同类别零件分别选择；此处简单地取默认值；
 			SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
-			if(rs3->State == adOpenKeyset)
+			if(rs3->State == adStateOpen)
 				rs3->Close();
 			rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1309,7 +1309,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			modPHScal::StressOfMaterial(m_strMaterial,20,Sigma0);
 			//打开固定支架计算公式表，备计算
 			SQLx = _T("SELECT * FROM CalFormulaOfFixPASA WHERE CustomID=\'") + Ptype[i] + _T("\' ORDER BY CustomID,SEQ");
-			if(rsCal->State == adOpenKeyset)
+			if(rsCal->State == adStateOpen)
 				rsCal->Close();
 			rsCal->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1321,26 +1321,26 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			}
 			//打开根部强度计算公式表，备计算
 			SQLx = _T("SELECT * FROM tmpCalFixPhs");
-			if(rsTmp1->State == adOpenKeyset)
+			if(rsTmp1->State == adStateOpen)
 				rsTmp1->Close();
 			//rsTmp1需要修改功能
 			rsTmp1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			//打开槽钢特性表，备查
 			SQLx = _T("SELECT * FROM SSteelPropertyCS ORDER BY ID");
-			if(rsTmp->State == adOpenKeyset)
+			if(rsTmp->State == adStateOpen)
 				rsTmp->Close();
 			rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			//打开角钢特性表，备查
 			SQLx = _T("SELECT * FROM SSteelPropertyLS ORDER BY ID");
-			if(rs1->State == adOpenKeyset)
+			if(rs1->State == adStateOpen)
 				rs1->Close();
 			rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			//取根部表中的满足定位条件的所有记录,按PmaxSF排序，逐个查找
-			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
-			if(rsX->State == adOpenKeyset)
+			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
+			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1577,7 +1577,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						
 								//开始计算几何、截面特性
 								SQLx=_T("SELECT ")+ Wyh1sa+_T(" AS Wyh1sac, ")+ Wyh2sa+_T(" AS Wyh2sac, ") + Wzh1sa+_T(" AS Wzh1sac, ")+ Wzh2sa+_T(" AS Wzh2sac, ")+SIGMA1saMax+_T(" AS SIGMA1saMaxc, ")+TAO1saMax+_T(" AS TAO1saMaxc, ")+SIGMA2saMax+_T(" AS SIGMA2saMaxc, ")+TAO2saMax+_T(" AS TAO2saMaxc, ")+lamda1+_T(" AS lamda1c, ")+lamda2+_T(" AS lamda2c FROM tmpCalFixPhs");
-								if(rsTmp2->State == adOpenKeyset)
+								if(rsTmp2->State == adStateOpen)
 									rsTmp2->Close();
 								rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1618,7 +1618,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								rsTmp1->Update();
 								float mf1=0.0,mf2=0,mfl1=0,mfl2=0;
 								SQLx=_T("SELECT Lamda,Fi FROM SteadyDecreaseCoef WHERE Material=\'") + m_strMaterial + _T("\'");
-								if(rs2->State == adOpenKeyset)
+								if(rs2->State == adStateOpen)
 									rs2->Close();
 								rs2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1767,7 +1767,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							//开始计算正应力sigma、剪应力tao
 							SQLx=_T("SELECT ")+ TAOx1sa+_T(" AS TAOx1sac, ")+ TAOy1sa+_T(" AS TAOy1sac, ")+ TAOz1sa+_T(" AS TAOz1sac,")
 								+ TAOx2sa+_T(" AS TAOx2sac, ")+ TAOy2sa+_T(" AS TAOy2sac, ")+ TAOz2sa+_T(" AS TAOz2sac FROM tmpCalFixPhs");
-							if(rsTmp2->State == adOpenKeyset)
+							if(rsTmp2->State == adStateOpen)
 								rsTmp2->Close();
 							rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -1788,7 +1788,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							rsTmp1->Update();
 							
 							SQLx=_T("SELECT ")+ TAO1sa+_T(" AS TAO1sac,")+ TAO2sa+_T(" AS TAO2sac,")+SIGMA1sa+_T(" AS SIGMA1sac,")+SIGMA2sa+_T(" AS SIGMA2sac FROM tmpCalFixPhs");
-							if(rsTmp2->State == adOpenKeyset)
+							if(rsTmp2->State == adStateOpen)
 								rsTmp2->Close();
 							rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2055,7 +2055,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				EDIBgbl::ChangeColumnsToRows(EDIBgbl::dbPRJ,_T("tmpCalFixPhs"),_T("CheckCalFixPhs"));
 				EDIBDB::OutPutTable( _T("CheckCalFixPhs"), basDirectory::ProjectDBDir+_T("CheckCalculation.xls"), _T("Excel 5.0;"), EDIBgbl::dbPRJ,  _T("CheckCalFixPhs"), _T("Excel 5.0;"));
 				
-				SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' AND dh=") + ltos(dh) + _T(" ORDER BY GDW1,PmaxSF");
+				SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' AND dh=") + ltos(dh) + _T(" ORDER BY GDW1,PmaxSF");
 			}
 			//结束强度计算:华东院固定支架根部双臂三角架SJ8(ClassID=iSALbraceFixG47=4)
 		}			
@@ -2067,7 +2067,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		{
 			modPHScal::giSAG100No=1;
 		}
-		SQLx.Format(_T("SELECT * FROM %s WHERE trim(CustomID)=\'%s\' AND dh=%d"),
+		SQLx.Format(_T("SELECT * FROM %s WHERE (CustomID)=\'%s\' AND dh=%d"),
 			modPHScal::tbnSA,
 			Ptype[i],
 			modPHScal::giSAG100No);
@@ -2075,7 +2075,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		break;
 	case iGCement:
 		//混凝土结构不必处理
-		SQLx.Format(_T("SELECT * FROM %s WHERE trim(CustomID)=\'%s\'"),
+		SQLx.Format(_T("SELECT * FROM %s WHERE (CustomID)=\'%s\'"),
 			modPHScal::tbnSA,
 			Ptype[i]);
 		break;
@@ -2124,7 +2124,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 					}
 					else
 					{
-						SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF( %g > L1/2 , L1 - %g , %g ) AND L1>= %g AND Pnum1=%d AND Val(Mid(P1,2))>=%g AND Mid(P1,2)>=\'%s\' AND trim(CustomID)=\'%s\' ORDER BY GDW1,L1,%s"),
+						SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF( %g > L1/2 , L1 - %g , %g ) AND L1>= %g AND Pnum1=%d AND Val(Mid(P1,2))>=%g AND Mid(P1,2)>=\'%s\' AND (CustomID)=\'%s\' ORDER BY GDW1,L1,%s"),
 							modPHScal::tbnSA,
 							modPHScal::gdw + (modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2,
 							modPHScal::gdw + (modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2,
@@ -2135,7 +2135,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							Trim(strTmp),
 							Ptype[i],
 							SAfDPmax);
-						if(rsX->State == adOpenKeyset)
+						if(rsX->State == adStateOpen)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 							adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2177,7 +2177,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							}
 							else
 							{
-								SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF( %g > L1/2 , L1 - %g , %g ) AND L1>= %g AND Pnum1=%d AND Val(Mid(P1,2))>=%g AND Mid(P1,2)>=\'%s\' AND trim(CustomID)=\'%s\' ORDER BY GDW1,L1,%s"),
+								SQLx.Format(_T("SELECT * FROM %s WHERE GDW1>=IIF( %g > L1/2 , L1 - %g , %g ) AND L1>= %g AND Pnum1=%d AND Val(Mid(P1,2))>=%g AND Mid(P1,2)>=\'%s\' AND (CustomID)=\'%s\' ORDER BY GDW1,L1,%s"),
 									modPHScal::tbnSA,
 									modPHScal::gdw + (modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2,
 									modPHScal::gdw + (modPHScal::glNumSA == 1 ? modPHScal::DblHangerRodDist : 0) / 2,
@@ -2188,8 +2188,8 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 									Trim(strTmp),
 									Ptype[i],
 									SAfDPmax);
-								//SQLx = _T("SELECT * FROM ") + tbnSA + _T(" WHERE GDW1>=IIF(") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(">L1/2,L1-") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(",") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(") AND L1>= ") + modPHScal::Lspan + _T(" AND Pnum1=") + k + _T(" AND Val(Mid(P1,2))>=") + Val(strTmp) + _T(" AND Mid(P1,2)>=//") + Trim(strTmp) + _T("// AND trim(CustomID)=//") + Ptype[i] + _T("// ORDER BY GDW1,L1,") + SAfDPmax
-								if(rsX->State == adOpenKeyset)
+								//SQLx = _T("SELECT * FROM ") + tbnSA + _T(" WHERE GDW1>=IIF(") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(">L1/2,L1-") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(",") + (modPHScal::gdw + IIf(glNumSA = 1, modPHScal::DblHangerRodDist, 0) / 2) + _T(") AND L1>= ") + modPHScal::Lspan + _T(" AND Pnum1=") + k + _T(" AND Val(Mid(P1,2))>=") + Val(strTmp) + _T(" AND Mid(P1,2)>=//") + Trim(strTmp) + _T("// AND (CustomID)=//") + Ptype[i] + _T("// ORDER BY GDW1,L1,") + SAfDPmax
+								if(rsX->State == adStateOpen)
 									rsX->Close();
 								rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2224,7 +2224,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			  else
 			  {
 				  //双吊点，双根部
-				  if(rsX->State == adOpenKeyset)
+				  if(rsX->State == adStateOpen)
 					  rsX->Close();
 				  rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 					  adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2237,7 +2237,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		   else
 		   {
 			   //单吊点，单根部
-			   if(rsX->State == adOpenKeyset)
+			   if(rsX->State == adStateOpen)
 				   rsX->Close();
 			   rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				   adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2249,7 +2249,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		else
 		{
 			//按保守方式计算根部
-			if(rsX->State == adOpenKeyset)
+			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2257,7 +2257,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 	}
 	else
 	{
-		if(rsX->State == adOpenKeyset)
+		if(rsX->State == adStateOpen)
 			rsX->Close();
 		rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2267,7 +2267,7 @@ spZ1Z2:
 	//找不到匹配的应去除此项条件再查找 add by luorijin 2009.05.12
 	if( modPHScal::gbConnectHoleDimMatch && tmpSQL != _T("") && rsX->adoEOF && rsX->BOF )
 	{
-		if(rsX->State == adOpenKeyset)
+		if(rsX->State == adStateOpen)
 			rsX->Close();
 		SQLx.Replace(tmpSQL," ");
 		rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
@@ -2305,8 +2305,8 @@ spZ1Z2:
 			tmpSQL = _T("SELECT * FROM ") + modPHScal::tbnPART + _T(" WHERE ") + _T(" Pmax>=");
 			sTmp.Format(_T("%g"),tmpSelPJG / iNumPart * (vtob(rsza->GetCollect(_T("ifLongVertPipe")))? iNumPart : 1));
 			tmpSQL+=sTmp;
-			tmpSQL=tmpSQL  + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
-			if(rsX->State == adOpenKeyset)
+			tmpSQL=tmpSQL  + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,tj,Weight");
+			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2370,7 +2370,7 @@ spZ1Z2:
 	else
 	{
 		rsX->MoveFirst();
-		if(phsAvailableTypeRs->State == adOpenKeyset)
+		if(phsAvailableTypeRs->State == adStateOpen)
 			phsAvailableTypeRs->Close();
 		phsAvailableTypeRs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 									adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2402,7 +2402,7 @@ spZ1Z2:
 							modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
 					}
 					rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp2);
-					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND trim(CustomID)=\'%s\' %s"),
+					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND (CustomID)=\'%s\' %s"),
 						modPHScal::tbnLugDiaOfCSPR,
 						sTmp,
 						(modPHScal::PtypeDiameter[i] <= 0 ? 10 : modPHScal::PtypeDiameter[i]),
@@ -2427,7 +2427,7 @@ spZ1Z2:
 					}
 					rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp2);
 					rsX->get_Collect((_variant_t)_T("Fjmin"), &vTmp3);
-					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND trim(CustomID)=\'%s\' %s"),
+					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND (CustomID)=\'%s\' %s"),
 						modPHScal::tbnLugDiaOfCSPR,
 						sTmp,
 						(vtoi(vTmp3)<=0 ? 10 : vtoi(vTmp3)),
@@ -2457,7 +2457,7 @@ spZ1Z2:
 							modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
 					}
 					rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp2);
-					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s AND FiJ>=%d AND minDH<=%d AND maxDH>=%d  AND trim(CustomID)=\'%s\' %s"),
+					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s AND FiJ>=%d AND minDH<=%d AND maxDH>=%d  AND (CustomID)=\'%s\' %s"),
 						modPHScal::tbnLugDiaOfCSPR,					
 						sTmp,
 						(modPHScal::PtypeDiameter[i] <= 0 ? 10 : modPHScal::PtypeDiameter[i]),
@@ -2482,7 +2482,7 @@ spZ1Z2:
 					}
 					rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp2);
 					rsX->get_Collect((_variant_t)_T("Fjmin"), &vTmp3);
-					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND trim(CustomID)=\'%s\' %s"),
+					SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d AND (CustomID)=\'%s\' %s"),
 						modPHScal::tbnLugDiaOfCSPR,
 						sTmp,
 						(vtoi(vTmp3)<=0 ? 10 : vtoi(vTmp3)),
@@ -2492,7 +2492,7 @@ spZ1Z2:
 						(modPHScal::gbByForce ? _T(" ORDER BY Pmax,FiJ") : _T(" ORDER BY FiJ")));
 				}
 			}
-			if(rsDiaOfCSPRFiJ->State == adOpenKeyset)
+			if(rsDiaOfCSPRFiJ->State == adStateOpen)
 				rsDiaOfCSPRFiJ->Close();
 			rsDiaOfCSPRFiJ->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2716,7 +2716,7 @@ spZ1Z2:
 		//常州电力机械厂样本p20 C型恒吊的T值应该该为I值，才与前面的LHE、PHE(1<=DH<=83)的尺寸吻合。
 		//编程才方便。样本中并未提到要加自重在计算连接螺栓直径，从数值看似乎已经考虑了自重。
 		//而且加自重后有时找不到与FiJ对应的FiK，故此这里荷载不加自重。
-		//_T("WHERE ") + IIf(gbByForce, _T(" PmaxKgf>=") + IIf(sPartID = _T("LHG"), tmpSelPJG4CSPRFiJ + IIf(IsNull(rsX.Fields(_T("Weight"))), 0, rsX.Fields(_T("Weight"))) * gintParallelNum, tmpSelPJG4CSPRFiJ) / gintParallelNum, _T(" fBmin<=") + modPHScal::sSprInfo[iSEQofSPR].HeatDisp + _T(" AND fBmax>=") + modPHScal::sSprInfo[iSEQofSPR].HeatDisp) + _T(" AND FiJ>=") + IIf(modPHScal::PtypeDiameter[i] <= 0, 10, modPHScal::PtypeDiameter[i]) + _T(" AND minDH<=") + modPHScal::sSprInfo[iSEQofSPR].DH + _T(" AND maxDH>=") + modPHScal::sSprInfo[iSEQofSPR].DH + _T(" AND trim(CustomID)=//") + Trim(rsX.Fields(_T("CustomID"))) + _T("// ") + IIf(gbByForce, _T(" ORDER BY Pmax,FiJ"), _T(""))
+		//_T("WHERE ") + IIf(gbByForce, _T(" PmaxKgf>=") + IIf(sPartID = _T("LHG"), tmpSelPJG4CSPRFiJ + IIf(IsNull(rsX.Fields(_T("Weight"))), 0, rsX.Fields(_T("Weight"))) * gintParallelNum, tmpSelPJG4CSPRFiJ) / gintParallelNum, _T(" fBmin<=") + modPHScal::sSprInfo[iSEQofSPR].HeatDisp + _T(" AND fBmax>=") + modPHScal::sSprInfo[iSEQofSPR].HeatDisp) + _T(" AND FiJ>=") + IIf(modPHScal::PtypeDiameter[i] <= 0, 10, modPHScal::PtypeDiameter[i]) + _T(" AND minDH<=") + modPHScal::sSprInfo[iSEQofSPR].DH + _T(" AND maxDH>=") + modPHScal::sSprInfo[iSEQofSPR].DH + _T(" AND (CustomID)=//") + Trim(rsX.Fields(_T("CustomID"))) + _T("// ") + IIf(gbByForce, _T(" ORDER BY Pmax,FiJ"), _T(""))
 		if(modPHScal::gbByForce)
 		{
 			rsX->get_Collect((_variant_t)_T("Weight"), &vTmp1);
@@ -2730,7 +2730,7 @@ spZ1Z2:
 				modPHScal::sSprInfo[iSEQofSPR].CheckDisp);
 		}
 		rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp2);
-		SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d  AND trim(CustomID)=\'%s\' %s"),
+		SQLx.Format( _T("SELECT * FROM [%s] WHERE %s  AND FiJ>=%d AND minDH<=%d AND maxDH>=%d  AND (CustomID)=\'%s\' %s"),
 			modPHScal::tbnLugDiaOfCSPR,
 			sTmp,
 			(modPHScal::PtypeDiameter[i] <= 0 ? 10 : modPHScal::PtypeDiameter[i]),
@@ -2739,7 +2739,7 @@ spZ1Z2:
 			vtos(vTmp2),
 			(modPHScal::gbByForce ? _T(" ORDER BY Pmax,FiJ") : _T(" ORDER BY FiJ")));
 		
-		if(rsDiaOfCSPRFiK->State == adOpenKeyset)
+		if(rsDiaOfCSPRFiK->State == adStateOpen)
 			rsDiaOfCSPRFiK->Close();
 		rsDiaOfCSPRFiK->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2756,7 +2756,7 @@ spZ1Z2:
 	rsX->get_Collect((_variant_t)_T("CustomID"), &vTmp1);
 	
 	HRESULT hr = S_OK;
-	strTmp = _T("trim(CustomID)=\'") + vtos(vTmp1) + _T("\'");
+	strTmp = _T("(CustomID)=\'") + vtos(vTmp1) + _T("\'");
 	hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 		if( !rsID->adoEOF)
 	{
@@ -2765,7 +2765,7 @@ spZ1Z2:
 	}
 	if( sBHFormat.GetLength()<=0 )
 	{
-		sBHFormat = _T("trim(BH)");
+		sBHFormat = _T("(BH)");
 	}
 	rsX->get_Collect((_variant_t)_T("BH"), &vTmp1);
 	sBH=vtos(vTmp1);
@@ -3173,7 +3173,7 @@ spZ1Z2:
 		   }
 		   
 		   SQLx = _T("SELECT (") + sBHFormat + _T(") AS sBHFormat  FROM tmpCSLen");
-		   if(rsTmp->State == adOpenKeyset)
+		   if(rsTmp->State == adStateOpen)
 			   rsTmp->Close();
 		   rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			   adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -3206,7 +3206,7 @@ spZ1Z2:
 					modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L8")),int(modPHScal::gmiDiameter));			   
 				_RecordsetPtr m_rs;
 			   _variant_t vT1;
-			   if(m_rs->State == adOpenKeyset)
+			   if(m_rs->State == adStateOpen)
 				   m_rs->Close();
 			   
 			   m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
@@ -3356,7 +3356,7 @@ spZ1Z2:
 	rsTZB->put_Collect((_variant_t)_T("CLbz"),vnil);
 	
 	_variant_t vTmp;
-	strTmp = _T("trim(ID)=\'") + sPartID + _T("\'");
+	strTmp = _T("(ID)=\'") + sPartID + _T("\'");
 	hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 	if( !rsID->adoEOF)
 	{
@@ -3706,7 +3706,7 @@ spZ1Z2:
 				rsPartBoltNuts->put_Collect((_variant_t)_T("ID"),vTmp1);
 				
 				HRESULT hr = S_OK;
-				strTmp = _T("trim(ID)=\'") + vtos(vTmp1) + _T("\'");
+				strTmp = _T("(ID)=\'") + vtos(vTmp1) + _T("\'");
 				hr = rsID->Find((_bstr_t)strTmp, 0, adSearchForward);
 				if( !rsID->adoEOF)
 				{
@@ -3986,7 +3986,7 @@ spZ1Z2:
 		ret=false;
 	}
 */
-	if(rsTZB->State == adOpenKeyset)
+	if(rsTZB->State == adStateOpen)
 		rsTZB->Close();
 
 	if(Ptype)
@@ -4196,8 +4196,8 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 				  mvSAattachedCustomID =sTmp;
 				  //看是否是型钢:槽钢、角钢、工字钢、圆钢、扁钢？（钢板作为附件处理）
 				  //扁钢(在根部表和型钢表中)的存放格式应为：-宽x厚，如-90x16。
-				  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSectionSteel + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
-				  if(rsTmp->State == adOpenKeyset)
+				  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSectionSteel + _T("] WHERE (BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+				  if(rsTmp->State == adStateOpen)
 					  rsTmp->Close();
 				  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					  adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -4207,7 +4207,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 					  //****************************
 					  //找不到,则是附件,再查附件表
 					  rsTmp->Close();
-					  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnAttachment + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+					  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnAttachment + _T("] WHERE (BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
 					  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 						  adOpenKeyset, adLockOptimistic, adCmdText); 
 					  if( rsTmp->adoEOF && rsTmp->BOF )
@@ -4217,7 +4217,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 						  //其编号方式为M36x200,或M20
 						  //因此，首先查找根部螺栓螺母表tbnSABoltsnuts，再根据查出的规格从通用螺栓螺母表tbnBoltsNutsID中查找相应的规格。
 						  rsTmp->Close();
-						  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSABoltsNuts + _T("] WHERE trim(BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
+						  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnSABoltsNuts + _T("] WHERE (BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
 						  /*if(rsTmp.IsOpen())
 						  rsTmp.Close();
 						  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;*/
@@ -4287,7 +4287,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 									  EDIBgbl::dbPRJ->Execute((_bstr_t)(_T("UPDATE tmpCSLen SET B=") +sTmp2), NULL, adCmdText);								
 									  //计算螺栓的长度
 									  sngCSLen = modPHScal::CSLength(sBHFormat, sTmp, sBH);
-									  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g  ORDER BY bh"),
+									  SQL1.Format(_T("SELECT * FROM [%s] WHERE (CustomID)=\'%s\' AND SIZE2=%g  ORDER BY bh"),
 										  modPHScal::tbnBoltsNuts,
 										  tmpCustomID,
 										  tmpSize2);
@@ -4298,7 +4298,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 							  {
 								  //六角头螺栓F14
 								  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
-								  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g AND sizeH=%g ORDER BY bh"),
+								  SQL1.Format(_T("SELECT * FROM [%s] WHERE (CustomID)=\'%s\' AND SIZE2=%g AND sizeH=%g ORDER BY bh"),
 									  modPHScal::tbnBoltsNuts,
 									  tmpCustomID,
 									  tmpSize2 ,
@@ -4309,7 +4309,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 							  {
 								  //六角螺母F1、六角扁螺母F2、球面垫圈F4等
 								  //再根据查出的规格从通用螺栓螺母表tbnBoltsNuts中查找相应的规格。
-								  SQL1.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND SIZE2=%g ORDER BY bh"),
+								  SQL1.Format(_T("SELECT * FROM [%s] WHERE (CustomID)=\'%s\' AND SIZE2=%g ORDER BY bh"),
 									  modPHScal::tbnBoltsNuts,
 									  tmpCustomID,
 									  tmpSize2);
@@ -4609,13 +4609,13 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 				   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].SumDisp;
 			   else
 				   tmpMovement=modPHScal::sSprInfo[iSEQofSPR].haz;
-			   SQLx.Format(_T("SELECT * FROM [%s] WHERE trim(CustomID)=\'%s\' AND minDH<=%d AND %d<=maxDH AND fBmin<=%g AND fBmax>=%g "),
+			   SQLx.Format(_T("SELECT * FROM [%s] WHERE (CustomID)=\'%s\' AND minDH<=%d AND %d<=maxDH AND fBmin<=%g AND fBmax>=%g "),
 				   modPHScal::tbnCSPRINGL5Crude,modPHScal::sFindCustomID(sPartID),modPHScal::sSprInfo[iSEQofSPR].DH,modPHScal::sSprInfo[iSEQofSPR].DH,
 				   tmpMovement,tmpMovement);
 			   
 			   rsDiaOfCSPRFiJ->get_Collect((_variant_t)_T("FiJ"), &vTmp1);
 			   //SQLx.Format(_T("SELECT * FROM [%s] WHERE size2=%g"),modPHScal::tbnCSPRINGL5Crude,vtof(vTmp1));
-			   if(rsTmp->State == adOpenKeyset)
+			   if(rsTmp->State == adStateOpen)
 				   rsTmp->Close();
 				   rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					   adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -4663,7 +4663,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 			   {
 				   sTmp=_T(" ");
 			   }
-			   tmpSQL+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND trim(CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
+			   tmpSQL+=(modPHScal::gbCSPRneedSpecialDesign ? _T(" ") : sTmp) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY dh,Weight");
 				   rsX1->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 					   adOpenKeyset, adLockOptimistic, adCmdText); 
 			   if(rsX1->BOF && rsX1->adoEOF||1)//当处在临界值时出错(sizeH的高度没有加上实际位移)pfg and lgb 2005.12.15

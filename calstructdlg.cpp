@@ -1002,7 +1002,7 @@ DWORD CCalStructDlg::CalStruct(float * pResult,PCalInfo pCalInfo,BOOL bMakeTab,i
 	catch(_com_error &e)
 	{
 		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPCSTR)e.Description());
 		AfxMessageBox(strErrorMsg);
 		res=CAL_ERROR;
 	}

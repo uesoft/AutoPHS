@@ -116,7 +116,7 @@ void CComboGenDlg::LoadComboBox(int i)
    //选择模板之前必须处理数据，以便获得管径、荷载、温度等必要数据。
 	try
 	{
-		if(FrmTxsr.m_pViewTxsr->m_ActiveRs!=NULL && FrmTxsr.m_pViewTxsr->m_ActiveRs->State!=adStateClosed)
+		if(FrmTxsr.m_pViewTxsr->m_ActiveRs!=NULL && FrmTxsr.m_pViewTxsr->m_ActiveRs->State==adStateOpen)
 		{
 			FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 			if(FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF || FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)

@@ -2043,64 +2043,7 @@ void CViewTxsr::LoadTJItem2ComboT01()
 {
 	//装入管部温度数据到组合框
 	LoadtbnPAItem2ComBox(m_comboT01,"tj");
-	/*
-	CString tbn1;	
-	if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-	   return;
-	if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-		modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-	else
-		modPHScal::dn="";
-	tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-   
-	if(tbn1=="") 
-		tbn1=modPHScal::tbnPA;
-	   //sTmp.Format(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData), "CustomID", modPHScal::dn);
-	   //ShowMessage(GetResStr(IDS_NoRecordFLDEqvThisValueInPictureClipData)+sTmp);
-	if(modPHScal::dn=="")
-	   EDIBgbl::SQLx = CString("SELECT DISTINCT tj FROM [") + tbn1 + "] ORDER BY tj ASC";
-	else
-	   EDIBgbl::SQLx = CString("SELECT DISTINCT tj FROM [") + tbn1 + "] WHERE trim(CustomID)=\'" + modPHScal::dn + "\' ORDER BY tj ASC";
-   
-   CDaoRecordset rs;
-   CString comboT01Current;
-   CString sTmp;
-   
-   rs.m_pDatabase=&modPHScal::dbZDJcrude;
-   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-   //rs=modPHScal::dbZDJcrude->Execute(_bstr_t(EDIBgbl::SQLx),&tmpvar,adCmdText);
-   
-   if(rs.IsBOF() && rs.IsEOF())
-	   return;
-   m_comboT01.ResetContent();
-   m_comboT01.GetWindowText(comboT01Current);
-   while(!rs.IsEOF())
-   {
-	   rs.GetFieldValue("tj",tmpvar);
-	   sTmp="";
-		if(tmpvar.vt!=VT_NULL)
-		{
-			switch(tmpvar.vt)
-			{
-			case VT_R8:
-				sTmp.Format("%g",tmpvar.dblVal);
-				break;
-			case VT_I4:
-				sTmp.Format("%d",tmpvar.lVal);
-				break;
-			case VT_R4:
-				sTmp.Format("%g",tmpvar.fltVal);
-				break;
-			}
-			//sTmp.Format("%.1f",(float)rs->GetCollect("tj"));
-			m_comboT01.AddString(sTmp);
-		}
-      rs.MoveNext();
-   }
-   rs.Close();
-   //rs->Release();
-   m_comboT01.SetWindowText(comboT01Current);
-	*/
+
 }
 
 void CViewTxsr::CloseRs()

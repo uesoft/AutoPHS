@@ -151,7 +151,7 @@ void EDIBDB::GetTBsize()
 	_RecordsetPtr rs;
 	rs.CreateInstance(__uuidof(Recordset));
 	CString strSQL;
-	strSQL = "SELECT * FROM DrawSize WHERE trim(sjhy)=\'"+EDIBgbl::SelHyName+_T("\'");
+	strSQL = "SELECT * FROM DrawSize WHERE (sjhy)=\'"+EDIBgbl::SelHyName+_T("\'");
 	rs->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbDSize,
 		adOpenKeyset, adLockOptimistic,adCmdText);
 	_variant_t vTmp;
@@ -224,7 +224,7 @@ void EDIBDB::SumMaterial(CString  VlmID)
 	EDIBgbl::SQLx = _T("SELECT * INTO TMP2 IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T("]");
    VlmID.TrimLeft();VlmID.TrimRight();
    if(VlmID!=_T(""))
-	   EDIBgbl::SQLx+=CString(_T(" WHERE trim(VolumeID)=\'")) + VlmID+ _T("\'");
+	   EDIBgbl::SQLx+=CString(_T(" WHERE (VolumeID)=\'")) + VlmID+ _T("\'");
    EDIBgbl::dbPRJDB->Execute((_bstr_t)(EDIBgbl::SQLx), NULL, adCmdText);
    SumNumbers();
 
@@ -271,11 +271,11 @@ void EDIBDB::SumNumbers()
 	   rs1->get_Collect((_variant_t)_T("CLmc"),&CLmc);
 	   rs1->get_Collect((_variant_t)_T("CLcl"),&CLcl);
 	   rs1->get_Collect((_variant_t)_T("CLID"),&CLID);
-	   EDIBgbl::SQLx=CString(_T("trim(CLgg)=\'")) +vtos(CLgg)+
+	   EDIBgbl::SQLx=CString(_T("(CLgg)=\'")) +vtos(CLgg)+
 		   _T("\' AND Trim(CLmc)=\'") +vtos(CLmc) + 
 		   _T("\' AND Trim(CLcl)=\'") +vtos(CLcl) +
 		   _T("\' AND Trim(CLID)=\'") + vtos(CLID) + _T("\'");
-	   //EDIBgbl::SQLx = _T(" trim(CLgg)=\'") + Trim((char*)CLgg.bstrVal) + _T("// AND trim(CLmc)=//") + Trim(rs1(_T("CLmc"))) + _T("// AND trim(CLcl)=//") + Trim(rs1(_T("CLcl"))) + _T("// AND trim(CLID)=//") + Trim(rs1(_T("CLID"))) + _T("//")
+	   //EDIBgbl::SQLx = _T(" (CLgg)=\'") + Trim((char*)CLgg.bstrVal) + _T("// AND (CLmc)=//") + Trim(rs1(_T("CLmc"))) + _T("// AND (CLcl)=//") + Trim(rs1(_T("CLcl"))) + _T("// AND (CLID)=//") + Trim(rs1(_T("CLID"))) + _T("//")
 	   
 	   HRESULT hr = S_OK;
 	   hr = rs2->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchForward);
@@ -517,7 +517,7 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 				db->Execute((_bstr_t)( _T("DROP TABLE tmpTable"));
 			}
 			//按tmp2生成tmpPhsBOM结构
-			SQLx = _T("SELECT * INTO tmpPhsBOM FROM [") + sSrcTableName + _T("] ")+ strOrderBy;//WHERE trim(CLmc)=\_T('\') AND trim(CLgg)=\_T('\')";
+			SQLx = _T("SELECT * INTO tmpPhsBOM FROM [") + sSrcTableName + _T("] ")+ strOrderBy;//WHERE (CLmc)=\_T('\') AND (CLgg)=\_T('\')";
 			db->Execute((_bstr_t)( SQLx);
 			*/
 			if(Table_Format == _T("ACAD") )

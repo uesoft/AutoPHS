@@ -82,7 +82,7 @@ bool PSDstart::Start()
 
    //conPRJDB4 4.0的驱动，只有升级时用
 	conPRJDB4.CreateInstance(__uuidof(Connection));
-	conPRJDB4->Open(_bstr_t(::dbConnectionString4+basDirectory::DBShareDir+_T("AllPrjDB.mdb")),//20071025 "ProjectDBDir" 改为 "//20071025 "ProjectDBDir" 改为 "DBShareDir""
+	conPRJDB4->Open(_bstr_t(::dbConnectionString+basDirectory::DBShareDir+_T("AllPrjDB.mdb")),//20071025 "ProjectDBDir" 改为 "//20071025 "ProjectDBDir" 改为 "DBShareDir""
 		_T(""),_T(""),0);
 	
 	if(!EDIBgbl::UpgradeDatabase())

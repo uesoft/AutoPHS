@@ -122,8 +122,8 @@ void CFrmDatabaseIn::getDatabase()
 				m_staticPID.ShowWindow(SW_SHOW);
 				m_comboEngin.ShowWindow(SW_HIDE);
 				m_bIsNewDB=false;
-				sqlA=_T("SELECT DISTINCT VolumeID FROM [") + mytablenameA + _T("] WHERE NOT IsNull(VolumeID) AND trim(VolumeID)<>\'\' AND trim(VolumeID)<>") + EDIBgbl::SelJcdm;
-				//sqlB = _T("SELECT DISTINCT VolumeID FROM[") & mytablenameB & _T("] WHERE NOT IsNull(VolumeID) AND trim(VolumeID)<>'' AND trim(VolumeID)<>'") & SelVlmID & _T("'")
+				sqlA=_T("SELECT DISTINCT VolumeID FROM [") + mytablenameA + _T("] WHERE NOT IsNull(VolumeID) AND (VolumeID)<>\'\' AND (VolumeID)<>") + EDIBgbl::SelJcdm;
+				//sqlB = _T("SELECT DISTINCT VolumeID FROM[") & mytablenameB & _T("] WHERE NOT IsNull(VolumeID) AND (VolumeID)<>'' AND (VolumeID)<>'") & SelVlmID & _T("'")
 				rsA->Open(_variant_t(sqlA),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
 				_variant_t vTmp;
 				while(!rsA->adoEOF)
@@ -279,7 +279,7 @@ void CFrmDatabaseIn::OnDataIn()
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if(!m_bIsNewDB)
 					{
-						SQLx=_T("SELECT count(*) as C1 FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
+						SQLx=_T("SELECT count(*) as C1 FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 					}
 					rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)db,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -417,7 +417,7 @@ void CFrmDatabaseIn::OnDataIn()
 							tblName=CString(_T("[")) + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZA] + _T("]");
 							SQLx= _T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] SELECT ") + ltos(VlmID) + _T(" AS VolumeID,") + 
 								SQL1 + _T(" FROM [") +EDIBgbl::TBNSelPrjSpec+ EDIBgbl::Btype[EDIBgbl::TZA] + _T("] IN \'")+ 
-								EDIBgbl::GetDBName(db) + _T("\' WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
+								EDIBgbl::GetDBName(db) + _T("\' WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 							try
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
@@ -437,7 +437,7 @@ void CFrmDatabaseIn::OnDataIn()
 							tblName=CString(_T("[")) + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZB] + _T("]");
 							SQLx= _T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TZB] + _T("] SELECT ") + ltos(VlmID) + _T(" AS VolumeID,") + 
 								SQL1 + _T(" FROM [") +EDIBgbl::TBNSelPrjSpec+ EDIBgbl::Btype[EDIBgbl::TZB] + _T("] IN \'")+ 
-								EDIBgbl::GetDBName(db) + _T("\' WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
+								EDIBgbl::GetDBName(db) + _T("\' WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 							//MessageBox(SQLx);
 							try
 							{
@@ -458,7 +458,7 @@ void CFrmDatabaseIn::OnDataIn()
 							tblName=CString(_T("[")) + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZD] + _T("]");
 							SQLx= _T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] SELECT ") + ltos(VlmID) + _T(" AS VolumeID,") + 
 								SQL1 + _T(" FROM [") +EDIBgbl::TBNSelPrjSpec+ EDIBgbl::Btype[EDIBgbl::TZD] + _T("] IN \'")+ 
-								EDIBgbl::GetDBName(db) + _T("\' WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
+								EDIBgbl::GetDBName(db) + _T("\' WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 							try
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
@@ -478,7 +478,7 @@ void CFrmDatabaseIn::OnDataIn()
 							tblName=CString(_T("[")) + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TML] + _T("]");
 							SQLx= _T("INSERT INTO [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] SELECT ") + ltos(VlmID) + _T(" AS VolumeID,") + 
 								SQL1 + _T(" FROM [") +EDIBgbl::TBNSelPrjSpec+ EDIBgbl::Btype[EDIBgbl::TML] + _T("] IN \'")+ 
-								EDIBgbl::GetDBName(db) + _T("\' WHERE trim(VolumeID) =\'") + m_sList1 + _T("\'");
+								EDIBgbl::GetDBName(db) + _T("\' WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 							try
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);

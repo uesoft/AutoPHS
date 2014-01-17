@@ -175,7 +175,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 						//删除这个记录，防止它被写入到数据表，导致用户误点击。
 						rs1->get_Collect((_variant_t)_T("TableName"),&v);
 						rs->get_Collect((_variant_t)_T("Standard"),&v1);
-						strSQL.Format(_T("DELETE  FROM [%s] WHERE trim(standard)=\'%s\'"),vtos(v),vtos(v1));
+						strSQL.Format(_T("DELETE  FROM [%s] WHERE (standard)=\'%s\'"),vtos(v),vtos(v1));
 						EDIBgbl::dbSORT->Execute((_bstr_t)strSQL, NULL, adCmdText);
 						break;
 					 }

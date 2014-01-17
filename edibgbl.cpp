@@ -652,9 +652,9 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		CString SQLx;
 		int i=0;
 		if (tbn==_T(""))
-			SQLx = _T("SELECT * FROM T") + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" WHERE trim(LocalCaption)<>\'\'");
+			SQLx = _T("SELECT * FROM T") + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" WHERE (LocalCaption)<>\'\'");
 		else
-			SQLx = _T("SELECT * FROM [") + tbn + _T("] WHERE trim(LocalCaption)<>\'\'");
+			SQLx = _T("SELECT * FROM [") + tbn + _T("] WHERE (LocalCaption)<>\'\'");
 		
 		//float Width;
 		//_variant_t sngWidth;
@@ -700,9 +700,9 @@ void EDIBgbl::SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn)
 	tbn.TrimLeft();
 	tbn.TrimRight();
    if (tbn==_T(""))
-	   SQLx = _T("SELECT * FROM T") + Btype[SelBillType] + _T(" WHERE trim(LocalCaption)<>\'\'");
+	   SQLx = _T("SELECT * FROM T") + Btype[SelBillType] + _T(" WHERE (LocalCaption)<>\'\'");
    else
-	   SQLx = _T("SELECT * FROM ") + tbn + _T(" WHERE trim(LocalCaption)<>\'\'");
+	   SQLx = _T("SELECT * FROM ") + tbn + _T(" WHERE (LocalCaption)<>\'\'");
    HRESULT hr = S_OK;
    _variant_t ix;
    ix.ChangeType(VT_I4);
@@ -983,7 +983,7 @@ void EDIBgbl::GetSelPrjName()
 		//取得工程名
  		if(dbPRJDB)
 		{
-			SQLx = _T("SELECT * FROM engin WHERE ((EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND trim(gcmc)<>\'\'");
+			SQLx = _T("SELECT * FROM engin WHERE ((EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND (gcmc)<>\'\'");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			_variant_t v;
@@ -1009,7 +1009,7 @@ void EDIBgbl::GetSelPrjName()
 		_variant_t v;
  		if(dbDSize)//20071018 11:29(start)"dbDSize"改为"dbDSize"
 		{
-			SQLx = _T("SELECT * FROM DesignStage WHERE ((sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND trim(sjjddm)<>\'\'") + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
+			SQLx = _T("SELECT * FROM DesignStage WHERE ((sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND (sjjddm)<>\'\'") + _T(" AND (SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs2->adoEOF)
@@ -1023,7 +1023,7 @@ void EDIBgbl::GetSelPrjName()
 			
 			
 			//取得专业名称
-			SQLx = _T("SELECT * FROM Speciality WHERE trim(zyid)=") + ltos(SelSpecID) + _T(" AND trim(SJHYid)=") + ltos(SelHyID);
+			SQLx = _T("SELECT * FROM Speciality WHERE (zyid)=") + ltos(SelSpecID) + _T(" AND (SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			if(!rs2->adoEOF)

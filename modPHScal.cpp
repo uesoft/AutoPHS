@@ -491,7 +491,7 @@ _variant_t modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID)
 	   sID.TrimLeft();sID.TrimRight();
 	   dFLD.TrimLeft();dFLD.TrimRight();
 	   CString SQLx;
-	   SQLx+=_T("SELECT * FROM PhsBlkDimPos WHERE trim(");
+	   SQLx+=_T("SELECT * FROM PhsBlkDimPos WHERE (");
 		SQLx+=sFLD;
 		SQLx+=_T(")=\'");
 		SQLx+=sID;
@@ -529,7 +529,7 @@ _variant_t modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*/
 	   strSourceFLDvalue=_T("\'")+strSourceFLDvalue;
    if(strSourceFLDvalue.Right(1)!=(_T("\'")))
 	   strSourceFLDvalue=strSourceFLDvalue+_T("\'");
-   sTmp=CString(_T("SELECT "))+strDestFLD +_T(" FROM PictureClipData WHERE trim(")+strSourceFLD+_T(") = ")+strSourceFLDvalue;
+   sTmp=CString(_T("SELECT "))+strDestFLD +_T(" FROM PictureClipData WHERE (")+strSourceFLD+_T(") = ")+strSourceFLDvalue;
    //rs=EDIBgbl::dbPRJ->Execute(_bstr_t(sTmp),NULL,adCmdText);
    rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 	   adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -617,15 +617,15 @@ CString modPHScal::sFindID(CString CustomID)
 	   _RecordsetPtr rs;
 	   rs.CreateInstance(__uuidof(Recordset));
 	  _variant_t tmpvar;
-	 // _bstr_t bs=(_bstr_t)CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'")+CustomID+_T("\'"));
-      //rs = EDIBgbl::dbPRJ->Execute(_bstr_t(CString(_T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'")+CustomID+_T("\'"))),
+	 // _bstr_t bs=(_bstr_t)CString(_T("SELECT * FROM PictureClipData WHERE (CustomID)=\'")+CustomID+_T("\'"));
+      //rs = EDIBgbl::dbPRJ->Execute(_bstr_t(CString(_T("SELECT * FROM PictureClipData WHERE (CustomID)=\'")+CustomID+_T("\'"))),
 	///	  &tmpvar,adCmdText);
 	  if(CustomID.Left(1)!=(_T("\'")))
 		  CustomID=_T("\'")+CustomID;
 	  if(CustomID.Right(1)!=(_T("\'")))
 		  CustomID+=_T("\'");
 	  CString sTmp;
-	  sTmp = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=")+CustomID;
+	  sTmp = _T("SELECT * FROM PictureClipData WHERE (CustomID)=")+CustomID;
 	  rs->Open((_bstr_t)sTmp, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		  adOpenKeyset, adLockOptimistic, adCmdText); 
      if(rs->BOF && rs->adoEOF)
@@ -710,7 +710,7 @@ CString modPHScal::sFindTBN(CString /*ByVal*/ PartCustomID)
 		return _T("");
 	}
 	CString SQLx;
-	SQLx = _T("SELECT * FROM PictureClipData WHERE  trim(CustomID)=\'")+PartCustomID+_T("\'");
+	SQLx = _T("SELECT * FROM PictureClipData WHERE  (CustomID)=\'")+PartCustomID+_T("\'");
 	rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 		adOpenKeyset, adLockOptimistic, adCmdText); 
    if(rs->BOF && rs->adoEOF )
@@ -2527,21 +2527,21 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 							}
 							//更新管理表
 							rs1->get_Collect((_variant_t)_T("standard"),&vTmp);
-							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE (standard)=\'") +vtos(vTmp) + _T("\'");
 							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
 							//创建一临时表保存将要追加的查询
 							if( rs2->adoEOF && rs2->BOF ){
 							}else{
-								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
+								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE (standard)=\'") + vtos(vTmp) + _T("\'");
 								EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							}							
 							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE (standard)=\'") +vtos(vTmp) + _T("\'");
 							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
-							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
+							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE (standard)=\'") + vtos(vTmp) + _T("\'");
 							EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);							
 							rs1->MoveNext();
 						}
@@ -2719,22 +2719,22 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 							}
 							//更新管理表
 							rs1->get_Collect((_variant_t)_T("standard"),&vTmp);
-							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE (standard)=\'") +vtos(vTmp) + _T("\'");
 							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
 							if( rs2->adoEOF || rs2->BOF ){
 							}else{
-								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
+								SQLx = _T("DELETE * FROM ") + strTbn + _T(" WHERE (standard)=\'") + vtos(vTmp) + _T("\'");
 								EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							}							
 							//alter strTbn table structure before inserting records
 							//at first close rs2,otherwise to produce a error,because strTbn is still opened.
 							rs2->Close();
 							EDIBgbl::UpdateDBTable(db,strTbn,EDIBgbl::dbSORT,strTbn);
-							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE trim(standard)=\'") +vtos(vTmp) + _T("\'");
+							SQLx = _T("INSERT INTO [") + strTbn + _T("] IN \'") + EDIBgbl::GetDBName(EDIBgbl::dbSORT) + _T("\' SELECT * FROM ") + strTbn + _T(" WHERE (standard)=\'") +vtos(vTmp) + _T("\'");
 							db->Execute((_bstr_t) SQLx, NULL, adCmdText);
 							//保存来源库文件信息
-							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE trim(standard)=\'") + vtos(vTmp) + _T("\'");
+							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE (standard)=\'") + vtos(vTmp) + _T("\'");
 							EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);							
 							rs1->MoveNext();
 						}
@@ -2973,8 +2973,8 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 		Cavphs->GetMaterial();
 		Cavphs->GetphsSEQ(rsza);   //计算编号
 		//以下语句均不成功!
-		//SQLx = _T("SELECT * FROM [") & TBNSelPrjspec & Btype(TZB) & _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND trim(VolumeID)=\'") + EDIBgbl::SelVlmID + _T("\'")
-		//SQL1 = _T("SELECT * FROM [") & TBNSelPrjspec & Btype(TZF) & _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND trim(VolumeID)=\'") + EDIBgbl::SelVlmID + _T("\'")  & _T(" ORDER BY recno")
+		//SQLx = _T("SELECT * FROM [") & TBNSelPrjspec & Btype(TZB) & _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND (VolumeID)=\'") + EDIBgbl::SelVlmID + _T("\'")
+		//SQL1 = _T("SELECT * FROM [") & TBNSelPrjspec & Btype(TZF) & _T("] WHERE zdjh=") + ltos(zdjh) + _T(" AND (VolumeID)=\'") + EDIBgbl::SelVlmID + _T("\'")  & _T(" ORDER BY recno")
 		//SQLx = SQLx & _T(" UNION ALL ") & SQL1
 
 		Cavphs->GetPhsSAELandPAdxdydz();  //计算根部标高和管部定位尺寸
@@ -3113,7 +3113,7 @@ void modPHScal::PhsMLmake(_variant_t ZDJNo)
 	   if (sTmpDrawNo != _T("") && sTmpDrawNa != _T(""))
 	   {
 		  //开始更新目录信息
-		   SQL1x = _T("SELECT * FROM [") + tbn + _T("] where VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(DrawNo) AND NOT IsNull(DrawNa) AND NOT trim(DrawNo)=\'\' AND NOT trim(DrawNa)=\'\' AND zdjh=") + sZdjh + _T(" ORDER BY SEQ");
+		   SQL1x = _T("SELECT * FROM [") + tbn + _T("] where VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" AND NOT IsNull(DrawNo) AND NOT IsNull(DrawNa) AND NOT (DrawNo)=\'\' AND NOT (DrawNa)=\'\' AND zdjh=") + sZdjh + _T(" ORDER BY SEQ");
 		   rsX->Open((_bstr_t)SQL1x, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			   adOpenKeyset, adLockOptimistic, adCmdText); 
 		  if( rsX->BOF&& rsX->adoEOF)// Then
@@ -4388,12 +4388,12 @@ void modPHScal::CreateTmpIDCustomIDTable()
 		EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
 	//if(Cavphs->rsID==NULL)
 	//Cavphs->rsID.CreateInstance(__uuidof(Recordset));
-		if(Cavphs->rsID->State == adStateOpen)
+		if(Cavphs->rsID->State)
 			Cavphs->rsID->Close();
 			//Cavphs->rsID->CursorLocation=adUseClient;
 			//Cavphs->rsID->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic,adLockOptimistic,adCmdText);
 		Cavphs->rsID->Open((_bstr_t)EDIBgbl::SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		Cavphs->brsIDStatus=TRUE;
 		//此后一般应该检查ID和修改模板名称
 	}
@@ -5609,7 +5609,7 @@ void modPHScal::CalSpringParallelNum(CString& PipeA)
 		  if (PipeA != _T(""))
 		  {
 			  CString SQLx;
-			  SQLx = _T("SELECT * FROM PictureClipData WHERE trim(CustomID)=\'") + PipeA + _T("\'");
+			  SQLx = _T("SELECT * FROM PictureClipData WHERE (CustomID)=\'") + PipeA + _T("\'");
 			  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				  adOpenKeyset, adLockOptimistic, adCmdText); 
 			 if (rs->BOF && rs->adoEOF)
@@ -6228,7 +6228,7 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 		  sSprInfo[i].HeatDisp = yr / iSumSerialNum * sSprInfo[i].SerialNum;
 		  //以下查找质量,假定都是T1，这对于仅仅作为排序比较是可行的。
 		  sTmp.Format(_T("%d"),sSprInfo[i].DH);
-		  SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + sTmp + _T(" And trim(CustomID)=\'") + sFindCustomID(_T("T1")) + _T("\'");
+		  SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + sTmp + _T(" And (CustomID)=\'") + sFindCustomID(_T("T1")) + _T("\'");
 		  if(rs->State == adStateOpen)
 			  rs->Close();
 		  rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
@@ -6320,7 +6320,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 					//throw sTmp;
 					return ret;
 				}
-				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" ORDER BY DH DESC");
+				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE (CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" ORDER BY DH DESC");
 				rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//if(!rs1->adoEOF && !rs1->BOF)
@@ -6338,7 +6338,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 				}else{
 					k = giSumSerialNum - iSumSerialNum;
 				}
-				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" AND int(dh/100)<=") + ltos(k) + _T(" ORDER BY DH DESC");
+				SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE (CustomID)=\'") + sSprInfo[i].CustomID + _T("\' AND (dh mod 100)=") + strSprNo + _T(" AND int(dh/100)<=") + ltos(k) + _T(" ORDER BY DH DESC");
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				//只有从实际的数据库中才能判别这个弹簧的最大串联数,数据表中字段DH=串联数 *100+弹簧号
@@ -6404,7 +6404,7 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 				  }
 				  
 					//以下查找质量,假定都是T1，这对于仅仅作为排序比较是可行的。
-					SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + ltos(sSprInfo[i].DH) + _T(" AND trim(CustomID)=\'") + sSprInfo[i].CustomID + _T("\'");
+					SQLx = _T("SELECT * FROM [") + tbnSPRINGCrude + _T("] WHERE DH=") + ltos(sSprInfo[i].DH) + _T(" AND (CustomID)=\'") + sSprInfo[i].CustomID + _T("\'");
 					rsw->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
 						adOpenKeyset, adLockOptimistic, adCmdText); 
 					if( rsw->BOF && rsw->adoEOF ){
@@ -8142,7 +8142,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 			if( mlPartClassID[i] == iROD )
 			{//5 当前是拉杆(start)
 				//获得拉杆数据
-				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE trim(CustomID)=\'") +vtos(vTmp) + _T("\'");
+				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE (CustomID)=\'") +vtos(vTmp) + _T("\'");
 				rs->Open((_bstr_t)SQLx, dbZDJcrude.GetInterfacePtr(), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
@@ -8287,7 +8287,7 @@ bool modPHScal::CalRodLength(_RecordsetPtr  rstbl, long  zdjh)
 		{
 				//获得拉杆数据
 				rsTmp->get_Collect((_variant_t)_T("CustomID"),&vTmp);
-				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE trim(CustomID)=\'") + vtos(vTmp) + _T("\'");
+				SQLx = _T("SELECT * FROM [") + tbnLugInfo + _T("] WHERE (CustomID)=\'") + vtos(vTmp) + _T("\'");
 				rsTmp->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbZDJcrude,true), 
 					adOpenKeyset, adLockOptimistic, adCmdText); 
 				if( rs->BOF && rs->adoEOF )
@@ -8923,7 +8923,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 	case iPAfixZ1:
 	   for( k = 0 ;k<= gnDW_delta;k++)
 	   {
-		SQLx.Format(_T("SELECT * FROM %s WHERE Dw>= %g AND Dw<= %g AND Pmax>=%g AND Tj>=%g AND trim(CustomID)=\'%s\' ORDER BY Dw,tj,Weight"),
+		SQLx.Format(_T("SELECT * FROM %s WHERE Dw>= %g AND Dw<= %g AND Pmax>=%g AND Tj>=%g AND (CustomID)=\'%s\' ORDER BY Dw,tj,Weight"),
 			tbnPAfix,
 			dj * (1 - k * 0.01) ,
 			dj * (1 + k * 0.01),
@@ -9248,7 +9248,7 @@ void modPHScal::CalPAfixZ1Z2(CString dn, float tmpSelPJG, float tmpT0, int mvari
 			 //排序按管径dw，温度tj，管部焊缝抗弯矩size7，管部焊缝高度size4，根部焊缝高度size5，
 			 //排序按管径dw，温度tj，支管外径sizeC，管部焊缝高度size4，根部焊缝高度size5，
 			 //世纪上两者等价，下者适应性更好。如华东院不提供size7字段值，依靠计算。
-          SQLx.Format(_T("SELECT * FROM %s WHERE Dw>= %g AND Dw<= %g AND Tj>=%g AND trim(Material)=\'%s\' AND trim(CustomID)=\'%s\' ORDER BY Dw,tj,sizeC,size4,size5,Weight"),
+          SQLx.Format(_T("SELECT * FROM %s WHERE Dw>= %g AND Dw<= %g AND Tj>=%g AND (Material)=\'%s\' AND (CustomID)=\'%s\' ORDER BY Dw,tj,sizeC,size4,size5,Weight"),
 				tbnPAfix,
 				dj * (1 - k * 0.01),
 				dj * (1 + k * 0.01),

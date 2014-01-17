@@ -174,7 +174,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			_variant_t tmpvar;
 			_variant_t v;
 			CString strSQL;
-			strSQL.Format( "SELECT * FROM tzx WHERE trim(LocalCaption)<>\'\'");
+			strSQL.Format( "SELECT * FROM tzx WHERE (LocalCaption)<>\'\'");
 			rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbTable,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 		
@@ -198,7 +198,7 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 
 				HRESULT hr = S_OK;
 				CString strFind;
-				strFind = _T("trim(FieldName)=\'") + sTmp + _T("\'");
+				strFind = _T("(FieldName)=\'") + sTmp + _T("\'");
 				hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 				if(!rs->adoEOF)
 				{

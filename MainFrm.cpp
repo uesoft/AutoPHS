@@ -385,7 +385,6 @@ void CMainFrame::OnActivate(UINT nState, CWnd* pWndOther, BOOL bMinimized)
 
 void CMainFrame::OnSelPDSV() 
 {
-	// TODO: Add your command handler code here
 		modPHScal::SelInputMethod = 2;
 	   	CSelEngVolDll dlg;
 		LPTSTR lpstrAllPrjDBPathName;
@@ -594,7 +593,7 @@ void CMainFrame::OnSampleManage()
    //选择模板之前必须处理数据，以便获得管径、荷载、温度等必要数据。
 // 	try
 // 	{
-		if(FrmTxsr.m_pViewTxsr->m_ActiveRs!=NULL && FrmTxsr.m_pViewTxsr->m_ActiveRs->State!=adStateClosed )
+		if(FrmTxsr.m_pViewTxsr->m_ActiveRs!=NULL && FrmTxsr.m_pViewTxsr->m_ActiveRs->State ==adStateOpen )
 		{
 			if(FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 				return;
@@ -2612,7 +2611,7 @@ BOOL CMainFrame::Start()
 
 	  conZDJCrude.CreateInstance(__uuidof(Connection)); //数据库连接初始化
 	  //open 第一个参数：连接的参数和数据库路径
-	  conZDJCrude->Open(_bstr_t(::dbConnectionString4+basDirectory::ProjectDBDir+_T("ZdjCrude.mdb")), //20071025 "ProjectDBDir" 改为 "DBShareDir"
+	  conZDJCrude->Open(_bstr_t(::dbConnectionString+basDirectory::ProjectDBDir+_T("ZdjCrude.mdb")), //20071025 "ProjectDBDir" 改为 "DBShareDir"
 		  _T(""),_T(""),0);
 
 	}
