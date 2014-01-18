@@ -479,9 +479,11 @@ void CViewTxsr::OnInitialUpdate()
 	m_bIsInit=true;
 	return;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -707,13 +709,11 @@ void CViewTxsr::OnWillMoveDatabill(long adReason, long FAR* adStatus, LPDISPATCH
 	
 	//EDIBAcad::DisplayDataZB ();
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		//AfxMessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -751,13 +751,11 @@ void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FA
 		//Invalidate();
 		this->m_Databill.Invalidate();
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		//AfxMessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -1045,9 +1043,11 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
    }
 	bkRs=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -1989,9 +1989,11 @@ void CViewTxsr::ShowPicturePASA(int Index)
 		GetDlgItem(IDC_EDT_A01)->SetWindowPos(&wndBottom,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);*/
 		//m_ImageViewD1.SetWindowPos(&wndBottom,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -2187,9 +2189,11 @@ void CViewTxsr::OnSelchangeZdjh()
 		RefreshBoundData();
 		DatabillReposition();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -2486,9 +2490,11 @@ void CViewTxsr::UndoDelete()
 			{
 				pRsUndo->Close ();
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
 			}
 			catch(...)
 			{				
@@ -2545,9 +2551,11 @@ void CViewTxsr::EditCopy()
 			conPRJDB->Execute ("SELECT ZA.* INTO Clip FROM ZA", NULL, adExecuteNoRecords);	    
 		    
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2559,9 +2567,11 @@ void CViewTxsr::EditCopy()
 			pRsClip->Open("SELECT * FROM Clip", conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2600,12 +2610,11 @@ void CViewTxsr::EditCopy()
 			pRsClip->MoveNext ();
 		}	
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{	
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
 			pRsClip->Delete (adAffectCurrent);
@@ -2661,9 +2670,11 @@ try
 	   if(vBookMark.vt!=VT_NULL)
 	      m_ActiveRs->Bookmark=vBookMark;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_ActiveRs->Requery(-1);
 		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs);
 		FrmPhsData.m_DBGbill.ReBind();
@@ -2748,12 +2759,11 @@ void CViewTxsr::EditPaste()
 			pRsClip-> MoveNext();
 		}
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
 			pRsClip->Delete (adAffectCurrent);
@@ -2791,9 +2801,11 @@ void CViewTxsr::OnBtnAdd()
 		{
 			m_ActiveRs->Filter=_variant_t((long)adFilterNone);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2802,9 +2814,11 @@ void CViewTxsr::OnBtnAdd()
 		{
 			m_Databill.SetRefRecordset(NULL);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2815,9 +2829,13 @@ void CViewTxsr::OnBtnAdd()
 			{
 				FrmPhsData.m_DBGbill.SetRefDataSource(NULL);
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+#ifdef _DEBUG
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+#endif
 			}
 			catch(...)
 			{
@@ -2864,19 +2882,11 @@ void CViewTxsr::OnBtnAdd()
 			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
 	//	}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-#ifdef _DEBUG
-		ShowMessage(e.Description());
-#endif
-		m_bIsAddNew=false;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_bIsAddNew=false;
 	}
 	m_bIsAddNew=false;
@@ -2889,12 +2899,18 @@ void CViewTxsr::OnDestroy()
 	// TODO: Add your message handler code here
 	try
 	{
-		m_ActiveRs=NULL;
-		//delete m_pRStEvent;
+		if (m_ActiveRs->State == adStateOpen)
+		{
+			m_ActiveRs->Close();
+		}
+		
+		m_ActiveRs.Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3196,9 +3212,11 @@ void CViewTxsr::RefreshOptData()
 	m_OptPag6->UpdateData(false);
 	m_PagItem->UpdateData(false);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3496,13 +3514,11 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 		m_comboGDW1.SetWindowText(ComboGDW1Current);
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		e.Description();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
    catch(...)
 	{
@@ -3746,13 +3762,11 @@ void CViewTxsr::OnGetZdjhdata()
 			DatabillReposition();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		e.Description();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3785,9 +3799,11 @@ long CViewTxsr::GetMaxZdjh()
 		bkRs=NULL;
 		return tmpZdjh;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3937,9 +3953,11 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 				combo.SetCurSel(i);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

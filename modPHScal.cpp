@@ -506,9 +506,11 @@ _variant_t modPHScal::sFindBlkPosFLD(CString  sFLD, CString  dFLD, CString  sID)
    rs->get_Collect((_variant_t)dFLD,&vtmp);
    return vtmp;
    }
-	catch(CException *e)
-	{
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 
 	   return vtmp;
@@ -542,10 +544,11 @@ _variant_t modPHScal::sFindFLD(CString /*ByVal*/ strSourceFLD, CString /*ByVal*/
      }
 	 rs->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	return _variant_t((long)0);
 }
 }
@@ -596,10 +599,11 @@ _variant_t modPHScal::sFindAnyTableField(_ConnectionPtr  db, CString  strSourceT
 		ret=tmpvar;
 		return ret;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return ret;
 	}
 }
@@ -642,10 +646,11 @@ CString modPHScal::sFindID(CString CustomID)
    return ret;
    }
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return _T("");
 	}
 }
@@ -681,9 +686,11 @@ CString modPHScal::sFindCustomID(CString ID)
 	rs->Close();
 	return vtos(v);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -833,9 +840,11 @@ bool  modPHScal::bPAIsHanger()
 		sngSEL=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("GH1")));
 		sngPEL=vtof(FrmTxsr.m_pViewTxsr->m_ActiveRs->GetCollect(_T("DH1")));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -2346,10 +2355,11 @@ bool modPHScal::blnSelphsSPEC(bool /*ByVal*/ mbSPECchanged)
 	ret = TRUE;
    }
    
-   catch(CException *e)
+   catch (_com_error &e)
    {
-	   e->ReportError();
-	   e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	   ret = FALSE;
 	   //Debug.Print SQLx
 	   // ShowMessage(e.Description());
@@ -2389,45 +2399,70 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 		ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
 			basDirectory::ProjectDBDir+_T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
 		modPHScal::dbZDJcrude->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
+	}catch (_com_error &e)
+	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+		return;
+	}
 
-		CString strTbn, strCrudeTbn;
-		CMessageBoxEx MsgDlg;
-		bool bAllYes=false;
-		bool bAllNo=false;
-		UINT nDlgID=0;
+	CString strTbn, strCrudeTbn;
+	CMessageBoxEx MsgDlg;
+	bool bAllYes=false;
+	bool bAllNo=false;
+	UINT nDlgID=0;
 
-		long i=0;
-		bool bFound=false;
-		_ConnectionPtr db;
-		db.CreateInstance(__uuidof(Connection));
-		_RecordsetPtr rs;
-		rs.CreateInstance(__uuidof(Recordset));
-		_RecordsetPtr rs1;
-		rs1.CreateInstance(__uuidof(Recordset));
-		_RecordsetPtr rs2;
-		rs2.CreateInstance(__uuidof(Recordset));
-		strFN.TrimLeft();
-		strFN.TrimRight();
-		CString strTmp;
-		_variant_t vTmp;
-		CString SQLx;
+	long i=0;
+	bool bFound=false;
+	_ConnectionPtr db;
+	db.CreateInstance(__uuidof(Connection));
+	_RecordsetPtr rs;
+	rs.CreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rs1;
+	rs1.CreateInstance(__uuidof(Recordset));
+	_RecordsetPtr rs2;
+	rs2.CreateInstance(__uuidof(Recordset));
+	strFN.TrimLeft();
+	strFN.TrimRight();
+	CString strTmp;
+	_variant_t vTmp;
+	CString SQLx;
+	
+
 		
-
-			
-		if(strFN == _T("") )
-		{
-			throw GetResStr(IDS_NoSelectFileName);
-		}
-		else
-		{
-			ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
-				strFN, ModEncrypt::gstrDBZdjCrudePassWord);
+	if(strFN == _T("") )
+	{
+		throw GetResStr(IDS_NoSelectFileName);
+	}
+	else
+	{
+		ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
+			strFN, ModEncrypt::gstrDBZdjCrudePassWord);
+		try {
 			db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
-			//取出管理表的名称
-			CString strSql;
-			strSql = _T("SELECT * FROM phsManu ORDER BY seq");
+		}
+		catch (_com_error &e)
+		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
+			return;
+		}
+		//取出管理表的名称
+		CString strSql;
+		strSql = _T("SELECT * FROM phsManu ORDER BY seq");
+		try {
 			rs->Open((_bstr_t)strSql, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
+		}
+		catch (_com_error &e)
+		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
+			return;
+		}
 			if( rs->adoEOF && rs->BOF )
 			{
 				strTmp.Format(GetResStr(IDS_NullPhsManuTableInSortMdb),EDIBgbl::GetDBName(EDIBgbl::dbSORT));
@@ -2443,8 +2478,17 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 					bFound = true;
 					rs->get_Collect((_variant_t)_T("SQL"),&vTmp);
 					//下面要判断是否所有的原始数据表都存在，不存在的要排除，不能写到可用列表框，防止用户误点击。
-					rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+					try {
+						rs1->Open((_bstr_t)vTmp, _variant_t((IDispatch*)db,true), 
+							adOpenKeyset, adLockOptimistic, adCmdText); 
+					}
+					catch (_com_error &e)
+					{
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
+						return;
+					}
 					if( rs1->adoEOF || rs1->BOF ){
 						strTmp.Format(GetResStr(IDS_NullPhsManuXtableInProductMdb),strTbn);
 						ShowMessage(strTmp);
@@ -2492,11 +2536,29 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 												if(bAllYes || nDlgID== IDYES)
 												{
 													SQLx = _T("drop table ") + strCrudeTbn;
-													dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
+													try {
+														dbZDJcrude->Execute((_bstr_t)SQLx, NULL, adCmdText);
+													}
+													catch (_com_error &e)
+													{
+														CString strMsg;
+														strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+														AfxMessageBox(strMsg);
+														return;
+													}
 
 													SQLx = "Select * INTO [" + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(modPHScal::dbZDJcrude) + _T("\'  FROM ") + strCrudeTbn;
-													db->Execute((_bstr_t)SQLx, NULL, adCmdText);
-													mbSPECchanged = true;
+													try {
+														db->Execute((_bstr_t)SQLx, NULL, adCmdText);
+														mbSPECchanged = true;
+													}
+													catch (_com_error &e)
+													{
+														CString strMsg;
+														strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+														AfxMessageBox(strMsg);
+														return;
+													}
 												}
 
 											}
@@ -2504,10 +2566,21 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 										else
 										{
 											if( bReplacement ){
+
 												//ZDJCrude.mdb中不存在这个表，则从产品库中导入它
 												//ADO将检查密码,详见phs.arx
 												SQLx = _T("SELECT * INTO [") + strCrudeTbn + _T("] IN \'") + EDIBgbl::GetDBName(dbZDJcrude) + _T("\' FROM ") + strCrudeTbn;
+												try {
 												db->Execute((_bstr_t) SQLx, NULL, adCmdText);
+												}
+												catch (_com_error &e)
+												{
+													// 有时存在此表
+// 													CString strMsg;
+// 													strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+// 													AfxMessageBox(strMsg);
+// 													return;
+												}
 												mbSPECchanged = true;
 											}
 										}
@@ -2532,6 +2605,7 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 							//更新管理表
 							rs1->get_Collect((_variant_t)_T("standard"),&vTmp);
 							SQLx=_T("SELECT * FROM ") + strTbn + _T(" WHERE (standard)=\'") +vtos(vTmp) + _T("\'");
+							try {
 							rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
 								adOpenKeyset, adLockOptimistic, adCmdText); 
 							//创建一临时表保存将要追加的查询
@@ -2548,23 +2622,30 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 							SQLx = _T("UPDATE [") + strTbn + _T("] SET Folder=\'") + strFN + _T("\' WHERE (standard)=\'") + vtos(vTmp) + _T("\'");
 							EDIBgbl::dbSORT->Execute((_bstr_t) SQLx, NULL, adCmdText);							
 							rs1->MoveNext();
+							}
+							catch (_com_error &e)
+							{
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
+								return;
+							}
 						}
 					}
 					rs1->Close();
 				}
 				rs->MoveNext();
 			}
+// 		}catch (_com_error &e)
+// 		{
+// 			CString strMsg;
+// 			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+// 			AfxMessageBox(strMsg);
+// 		}
 			
-			//循环完成
-			strTmp.Format(GetResStr(IDS_FinishedImportProductMdb),strFN);			
-			ShowMessage(strTmp);
-		}
-	}
-	catch (_com_error &e)
-	{
-		CString strMsg;
-		strMsg.Format("%s:%d %s", __FILE__, __LINE__, e.Description());
-		AfxMessageBox(strMsg);
+		//循环完成
+		strTmp.Format(GetResStr(IDS_FinishedImportProductMdb),strFN);			
+		ShowMessage(strTmp);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -2605,8 +2686,10 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 		}
 		else
 		{
-			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFN;
-			db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBProductPassWord, adConnectUnspecified);
+			CString ConnectionString;
+			ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
+				strFN, ModEncrypt::gstrDBProductPassWord);
+			db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 			//取出管理表的名称
 			SQLx = _T("SELECT * FROM phsManu ORDER BY seq");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
@@ -2749,14 +2832,11 @@ void modPHScal::ImportDataFromZdjCrude(CString  strFN, bool  bReplacement, bool 
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CString e)
-	{
-		ShowMessage(e);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	EXECUTE_TIME_END
 	AfxGetApp()->EndWaitCursor();
@@ -2818,13 +2898,12 @@ long modPHScal::CSLength(CString /*ByVal*/ sBHFormat, CString /*ByVal*/ LengthSQ
 				sBH =vtos(vTmp);
 			}
 		}
-	}catch(CString e)
+	}
+	catch (_com_error &e)
 	{
-		ShowMessage(e);
-	}catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -2872,18 +2951,11 @@ long modPHScal::lngPreCal()
    
       return Cavphs->SavephsStructTorsTmpREF();
 	}
-catch(CString e)
-{
-	ShowMessage(e);
-	return 0;
-}
-catch(CException *e)
-{
-	e->Delete();
-	return 0;
-}
-catch(...)
-{
+	catch (_com_error &e)
+	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	return 0;
 }
 }
@@ -3039,13 +3111,11 @@ void modPHScal::DrawPhs(_RecordsetPtr rsza)
 		}
 
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		ReportError("Exception in DrawPhs()",__FILE__,__LINE__);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -3082,9 +3152,11 @@ void modPHScal::MakeZDJ_ZD(long zdjh)
 			(zdjh==0 ? _T("") : CString(_T(" AND zdjh=")) + ltos(zdjh));
      EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	}
-	catch(CException *e)
-	{
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 }
 
@@ -3158,10 +3230,11 @@ void modPHScal::PhsMLmake(_variant_t ZDJNo)
 		  rsX->Close();
 	   }
 	   }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -3960,17 +4033,11 @@ void modPHScal::PhsDisplacementLoadINFOMake(LPCTSTR lpszTextStyle,int iAlign,int
 			}
 		}
 	}
-	catch(CString e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e);
-	}
-	catch(_com_error e)
-	{
-		AfxMessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		ReportError("Exception in PhsDisplacementLoadINFOMake()",__FILE__,__LINE__);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -4328,9 +4395,11 @@ void modPHScal::PhsYLBMake(long zdjh)
 			
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -4344,6 +4413,8 @@ void modPHScal::CreateTmpIDCustomIDTable()
 	
 	//过程可能费时较长
    //Screen.MousePointer = vbHourglass
+	FILE* fp = fopen("CreateTmpIDCustomIDTable.txt", "w");
+
 	AfxGetApp()->BeginWaitCursor();
 	try
 	{
@@ -4356,55 +4427,83 @@ void modPHScal::CreateTmpIDCustomIDTable()
 			Cavphs->rsID->Close();
    
 		_variant_t tmpvar;
-   if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PictureClipData")))
-	{
-	   EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM PictureClipData"), NULL, adCmdText);
-		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPAID + _T("]");
-		dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
-   }
-	else
-	{
-		EDIBgbl::SQLx = CString(_T("SELECT * INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM [") + tbnPAID + _T("]");
-		dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PictureClipData")))
+		{
+			fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE * FROM PictureClipData"), NULL, adCmdText);
+			EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+				_T("\' SELECT * FROM [") + tbnPAID + _T("]");
+			dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+		}
+		else
+		{
+			fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+			EDIBgbl::SQLx = CString(_T("SELECT * INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+				_T("\' FROM [") + tbnPAID + _T("]");
+			dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+		}
 	}
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnPARTID + _T("]");
-   dbZDJcrude->Execute((_bstr_t) EDIBgbl::SQLx, NULL, adCmdText);
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSAID + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnAttachmentID + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
-   //MsgBox dbPRJ.RecordsAffected
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'") )+ EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnBoltsNutsID + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
-	
-   //弹性件的ID表字段可能多两个InstallHeightOfUP,InstallHeightOfDown
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnHDid + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ)+ _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnSPRINGid + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
-   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM [") + tbnSectionSteelID + _T("]");
-   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );   
+	catch (_com_error &e)
+	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+	}
+
+	try
+	{
+		fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT * FROM [") + tbnPARTID + _T("]");
+	   dbZDJcrude->Execute((_bstr_t) EDIBgbl::SQLx, NULL, adCmdText);
+
+   		fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+		EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT * FROM [") + tbnSAID + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText);
+
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT * FROM [") + tbnAttachmentID + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
+	   //MsgBox dbPRJ.RecordsAffected
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'") )+ EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT * FROM [") + tbnBoltsNutsID + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
+		
+	   //弹性件的ID表字段可能多两个InstallHeightOfUP,InstallHeightOfDown
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnHDid + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ)+ 
+		   _T("\' SELECT Index,SEQ,ID,CustomID,ClassID,BmpName,Description,ChineseDescription,ParalleledNum,BHFormat FROM [") + tbnSPRINGid + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
+	   EDIBgbl::SQLx = CString(_T("INSERT INTO PictureClipData IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + 
+		   _T("\' SELECT * FROM [") + tbnSectionSteelID + _T("]");
+	   dbZDJcrude->Execute((_bstr_t)EDIBgbl::SQLx, NULL, adCmdText );   
 	
 		//打开一个ID-CustomID对照表快照，是否可以加快运行速度。
+	   fprintf(fp, "%s:%d %s", __FILE__, __LINE__);
 		EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
-	//if(Cavphs->rsID==NULL)
-	//Cavphs->rsID.CreateInstance(__uuidof(Recordset));
 		if(Cavphs->rsID->State)
 			Cavphs->rsID->Close();
-			//Cavphs->rsID->CursorLocation=adUseClient;
-			//Cavphs->rsID->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic,adLockOptimistic,adCmdText);
 		Cavphs->rsID->Open((_bstr_t)EDIBgbl::SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenDynamic, adLockOptimistic, adCmdText); 
 		Cavphs->brsIDStatus=TRUE;
 		//此后一般应该检查ID和修改模板名称
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-		//Screen.MousePointer = vbDefault
-	   AfxGetApp()->EndWaitCursor();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
+	fclose(fp);
+   AfxGetApp()->EndWaitCursor();
 }
 
 void modPHScal::CreateTmpConnectTable()
@@ -4578,10 +4677,11 @@ void modPHScal::CreateTmpSPRPropertyTable(int /*Optional*/ SprMaxSerialNum)
 		   }
 		   
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError ();
-		e->Delete ();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -4686,14 +4786,11 @@ void modPHScal::SetSpringPhsInfo(_RecordsetPtr rsTmpSelSpring, _RecordsetPtr rsT
 	  FrmTxsr.m_pViewTxsr->UpdateData(false);
 	  FrmTxsr.m_pViewTxsr->m_PagItem->UpdateData(false);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error & e)
-	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5279,19 +5376,11 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 			 }
 		 }
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		//_com_error::Description
-		ShowMessage(e.Description());
-	}
-	catch(CString  e)
-	{
-		ShowMessage(e);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	FrmTxsr.m_pViewTxsr->UpdateData(false);
 }
@@ -5536,18 +5625,11 @@ void modPHScal::AutoSelConstantSpringNo(_RecordsetPtr rss,float fpgz,float fyr,b
 		}
 		
 	}
-	catch(CString e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5573,9 +5655,11 @@ void modPHScal::SetPhsTK3()
 		if( EDIBDB::DwgScale = 0)
 			EDIBDB::DwgScale = 100;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6258,9 +6342,11 @@ float modPHScal::sngSpringWeight(CString /*ByVal*/ strZdjType, _RecordsetPtr rst
 	   }
 	   return ret;
 	  }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -6434,14 +6520,11 @@ float modPHScal::sngSpringWeightNormal(CString /*ByVal*/ strZdjType, _RecordsetP
 			}
 		}
 	}
-	catch(CString e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -6797,14 +6880,11 @@ void modPHScal::UpdateTZB4zdjh(CString FieldName,_variant_t FieldValue)
 		}
 		//_variant_t tmpvar;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError ();
-		e->Delete ();
-	}
-	catch(_com_error& e)
-	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7120,19 +7200,12 @@ void modPHScal::VB_Cal(_RecordsetPtr rs, long zdjh,CFrmStatus &frmStatus,int nth
 	   rs->PutCollect(_T("IsCal"),rs->GetCollect(_T("bCalSuccess")));
 	   PhsMLmake(zdjh);    //把支吊架图号\图名写入目录库
    }
-
-   catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-   }
-   catch(_com_error &e)
+   catch (_com_error &e)
    {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 		frmStatus.MessageBox(e.Description());
-   }
-   catch(CString e)
-   {
-		frmStatus.MessageBox(e);
    }
 
    if ( g_itest != (int)PtypeDiameter )
@@ -8667,9 +8740,11 @@ void modPHScal::SetBasePoint()
 		   giAttDOffsetY=vtof(vTmp);
 	   }
 	 }
-	 catch(CException *e)
+	 catch (_com_error &e)
 	 {
-		 e->Delete();
+		 CString strMsg;
+		 strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		 AfxMessageBox(strMsg);
 	 }
 }
 
@@ -10575,10 +10650,11 @@ void modPHScal::StressOfMaterial(CString Material,float temperature,float& Sigma
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -10608,8 +10684,11 @@ void modPHScal::MakeTmpCalFixPhs()
 		EDIBgbl::dbPRJ->Execute((_bstr_t)"ALTER TABLE ADD COLUMN );
 		EDIBgbl::dbPRJ->Execute((_bstr_t) _T("INSERT INTO tmpCalFixPhs (H) VALUES (0)"));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 	*/
 }
@@ -10761,43 +10840,93 @@ bool modPHScal::CreateTmpCustomIDForPART()
 void modPHScal::CreatePhsStructureNameAndREFIndbPRJ()
 {
 	CString SQLx;
-	try
-	{
 		//在此之前，名称和ID都应该被检查
 		//先复制PhsStructureNAME从sort.mdb->dbPRJ,因为Jet一次只能连接1个外部表
 		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureNAME")))
 		{
 			//这样做可以避免锁定
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureNAME"), NULL, adCmdText);
+			try
+			{
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureNAME"), NULL, adCmdText | adExecuteNoRecords);
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 			SQLx = CString(_T("INSERT INTO PhsStructureNAME IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM PhsStructureNAME ");
-			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			try
+			{
+				EDIBgbl::dbPRJ->Close();
+				EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText | adExecuteNoRecords);//20071018 "dbSORT" 改为 "dbPHScode"
+
+				EDIBgbl::dbPRJ->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + 
+					basDirectory::ProjectDir+_T("WorkPrj.mdb")), "", "", adModeUnknown);
+
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s, \nSQL=%s", __FILE__, __LINE__, (LPSTR)e.Description(), SQLx);
+				AfxMessageBox(strMsg);
+			}
 		}
 		else
 		{
 			//报警：表不存在。
 			SQLx = CString(_T("SELECT * INTO PhsStructureNAME IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureNAME ");
-			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			try
+			{
+				EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 		}
 		//先复制PhsStructureREF从sort.mdb->dbPRJ,因为Jet一次只能连接1个外部表
 		if (EDIBgbl::tdfExists(EDIBgbl::dbPRJ, _T("PhsStructureREF")))
 		{
-			//EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DROP TABLE PhsStructureREF"));			
-			EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureREF"), NULL, adCmdText);		
+			try
+			{
+				EDIBgbl::dbPRJ->Execute((_bstr_t)_T("DELETE FROM PhsStructureREF"), NULL, adCmdText);		
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 			SQLx = CString(_T("INSERT INTO PhsStructureREF IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' SELECT * FROM PhsStructureREF ");
-			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			try
+			{
+				EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+//				AfxMessageBox(strMsg);
+			}
 		}
 		else
 		{
 			//报警：表不存在。
 			SQLx = CString(_T("SELECT * INTO PhsStructureREF IN \'")) + EDIBgbl::GetDBName(EDIBgbl::dbPRJ) + _T("\' FROM PhsStructureREF ");
-			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			try
+			{
+				EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+			}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 		}
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
 }
 
 void modPHScal::CreatePhsStructureNameAndREFatStart()
@@ -10820,11 +10949,11 @@ void modPHScal::CreatePhsStructureNameAndREFatStart()
 			EDIBgbl::dbPHScode->Execute((_bstr_t)SQLx, NULL, adCmdText);//20071101 "dbSORT" 改为 "dbPHScode"
 		}
 	}
-
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -10934,21 +11063,11 @@ void modPHScal::DrawUserDesc(int& iNo,CCadPoint basePt, CMObject &oSpace, CStrin
 		}
 		fileDescription.Close();
 	}
-	catch(_com_error& e)
+	catch (_com_error &e)
 	{
-		ReportError(e.Description(),__FILE__,__LINE__);
-	}
-	catch(CFileException& e)
-	{
-		char szError[256];
-		e.GetErrorMessage(szError,256);
-		ReportError(szError,__FILE__,__LINE__);
-		e.Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-		ReportError("Exception in DrawUserDesc()",__FILE__,__LINE__);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

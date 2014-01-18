@@ -163,9 +163,11 @@ void CPagTxsrOption::OnBtnSanum()
 		FrmTxsr.m_pViewTxsr->DisPlaySANum();
 		//gsPartType = trim(data1.recordsetm_ActiveRs->PutCollect("IDgn1"))
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

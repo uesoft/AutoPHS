@@ -472,9 +472,11 @@ void CFrmPhsSamp::Data1_Reposition()
    
    Cavphs->SourceObj = &FrmListBox.m_ListPhsStruEDIT;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -531,10 +533,11 @@ void CFrmPhsSamp::LoadListSelPhs()
 
 		Data1_Reposition();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 		//Data1->SetBookmark(book);
 }
@@ -557,10 +560,11 @@ void CFrmPhsSamp::OnSelChangeListSelPhs()
 		hr = Data1->Find((_bstr_t)strFind, 0, adSearchForward);
 		this->Data1_Reposition();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1005,9 +1009,11 @@ void CFrmPhsSamp::GetFilterStr()
 		//MessageBox(m_strFilter);
 		UpdateData(false);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 void CFrmPhsSamp::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
@@ -1284,8 +1290,11 @@ void CFrmPhsSamp::LoadListPA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadPA=false;
 }
@@ -1315,10 +1324,11 @@ void CFrmPhsSamp::LoadListSA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadSA=false;
 }

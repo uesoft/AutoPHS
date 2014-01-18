@@ -614,7 +614,7 @@ void CMainFrame::OnSampleManage()
 			catch(_com_error e)
 			{
 				CString strMsg;
-				strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+				strMsg.Format(_T("%d: %s"), __LINE__, (LPSTR)e.Description());
 				ShowMessage(strMsg);
 			}
 
@@ -625,7 +625,7 @@ void CMainFrame::OnSampleManage()
 // 	catch(_com_error e)
 // 	{
 // 		CString strMsg;
-// 		strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+// 		strMsg.Format(_T("%d: %s"), __LINE__, (LPSTR)e.Description());
 // 		ShowMessage(strMsg);
 // 	}
 }
@@ -684,14 +684,11 @@ void CMainFrame::OnCalcZdjh()
 		frmStatus.ShowWindow(SW_HIDE);
 		AfxGetApp()->EndWaitCursor();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-		AfxGetApp()->EndWaitCursor();
-		frmStatus.ShowWindow(SW_HIDE);
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->EndWaitCursor();
 		frmStatus.ShowWindow(SW_HIDE);
 	}
@@ -776,19 +773,11 @@ void CMainFrame::OnDrawZdj()
 		}
 		EDIBAcad::SetAcadTop();
 	}
-	catch(COleException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{		
-		MessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	::CloseHandle(hSem); 
@@ -899,9 +888,11 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 
 						}
 					}
-					catch(CException *e)
+					catch (_com_error &e)
 					{
-						e->Delete();
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
 					}
 					CFile::Remove(modPHScal::gsDwgFN);
 				}
@@ -940,9 +931,11 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 			EDIBAcad::WblockFromPhsToPhsBlkDir(basDirectory::ProjectDir);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1015,9 +1008,11 @@ void CMainFrame::SumCL(int Index)
 			if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && !FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 				FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 
 		CString SQLx = _T("SELECT count(*) FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE ( bCalSuccess=0  OR bCalSuccess IS NULL )");
@@ -1319,14 +1314,11 @@ void CMainFrame::SumCL(int Index)
 				break;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -1368,12 +1360,11 @@ void CMainFrame::OnIntPipeana()
 		ReadYljsResult(FrmTxsr.m_pViewTxsr->m_ActiveRs);
 		FrmPhsData.ShowWindow(SW_SHOWNORMAL);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1535,12 +1526,11 @@ void CMainFrame::OnCalAllzdj()
 		modPHScal::gbCalAllPhs = false;
 		ShowMessage(GetResStr(IDS_AllPhsCalculationFinished)); //_T("所有支吊架计算完毕!")         
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if(thr!=NULL)
 	{
@@ -1609,10 +1599,12 @@ void CMainFrame::DrawZdjTab(int index)
 				if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && !FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 			}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 			CString SQLx = _T("SELECT count(*) FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE ( bCalSuccess=0  OR bCalSuccess IS NULL )");
 			
 			if(modPHScal::gbSumAllVolume )
@@ -2043,13 +2035,11 @@ void CMainFrame::DrawZdjTab(int index)
 		//pfg20050601
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2411,9 +2401,11 @@ void CMainFrame::OnToolInsertUserBlock()
 	{
 		EDIBAcad::objAcadDoc.Invoke(_T("SendCommand"),1,&_variant_t(_T("phsr\n")));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2844,18 +2836,11 @@ void CMainFrame::OnDrawZdjArx()
 		EDIBAcad::SetDimVariables();
 		return;	
 	}
-	catch(COleException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{		
-		MessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2975,11 +2960,7 @@ BOOL gStartAcad()
 		EDIBAcad::LoadMyArx("PHS.arx");
 	//	EDIBAcad::LoadMyArx("sm.arx");
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
+	catch (_com_error &e)
 	{
 		CString str;
 		str.LoadString(IDS_AUTOCAD_INITIALIZE_ERROR);
@@ -3055,11 +3036,7 @@ void CMainFrame::OnUpdateDrawZdj(CCmdUI* pCmdUI)
 			pCmdUI->Enable(true);
 		}
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
+	catch (_com_error &e)
 	{
 		AfxMessageBox("Error OnUpdateDrawZDj");
 	}

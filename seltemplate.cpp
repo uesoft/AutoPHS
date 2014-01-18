@@ -795,10 +795,11 @@ void CSelTemplate::LoadListName()
 			this->m_listctrlStruct.SetItemState(iSelItem,0xffff,LVIS_SELECTED);
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	
@@ -925,10 +926,11 @@ void CSelTemplate::LoadListPA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadPA=FALSE;
 }
@@ -989,10 +991,11 @@ void CSelTemplate::LoadListSA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadSA=FALSE;
 }
@@ -1305,10 +1308,11 @@ void CSelTemplate::DataReposition()
 		rs->Close();
 		Cavphs->SourceObj = &m_lstStruct;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	UpdateData(FALSE);
 }
@@ -2147,10 +2151,11 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 
 		//将对应模板名称的所有支吊架组装结构都显示在IDC_LISTCTRL_STRUCT列表中
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	*pResult = 0;
 }

@@ -80,8 +80,11 @@ bool Cphs::bFirstPartIsPA()
 		else
 			return true;
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -169,18 +172,20 @@ long Cphs::SetPhsPATypeToListBox()
 				i=0;
 				RsDeleteAll(rsUnCheckedType);
 				while(!rs->adoEOF)
-			{
+				{
 					i++;
 					rs->get_Collect((_variant_t)_T("CustomID"), &vTmp);
 					rsUnCheckedType->AddNew();
 					rsUnCheckedType->put_Collect((_variant_t)_T("CustomID"),vTmp);//STR_VAR(vTmp));
 					rsUnCheckedType->Update();
 					rs->MoveNext();
+				}
 			}
-			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
 				return 0;
 			}
 			
@@ -191,9 +196,11 @@ long Cphs::SetPhsPATypeToListBox()
 			return ret;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return (long)0;
 	}
 }
@@ -368,9 +375,11 @@ long Cphs::SetPhsTypeToListBox()
 		ret=i;
 		i=SaveRsUnCheckedTypeFromResultObj();		  
    }//try block
-   catch(CException *e)
+   catch (_com_error &e)
    {
-	   e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
    }
    return ret;
 }
@@ -402,9 +411,11 @@ long Cphs::SaveRsUnCheckedTypeFromResultObj()
 		return i;
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return 0;
 	}
 }
@@ -510,9 +521,11 @@ long Cphs::SetPhsCheckedTypeToListBox()
 			//Set rsTmpCheckedType = Nothing
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 errH:
 	return 0;
@@ -687,9 +700,11 @@ CString Cphs::GetPhsAssembleName(long /*Optional*/ SampleID)
 		delete [] Ptype;
 		Ptype = NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if(Ptype!=NULL)
 	{
@@ -786,13 +801,11 @@ long Cphs::GetPhsOneClassPartNumAndPartInfo(long iPtype, long /*ByVal*/ SampleID
 			   rs1->MoveNext();
 		   }
 	   }
-	   catch(CString e)
+	   catch (_com_error &e)
 	   {
-		   ShowMessage(e);
-	   }
-	   catch(CException *e)
-	   {
-		   e->Delete();
+		   CString strMsg;
+		   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		   AfxMessageBox(strMsg);
 	   }
 	   return ret;
 }
@@ -878,9 +891,11 @@ long Cphs::GetPhsIsCSPR(long iPtype, long SampleID, int& RCount)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		RCount=rs1->GetRecordCount();
 	}
 	rs1->Close();
@@ -1069,14 +1084,11 @@ long Cphs::GetphsStructIDsemiAuto()
 		rsza->PutCollect(_T("iSelSampleID"),_variant_t((long)ret));
 		return ret;
 	   }
-	   catch(CString e)
+	   catch (_com_error &e)
 	   {
-		   ShowMessage(e);
-		   return -1;
-	   }
-	   catch(CException *e)
-	   {
-		   e->Delete();
+		   CString strMsg;
+		   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		   AfxMessageBox(strMsg);
 		   return -1;
 	   }
 	   
@@ -1102,12 +1114,11 @@ long Cphs::GetPhsStructSampleID()
 		//MsgBox ResolveResString(iUE_NotFoundSampleIDSprNum, _T("|1"), iSelSampleID, _T("|2"), giWholeSprNum)
 		ret = GetphsStructIDsemiAuto();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -1161,9 +1172,11 @@ long Cphs::SavephsStructTorsTmpREF()
 			return -1;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return 0;
 	}
 }
@@ -1373,12 +1386,11 @@ void Cphs::GetPhsStructFromTZB(int zdjh)
 		}
 		rs->Close();
 	}
-	catch(CString )
+	catch (_com_error &e)
 	{
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2149,18 +2161,11 @@ spZ1Z2:
    }
    return false;
    }
-   catch(_com_error & e)
+   catch (_com_error &e)
    {
-	   ShowMessage(e.Description());
-	   return false;
-   }
-   catch(CString e)
-   {
-	   return false;
-   }
-	catch(CException *e)
-	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 	   return false;
 }
@@ -2176,9 +2181,11 @@ void Cphs::simplify2(_RecordsetPtr rsPartBoltNuts,int nth)
 		rsPartBoltNuts->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	
 	
@@ -2207,9 +2214,11 @@ void Cphs::simplify(_RecordsetPtr rsSAPart,int nth)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2348,9 +2357,11 @@ long Cphs::CheckMatchPhs()
 		}
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		ret=0;
 	}
 	if(Ptype!=NULL)
@@ -2409,9 +2420,11 @@ void Cphs::CheckDuplicateIndex()
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 errH:
 	AfxGetApp()->EndWaitCursor();
@@ -2652,18 +2665,11 @@ long Cphs::CheckDuplicateREFRecordWhenAppend(int *ipCheckButton)   //LFX  2005.3
 			ret = _ttoi(DupRec);
 		}
 	}
-	catch(CString e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e);
-		ret=-1;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-		ret = -1;
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		ret=-1;
 	}
 	return ret;
@@ -2835,9 +2841,11 @@ try
 		}		
 	}
 }
-catch(CException *e)
+catch (_com_error &e)
 {
-	e->Delete();
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 }
 errH:
 frmStatus.ShowWindow(SW_HIDE);
@@ -2876,16 +2884,6 @@ void Cphs::ChangeNameInphsStructureName()
 	rsPR.CreateInstance(__uuidof(Recordset));
 	rsSP.CreateInstance(__uuidof(Recordset));
 	rsCS.CreateInstance(__uuidof(Recordset));
-	rsPA->Open((_bstr_t)_T("tmpCustomIDPA"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdTable); 
-	rsSA->Open((_bstr_t)_T("tmpCustomIDSA"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdTable); 	
-	rsPR->Open((_bstr_t)_T("tmpCustomIDPART"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdTable); 	
-	rsSP->Open((_bstr_t)_T("tmpCustomIDSPR"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdTable); 	
-	rsCS->Open((_bstr_t)_T("tmpCustomIDCSPR"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenDynamic, adLockReadOnly, adCmdTable); 	
 
 	std::vector<_variant_t> vecID;
 	std::vector<CString> vecDescription;
@@ -2906,50 +2904,85 @@ void Cphs::ChangeNameInphsStructureName()
 	t1=::GetTickCount();		
 	//2002.01.03测试时间31084ms<12413+55730ms,故综合在一起查询较快
 	
-	//预先设置当前规范可用的模板为全部不可用，只要有任意一个零件的bAllowUse=0，即为不可用
-	strSQL=_T("UPDATE PhsStructureName SET bAllowUse=0");
-	EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
-
-
-
-	if(rsID->State != adStateOpen)
-	{
-		EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
-		//if(Cavphs->rsID==NULL)
-		//Cavphs->rsID.CreateInstance(__uuidof(Recordset));
-		//Cavphs->rsID->CursorLocation=adUseClient;
-		//Cavphs->rsID->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic,adLockOptimistic,adCmdText);
-		rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
-		brsIDStatus=TRUE;
-	}	
 	try
 	{
-		while(!rsID->adoEOF)
-		{
-			rsID->get_Collect((_variant_t)_T("ID"), &vTmp);
-			vecID.push_back(vTmp);
-			rsID->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-			vecCustomID.push_back(vTmp);
-			rsID->get_Collect((_variant_t)_T("Description"), &vTmp);
-			vecDescription.push_back(vtos2(vTmp));
-			rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp);
-			vecClassID.push_back(vtoi2(vTmp));
-			rsID->MoveNext();	
-		}
+		rsPA->Open((_bstr_t)_T("tmpCustomIDPA"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdTable); 
+		rsSA->Open((_bstr_t)_T("tmpCustomIDSA"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdTable); 	
+		rsPR->Open((_bstr_t)_T("tmpCustomIDPART"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdTable); 	
+		rsSP->Open((_bstr_t)_T("tmpCustomIDSPR"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdTable); 	
+		rsCS->Open((_bstr_t)_T("tmpCustomIDCSPR"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			adOpenDynamic, adLockReadOnly, adCmdTable); 	
 
+		//预先设置当前规范可用的模板为全部不可用，只要有任意一个零件的bAllowUse=0，即为不可用
+		strSQL=_T("UPDATE PhsStructureName SET bAllowUse=0");
+		EDIBgbl::dbPHScode->Execute((_bstr_t)strSQL, NULL, adCmdText);//20071018 "dbSORT" 改为 "dbPHScode"
+
+		if(rsID->State != adStateOpen)
+		{
+			EDIBgbl::SQLx = _T("SELECT * FROM PictureClipData");
+			//if(Cavphs->rsID==NULL)
+			//Cavphs->rsID.CreateInstance(__uuidof(Recordset));
+			//Cavphs->rsID->CursorLocation=adUseClient;
+			//Cavphs->rsID->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic,adLockOptimistic,adCmdText);
+			rsID->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+				adOpenKeyset, adLockOptimistic, adCmdText); 
+			brsIDStatus=TRUE;
+			while(!rsID->adoEOF)
+			{
+				rsID->get_Collect((_variant_t)_T("ID"), &vTmp);
+				vecID.push_back(vTmp);
+				rsID->get_Collect((_variant_t)_T("CustomID"), &vTmp);
+				vecCustomID.push_back(vTmp);
+				rsID->get_Collect((_variant_t)_T("Description"), &vTmp);
+				vecDescription.push_back(vtos2(vTmp));
+				rsID->get_Collect((_variant_t)_T("ClassID"), &vTmp);
+				vecClassID.push_back(vtoi2(vTmp));
+				rsID->MoveNext();	
+			}
+			
+		}	
+	}
+	catch (_com_error &e)
+	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+	}
+
+	try
+	{
 
 		EDIBgbl::SQLx=_T("SELECT SampleID FROM phsStructureREF WHERE SEQ=0");
 		rs2->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
-		rs2->MoveLast();
-		rs2->MoveFirst();
-		IC2=rs2->GetRecordCount();
+		if (rs2->adoEOF && rs2->BOF)
+		{
+			IC2 = 0;
+		} else {
+			rs2->MoveLast();
+			rs2->MoveFirst();
+			IC2=rs2->GetRecordCount();
+		}
 		rs2->Close();
+	}
+	catch (_com_error &e)
+	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+	}
 
+	try {
 		EDIBgbl::SQLx = _T("SELECT * FROM phsStructureREF ORDER BY SampleID ASC, SEQ ASC");
+		if (rs2->State == adStateOpen)
+			rs2->Close();
 		rs2->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
+
 		CString strSQL = _T("select * from phsStructureNAME");
 		rs4->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
 			adOpenKeyset, adLockOptimistic, adCmdText); 
@@ -2960,7 +2993,7 @@ void Cphs::ChangeNameInphsStructureName()
 		{
 			//空的phsStructureREF
 			sTmp.Format("%s:%d %s", __FILE__, __LINE__, GetResStr(IDS_NoAnySEQeqZeroRecordInphsStructureREF));
-			ShowMessage(sTmp);
+//			ShowMessage(sTmp);
 			//goto errH;
 		}
 		else
@@ -2970,7 +3003,8 @@ void Cphs::ChangeNameInphsStructureName()
 			frmStatus.SetWindowText(GetResStr(IDS_InitializeAutoPHS));
 			frmStatus.m_Label1 = GetResStr(IDS_ChangeNameInphsStructureName);
 			EDIBgbl::SQLx = _T("SELECT * FROM phsStructureName");
-			rs2->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+
+			rs3->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenKeyset, adLockOptimistic, adCmdText); 
 			int fdL;
 			FieldsPtr info;
@@ -3183,7 +3217,10 @@ void Cphs::ChangeNameInphsStructureName()
 				{
 					HRESULT hr = S_OK;
 					hr = rs4->Find((_bstr_t)EDIBgbl::SQLx, 0, adSearchForward);
-
+					if (rs4->adoEOF)
+					{
+						rs4->AddNew();
+					}
 					if(strTmpName.GetLength() > fdL)
 						strTmp=strTmpName.Left(fdL);
 					else
@@ -3200,32 +3237,30 @@ void Cphs::ChangeNameInphsStructureName()
 					rs4->Update();
 
 				}
+				//如果不使用条件，则名称为空
+				if(strTmpName.GetLength()>0 )
 				{
-					//如果不使用条件，则名称为空
-					if(strTmpName.GetLength()>0 )
-					{
-						//rs3->Fields->Item[_variant_t(_T("SampleName"))]->get_DefinedSize(&fdL);
-						if(strTmpName.GetLength() > fdL)
-							strTmp=strTmpName.Left(fdL);
-						else
-							strTmp=strTmpName;
-						rs3->put_Collect((_variant_t)_T("SampleName"),STR_VAR(strTmp)); 
-					}
-					if(Ptype0.GetLength()>0)
-						rs3->put_Collect((_variant_t)_T("PA"), STR_VAR(Ptype0));
-					if(PtypeC.GetLength()>0)
-						rs3->put_Collect((_variant_t)_T("SA"),STR_VAR(PtypeC));
-					if(sSPR.GetLength()>0)
-						rs3->put_Collect((_variant_t)_T("SPR"),STR_VAR( sSPR));
-					rs3->put_Collect((_variant_t)_T("iNumOfPart"),_variant_t((long)iNum));
-					rs3->put_Collect((_variant_t)_T("iNumSPR"),_variant_t(iNumSPR));
-					rs3->put_Collect((_variant_t)_T("iNumCSPR"),_variant_t(iNumCSPR));
-					rs3->put_Collect((_variant_t)_T("iNumRod"),_variant_t(iNumRod));
-					//模板是否允许使用
-					rs3->put_Collect((_variant_t)_T("bAllowUse"),_variant_t( iTimes));
-					rs3->Update();
-//					EXECUTE_TIME_END
-				}     
+					//rs3->Fields->Item[_variant_t(_T("SampleName"))]->get_DefinedSize(&fdL);
+					if(strTmpName.GetLength() > fdL)
+						strTmp=strTmpName.Left(fdL);
+					else
+						strTmp=strTmpName;
+					rs3->put_Collect((_variant_t)_T("SampleName"),STR_VAR(strTmp)); 
+				}
+				if(Ptype0.GetLength()>0)
+					rs3->put_Collect((_variant_t)_T("PA"), STR_VAR(Ptype0));
+				if(PtypeC.GetLength()>0)
+					rs3->put_Collect((_variant_t)_T("SA"),STR_VAR(PtypeC));
+				if(sSPR.GetLength()>0)
+					rs3->put_Collect((_variant_t)_T("SPR"),STR_VAR( sSPR));
+				rs3->put_Collect((_variant_t)_T("iNumOfPart"),_variant_t((long)iNum));
+				rs3->put_Collect((_variant_t)_T("iNumSPR"),_variant_t(iNumSPR));
+				rs3->put_Collect((_variant_t)_T("iNumCSPR"),_variant_t(iNumCSPR));
+				rs3->put_Collect((_variant_t)_T("iNumRod"),_variant_t(iNumRod));
+				//模板是否允许使用
+				rs3->put_Collect((_variant_t)_T("bAllowUse"),_variant_t( iTimes));
+				rs3->Update();
+
 				sTmp1.Format(GetResStr(IDS_ChangeNoXNameInphsStructureName),(_T("\%d")),(_T("\%d")),strTmpName);
 				frmStatus.m_Label2.Format(sTmp1, IC2, oldSampleID);
 				frmStatus.UpdateData(false);
@@ -3238,16 +3273,18 @@ void Cphs::ChangeNameInphsStructureName()
 			rs4->Close();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	//errH:
 	AfxGetApp()->EndWaitCursor();
 	if(rs2->State == adStateOpen)
-	rs2->Close();
+		rs2->Close();
 	if(rs3->State == adStateOpen)
-	rs3->Close();
+		rs3->Close();
 	//	timee=CTime::GetCurrentTime();
 	//CTimeSpan t=timee-timeb;
 	//CString s=t.Format(_T("%M分%S秒"));
@@ -3324,9 +3361,11 @@ void Cphs::GetMaterial()
 			+_T(") AND (ISNULL(CLcl) or (CLcl)=\'\') ");//AND NOT ISNULL(seq)";
 		EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText); 
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	
 }
@@ -3493,13 +3532,11 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			rsTmpCLgroup->Close();
 		}
 		}
-		catch(_com_error e)
+		catch (_com_error &e)
 		{
-			ShowMessage(e.Description());
-		}
-		catch(CString e)
-		{
-			ShowMessage(e);
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 }
 #pragma warning( disable : 4129 )  //Added by Shuli Luo
@@ -4996,9 +5033,11 @@ void Cphs::GetphsSumBom()
 		//更新临时材料表数据记对象
 		//rsCL.Open(dbOpenDynaset,_T("SELECT * FROM TmpTCL") );
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	frmStatus.UpdateStatus(1,true);
 	frmStatus.ShowWindow(SW_HIDE);
@@ -5112,13 +5151,11 @@ void Cphs::GetPhsBlkIDandCrd(_RecordsetPtr /*ByVal*/ rsza)
 			rsTmpZB->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CString e)
-	{
-		ShowMessage(e);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5200,9 +5237,11 @@ void Cphs::GetPhsSAELandPAdxdydz()
 		}
 		modPHScal::UpdatePipeDimHeight(); // 管部标高
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5375,9 +5414,11 @@ void Cphs::InitListRs()
 		else
 			rsUnCheckedType->Requery(adExecuteRecord);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	
 }
@@ -5426,12 +5467,11 @@ void Cphs::CloseRecordsets()
 		if((rsUnCheckedType != NULL) && (rsUnCheckedType->State == adStateOpen))
 			rsUnCheckedType->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

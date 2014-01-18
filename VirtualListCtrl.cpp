@@ -61,11 +61,14 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 	// TODO: Add your control notification handler code here
 	long index = pDispInfo->item.iItem;
 	
-	
+// 	FILE* fp = NULL;
+// 	fp = fopen("testado.txt", "a+");
 	TCHAR szValue[MAX_PATH];
 	_variant_t varValue;		
 	long subItem = 	pDispInfo->item.iSubItem;
 	
+// 	fprintf(fp, "%d %d", index, subItem);
+
 	if(pDispInfo->item.mask & LVIF_TEXT)
 	{
 		CString str;		
@@ -78,9 +81,13 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 					m_prsREF->AbsolutePosition = (PositionEnum)(subItem-1);
 					m_prsREF->get_Collect((_variant_t)(_T("CustomID")), &varValue);
 					str = vtos(varValue);
+// 					fprintf(fp, "m_prsREF CustomID: %s", str);
 				}
 				else
+				{
 					str = _T("");
+//					fprintf(fp, "m_prsREF %s", str);
+				}
 			}
 			else
 			if (subItem ==0)
@@ -93,6 +100,7 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
  				m_prsREF->Filter = (_variant_t)strFilter;
  				m_prsREF->Requery(adOptionUnspecified);
 				m_lRefRecords = m_prsREF->GetRecordCount();
+// 				fprintf(fp, "m_prsNAME SampleID: %s", str);
 			}
 			else 
 			if (subItem == 1)
@@ -105,6 +113,7 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 
 				m_prsNAME->get_Collect((_variant_t)_T("SampleName"), &varValue);
 				str = vtos(varValue);
+// 				fprintf(fp, "m_prsNAME SampleName: %s", str);
 			}
 			
 			//			SetItemText(index, 0, str);
@@ -112,6 +121,8 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		catch(_com_error e)
 		{
+// 			fprintf(fp, " _com_error\n");
+// 			fclose(fp);
 			return;
 		}
 		
@@ -119,7 +130,9 @@ void CVirtualListCtrl::OnGetdispinfo(NMHDR* pNMHDR, LRESULT* pResult)
 		str.ReleaseBuffer();
 		
 		lstrcpyn(pDispInfo->item.pszText, szValue, pDispInfo->item.cchTextMax);//set item text
-		
+
+// 		fprintf(fp, "\n");
+// 		fclose(fp);
 		//		m_nIndex = index;
 	}		
 	*pResult = 0;
@@ -144,9 +157,11 @@ DWORD CVirtualListCtrl::GetItemData(int nItem) const
 		m_prsNAME->get_Collect((_variant_t)_T("SampleID"), &v);
 		return (DWORD)vtoi(v);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

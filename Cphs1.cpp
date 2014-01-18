@@ -3980,11 +3980,6 @@ spZ1Z2:
 			//frmStatus.MessageBox(e.Description());
 			ShowMessage(e.Description());
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-		ret=false;
-	}
 */
 	if(rsTZB->State == adStateOpen)
 		rsTZB->Close();

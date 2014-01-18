@@ -134,9 +134,11 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 				{
 					m_Data1->Update();
 				}
-				catch(CException *e)
+				catch (_com_error &e)
 				{
-				//	m_Data1->CancelUpdate();//pfg20050227Ô­´úÂë
+					CString strMsg;
+					strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+					AfxMessageBox(strMsg);
 				}
 			}
 			m_DBGrid1.SetRefDataSource(NULL);
@@ -211,10 +213,11 @@ void CFrmDataEdit::OnActivate(UINT nState, CWnd *pWndOther, BOOL bMinimized)
 			}
 			nWidth = float(nWidth)/15.5;	
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->ReportError();
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
           
         nWidth += 10;
@@ -282,9 +285,11 @@ void CFrmDataEdit::OnDestroy()
  				m_Data1->Close();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	m_Data1=NULL;
@@ -445,9 +450,11 @@ void CFrmDataEdit::OnRowColChangeDatagrid1(VARIANT FAR* LastRow, short LastCol)
 		for(int i=0;i<m_DBGrid1.GetColumns().GetCount();i++)
 			m_strCols[i]=m_DBGrid1.GetColumns().GetItem(_variant_t((long)iCol)).GetText();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -458,35 +465,25 @@ void CFrmDataEdit::OnBeforeColEditDatagrid1(short ColIndex, short KeyAscii, shor
 	{
 		int iRow=m_DBGrid1.GetRow();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
 void CFrmDataEdit::OnAfterColEditDatagrid1(short ColIndex) 
 {
-	// TODO: Add your control notification handler code here
-	try
-	{
-		int i=ColIndex;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
+	int i=ColIndex;
 }
 
 void CFrmDataEdit::OnAfterColUpdateDatagrid1(short ColIndex) 
 {
-	// TODO: Add your control notification handler code here
-	
 }
 
 void CFrmDataEdit::OnChangeDatagrid1() 
 {
-	// TODO: Add your control notification handler code here
-	
 }
 
 void CFrmDataEdit::OnBeforeColUpdateDatagrid1(short ColIndex, VARIANT FAR* OldValue, short FAR* Cancel) 

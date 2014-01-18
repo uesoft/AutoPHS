@@ -147,10 +147,11 @@ void CFrmDatabaseIn::getDatabase()
 			this->SendMessage(WM_CLOSE);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_bDataSelected=false;
 		this->SendMessage(WM_CLOSE);
 	}	
@@ -216,10 +217,11 @@ void CFrmDatabaseIn::OnDataIn()
 					{
 						EDIBgbl::dbPRJDB->Execute((_bstr_t)strSQL, NULL, adCmdText);
 					}
-
-					catch(CException *e)
+					catch (_com_error &e)
 					{
-						e->Delete();
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
 					}
 					int VlmID2;
 					ix=m_List1.GetCurSel();
@@ -342,12 +344,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -361,12 +362,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -380,12 +380,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -399,12 +398,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 						}
@@ -422,12 +420,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -443,12 +440,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -463,12 +459,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -483,12 +478,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 						}
 					}
@@ -501,17 +495,22 @@ void CFrmDatabaseIn::OnDataIn()
 		{
 			FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			FrmTxsr.m_pViewTxsr->m_ActiveRs->CancelUpdate();
 		}
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->Requery(-1);
 		FrmPhsData.InitDBbill();
 		this->SendMessage(WM_CLOSE);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -538,12 +537,11 @@ long inline CFrmDatabaseIn::GetMaxVlmID(_ConnectionPtr & db)
 		rs->get_Collect((_variant_t)0L, &vTmp);
 		ret=vtoi(vTmp);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-#ifdef _DEBUG
-		e->ReportError();
-#endif
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -570,10 +568,11 @@ void CFrmDatabaseIn::LoadListEngin()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -618,10 +617,11 @@ void CFrmDatabaseIn::LoadListVlm()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	
 }

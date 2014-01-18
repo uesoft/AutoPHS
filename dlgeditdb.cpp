@@ -100,9 +100,11 @@ void CDlgEditDB::OpenTable()
 		m_Adodc.Refresh();
 		m_dbGrid.SetRefDataSource(m_Adodc.GetRecordset().GetDataSource());
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -197,15 +199,11 @@ BOOL CDlgEditDB::ListTableName()
 		}
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-		return FALSE;
-	}
-	catch(_com_error e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -252,9 +250,11 @@ void CDlgEditDB::OnMoveCompleteAdodc1(long adReason, LPDISPATCH pError, long FAR
 		sTitle.Format(_T("%d/%d"),m_Adodc.GetRecordset().GetAbsolutePosition(),m_Adodc.GetRecordset().GetRecordCount());
 		m_Adodc.SetCaption(sTitle);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

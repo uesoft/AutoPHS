@@ -250,9 +250,11 @@ void EDIBAcad::WriteToProjectDirphsTxt()
 		FindAllFileToTxt(basDirectory::BlkDir,&f);
 		f.Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -285,12 +287,11 @@ void EDIBAcad::WriteToACADR14_lsp()
 		f->Close();
 	}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(CException *e)
-	{
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 	*/
 }
@@ -379,9 +380,11 @@ CString EDIBAcad::GetAcadSrchDir(CString sACADVER)
 		user::AddDirSep (basDirectory::BlkDir);
 		return ret;
 	}
-	catch(CException *e)
-	{
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 		return CString(_T(""));
 }
@@ -716,14 +719,11 @@ void EDIBAcad::ModifyAttributes(CADatt* BlkAtt,long acCount, CMObject& AcObject)
 		  }
 		}
 	}
-	catch(COleException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 void EDIBAcad::DrawPLine(CCadPoint& StartPoint, float  Length, float  sngRotAng, float  PLwidth)
@@ -1073,9 +1073,11 @@ void EDIBAcad::SetACADStyleBigFont2Hzfs(CString sStyle)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1109,9 +1111,11 @@ void EDIBAcad::DeleteACADStyle(CString sStyle)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1158,9 +1162,11 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 					rs->get_Collect((_variant_t)_T("cadWidth"),&vTmp);
 					BlkAtt[i].iWidth=vtoi(vTmp);
 				}
-				catch(CException *e)
+				catch (_com_error &e)
 				{
-					e->Delete();
+					CString strMsg;
+					strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+					AfxMessageBox(strMsg);
 				}
 				if(BlkAtt[i].Name == _T("NPAGE"))
 				{
@@ -1243,9 +1249,11 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		}
 		return i;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		
 		if(BlkAtt!=NULL)
 			delete [] BlkAtt;
@@ -1294,19 +1302,11 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 
 			return;	
 		}
-		catch(COleException* e)
+		catch (_com_error &e)
 		{
-			e->ReportError();
-			e->Delete();
-		}
-		catch(CException *e)
-		{
-			e->ReportError();
-			e->Delete();
-		}
-		catch(_com_error e)
-		{		
-			AfxMessageBox(e.Description());
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		return ;  //12/17
 	}
@@ -1694,9 +1694,11 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 							}
 							
 						}
-						catch(CException *e)
+						catch (_com_error &e)
 						{
-							e->Delete();
+							CString strMsg;
+							strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+							AfxMessageBox(strMsg);
 						}
 						if(vTmp.vt==VT_NULL)
 							ColTxt = _T("");
@@ -1916,10 +1918,11 @@ void EDIBAcad::DrawTableACAD(CCadPoint& pB, long BillID,
 		}
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("USERI1")), &_variant_t((long)(StartNPage + SPage)));
    }
-   catch(CException *e)
+   catch (_com_error &e)
    {
-	   e->ReportError();
-	   e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
    }
    if(BlkAtt!=NULL)
 	   delete [] BlkAtt;
@@ -2024,7 +2027,7 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 		{
 			StartExcelAndLoadTemplate(strNFileName,strDFileName,objWorksheets);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
 			AfxMessageBox("你已经打开了该文件，请关闭后再运行该命令！");
 			return;
@@ -2135,9 +2138,11 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 						
 						//修改完毕  BY YWH
 					}
-					catch(CException *e)
+					catch (_com_error &e)
 					{
-						e->Delete();
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
 					}
 					CString strVal=vtos(vTmp);
 					strCell1=GetCell(strInsCell,iRow,iCol1);
@@ -2169,20 +2174,11 @@ void EDIBAcad::DrawTableExcel(long BillID, _RecordsetPtr rsText)
 		rs->Close();
 		rsText->Close();		
    }
-   catch(COleException * e)
+   catch (_com_error &e)
    {
-	   e->ReportError();
-	   e->Delete();
-   }
-   catch(COleDispatchException * e)
-   {
-	   //e->ReportError();
-	   e->Delete();
-   }  
-   catch(CException *e)
-   {
-	   e->ReportError();
-	   e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
    }
 }
 
@@ -2362,19 +2358,11 @@ try
    SetAcadNoTop();
    return true;
 }
-catch(CString e)
+catch (_com_error &e)
 {
-	//ShowMessage(e);
-	return false;
-}
-catch(_com_error e)
-{
-	ShowMessage(e.Description());
-	return false;
-}
-catch(CException *e)
-{
-	e->Delete();
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	return false;
 }
 }
@@ -2409,14 +2397,11 @@ void EDIBAcad::AddData2rsTZG(_RecordsetPtr rs, long  iRecNo, long  zdjh, CString
 	  rs->put_Collect((_variant_t)_T("nth"),(_variant_t)1L);//标准支吊架路数=1，包括对称双吊和共用根部双吊
       rs->Update();
 	}
-	catch(COleException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5597,19 +5582,11 @@ void EDIBAcad::DrawPhsAssemble(_RecordsetPtr rsRefZB, long iView)
 
 	objAcadDoc.Invoke(_T("SendCommand"),1,&_variant_t(_T("-dimstyle\n_apply\nALL\n\n")));
 }
-catch(_com_error e)
+catch (_com_error &e)
 {
-	ShowMessage(e.Description());
-}
-catch(COleException *e )
-{
-	e->ReportError();
-	e->Delete();
-}
-catch(CException *e)
-{
-	e->ReportError();
-	e->Delete();
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 }
 delete [] Ptype;  //记录支吊架结构组件，不包括附件
 delete [] mlPartClassID;    //记录组件的子类别
@@ -5798,18 +5775,11 @@ void EDIBAcad::DrawphsZUZI(_RecordsetPtr rsRefZB, CCadPoint& InsPnt, long iView)
 		}
 		
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(COleException *e )
-	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5954,18 +5924,11 @@ void EDIBAcad::DrawphsDimOfDW(CCadPoint& InsPnt, CMObject& AcObject, long iView)
    }
    
    }
-   catch(_com_error e)
+   catch (_com_error &e)
    {
-	   ShowMessage(e.Description());
-   }
-   catch(COleException * e)
-   {
-	   e->ReportError();
-	   e->Delete();
-   }
-	catch(CException *e)
-	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 }
 
@@ -6054,14 +6017,11 @@ void EDIBAcad::DrawphsDataEdit()
 		}
 		SetWindowPos(FrmDataEDIT.m_hWnd,HWND_TOP,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6108,14 +6068,11 @@ void EDIBAcad::DisplayDataZB()
 		//FrmDataEDIT.SetWindowPos(&wndTopMost,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 		
 	}
-	catch(_com_error e)
-	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 }
 
@@ -6243,19 +6200,11 @@ void EDIBAcad::DrawTag(
 		//恢复当前层
 		objAcadDoc.Invoke(_T("SetVariable"),2,&_variant_t(_T("CLayer")), &_variant_t(sCLayer));
 	}
-	catch(CMemoryException& e)
+	catch (_com_error &e)
 	{
-		e.ReportError();
-		e.Delete();
-	}
-	catch(COleException& e)
-	{
-		e.ReportError();
-		e.Delete();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6534,19 +6483,11 @@ void EDIBAcad::DrawTagAll()
 		//dMaxX=dMaxX;
 		SetRegValue(_T("Settings"),_T("TagNO"),iMaxSeq);
     }
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(COleException *e )
-	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6583,9 +6524,11 @@ void EDIBAcad::DrawTagPoint(CCadPoint& p0, int iRecNo, int iSEQ, CString sLayer)
 		MakeNewLayer(sCLayer);
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		MakeNewLayer(sCLayer);
 	}
 }
@@ -6633,9 +6576,11 @@ bool EDIBAcad::DeleteAllEntitiesInLayers(int Count,...)
 		tmpObj.Invoke0(_T("ZoomAll"));
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -6690,9 +6635,11 @@ _variant_t EDIBAcad::SetSelectionSet(CString /*ByVal*/ ssetName)
 		}
 		return see.Invoke(_T("Add"),1,&_variant_t(ss));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return _variant_t();
 	}
 }
@@ -6962,10 +6909,11 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 			return sTmpDrawNo;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return _T("");
 }
@@ -7008,9 +6956,11 @@ void EDIBAcad::DisplayAcadTop()
 		  //TraceMainFrm(hwnd);
 	   }
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7079,9 +7029,11 @@ void EDIBAcad::MoveObj(long Count,...)
 			objAcadApp.Invoke0("ZoomAll");
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7210,9 +7162,11 @@ void EDIBAcad::ModifyTextOfBG(CCadPoint &InsPnt, float ELvalue, CString BGtype,B
             ApplyTextStyleProperty(AcObj, GetTextStyleName(_T("标高"), _T("BOM")),_T("标高"));
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7356,9 +7310,11 @@ bool EDIBAcad::SelectLayerAllV(long Count, va_list argList)
 		}
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return false;
 }
@@ -7401,9 +7357,11 @@ void EDIBAcad::FindAllFileToTxt(CString dir,CFile *f)
 			::FindClose(FindHandle);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7480,9 +7438,11 @@ void EDIBAcad::GetActiveAcadDoc()
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -7631,9 +7591,11 @@ BOOL EDIBAcad::LoadArx(CString strArxName)
 		EDIBAcad::objAcadApp.Invoke(_T("LoadArx"),1,&_variant_t(strArxName));
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }

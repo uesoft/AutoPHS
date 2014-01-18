@@ -64,10 +64,11 @@ void CDBComboBox::LoadList()
 			m_RowRs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_fis=false;
 }
@@ -101,10 +102,11 @@ void CDBComboBox::RefLst()
 		i=this->FindStringExact(-1,vtos(v1));
 		this->SetCurSel(i);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_fis=false;
 }
@@ -149,9 +151,10 @@ void CDBComboBox::OnSelchange()
 			m_RowRs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }

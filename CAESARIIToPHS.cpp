@@ -203,9 +203,11 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 				prsInputHangers->MoveFirst();
 			}
 		}
-		catch(_com_error e)
+		catch (_com_error &e)
 		{
-			AfxMessageBox(e.Description());
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		//取支架数据
 		m_strSQL.Format("select * from input_restraints where jobname='%s'",m_strJOBNAME_A);
@@ -217,9 +219,11 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 				prsInputRestraints->MoveFirst();
 			}
 		}
-		catch(_com_error e)
+		catch (_com_error &e)
 		{
-			AfxMessageBox(e.Description());
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		//20050624pfg(start)
 		int n=0,m=0;
@@ -336,9 +340,11 @@ void  CAESARIIToPHS::ReadResult_CAESARII45(_Recordset* rsResult, CString SourceD
 			}   //处理支架结束(end)
 			//rsData->Update();//pfg20050630
 		}
-	}catch(_com_error e)
+	}	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -394,9 +400,11 @@ void CAESARIIToPHS::ImportHangerRestraints(_RecordsetPtr rsData,_RecordsetPtr rs
 		rsData->PutCollect("JSDBH1", _variant_t((long)node));
 		rsData->Update();
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -692,9 +700,11 @@ void CAESARIIToPHS::importUnitsForces(_RecordsetPtr rsData,long node,CString m_s
 		}
 		
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -819,9 +829,11 @@ void CAESARIIToPHS::ImportDisplacements(_RecordsetPtr rsData,long node, CString 
 			rsData->PutCollect("rzL1",_variant_t(vtof(prsDisplacements->GetCollect("RZ"))*x+dROffset));	
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -892,9 +904,11 @@ void CAESARIIToPHS::ImportDiameter(_RecordsetPtr rsData,long node,CString strJOB
 			pRs->Close();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -964,9 +978,11 @@ void CAESARIIToPHS::ImportHanger(_RecordsetPtr rsData,long node,CString strJOBNA
 			rsData->PutCollect("psaTYPE",_variant_t(strPHSType));
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if ( pRs->State == adStateOpen )
 	{
@@ -1127,9 +1143,11 @@ void CAESARIIToPHS::ConversionTypeCaesarToPhs(_RecordsetPtr rsData,long node,CSt
 			rsData->PutCollect("psaTYPE",_variant_t(iType));
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1186,7 +1204,7 @@ double CAESARIIToPHS::UnitsToUeUnits(_RecordsetPtr rsData,CString SourceUnits,CS
 			//pfg20050629弹出增加单位转换关系对话框(end)
 		}
 	}
-	catch(_com_error e)
+	catch(_com_error &e)
 	{
 		if(AfxMessageBox("错误:当前单位不能转换,请更换单位后重试(仔细阅读使用说明)!",MB_YESNO)==IDYES)
 		{
@@ -1260,9 +1278,11 @@ BOOL CAESARIIToPHS::GetHangerLoad( int iNode,const CString& strFileName, double&
 			dInsLoad = vtoi ( pHangerRs->GetCollect( _T("NUMREQ") ) ) * vtof( pHangerRs->GetCollect( _T("TH_INSTALL_LOAD") ) ); //安装荷载
 		}
 	}
-	catch ( _com_error e )
+	catch (_com_error &e)
 	{
-		AfxMessageBox( e.Description() );
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if(pHangerRs->State==adStateOpen)
 	{

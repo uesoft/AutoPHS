@@ -1969,7 +1969,7 @@ void CCalStructDlg::LoadComGridGg(int iRow)
 	catch(_com_error e)
 	{
 		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPSTR)e.Description());
 		AfxMessageBox(strErrorMsg);
 	}
 }
@@ -2082,7 +2082,7 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	catch(_com_error & e)
 	{
 		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPSTR)e.Description());
 		AfxMessageBox(strErrorMsg);
 	}
 	try
@@ -2145,7 +2145,7 @@ void CCalStructDlg::UpdatePjg(LPCTSTR lpszPjg)
 	catch(_com_error & e)
 	{
 		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPSTR)e.Description());
 		AfxMessageBox(strErrorMsg);
 	}
 }
@@ -2297,7 +2297,7 @@ void CCalStructDlg::OnAfterColUpdateDatagridMaindim(short ColIndex)
 			catch(_com_error & e)
 			{
 				CString strErrorMsg;
-				strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+				strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPSTR)e.Description());
 				AfxMessageBox(strErrorMsg);
 			}
 			CalComLen(this->m_rsMainDim);
@@ -2456,7 +2456,7 @@ void CCalStructDlg::UpdateComLen()
 	catch(_com_error e)
 	{
 		CString strErrorMsg;
-		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, e.Description());
+		strErrorMsg.Format(_T("%s: %d, %s"), __FILE__, __LINE__, (LPSTR)e.Description());
 		AfxMessageBox(strErrorMsg);
 	}
 }

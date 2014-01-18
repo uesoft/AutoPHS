@@ -203,6 +203,8 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 	if(pConn==NULL || tbn==_T(""))
 		return false;
 	_RecordsetPtr rs;
+//	rs.CreateInstance(__uuidof(Recordset));
+
 	if(tbn.Left(1)!=_T("["))
 		tbn=_T("[")+tbn;
 	if(tbn.Right(1)!=_T("]"))
@@ -212,8 +214,9 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 		rs->Close();
 		return true;
 	}
-	catch(_com_error )
+	catch (_com_error &e)
 	{
+		// 找不到表，必须返回false
 		return false;
 	}
 }
@@ -347,14 +350,11 @@ void EDIBgbl::InitCurrWork()
 
 		GetSelPrjName();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error &e)
-	{
-		ShowMessage(CString((char*)e.ErrorMessage())+(char*)e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->ExitInstance();
 	}
 }
@@ -679,14 +679,11 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		rs->put_Collect((_variant_t)_T("width"),ix);
 		rs->Update();
 	}
-	catch(CString e)
-	{
-		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 }
 
@@ -1063,10 +1060,11 @@ void EDIBgbl::GetSelPrjName()
 			rs->Close();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	rs.Release();
 	rs2.Release();
@@ -1295,9 +1293,11 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 		sDB->Close();
 		dDB->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1380,9 +1380,11 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 		sDB->Close();
 		dDB->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1418,10 +1420,11 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 		}
 		db->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return listTableName;
 }
@@ -1524,9 +1527,11 @@ bool EDIBgbl::UpgradeDatabase()
 			if(bIndexExists(&tmptdf,_T("PrimaryKey")))
 				tmptdf.DeleteIndex(_T("PrimaryKey"));
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		}
 		tmptdf->Close();
 		
@@ -1644,10 +1649,11 @@ bool EDIBgbl::UpgradeDatabase()
 		return true;
 	}
 	
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -1840,12 +1846,11 @@ bool EDIBgbl::UpdateAllPrjDB()
 											//strSQL =_T("DROP TABLE [") + VoltabName[i] + tdDefInfo.m_strName + _T("] ");
 											//dDb->Execute((_bstr_t)strSQL);
 										}
-										catch(CException *e)
+										catch (_com_error &e)
 										{
-#ifdef _DEBUG
-											e->ReportError();
-#endif
-											e->Delete();
+										CString strMsg;
+										strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+										AfxMessageBox(strMsg);
 										}
 									}
 								}
@@ -1870,10 +1875,11 @@ bool EDIBgbl::UpdateAllPrjDB()
 		AfxGetApp()->EndWaitCursor();
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->EndWaitCursor();
 		return false;
 	}
@@ -1945,10 +1951,11 @@ bool EDIBgbl::FindTable(_ConnectionPtr db, CString sTab, CString *pSTabName, CSt
 		}
 		*/
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	*n1=iTmp;
 	*n2=iTmp2;
 		return FALSE;
@@ -1975,10 +1982,11 @@ bool EDIBgbl::VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef)
 		RsVolume->MoveLast();
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2039,10 +2047,11 @@ bool EDIBgbl::DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long Vo
 		dRsData->MoveLast();
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2057,9 +2066,11 @@ bool EDIBgbl::bFieldExists(_RecordsetPtr rs, CString sName)
 		fi = fields->GetItem((_variant_t)sName);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2072,9 +2083,11 @@ bool EDIBgbl::bFieldExists(CDaoTableDef *rd, CString sName)
 		rd->GetFieldInfo(sName, &fi);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2143,9 +2156,11 @@ CString EDIBgbl::GetTblField( &tbldef, CString tblName)
 		ret+=_T(" ");
 		return ret;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 		return CString(_T(" "));
 	}
 }
@@ -2220,10 +2235,11 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr dDb, _ConnectionPtr sDb)
 		}
 		sRS->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 	return bIsChange;
@@ -2320,11 +2336,11 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 		}
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//ShowMessage(e->Description);
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -2361,10 +2377,11 @@ BOOL EDIBgbl::UpdateSortDB()
 		}while(bIsSuc==FALSE && i<10);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 

@@ -72,9 +72,11 @@ BOOL CSelZdjhDlg::OnInitDialog()
 			m_dbGrid.GetColumns().GetItem(_variant_t((long)1)).SetCaption(GetResStr(IDS_CountNodeMark));
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

@@ -523,9 +523,11 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 		}
 		FileRs->Close();
 }
-	catch(CException *e)
-	{
-		e->Delete();
+catch (_com_error &e)
+{
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 		catch(...)
 		{
@@ -1326,17 +1328,11 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error& e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		ShowMessage("C++ Exception at readpsaresult.cpp::ReadResult_ZHDYF30()");
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1867,13 +1863,11 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -2708,13 +2702,11 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3556,13 +3548,11 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 /*
@@ -4293,10 +4283,11 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 
 }
@@ -5028,10 +5019,11 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6060,14 +6052,11 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 			rsResult->MoveNext();
 		}
 	}
-	       
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -6143,10 +6132,11 @@ void Delete1()
 
 			//AfxMessageBox("aa");
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6216,10 +6206,11 @@ void ReadPSAData(_Recordset* rsResult ,CString SourceDataFileName,long maxZdjh,l
 		WritePHSDataToTable(pRefInfoCon,rsResult,SourceDataFileName,maxZdjh,FileNameID,EDIBgbl::SelVlmID,modPHScal::gsngRatioOfPjg2Pgz);
 
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-	    e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if ( pRefInfoCon->GetState() == adStateOpen)
 		pRefInfoCon->Close();

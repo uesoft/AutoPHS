@@ -103,15 +103,7 @@ int CCommDBOper::ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &
 
 	if (pCon == NULL)
 	{
-		try
-		{
-			pCon.CreateInstance(__uuidof(Connection) );
-
-		}
-		catch(_com_error e)
-		{
-			WarnMessage("建立数据库连接对象实例失败!!!",1);
-		}
+		pCon.CreateInstance(__uuidof(Connection) );
 	}
 	else
 	{
@@ -129,7 +121,7 @@ int CCommDBOper::ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &
 			{
 				pCon->Open(_bstr_t(strCon),"","",-1);         
 			}
-			catch(_com_error e)
+			catch(_com_error &e)
 			{
 				CString strTemp;
 				CInputBox inputBox;
@@ -146,7 +138,7 @@ int CCommDBOper::ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &
 				{
 					strPassword = inputBox.m_strValue;
 				}
-			}//END 	catch(_com_error e)///
+			}
 			break;
 		}
 		//如果有密码
@@ -154,8 +146,11 @@ int CCommDBOper::ADOOpenDBCon(_ConnectionPtr &pCon,const CString strDB,CString &
 		{
 			pCon->Open(_bstr_t(strCon),"","",-1); 
 		}
-		catch(_com_error e)
+		catch (_com_error &e)
 		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			CString errormessage;
 			errormessage.Format("打开数据库 %s 失败!\r\n错误信息:%s",strDB,e.ErrorMessage());
 			WarnMessage(errormessage,iWarn);
@@ -184,8 +179,11 @@ int CCommDBOper::ADOConExec(_ConnectionPtr &pCon,const CString strCmdSql,CString
 	{
 		pCon->Execute(_bstr_t(strCmdSql),NULL,adCmdText);
 	}
-	catch(_com_error e)//捕捉异常
+	catch (_com_error &e)
 	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		CString errormessage;
 		errormessage.Format("功能说明: %s\r\n数据库连接对象执行下列SQL命令\r\n%s\r\n失败!  错误信息:%s",strDcrCmd,strCmdSql,e.ErrorMessage());
 		WarnMessage(errormessage,iWarn);///显示错误信息
@@ -220,8 +218,11 @@ int CCommDBOper::ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr pRs,CString
 			pRs->Open(tempStrSql,(IDispatch *)pCon,adOpenDynamic,adLockOptimistic,adCmdText);
 			break;
 		}
-		catch(_com_error e)
+		catch (_com_error &e)
 		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		try
 		{	
@@ -229,8 +230,11 @@ int CCommDBOper::ADORecordsetOpen(_ConnectionPtr &pCon,_RecordsetPtr pRs,CString
 			pRs->Open(tempStrSql,(IDispatch *)pCon,adOpenDynamic,adLockReadOnly,adCmdText);
 			return 2;
 		}
-		catch(_com_error e)//捕捉异常
+		catch (_com_error &e)
 		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			CString errormessage;
 			errormessage.Format("功能说明: %s\r\n记录集对象执行下列SQL命令\r\n%s\r\n失败!  错误信息:%s",strDcrOpen,strOpenSql,e.ErrorMessage());
 			WarnMessage(errormessage,iWarn);//显示错误信息
@@ -266,9 +270,11 @@ int CCommDBOper::ADOCloseConnectDB(_ConnectionPtr &pCon,int iWarn)
 		{
 			pCon->Close();
 		}
-		catch (_com_error e)
+		catch (_com_error &e)
 		{
-
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 	}
 	return RET_OK;
@@ -283,9 +289,11 @@ int CCommDBOper::ADOCloseRecordset(_RecordsetPtr pRs,int iWarn)
 		{
 			pRs->Close();
 		}
-		catch (_com_error e)
+		catch (_com_error &e)
 		{
-			
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 	}
 	return RET_OK;

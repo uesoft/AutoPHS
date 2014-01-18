@@ -174,10 +174,11 @@ void CDlgAddMaterial::LoadListClass()
 			i++;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}	
 }
 
@@ -296,10 +297,11 @@ void CDlgAddMaterial::LoadListDesc()
 		}
 		rs->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -431,10 +433,11 @@ void CDlgAddMaterial::LoadListBH()
 			i++;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}	
 }
 
@@ -865,10 +868,11 @@ void CDlgAddMaterial::OnBtnAdd()
 					strClgg=vtos(vTmp);
 					rsTmp->Close();
 				}
-				catch(CException *e)
+				catch (_com_error &e)
 				{
-					e->Delete();
-					strClgg=strBH;
+					CString strMsg;
+					strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+					AfxMessageBox(strMsg);
 				}
 			}
 			if(!m_bIsSA)
@@ -946,14 +950,11 @@ void CDlgAddMaterial::OnBtnAdd()
 				this->EndDialog(IDOK);
 			}
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->ReportError();
-			e->Delete();
-		}
-		catch(_com_error e)
-		{
-			AfxMessageBox(e.Description());
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 	}
 }
@@ -978,14 +979,11 @@ void CDlgAddMaterial::UpdateTmpCSLen()
 
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL,NULL,adCmdText);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1075,10 +1073,11 @@ void CDlgAddMaterial::LoadListMaterial()
 		if(m_comboMaterial.GetCount()>0)
 			m_comboMaterial.SetCurSel(0);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1098,10 +1097,11 @@ int CDlgAddMaterial::GetMaxSEQ(CString tbn, _ConnectionPtr &db)
 		rs->get_Collect((_variant_t)0L, &vTmp);
 		return vtoi(vTmp);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return 0;
 	}
 }

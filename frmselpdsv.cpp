@@ -150,14 +150,11 @@ void CFrmSelPDSV::initPrjDb()
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();
    }
-   catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-   }
-   catch(_com_error e)
-   {
-	   ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
    }
 }
 
@@ -188,9 +185,11 @@ void CFrmSelPDSV::InitENG()
 		m_DBGeng.GetColumns().GetItem(_variant_t(_T("EnginID"))).SetCaption(GetResStr(IDS_PRJ_NO));
 		EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGeng, _T("teng"));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -246,13 +245,11 @@ void CFrmSelPDSV::InitDBVlm()
 		EDIBgbl::SetDBGridColumnCaptionAndWidth (m_DBGvlm, _T("tvlm"));
 
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -378,13 +375,11 @@ void CFrmSelPDSV::OnDblClickDbgvim()
 		CString ss=EDIBgbl::gsTitle+(EDIBgbl::TBNSelPrjSpec == _T("") ? _T("") : (_T("    ") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" (") + EDIBgbl::SelJcdm + _T(")")));
 		AfxGetApp()->m_pMainWnd->SetWindowText(ss);
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -494,9 +489,11 @@ void CFrmSelPDSV::OnDblClickDbgeng()
 		CString ss=EDIBgbl::gsTitle+(EDIBgbl::TBNSelPrjSpec == _T("") ? _T("") : (_T("    ") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" (") + EDIBgbl::SelJcdm + _T(")")));
 		AfxGetApp()->m_pMainWnd->SetWindowText(ss);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -564,9 +561,11 @@ void CFrmSelPDSV::OnRowColChangeDbgvim(VARIANT FAR* LastRow, short LastCol)
 					m_DataEng->Update();
 			}
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			m_DataEng->CancelUpdate();
 		}
 	}
@@ -684,9 +683,11 @@ long CFrmSelPDSV::GetMaxVolumeID()
 		rs->Close();
 		rs=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -713,14 +714,11 @@ void CFrmSelPDSV::OnBeforeUpdateDbgvim(short FAR* Cancel)
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJJDID"))).SetText(ltos(m_SelDsgnID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("ZYID"))).SetText(ltos(m_SelSpecID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJHYID"))).SetText(ltos(m_SelHyID));	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error& e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -802,13 +800,11 @@ void CFrmSelPDSV::OnBeforeDeleteDbgvim(short FAR* Cancel)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-		*Cancel=1;
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		*Cancel=1;
 	}
 }

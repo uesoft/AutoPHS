@@ -132,9 +132,11 @@ void CComboGenDlg::LoadComboBox(int i)
 			modPHScal::PreCalCrudeData(FrmPhsData.m_DataBillRs);
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 

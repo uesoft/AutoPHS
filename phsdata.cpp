@@ -393,13 +393,11 @@ void CPhsData::OnRowColChangeDBGbill(VARIANT FAR* LastRow, short LastCol)
 			UpdateLabel();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	UpdateData(false);
 }
@@ -528,9 +526,11 @@ void CPhsData::OnBeforeDeleteDBGbill(short FAR* Cancel)
 	{
 		m_ActiveRs->Update();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_ActiveRs->CancelUpdate();
 	}
 	catch(...)
@@ -1043,9 +1043,11 @@ CPhsData::~CPhsData()
 		m_DataSumRs=NULL;
 		m_ActiveRs=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -1114,9 +1116,11 @@ void CPhsData::UpdateLabel()
 		rsTmp->Close();
 		rsTmp=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

@@ -84,9 +84,11 @@ void EDIBDB::StartEXCEL(CString  FileName)
 		//不对称的使用AddRef和Release这将导致Excel不能完全释放。
 		//ObjExcelApp.Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -304,11 +306,12 @@ void EDIBDB::SumNumbers()
 	EDIBgbl::SQLx = _T("INSERT INTO TMP2 SELECT CLID,CLmc,CLgg,CLcl,CLdw,CLdz,CLnum1 as CLnum,CLzz,ifLJ FROM TMP1");
 	EDIBgbl::dbPRJ->Execute((_bstr_t)((EDIBgbl::SQLx)), NULL, adCmdText);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-}
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+	}
 }
 
 void EDIBDB::UpdTotalWeightAndMaterial(_variant_t tbn)
@@ -401,10 +404,11 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 	  }
 	  rs->Close();
    }
-   catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
    }
 }
 
@@ -494,9 +498,11 @@ void EDIBDB::CloseExcel()
 			//ObjExcelApp.Release();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -543,10 +549,11 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 			return true;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 	return true;
@@ -627,10 +634,11 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			dbExcel->Execute((_bstr_t)( strSQL ), NULL, adCmdText);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 }
