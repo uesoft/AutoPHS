@@ -669,7 +669,7 @@ void ReadYljsResult(_Recordset* rs)
 					connString.Format(connTempString,DataFileName,"");
 					_ConnectionPtr m_pConn;
 					m_pConn.CreateInstance(__uuidof(Connection));
-					m_pConn->Open(_bstr_t(connString),"","",0);
+					m_pConn->Open(_bstr_t(connString),"","", adConnectUnspecified);
 					if (!EDIBgbl::tdfExists(m_pConn,strTableName))//进一步判断是否有指定的表
 					{
 						ShowMessage(GetResStr(IDS_PSANameVer)+" Unknown");	

@@ -2378,14 +2378,17 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 {
 	//目的：从厂商提供的产品数据库中导入数据或在产品数据库中检查数据表是否齐全
 	AfxGetApp()->BeginWaitCursor();
+
+	CString ConnectionString;
 	try
 	{
 		if(modPHScal::dbZDJcrude->State == adStateOpen)
 		{
 			modPHScal::dbZDJcrude->Close();
 		}
-		CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + basDirectory::ProjectDBDir+_T("zdjcrude.mdb");
-		modPHScal::dbZDJcrude->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBZdjCrudePassWord, adConnectUnspecified);
+		ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
+			basDirectory::ProjectDBDir+_T("zdjcrude.mdb"), ModEncrypt::gstrDBZdjCrudePassWord);
+		modPHScal::dbZDJcrude->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 
 		CString strTbn, strCrudeTbn;
 		CMessageBoxEx MsgDlg;
@@ -2417,8 +2420,9 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 		}
 		else
 		{
-			ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFN;
-			db->Open((_bstr_t)ConnectionString, "", (_bstr_t)ModEncrypt::gstrDBProductPassWord, adConnectUnspecified);
+			ConnectionString.Format("Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=%s;Jet OLEDB:Database Password=%s",
+				strFN, ModEncrypt::gstrDBZdjCrudePassWord);
+			db->Open((_bstr_t)ConnectionString, "", "", adConnectUnspecified);
 			//取出管理表的名称
 			CString strSql;
 			strSql = _T("SELECT * FROM phsManu ORDER BY seq");
@@ -2556,14 +2560,11 @@ void modPHScal::ImportDataFromZdjCrudeXXXX(CString  strFN, bool  bReplacement, b
 			ShowMessage(strTmp);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CString e)
-	{
-		ShowMessage(e);
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -5191,7 +5192,7 @@ void modPHScal::AutoSelSpringNo(_RecordsetPtr rss,float fpgz,float fpaz,float fy
 						  {
 								//只能选择AutoPHS计算的弹簧
 								nRepZdjType=1;
-								//前?嬉丫≡窳艘淮?
+								//前面已经选择了一次
 						  }
 						}
 				   }
