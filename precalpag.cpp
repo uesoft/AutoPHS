@@ -162,7 +162,7 @@ void CPreCalPag::SetComboSpringOrder(bool bSaveAction)
 	rs.CreateInstance(__uuidof(Recordset));
 	_variant_t vTmp;
 	rs->Open((_bstr_t)(_T("SELECT * FROM SelSpringRule ORDER BY seq")),_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+		adOpenStatic, adLockOptimistic, adCmdText); 
 	if(bSaveAction)
 		modPHScal::gstrSpringOrder = (_T(""));
 	if( bSaveAction) modPHScal::giSpringOrder = m_ComboSpringOrder.GetCurSel();

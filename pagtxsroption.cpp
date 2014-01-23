@@ -163,9 +163,11 @@ void CPagTxsrOption::OnBtnSanum()
 		FrmTxsr.m_pViewTxsr->DisPlaySANum();
 		//gsPartType = trim(data1.recordsetm_ActiveRs->PutCollect("IDgn1"))
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -208,7 +210,7 @@ void CPagTxsrOption::LoadSAG100()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L,&vTmp);
@@ -216,10 +218,11 @@ void CPagTxsrOption::LoadSAG100()
 			rs->MoveNext();
 		}
 	}
-	catch(CException * e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

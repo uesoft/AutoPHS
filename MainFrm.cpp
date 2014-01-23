@@ -424,7 +424,7 @@ void CMainFrame::OnSelPDSV()
 		strSQL=("SELECT *   FROM [Volume] WHERE volumeid="+str+"");
 	    try
 		{
-			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 			key=selSVPtr->GetCollect("jcdm");
 			if(key.vt==VT_EMPTY)
 			{
@@ -455,7 +455,7 @@ void CMainFrame::OnSelPDSV()
 		{
 			if(selSVPtr->State==adStateOpen)
 			{selSVPtr->Close();}
-			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+			selSVPtr->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 			key=selSVPtr->GetCollect("gcmc");
 			if(key.vt==VT_EMPTY)
 			{
@@ -507,13 +507,13 @@ void CMainFrame::OnSelPDSV()
 			//行业
 			CString SQLx = _T("SELECT * FROM DrawSize where sjhyid="+str_sjhyid+"");
 			DataCategory->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			
 			DataCategory->get_Collect((_variant_t)(_T("SJHYIndex")), &tmpVar);
 			EDIBDB::SJHYIndex=vtoi(tmpVar);
 			//专业
 			DataSpe->Open((_bstr_t)(_T("select * from speciality where zyid="+str_zyid+"")),_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			DataSpe->get_Collect((_variant_t)_T("ZYMC"),&tmpVar);
 			EDIBgbl::SelSpecName = vtos(tmpVar);
 			DataSpe->get_Collect((_variant_t)_T("zydm"),&tmpVar);
@@ -522,7 +522,7 @@ void CMainFrame::OnSelPDSV()
 			CString strDsgn;
 			strDsgn.Format("%ld",(EDIBgbl::SelDsgnID));
 			DataDsgn->Open((_bstr_t)(_T("select * from designstage where sjjdid="+strDsgn+"")),_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			DataDsgn->get_Collect((_variant_t)_T("sjjdmc"),&tmpVar);
 			EDIBgbl::SelDsgnName =vtos(tmpVar);
 			DataDsgn->get_Collect((_variant_t)_T("sjjddm"),&tmpVar);
@@ -530,7 +530,7 @@ void CMainFrame::OnSelPDSV()
 			
 			//保存当的结果
 			DataCurrWork->Open((_bstr_t)_T("Select * From CurrentWork"),_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			
 			_RecordsetPtr m_Rs;
 			m_Rs.CreateInstance(__uuidof(Recordset));
@@ -610,22 +610,22 @@ void CMainFrame::OnSampleManage()
 			try
 			{
 				modPHScal::PreCalCrudeData(FrmPhsData.m_DataBillRs);
+				CSelTemplate dlg;
+				dlg.DoModal();
 			}
 			catch(_com_error e)
 			{
 				CString strMsg;
-				strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+				strMsg.Format(_T("%d: %s"), __LINE__, (LPSTR)e.Description());
 				ShowMessage(strMsg);
 			}
 
-			CSelTemplate dlg;
-			dlg.DoModal();
 		}
 // 	}
 // 	catch(_com_error e)
 // 	{
 // 		CString strMsg;
-// 		strMsg.Format(_T("%d: %s"), __LINE__, e.Description());
+// 		strMsg.Format(_T("%d: %s"), __LINE__, (LPSTR)e.Description());
 // 		ShowMessage(strMsg);
 // 	}
 }
@@ -684,14 +684,11 @@ void CMainFrame::OnCalcZdjh()
 		frmStatus.ShowWindow(SW_HIDE);
 		AfxGetApp()->EndWaitCursor();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-		AfxGetApp()->EndWaitCursor();
-		frmStatus.ShowWindow(SW_HIDE);
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->EndWaitCursor();
 		frmStatus.ShowWindow(SW_HIDE);
 	}
@@ -776,19 +773,11 @@ void CMainFrame::OnDrawZdj()
 		}
 		EDIBAcad::SetAcadTop();
 	}
-	catch(COleException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{		
-		MessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	//////////////////////////////////////////////////////////////////////////
 	::CloseHandle(hSem); 
@@ -872,7 +861,7 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 				if(!DirExists(basDirectory::ProjectDWGDir)) 
 					if(!CreateDirectory(basDirectory::ProjectDWGDir,NULL))
 						return;
-				EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
+				EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument"));
 				strTmp=vtos(EDIBAcad::objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGPREFIX"))));
 				strTmp2=vtos(EDIBAcad::objAcadDoc.Invoke(_T("GetVariable"),1,&_variant_t(_T("DWGNAME"))));
 				user::AddDirSep(strTmp);
@@ -885,7 +874,7 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 					{
 
 						CMObject docs,doc;
-						docs = EDIBAcad::objAcadApp.GetPropertyByName ( _T ( "Documents" ) ).pdispVal;
+						docs = EDIBAcad::objAcadApp.GetPropertyByName ( _T ( "Documents" ) );
 						long count = docs.GetPropertyByName( _T("Count") );
 						for ( long n = 0; n < count; n++ )
 						{
@@ -899,9 +888,11 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 
 						}
 					}
-					catch(CException *e)
+					catch (_com_error &e)
 					{
-						e->Delete();
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
 					}
 					CFile::Remove(modPHScal::gsDwgFN);
 				}
@@ -940,9 +931,11 @@ void CMainFrame::DDEFileCmd(DWORD cmd)
 			EDIBAcad::WblockFromPhsToPhsBlkDir(basDirectory::ProjectDir);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1015,9 +1008,11 @@ void CMainFrame::SumCL(int Index)
 			if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && !FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 				FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 
 		CString SQLx = _T("SELECT count(*) FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE ( bCalSuccess=0  OR bCalSuccess IS NULL )");
@@ -1099,7 +1094,7 @@ void CMainFrame::SumCL(int Index)
 				//对tmpPhsBOM1表编号
 				SQLx = _T("SELECT sum(CLzz) as SumWeight FROM tmpPhsBOM1");
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				if( rs->adoEOF || rs->BOF ){
 					rs->Close();
 				}else {
@@ -1107,7 +1102,7 @@ void CMainFrame::SumCL(int Index)
 					SQLx = _T("SELECT * FROM tmpPhsBOM1");
 					rs->Close();
 					rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenDynamic, adLockOptimistic, adCmdText); 
 					i=0;
 
 					//============汇总电焊条==============
@@ -1119,7 +1114,7 @@ void CMainFrame::SumCL(int Index)
 						rs->Update();
 						rs->Close();
 						rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenDynamic, adLockOptimistic, adCmdText); 
 					}
 					//====================================
 
@@ -1133,7 +1128,7 @@ void CMainFrame::SumCL(int Index)
 					rs->Close();
 					SQLx = _T("SELECT * FROM TmpPhsBOM1");
 					rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(i>0)
 					{
 						if( EDIBAcad::gbACADR14 || !bIsCom ) //使用动态库画图  zsy 12/30
@@ -1185,7 +1180,7 @@ void CMainFrame::SumCL(int Index)
 				CString strPaintPathName, strTblName;
 				SQLx = _T("SELECT BomIndex, BomName , BomTable FROM BOMname ORDER BY BomIndex");
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				if( rs->adoEOF || rs->BOF )
 				{
 				}
@@ -1207,7 +1202,7 @@ void CMainFrame::SumCL(int Index)
 						i = 0;
 						SQLx = _T("SELECT sum(CLzz) as SumWeight FROM tmp") + vtos(GetFields(rs,_T("BomTable")));
 						rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenStatic, adLockOptimistic, adCmdText); 
 						if( rs1->adoEOF || rs1->BOF )
 						{
 							rs1->Close();
@@ -1219,7 +1214,7 @@ void CMainFrame::SumCL(int Index)
 							
 							rs1->Close();
 							rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenDynamic, adLockOptimistic, adCmdText); 
 							if( rs1->adoEOF || rs1->BOF )
 							{
 							}
@@ -1290,7 +1285,7 @@ void CMainFrame::SumCL(int Index)
 				//对tmpPhsBOM1表编号
 				SQLx = _T("SELECT sum(CLzz) as SumWeight FROM tmpPhsBOM1");
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				if( rs->adoEOF || rs->BOF ){
 					rs->Close();
 				}else {
@@ -1298,7 +1293,7 @@ void CMainFrame::SumCL(int Index)
 					SQLx = _T("SELECT * FROM tmpPhsBOM1");
 					rs->Close();
 					rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenDynamic, adLockOptimistic, adCmdText); 
 					i=0;
 					while(!rs->adoEOF)
 					{
@@ -1310,7 +1305,7 @@ void CMainFrame::SumCL(int Index)
 					rs->Close();
 					SQLx = _T("SELECT * FROM TmpPhsBOM1");
 					rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(i>0)
 						EDIBAcad::DrawTableExcel(EDIBgbl::TCLE,rs);
 
@@ -1319,14 +1314,11 @@ void CMainFrame::SumCL(int Index)
 				break;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -1368,12 +1360,11 @@ void CMainFrame::OnIntPipeana()
 		ReadYljsResult(FrmTxsr.m_pViewTxsr->m_ActiveRs);
 		FrmPhsData.ShowWindow(SW_SHOWNORMAL);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1535,12 +1526,11 @@ void CMainFrame::OnCalAllzdj()
 		modPHScal::gbCalAllPhs = false;
 		ShowMessage(GetResStr(IDS_AllPhsCalculationFinished)); //_T("所有支吊架计算完毕!")         
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if(thr!=NULL)
 	{
@@ -1609,10 +1599,12 @@ void CMainFrame::DrawZdjTab(int index)
 				if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && !FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 			}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
+			catch (_com_error &e)
+			{
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+			}
 			CString SQLx = _T("SELECT count(*) FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE ( bCalSuccess=0  OR bCalSuccess IS NULL )");
 			
 			if(modPHScal::gbSumAllVolume )
@@ -1662,7 +1654,7 @@ void CMainFrame::DrawZdjTab(int index)
 			p0.SetPoint(modPHScal::pt2x,modPHScal::pt2y);
 			EDIBAcad::DeleteAllEntitiesInLayers(1,_T("bom"));
 			SQLx = _T("SELECT * FROM TMP2");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenStatic, adLockOptimistic,adCmdText);
 			
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TLJ, atan(1.0) * 0.0, rs,0,1.0f,_T("Bom"),_T("Bom"),_T("%g"),modPHScal::iAlignLjmx);
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TCL].MnuCaption);
@@ -1676,7 +1668,7 @@ void CMainFrame::DrawZdjTab(int index)
 			p0.SetPoint(modPHScal::pt2x,modPHScal::pt2y);
 			EDIBAcad::DeleteAllEntitiesInLayers(1,_T("bom"));
 			SQLx = _T("SELECT * FROM TMP2");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenStatic, adLockOptimistic,adCmdText);
 			
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TLJ_BJBW, atan(1.0) * 0.0, rs,0,1.0f,_T("Bom"),_T("Bom"),_T("%g"),modPHScal::iAlignLjmx);
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TCL].MnuCaption);
@@ -1691,7 +1683,7 @@ void CMainFrame::DrawZdjTab(int index)
 				//每次计算一个支吊架时生成当前当前支吊架一览表，计算完成后总的一览表就生成了。
 				//每次计算一个支吊架时生成当前当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1713,7 +1705,7 @@ void CMainFrame::DrawZdjTab(int index)
 				//每次计算一个支吊架时生成当前支吊架一览表，计算完成后总的一览表就生成了。
 				//每次计算一个支吊架时生成当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1735,7 +1727,7 @@ void CMainFrame::DrawZdjTab(int index)
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE ZDJH IN ( SELECT ZDJH FROM [")
 				+ EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) 
 				+ _T(" AND TYPE LIKE \'????\' ) AND VolumeID =")+ ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1757,7 +1749,7 @@ void CMainFrame::DrawZdjTab(int index)
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE ZDJH IN ( SELECT ZDJH FROM [")
 				+ EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) 
 				+ _T(" AND TYPE LIKE \'????\' ) AND VolumeID =")+ ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");			
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{
 				EDIBAcad::DrawTableExcel( EDIBgbl::TZDExcel, rs);
@@ -1768,7 +1760,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAW705mm:
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1791,7 +1783,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAW705mmHSY:			////核四院支吊架明细一览表
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1813,7 +1805,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAW705mmQGY:			////支吊架明细一览表
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1836,7 +1828,7 @@ void CMainFrame::DrawZdjTab(int index)
 				//每次计算一个支吊架时生成当前当前支吊架一览表，计算完成后总的一览表就生成了。
 				//每次计算一个支吊架时生成当前当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1863,7 +1855,7 @@ void CMainFrame::DrawZdjTab(int index)
 			SQLx=_T("DELETE FROM [ML] WHERE VolumeID IS NULL AND ZDJH IS NULL");
 			EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY SEQ");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenDynamic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
@@ -1891,7 +1883,7 @@ void CMainFrame::DrawZdjTab(int index)
 				rs->Close();
 				//zsy 12/17      改为用ARX画图
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID IS NULL OR VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T("  ORDER BY SEQ");
-				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenDynamic, adLockOptimistic,adCmdText);
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
 				if( EDIBAcad::gbACADR14 || !bIsCom ) //使用动态库画图
 				{
@@ -1915,7 +1907,7 @@ void CMainFrame::DrawZdjTab(int index)
 			EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY SEQ");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenDynamic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
@@ -1943,7 +1935,7 @@ void CMainFrame::DrawZdjTab(int index)
 				}
 				rs->Close();
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID IS NULL OR VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T("  ORDER BY SEQ");
-				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+				rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenDynamic, adLockOptimistic,adCmdText);
 				EDIBAcad::DrawTableExcel(EDIBgbl::TMLE, rs);
 			}
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TML].MnuCaption);
@@ -1955,7 +1947,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAWXN180mm://绘制西南电力院的支吊架一览表
 			//Z8表
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -1976,7 +1968,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAW705mmHBYZ: //华北冶建
 			//z9
 						SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -2002,7 +1994,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAWBJHY01:
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -2023,7 +2015,7 @@ void CMainFrame::DrawZdjTab(int index)
 		case iZDJDRAWBJHY02:
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
-			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+			rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJDB,adOpenStatic, adLockOptimistic,adCmdText);
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -2043,13 +2035,11 @@ void CMainFrame::DrawZdjTab(int index)
 		//pfg20050601
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2411,9 +2401,11 @@ void CMainFrame::OnToolInsertUserBlock()
 	{
 		EDIBAcad::objAcadDoc.Invoke(_T("SendCommand"),1,&_variant_t(_T("phsr\n")));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2688,7 +2680,7 @@ void CMainFrame::OnImportVolume()
 	//_bstr_t(dbConnectionString + m_strPrjDBDir + "AllPrjDB.mdb"),
 
 
-//	rsRefresh->Open(strSQL,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+//	rsRefresh->Open(strSQL,pCon,adOpenStatic,adLockOptimistic,adCmdText);
 	FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 	FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(rsRefresh);
 	FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);
@@ -2797,7 +2789,7 @@ void CMainFrame::OnDrawZdjArx()
 		{
 			mlSet.CreateInstance(__uuidof(Recordset));
 			strSQL="select * from ml where Volumeid="+strVolumeID+" and zdjh="+strZdjh+"";
-			mlSet->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenKeyset,adLockOptimistic,adCmdText);
+			mlSet->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,/*adOpenDynamic*/adOpenStatic,adLockOptimistic,adCmdText);
 			key=mlSet->GetCollect(_T("DRAWNA"));
 			if(!(key.vt==VT_NULL||key.vt==VT_EMPTY))
 			{
@@ -2818,7 +2810,7 @@ void CMainFrame::OnDrawZdjArx()
 
 		gStartAcad();
 		EDIBAcad::DisplayAcadTop();
-		EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument")).pdispVal;
+		EDIBAcad::objAcadDoc=EDIBAcad::objAcadApp.GetPropertyByName(_T("ActiveDocument"));
 
 		EDIBAcad::objAcadDoc.Invoke(_T("SendCommand"),1,&_variant_t(_T("drawzdj\n")));
 
@@ -2844,18 +2836,11 @@ void CMainFrame::OnDrawZdjArx()
 		EDIBAcad::SetDimVariables();
 		return;	
 	}
-	catch(COleException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{		
-		MessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -2914,7 +2899,7 @@ BOOL gStartAcad()
 		{
 			EDIBAcad::gbACADR14=true;
 			CMObject ObjPreferences;
-			ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences")).pdispVal;
+			ObjPreferences=EDIBAcad::objAcadApp.GetPropertyByName(_T("Preferences"));
 			_variant_t varStr;
 			varStr.SetString("<<Unnamed Profile>>");
 			ObjPreferences.PutPropertyByName(_T("ActiveProfile"),&varStr);
@@ -2935,8 +2920,8 @@ BOOL gStartAcad()
 		
 		}
 
-		EDIBAcad::MoSpace=EDIBAcad::objAcadDoc.GetPropertyByName(_T("ModelSpace")).pdispVal;
-		EDIBAcad::PaSpace=EDIBAcad::objAcadDoc.GetPropertyByName(_T("PaperSpace")).pdispVal;
+		EDIBAcad::MoSpace=EDIBAcad::objAcadDoc.GetPropertyByName(_T("ModelSpace"));
+		EDIBAcad::PaSpace=EDIBAcad::objAcadDoc.GetPropertyByName(_T("PaperSpace"));
 		//Set OSNAP mode for duration of the VB program
 		EDIBAcad::sysVarName = _T("OSMODE");
 		VarName=_variant_t(EDIBAcad::sysVarName);
@@ -2975,11 +2960,7 @@ BOOL gStartAcad()
 		EDIBAcad::LoadMyArx("PHS.arx");
 	//	EDIBAcad::LoadMyArx("sm.arx");
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
+	catch (_com_error &e)
 	{
 		CString str;
 		str.LoadString(IDS_AUTOCAD_INITIALIZE_ERROR);
@@ -3055,11 +3036,7 @@ void CMainFrame::OnUpdateDrawZdj(CCmdUI* pCmdUI)
 			pCmdUI->Enable(true);
 		}
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
+	catch (_com_error &e)
 	{
 		AfxMessageBox("Error OnUpdateDrawZDj");
 	}

@@ -113,7 +113,7 @@ void ReadResult_Excel(_RecordsetPtr pRs)
 	strSQL="select * from za1";
 	try
 	{
-		pRsZA1->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		pRsZA1->Open(_bstr_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		if(pRsZA1->GetRecordCount()>0)
 		{
 			pRsZA1->MoveFirst();

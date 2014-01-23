@@ -714,7 +714,7 @@ void CSelTemplate::OpenTemplateRs()
 			strSQL += _T(" DESC ");
 	}
 	m_rsTemplateName->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenStatic, adLockOptimistic, adCmdText); 
+		adOpenDynamic, adLockOptimistic, adCmdText); 
 	if (m_iSaveID == -1)
 		strTemp.Format(_T("SampleID=%d"),modPHScal::iSelSampleID);
 	else
@@ -771,7 +771,7 @@ void CSelTemplate::LoadListName()
 		// 计算连接件的最大数目，确定ListCtrl中的列数。
 
 		rsRef->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		rsRef->get_Collect((_variant_t)_T("MaxCount"), &v);
 		rsRef->Close();
 		int nMaxCol = vtoi(v);
@@ -795,10 +795,11 @@ void CSelTemplate::LoadListName()
 			this->m_listctrlStruct.SetItemState(iSelItem,0xffff,LVIS_SELECTED);
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	
@@ -915,7 +916,7 @@ void CSelTemplate::LoadListPA()
 
 		_variant_t vTmp;
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockReadOnly, adCmdText); 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -925,10 +926,11 @@ void CSelTemplate::LoadListPA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadPA=FALSE;
 }
@@ -979,7 +981,7 @@ void CSelTemplate::LoadListSA()
 			strSQL+=" WHERE " + m_strFilter;
 		_variant_t vTmp;
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockReadOnly, adCmdText); 
+			adOpenForwardOnly, adLockReadOnly, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -989,10 +991,11 @@ void CSelTemplate::LoadListSA()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	m_bLoadSA=FALSE;
 }
@@ -1291,7 +1294,7 @@ void CSelTemplate::DataReposition()
 		strSQL.Format(_T("SELECT CustomID FROM phsStructureREF WHERE SampleID=%d ORDER BY SEQ"),
 			this->m_iCurSampleID);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockReadOnly, adCmdText); 
+			adOpenStatic, adLockReadOnly, adCmdText); 
 		m_lstStruct.ResetContent();
 		while(!rs->adoEOF)
 		{
@@ -1305,10 +1308,11 @@ void CSelTemplate::DataReposition()
 		rs->Close();
 		Cavphs->SourceObj = &m_lstStruct;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	UpdateData(FALSE);
 }
@@ -1713,7 +1717,7 @@ void CSelTemplate::OnOK()
 			rsTmpZB.CreateInstance(__uuidof(Recordset));
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
 			rsTmpZB->Open((_bstr_t)strTemp, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			int iCount;
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 				iCount=0;
@@ -1749,15 +1753,11 @@ void CSelTemplate::OnOK()
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->PutCollect("iSelSampleID",_variant_t((long)modPHScal::iSelSampleID));
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 	}
-	catch(CException* e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-		return;
-	}
-	catch(_com_error & e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return;
 	}
 	CDialog::OnOK();
@@ -2147,10 +2147,11 @@ void CSelTemplate::OnItemchangedListctrlStruct(NMHDR* pNMHDR, LRESULT* pResult)
 
 		//将对应模板名称的所有支吊架组装结构都显示在IDC_LISTCTRL_STRUCT列表中
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	*pResult = 0;
 }

@@ -112,17 +112,10 @@ void CImportPlantVision::BeginImport()
 		this->m_HintInformation=_T("数据导入失败");
 		this->UpdateData(FALSE);
 
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 
-		return;
-	}
-	catch(COleDispatchException *e1)
-	{
-		this->m_HintInformation=_T("数据导入失败");
-		this->UpdateData(FALSE);
-
-		AfxMessageBox(e1->m_strDescription);
-		e1->Delete();
 		return;
 	}
 	this->m_HintInformation=_T("数据导入成功");
@@ -176,7 +169,7 @@ BOOL CImportPlantVision::InitPropertyWnd()
 		
 		//打开结构表
 		strSQL = "SELECT * FROM [TZA1] WHERE CADFieldSeq >= 0 ORDER BY CADFieldSeq";
-		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
+		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
 		if ( pRsInfo->adoEOF && pRsInfo->BOF )
 		{
 			return FALSE;
@@ -270,7 +263,7 @@ void CImportPlantVision::SaveSetToReg()
 		
 		//打开结构表
 		strSQL = "SELECT * FROM [TZA1] WHERE CADFieldSeq >= 0 ORDER BY CADFieldSeq";
-		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
+		pRsInfo->Open(_variant_t(strSQL), pConSort.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
 		if ( pRsInfo->adoEOF && pRsInfo->BOF )
 		{
 			return ;

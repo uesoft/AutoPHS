@@ -124,7 +124,7 @@ void CFrmDatabaseIn::getDatabase()
 				m_bIsNewDB=false;
 				sqlA=_T("SELECT DISTINCT VolumeID FROM [") + mytablenameA + _T("] WHERE NOT IsNull(VolumeID) AND (VolumeID)<>\'\' AND (VolumeID)<>") + EDIBgbl::SelJcdm;
 				//sqlB = _T("SELECT DISTINCT VolumeID FROM[") & mytablenameB & _T("] WHERE NOT IsNull(VolumeID) AND (VolumeID)<>'' AND (VolumeID)<>'") & SelVlmID & _T("'")
-				rsA->Open(_variant_t(sqlA),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+				rsA->Open(_variant_t(sqlA),(IDispatch*)db,adOpenStatic, adLockOptimistic,adCmdText);
 				_variant_t vTmp;
 				while(!rsA->adoEOF)
 				{
@@ -147,10 +147,11 @@ void CFrmDatabaseIn::getDatabase()
 			this->SendMessage(WM_CLOSE);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_bDataSelected=false;
 		this->SendMessage(WM_CLOSE);
 	}	
@@ -216,16 +217,17 @@ void CFrmDatabaseIn::OnDataIn()
 					{
 						EDIBgbl::dbPRJDB->Execute((_bstr_t)strSQL, NULL, adCmdText);
 					}
-
-					catch(CException *e)
+					catch (_com_error &e)
 					{
-						e->Delete();
+						CString strMsg;
+						strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+						AfxMessageBox(strMsg);
 					}
 					int VlmID2;
 					ix=m_List1.GetCurSel();
 					VlmID2=m_List1.GetItemData(ix);
 					strSQL.Format(_T("SELECT jcmc FROM Volume WHERE VolumeID=%d"),VlmID2);
-					rs1->Open(_variant_t(strSQL),(IDispatch*)m_db,adOpenKeyset, adLockOptimistic,adCmdText);
+					rs1->Open(_variant_t(strSQL),(IDispatch*)m_db,adOpenStatic, adLockOptimistic,adCmdText);
 					if(!rs1->BOF && !rs1->adoEOF)
 					{
 						rs1->get_Collect((_variant_t)0L, &varTmp);
@@ -234,7 +236,7 @@ void CFrmDatabaseIn::OnDataIn()
 					rs1->Close();
 					strSQL.Format(_T("SELECT * FROM Volume WHERE Enginid=\'%s\' AND jcdm=\'%s\' AND SJHYID=%d AND SJJDID=%d AND ZYID=%d"),
 						EDIBgbl::SelPrjID,strJcdm1,EDIBgbl::SelHyID,EDIBgbl::SelDsgnID,EDIBgbl::SelSpecID);
-					rs1->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbPRJDB,adOpenKeyset, adLockOptimistic,adCmdText);
+					rs1->Open(_variant_t(strSQL),(IDispatch*)EDIBgbl::dbPRJDB,adOpenDynamic, adLockOptimistic,adCmdText);
 					if(rs1->adoEOF && rs1->BOF)
 					{
 						VlmID=GetMaxVlmID(EDIBgbl::dbPRJDB)+1;
@@ -276,13 +278,13 @@ void CFrmDatabaseIn::OnDataIn()
 						+ _T("\' AND SJJDID = ") + ltos(EDIBgbl::SelDsgnID) + _T(" AND SJHYID = ") + ltos(EDIBgbl::SelHyID) 
 						+ _T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID) + _T(" )");
 					rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(!m_bIsNewDB)
 					{
 						SQLx=_T("SELECT count(*) as C1 FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE (VolumeID) =\'") + m_sList1 + _T("\'");
 					}
 					rs1->Open((_bstr_t)SQLx, _variant_t((IDispatch*)db,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(!rs2->adoEOF && !rs2->BOF && !rs1->adoEOF && !rs1->BOF)
 					{
 						rs2->get_Collect((_variant_t)_T("C1"), &v2);
@@ -309,7 +311,7 @@ void CFrmDatabaseIn::OnDataIn()
 								+ _T("\' AND SJJDID = ") + ltos(EDIBgbl::SelDsgnID) + _T(" AND SJHYID = ") + ltos(EDIBgbl::SelHyID) 
 								+ _T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID);
 						rsVlm->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenDynamic, adLockOptimistic, adCmdText); 
 						if(rsVlm->BOF && rsVlm->adoEOF)
 						{
 							rsVlm->AddNew();
@@ -342,12 +344,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -361,12 +362,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -380,12 +380,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -399,12 +398,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 						}
@@ -422,12 +420,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -443,12 +440,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -463,12 +459,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 
 							//охи╬ЁЩ
@@ -483,12 +478,11 @@ void CFrmDatabaseIn::OnDataIn()
 							{
 								EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 							}
-							catch(CException *e)
+							catch (_com_error &e)
 							{
-	#ifdef _DEBUG
-								e->ReportError();
-	#endif
-								e->Delete();
+								CString strMsg;
+								strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+								AfxMessageBox(strMsg);
 							}
 						}
 					}
@@ -501,17 +495,22 @@ void CFrmDatabaseIn::OnDataIn()
 		{
 			FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			FrmTxsr.m_pViewTxsr->m_ActiveRs->CancelUpdate();
 		}
 		FrmTxsr.m_pViewTxsr->m_ActiveRs->Requery(-1);
 		FrmPhsData.InitDBbill();
 		this->SendMessage(WM_CLOSE);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -538,12 +537,11 @@ long inline CFrmDatabaseIn::GetMaxVlmID(_ConnectionPtr & db)
 		rs->get_Collect((_variant_t)0L, &vTmp);
 		ret=vtoi(vTmp);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-#ifdef _DEBUG
-		e->ReportError();
-#endif
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -561,7 +559,7 @@ void CFrmDatabaseIn::LoadListEngin()
 		else
 			strSQL=_T("SELECT EnginID FROM Engin");
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)m_db,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		_variant_t vartmp;
 		while(!rs->adoEOF)
 		{
@@ -570,10 +568,11 @@ void CFrmDatabaseIn::LoadListEngin()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -607,7 +606,7 @@ void CFrmDatabaseIn::LoadListVlm()
 							EDIBgbl::SelJcdm,
 							EDIBgbl::SelPrjID);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)m_db,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int ix;
 		while(!rs->adoEOF)
 		{
@@ -618,10 +617,11 @@ void CFrmDatabaseIn::LoadListVlm()
 			rs->MoveNext();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	
 }

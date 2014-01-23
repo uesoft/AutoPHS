@@ -300,7 +300,7 @@ void CDlgSARecord::OnOK()
 			if(rs->State == adStateOpen)
 				rs->Close();
 			rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF || !rs->adoEOF)
 			{
 				//有记录,不可加入
@@ -462,7 +462,7 @@ void CDlgSARecord::InitLab()
 		strSQL.Format(_T("Select %s ,FDName FROM FieldNameSizeVar WHERE ID=\'%s\'"),
 			strDesc,modPHScal::sFindID(m_strCustomID));
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(rs->BOF || rs->adoEOF) return;
 		_variant_t vTmp;
 		HRESULT hr = S_OK;
@@ -560,10 +560,11 @@ void CDlgSARecord::InitLab()
 		}
 		rs->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

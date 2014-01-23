@@ -204,15 +204,15 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		CString strSQL;
 		strSQL.Format("SELECT * FROM %s WHERE zdjh=%d AND VolumeID=%d AND nth =%d ORDER BY recno",
 			EDIBgbl::Btype[EDIBgbl::TZB],modPHScal::zdjh,EDIBgbl::SelVlmID,nth);
-	_RecordsetPtr rsTZB;//当前支吊架当前路数包含所有零部件的表，包括螺栓螺母，按记录号排序
+		_RecordsetPtr rsTZB;//当前支吊架当前路数包含所有零部件的表，包括螺栓螺母，按记录号排序
 		rsTZB->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		_RecordsetPtr rsTmpZB;//当前支吊架当前路数零部件表，不含螺栓螺母、根部附件
 		strSQL.Format("SELECT CustomID FROM ZB WHERE [VolumeID]=%d AND [ZDJH]=%d AND [nth]=%d AND [ClassID]<>%d AND [ClassID]<>%d AND [ClassID]<>%d AND [IsSAPart]<>-1 Order By recno",
 				EDIBgbl::SelVlmID,modPHScal::zdjh,nth,iBolts,iNuts,iAttached);
 		rsTmpZB->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		int C;
 		if( rsTmpZB->adoEOF&& rsTmpZB->BOF )
 			throw GetResStr(IDS_Null_rsTmpREF);
@@ -284,7 +284,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			CString strSQL = (_T("SELECT DISTINCT PNum1 From ")) + modPHScal::tbnSA + 
 				_T(" WHERE CustomID=\'") + Ptype[C-1] + _T("\' AND PNum1 is not null");
 			rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(rsTmp->GetRecordCount()==1)
 			{
 				//只有一个记录,它的Pnum1字段=1，只能采用单槽钢；Pnum2=2，只能采用双槽钢。
@@ -508,7 +508,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						if(rs3->State == adStateOpen)
 							rs3->Close();
 						rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenStatic, adLockOptimistic, adCmdText); 
 						if(rs3->adoEOF && rs3->BOF)
 						{
 							//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
@@ -595,7 +595,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							if(rsX->State == adStateOpen)
 								rsX->Close();
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenStatic, adLockOptimistic, adCmdText); 
 							if( rsX->adoEOF && rsX->BOF )
 								;
 							else
@@ -624,7 +624,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							if(rsX->State == adStateOpen)
 								rsX->Close();
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenStatic, adLockOptimistic, adCmdText); 
 							if( rsX->adoEOF && rsX->BOF );
 							else
 								//没找到，每次外径递增1%，继续找
@@ -646,7 +646,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								if(rsX->State == adStateOpen)
 									rsX->Close();
 								rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+									adOpenStatic, adLockOptimistic, adCmdText); 
 								if( rsX->adoEOF && rsX->BOF )
 								{
 									;
@@ -674,7 +674,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						if(rsX->State == adStateOpen)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenStatic, adLockOptimistic, adCmdText); 
 						break;
 					case iROD:
 						//《管道支吊技术》p202 12.1.2(4)与《火力发电厂汽水管道设计技术规定(DL/T 5054-1996)》p67 7.5.4均指出：
@@ -865,7 +865,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							if(rsTmp->State == adStateOpen)
 								rsTmp->Close();
 							rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenDynamic, adLockOptimistic, adCmdText); 
 							if(rsTmp->BOF && rsTmp->adoEOF)
 							{
 								//如果不存在这块钢板,加入它。
@@ -946,7 +946,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		if(rs->State == adStateOpen)
 			rs->Close();
 		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if( rs->adoEOF && rs->BOF )
 		{
 			//恒吊载荷容量表为空，不可能
@@ -972,7 +972,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			sTmp.Format(_T("%g"),tmpDist);
 			SQLx = _T("SELECT * FROM [") + modPHScal::tbnDisplacementSerial + _T("] WHERE DisplacementSerial>=") + sTmp + _T(" ORDER BY DisplacementSerial");
 			rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			
 			if( rs1->adoEOF && rs1->BOF )
 				//位移超出系列最大值
@@ -1222,13 +1222,13 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			if(rsTmp->State == adStateOpen)
 				rsTmp->Close();
 			rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			//按照西北电力设计院支吊架手册1983年版117页解释,把"GDW1>="改为"GDW1=". lgb and pfg20050927
 			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1= ") + ftos(int((modPHScal::gdw+99)/100)*100) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
 			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if( rsX->adoEOF && rsX->BOF )
 				;
 			else
@@ -1289,7 +1289,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			if(rs3->State == adStateOpen)
 				rs3->Close();
 			rs3->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(rs3->adoEOF && rs3->BOF)
 			{
 				//在%s库%s材料选择规范表没有%s字段值为默认值%s的记录(非管部零件材料选择规则)
@@ -1312,7 +1312,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			if(rsCal->State == adStateOpen)
 				rsCal->Close();
 			rsCal->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(rsCal->adoEOF && rsCal->BOF)
 			{
 				//在数据库%s中的根部强度计算公式表%s没有任何记录。
@@ -1325,25 +1325,25 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				rsTmp1->Close();
 			//rsTmp1需要修改功能
 			rsTmp1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			//打开槽钢特性表，备查
 			SQLx = _T("SELECT * FROM SSteelPropertyCS ORDER BY ID");
 			if(rsTmp->State == adStateOpen)
 				rsTmp->Close();
 			rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			//打开角钢特性表，备查
 			SQLx = _T("SELECT * FROM SSteelPropertyLS ORDER BY ID");
 			if(rs1->State == adStateOpen)
 				rs1->Close();
 			rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			//取根部表中的满足定位条件的所有记录,按PmaxSF排序，逐个查找
 			SQLx = CString(_T("SELECT * FROM ")) + modPHScal::tbnSA + _T(" WHERE GDW1>= ") + ftos(modPHScal::gdw) + _T(" AND (CustomID)=\'") + Ptype[i] + _T("\' ORDER BY GDW1,PmaxSF");
 			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if( rsX->adoEOF && rsX->BOF)
 				;
 			else
@@ -1580,7 +1580,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								if(rsTmp2->State == adStateOpen)
 									rsTmp2->Close();
 								rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+									adOpenDynamic, adLockOptimistic, adCmdText); 
 								
 								rsTmp2->get_Collect((_variant_t)_T("Wyh1sac"), &vTmp);
 								rsTmp1->put_Collect((_variant_t)_T("Wyh1"),vTmp);
@@ -1621,7 +1621,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								if(rs2->State == adStateOpen)
 									rs2->Close();
 								rs2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+									adOpenStatic, adLockOptimistic, adCmdText); 
 								if(rs2->adoEOF && rs2->BOF)
 								{
 									//在%s库稳定折减系数表%s中没有%s这种材料。
@@ -1770,7 +1770,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							if(rsTmp2->State == adStateOpen)
 								rsTmp2->Close();
 							rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenDynamic, adLockOptimistic, adCmdText); 
 							
 							rsTmp2->get_Collect((_variant_t)_T("TAOx1sac"), &vTmp);
 							rsTmp1->put_Collect((_variant_t)_T("TAOx1sa"),vTmp);
@@ -1791,7 +1791,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 							if(rsTmp2->State == adStateOpen)
 								rsTmp2->Close();
 							rsTmp2->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-								adOpenKeyset, adLockOptimistic, adCmdText); 
+								adOpenDynamic, adLockOptimistic, adCmdText); 
 							
 							rsTmp2->get_Collect((_variant_t)_T("SIGMA1sac"), &vTmp);
 							mfSIGMA1sa=vtof(vTmp);
@@ -2138,7 +2138,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 						if(rsX->State == adStateOpen)
 							rsX->Close();
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenStatic, adLockOptimistic, adCmdText); 
 						if( rsX->adoEOF && rsX->BOF )
 						{//1
 							if( k == 2 )
@@ -2192,7 +2192,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 								if(rsX->State == adStateOpen)
 									rsX->Close();
 								rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+									adOpenStatic, adLockOptimistic, adCmdText); 
 								if( rsX->adoEOF && rsX->BOF )
 								{//
 									if( k == 2 )
@@ -2227,7 +2227,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 				  if(rsX->State == adStateOpen)
 					  rsX->Close();
 				  rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-					  adOpenKeyset, adLockOptimistic, adCmdText); 
+					  adOpenStatic, adLockOptimistic, adCmdText); 
 				  p1 = tmpSelPJG / 2;
 				  p2 = 0;
 				  strTmp = GetBHforDoubleCSBeam(modPHScal::gdw / 10, modPHScal::DblHangerRodDist / 10, modPHScal::Lspan / 10, p1, p2, tmpCustomID1, 2, FirstCal);
@@ -2240,7 +2240,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			   if(rsX->State == adStateOpen)
 				   rsX->Close();
 			   rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				   adOpenKeyset, adLockOptimistic, adCmdText); 
+				   adOpenStatic, adLockOptimistic, adCmdText); 
 			   p1 = tmpSelPJG;
 			   p2 = 0;
 			   strTmp = GetBHforDoubleCSBeam(modPHScal::gdw / 10, modPHScal::DblHangerRodDist / 10, modPHScal::Lspan / 10, p1, p2, tmpCustomID1, 2, FirstCal);
@@ -2252,7 +2252,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 		}
 	}
 	else
@@ -2260,7 +2260,7 @@ bool Cphs::GetphsBHandSizes1(_RecordsetPtr rsSAPart, _RecordsetPtr rsPartBoltNut
 		if(rsX->State == adStateOpen)
 			rsX->Close();
 		rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 	}
 spZ1Z2:
 	//如果需要进行连接孔、杆尺寸自动检查, 要求孔尺寸匹配进行查找时
@@ -2271,7 +2271,7 @@ spZ1Z2:
 			rsX->Close();
 		SQLx.Replace(tmpSQL," ");
 		rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 	}
 	if( rsX->adoEOF && rsX->BOF )
 	{
@@ -2309,7 +2309,7 @@ spZ1Z2:
 			if(rsX->State == adStateOpen)
 				rsX->Close();
 			rsX->Open((_bstr_t)tmpSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if( !rsX->adoEOF )
 			{
 				goto spZ1Z2;
@@ -2373,7 +2373,7 @@ spZ1Z2:
 		if(phsAvailableTypeRs->State == adStateOpen)
 			phsAvailableTypeRs->Close();
 		phsAvailableTypeRs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-									adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		//注意下面几句的位置，不要移动到别处，以免荷载计算不正确
 		if( modPHScal::glClassID == iCSPR )
 		{
@@ -2495,7 +2495,7 @@ spZ1Z2:
 			if(rsDiaOfCSPRFiJ->State == adStateOpen)
 				rsDiaOfCSPRFiJ->Close();
 			rsDiaOfCSPRFiJ->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if( rsDiaOfCSPRFiJ->adoEOF && rsDiaOfCSPRFiJ->BOF )
 			{
 				sTmp.Format(GetResStr(IDS_NotFoundRecordInLugDiaOfCSPR),modPHScal::tbnLugDiaOfCSPR,SQLx);
@@ -2742,7 +2742,7 @@ spZ1Z2:
 		if(rsDiaOfCSPRFiK->State == adStateOpen)
 			rsDiaOfCSPRFiK->Close();
 		rsDiaOfCSPRFiK->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbSACal,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 		if( rsDiaOfCSPRFiK->adoEOF && rsDiaOfCSPRFiK->BOF )
 		{
 			sTmp.Format(GetResStr(IDS_NotFoundRecordInLugDiaOfCSPR), modPHScal::tbnLugDiaOfCSPR, SQLx);
@@ -3175,8 +3175,8 @@ spZ1Z2:
 		   SQLx = _T("SELECT (") + sBHFormat + _T(") AS sBHFormat  FROM tmpCSLen");
 		   if(rsTmp->State == adStateOpen)
 			   rsTmp->Close();
-		   rsTmp->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			   adOpenKeyset, adLockOptimistic, adCmdText); 
+		   rsTmp->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
+			   adOpenDynamic, adLockOptimistic, adCmdText); 
 		   rsTmp->get_Collect((_variant_t)_T("sBHFormat"), &vTmp1);
 		   sBHFormat =vtos(vTmp1);
 		   rsTZB->put_Collect((_variant_t)_T("BHformat"),STR_VAR(sBHFormat));
@@ -3210,7 +3210,7 @@ spZ1Z2:
 				   m_rs->Close();
 			   
 			   m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				   adOpenKeyset, adLockOptimistic, adCmdText); 
+				   adOpenStatic, adLockOptimistic, adCmdText); 
 			   if((!m_rs->BOF) && !(m_rs->adoEOF))
 			   {
 				   m_rs->get_Collect((_variant_t)_T("size3"), &vT1);
@@ -3222,7 +3222,7 @@ spZ1Z2:
 							modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L7")),int(modPHScal::gmiDiameter));
 						m_rs->Close();
 						m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-							adOpenKeyset, adLockOptimistic, adCmdText); 
+							adOpenStatic, adLockOptimistic, adCmdText); 
 						m_rs->get_Collect((_variant_t)_T("size3"), &vT1);
 						int y = vtoi(vT1);
 						if(m_fDiaM1 > y)
@@ -3915,7 +3915,7 @@ spZ1Z2:
 		m_rs.CreateInstance(__uuidof(Recordset));
 		_variant_t vT1;
 		m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		CString str;
 		int x=0;
 		if((!m_rs->BOF) && !(m_rs->adoEOF))
@@ -3939,7 +3939,7 @@ spZ1Z2:
 					modPHScal::tbnPART,modPHScal::sFindCustomID (_T("L7")),int(modPHScal::gmiDiameter));
 				m_rs->Close();
 				m_rs->Open((_bstr_t)strSQLTmp,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				m_rs->get_Collect((_variant_t)_T("size3"), &vT1);
 				int y = vtoi(vT1);
 				if(m_fDiaM1 > y)
@@ -3961,7 +3961,7 @@ spZ1Z2:
 			
 	}
 /*	
-	}
+}
 	
 	catch(CString e)
 	{
@@ -3973,19 +3973,15 @@ spZ1Z2:
 			ShowMessage(e);
 		
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
 		ret=false;
-		if(FirstCal == MaxCalCount)
-			//frmStatus.MessageBox(e.Description());
-			ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
-	catch(CException *e)
-	{
-		e->Delete();
-		ret=false;
-	}
-*/
+	*/
+
 	if(rsTZB->State == adStateOpen)
 		rsTZB->Close();
 
@@ -4200,7 +4196,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 				  if(rsTmp->State == adStateOpen)
 					  rsTmp->Close();
 				  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					  adOpenKeyset, adLockOptimistic, adCmdText); 
+					  adOpenStatic, adLockOptimistic, adCmdText); 
 				  if( rsTmp->adoEOF && rsTmp->BOF )
 				  {
 					  //不是型钢
@@ -4209,7 +4205,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 					  rsTmp->Close();
 					  SQL1 = _T("SELECT * FROM [") + modPHScal::tbnAttachment + _T("] WHERE (BH)=\'") + mvSAattachedCustomID + _T("\' ORDER BY bh");
 					  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						  adOpenKeyset, adLockOptimistic, adCmdText); 
+						  adOpenStatic, adLockOptimistic, adCmdText); 
 					  if( rsTmp->adoEOF && rsTmp->BOF )
 					  {
 						  //不是附件,则是螺栓螺母,再查螺栓螺母表
@@ -4222,7 +4218,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 						  rsTmp.Close();
 						  rsTmp.m_pDatabase=&modPHScal::dbZDJcrude;*/
 						  rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-							  adOpenKeyset, adLockOptimistic, adCmdText); 
+							  adOpenStatic, adLockOptimistic, adCmdText); 
 						  if( rsTmp->adoEOF && rsTmp->BOF )
 						  {
 							  //没找到螺栓螺母记录
@@ -4316,7 +4312,7 @@ bool Cphs::doiG100(int j, _RecordsetPtr rsTZB, _RecordsetPtr rsX, _variant_t& vT
 							  }
 							  rsTmp->Close();
 								rsTmp->Open((_bstr_t)SQL1,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-								  adOpenKeyset, adLockOptimistic, adCmdText); 
+								  adOpenStatic, adLockOptimistic, adCmdText); 
 							  if( rsTmp->adoEOF && rsTmp->BOF )
 							  {
 								  //没有记录

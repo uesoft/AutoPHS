@@ -625,9 +625,11 @@ BOOL CPreStylePag::CreateTextStyle(
             return TRUE;
         }
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
     catch(...)
     {
@@ -714,9 +716,11 @@ BOOL CPreStylePag::ModifyTextStyleProperty(
 			}
 		}
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
     catch(...)
     {
@@ -792,12 +796,11 @@ BOOL CPreStylePag::GetTextStyleProperty(
 			}
 		}
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-    catch(...)
-    {
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
     }
     return FALSE;
 }
@@ -842,9 +845,11 @@ BOOL CPreStylePag::DeleteTextStyle(CString strTSName)
 			}
 		}
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
     catch(...)
     {
@@ -943,9 +948,11 @@ void CPreStylePag::OnBtnNewstyle()
             MessageBox("创建字体样式失败，请您在ACAD中创建所需的字体样式后再做后续相关操作");
         }
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
     catch(...)
     {
@@ -1194,9 +1201,11 @@ void CPreStylePag::QueryAcadTextStyleCombo()
             lpStyle->AddString(strStyleName);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{

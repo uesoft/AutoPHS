@@ -144,12 +144,11 @@ void Guide::afresh()
 		//Rd->Close();
 		SetColCaption();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-    catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -172,9 +171,6 @@ void Guide::OnClose()
 		{
 			//_ConnectionPtr Con;
 			CString sql;
-				//Connectionstr="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source="+strBackupPath+"\\sort.mdb";
-				//Con.CreateInstance(__uuidof(Connection));
-				// Con->Open(_bstr_t(Connectionstr),"","",0);
 			sql="INSERT INTO [connectSPRBAK] SELECT * FROM connectSPR";
 			ConDB->Execute(_bstr_t("DELETE FROM [connectSPRBAK]"),NULL,adCmdText);
 			ConDB->Execute(_bstr_t(sql),NULL,adCmdText);
@@ -189,12 +185,11 @@ void Guide::OnClose()
 			//CopyFile(strPrjDBDir+"Sort.mdb",strBackupPath+"\\Sort.mdb",FALSE);
 			 
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
-		}
-		catch(...)
-		{
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 	}
 	   //Rd->Close();
@@ -350,12 +345,11 @@ void Guide::OnEditAddRs()
         SetColCaption();
 		Rd->MoveLast();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	
@@ -371,13 +365,18 @@ void Guide::OnEditDelRs()
 		
 	    Rd->Bookmark=RowBookMark;
 		Rd->Delete(adAffectCurrent);
+		Rd->MoveNext();
+		if (Rd->adoEOF)
+		{
+			Rd->MoveLast();
+		}
+		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 }
@@ -399,12 +398,11 @@ void Guide::OnEditFilterRs()
 		cansel=0;
 		
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-    catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -730,13 +728,11 @@ extern void GDataCopyCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData)
 		::SetClipboardData(SF_TEXT,hglobal);
 		::CloseClipboard();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
-
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	AfxGetApp()->EndWaitCursor();
 }
@@ -777,13 +773,11 @@ extern void GDataPasteCol(long RowNum,int StartCol,int EndCol,CDataGrid &m_GData
 			m_GData.Scroll(0,m_GData.GetVisibleRows()-2);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		AfxMessageBox("×Ö¶ÎÖµ²»·û");
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
     AfxGetApp()->EndWaitCursor();
 }

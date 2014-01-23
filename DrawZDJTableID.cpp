@@ -66,9 +66,11 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				if(!FrmTxsr.m_pViewTxsr->m_ActiveRs->adoEOF && !FrmTxsr.m_pViewTxsr->m_ActiveRs->BOF)
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
 			}
 			CString SQLx = _T("SELECT count(*) FROM [") + EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE ( bCalSuccess=0  OR bCalSuccess IS NULL )");
 			
@@ -117,7 +119,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			p0.SetPoint(modPHScal::pt2x,modPHScal::pt2y);
 			EDIBAcad::DeleteAllEntitiesInLayers(1,_T("bom"));
 			rs->Open((_bstr_t)_T("SELECT * FROM TMP2"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TLJ, atan(1.0) * 0.0, rs,0,1.0f,_T("Bom"),_T("Bom"),_T("%g"),modPHScal::iAlignLjmx);
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TCL].MnuCaption);
@@ -131,7 +133,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			p0.SetPoint(modPHScal::pt2x,modPHScal::pt2y);
 			EDIBAcad::DeleteAllEntitiesInLayers(1,_T("bom"));
 			rs->Open((_bstr_t)_T("SELECT * FROM TMP2"), _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			
 			EDIBAcad::DrawTableACAD(p0, EDIBgbl::TLJ_BJBW, atan(1.0) * 0.0, rs,0,1.0f,_T("Bom"),_T("Bom"),_T("%g"),modPHScal::iAlignLjmx);
 			sTmp.Format(GetResStr(IDS_xDrawingFinished),EDIBgbl::Cbtype[EDIBgbl::TCL].MnuCaption);
@@ -147,7 +149,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//每次计算一个支吊架时生成当前当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -170,7 +172,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//每次计算一个支吊架时生成当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -192,7 +194,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				+ EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) 
 				+ _T(" AND TYPE LIKE \'????\' ) AND VolumeID =")+ ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -214,7 +216,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				+ EDIBgbl::Btype[EDIBgbl::TZA] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) 
 				+ _T(" AND TYPE LIKE \'????\' ) AND VolumeID =")+ ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");			
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{
 				EDIBAcad::DrawTableExcel( EDIBgbl::TZDExcel, rs);
@@ -226,7 +228,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -249,7 +251,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -271,7 +273,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -294,7 +296,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//每次计算一个支吊架时生成当前当前支吊架明细一览表，计算完成后总的明细一览表就生成了。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -320,7 +322,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			EDIBgbl::dbPRJDB->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY SEQ");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{
 					//如果第一个图纸的序号>=1，在前面添加空的图纸目录,以便用户手工修改
@@ -353,7 +355,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//zsy 12/17      改为用ARX画图
 				SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID IS NULL OR VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T("  ORDER BY SEQ");
 				rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenDynamic, adLockOptimistic, adCmdText); 
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
 				if( EDIBAcad::gbACADR14 || !bIsCom ) //使用动态库画图
 				{
@@ -377,7 +379,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TML] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY SEQ");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			VARIANT vTmp;
 			if(!rs->BOF && !rs->adoEOF)
 			{
@@ -423,7 +425,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			//Z8表
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -444,7 +446,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 			//z9
 						SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 				ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -470,7 +472,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));
@@ -493,7 +495,7 @@ void CDrawZDJTableID::DrawzdjTable(int index,bool bIsCom)
 				//判断是否所有支吊架计算完成。
 			SQLx = _T("SELECT * FROM [") + EDIBgbl::Btype[EDIBgbl::TZD] + _T("] WHERE VolumeID=") + ltos(EDIBgbl::SelVlmID) + _T(" ORDER BY zdjh");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs->BOF && !rs->adoEOF)
 			{//zsy 12/17      改为用ARX画图
 					ShowMessage(GetResStr(IDS_PleasePickApointAsZDJYLBInsertPointINAutoCAD));

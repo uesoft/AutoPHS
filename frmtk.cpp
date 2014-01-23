@@ -217,9 +217,11 @@ void CFrmTK::OnDeltaposSpin1(NMHDR* pNMHDR, LRESULT* pResult)
 		UpdateData(false);
 		*pResult = 0;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return;
 }
@@ -238,8 +240,10 @@ void CFrmTK::OnOK()
 		
 		CDialog::OnOK();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }

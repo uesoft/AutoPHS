@@ -67,7 +67,7 @@ BOOL CDlgExportVolume::OnInitDialog()
 	CString strSQL;
 	strSQL = "SELECT * FROM BackupDBTbl";
 	rsbackup->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-		adOpenKeyset, adLockOptimistic, adCmdText); 
+		adOpenDynamic, adLockOptimistic, adCmdText); 
 	_variant_t varField;
 	CString str1,str2,strFirst;	
 	while( !rsbackup->adoEOF )

@@ -75,7 +75,7 @@ BOOL CFrmAddSArecord::OnInitDialog()
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
 		rs->Open((_bstr_t)SQL,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		rs->MovePrevious();
 		_variant_t v;
 		_variant_t vTmp;
@@ -113,14 +113,11 @@ BOOL CFrmAddSArecord::OnInitDialog()
 		if(user::GetPos(_T("FrmAddSArecord"),rc))
 			this->MoveWindow(&rc);
 	}
-	catch(_com_error& e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

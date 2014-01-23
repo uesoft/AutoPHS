@@ -523,9 +523,11 @@ CString GetOldFileName(CString NewFileName,IDispatch* pCon,long SelVlmID,CString
 		}
 		FileRs->Close();
 }
-	catch(CException *e)
-	{
-		e->Delete();
+catch (_com_error &e)
+{
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 		catch(...)
 		{
@@ -650,7 +652,7 @@ void ReadYljsResult(_Recordset* rs)
 			//rs->Close();此句必须移至下面带 ***处，否则出错后导致“对象关闭后不能执行这个操作”，死锁
 			_RecordsetPtr rs1;
 			rs1.CreateInstance(__uuidof(Recordset));
-			rs1->Open(SQLx,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+			rs1->Open(SQLx,pCon,adOpenStatic,adLockOptimistic,adCmdText);
 			
 			CString temp;
 			temp = DataFileName.Right(3);
@@ -669,7 +671,7 @@ void ReadYljsResult(_Recordset* rs)
 					connString.Format(connTempString,DataFileName,"");
 					_ConnectionPtr m_pConn;
 					m_pConn.CreateInstance(__uuidof(Connection));
-					m_pConn->Open(_bstr_t(connString),"","",0);
+					m_pConn->Open(_bstr_t(connString),"","", adConnectUnspecified);
 					if (!EDIBgbl::tdfExists(m_pConn,strTableName))//进一步判断是否有指定的表
 					{
 						ShowMessage(GetResStr(IDS_PSANameVer)+" Unknown");	
@@ -931,7 +933,7 @@ void ReadYljsResult(_Recordset* rs)
 			rs1=NULL;
 			//********注意下句不能移动到函数开头,否则死锁
 			//rs->Close();
-			rs->Open(SQLx,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+			rs->Open(SQLx,pCon,adOpenStatic,adLockOptimistic,adCmdText);
 			FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 			FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(rs);
 			FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);
@@ -1066,7 +1068,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 				strSQL += strSprNWEPDI;
 				strSQL += "\'";
 			tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(tmprs->BOF && tmprs->adoEOF)
 			{
 			}
@@ -1097,7 +1099,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		rs1.CreateInstance(__uuidof(Recordset));
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 
 		iCount = 1;
                     
@@ -1316,7 +1318,7 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -1326,17 +1328,11 @@ void ReadResult_ZHDYF30(_Recordset* rsResult ,CString SourceDataFileName,long ma
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error& e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
-		ShowMessage("C++ Exception at readpsaresult.cpp::ReadResult_ZHDYF30()");
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1494,7 +1490,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -1857,7 +1853,7 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -1867,13 +1863,11 @@ void ReadResult_GLIF12(_Recordset* rsResult ,CString SourceDataFileName,long max
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -2021,7 +2015,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -2040,7 +2034,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 					strSQL += strSprGB10182;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{
 					}
@@ -2477,7 +2471,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		rs1.CreateInstance(__uuidof(Recordset));
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!f.eof()){
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
 			if( atof(Mid(temp,0, (gbNewGLIFV31 ? 5 : 16))) > 0 ){
@@ -2698,7 +2692,7 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
@@ -2708,13 +2702,11 @@ void ReadResult_GLIF31(_Recordset* rsResult, CString SourceDataFileName,long max
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -2896,7 +2888,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 					strSQL += strSprNWEPDI;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{//1
 					}//1
@@ -2917,7 +2909,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 					strSQL += strSprGB10182;
 					strSQL += "\'";
 					tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(tmprs->BOF && tmprs->adoEOF)
 					{//1
 					}//1
@@ -3297,7 +3289,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
 		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!f.eof())
 		{
 			f.getline(temp.GetBuffer(255),255); temp.ReleaseBuffer();
@@ -3547,7 +3539,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		pCon=rsData->GetActiveConnection();
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID");
 		rsData->Close();
-		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsData->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
 		int itmpZdjh=1;
 		while(!rsData->adoEOF)
 		{
@@ -3556,13 +3548,11 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 			rsData->MoveNext();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 /*
@@ -3635,7 +3625,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Format(_T("SELECT DISTINCT [JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
       //用此方法打开的记录集才能调用GetRecodsetCount()获得记录数
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText); 
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText); 
 		//在对话框的列表框中加入工程文件名,组合框加入工况名，并获取用户的选择
 		m_selDlg = new CSelPSAProjectNameDlg;
  
@@ -3653,7 +3643,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Empty();
 		m_strSQL.Format(_T("SELECT DISTINCT [CASE] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		n = m_prsJOBNAME->GetRecordCount();
 		m_selDlg->GKNum = n;
@@ -3703,7 +3693,7 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_prsBasicData->Close();
 
 		m_strSQL.Format(_T("SELECT * FROM [OUTPUT_LOCAL_ELEMENT_FORCES] WHERE [JOBNAME] = '%s' AND   [CASE] = '%s' "),m_strJOBNAME_P,m_strRGKname);
-		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		iCount = m_prsCASENUM->GetRecordCount();
 
@@ -4293,10 +4283,11 @@ void  ReadResult_CAESARII45(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+	CString strMsg;
+	strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	AfxMessageBox(strMsg);
 	}
 
 }
@@ -4367,7 +4358,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Format(_T("SELECT DISTINCT [JOBNAME] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
       //用此方法打开的记录集才能调用GetRecodsetCount()获得记录数
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText); 
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText); 
 		//在对话框的列表框中加入工程文件名,组合框加入工况名，并获取用户的选择
 		m_selDlg = new CSelPSAProjectNameDlg;
  
@@ -4385,7 +4376,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 
 		m_strSQL.Empty();
 		m_strSQL.Format(_T("SELECT DISTINCT [CASE] FROM [OUTPUT_LOCAL_ELEMENT_FORCES]"));
-		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_prsJOBNAME->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		n = m_prsJOBNAME->GetRecordCount();
 		m_selDlg->GKNum = n;
@@ -4435,7 +4426,7 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_prsBasicData->Close();
 
 		m_strSQL.Format(_T("SELECT * FROM [OUTPUT_LOCAL_ELEMENT_FORCES] WHERE [JOBNAME] = '%s' AND   [CASE] = '%s' "),m_strJOBNAME_P,m_strRGKname);
-		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_prsCASENUM->Open(_variant_t(m_strSQL),(IDispatch*)m_pConnSourceDB,adOpenStatic,adLockOptimistic,adCmdText);
 		
 		iCount = m_prsCASENUM->GetRecordCount();
 
@@ -5028,10 +5019,11 @@ void  ReadResult_CAESARII42(_Recordset* rsResult, CString SourceDataFileName,lon
 		m_pConnSourceDB = NULL;
 		
 	}//   end   try
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -5138,7 +5130,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strSQL += strSprNWEPDI;
 		strSQL += "\'";
 		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(tmprs->BOF && tmprs->adoEOF)
 		{
 		}
@@ -6049,7 +6041,7 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 		strSQL.Replace("ORDER BY JSDBH1","ORDER BY FileNameID"); 
 		//strSQL.Replace("SElECT * FROM za");
 		rsResult->Close();
-		rsResult->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsResult->Open(_variant_t(strSQL),(IDispatch*)pCon,adOpenStatic,adLockOptimistic,adCmdText);
 		//rsData->Sort=_bstr_t("JSDBH1");
 		int itmpZdjh=1;
 		while(!rsResult->adoEOF)
@@ -6060,14 +6052,11 @@ void ReadResult_SWEDPSA(_Recordset* rsResult ,CString SourceDataFileName,long ma
 			rsResult->MoveNext();
 		}
 	}
-	       
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -6143,10 +6132,11 @@ void Delete1()
 
 			//AfxMessageBox("aa");
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -6216,10 +6206,11 @@ void ReadPSAData(_Recordset* rsResult ,CString SourceDataFileName,long maxZdjh,l
 		WritePHSDataToTable(pRefInfoCon,rsResult,SourceDataFileName,maxZdjh,FileNameID,EDIBgbl::SelVlmID,modPHScal::gsngRatioOfPjg2Pgz);
 
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-	    e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	if ( pRefInfoCon->GetState() == adStateOpen)
 		pRefInfoCon->Close();

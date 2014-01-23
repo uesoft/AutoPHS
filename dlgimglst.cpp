@@ -119,10 +119,11 @@ void CDlgImgLst::LoadAllImage()
 		}
 
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
   /*int  i = 0;
   int iR,t,IC;

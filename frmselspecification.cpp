@@ -153,11 +153,11 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		//下面要判断是否所有的原始数据表都存在，不存在的要排除，不能写到可用列表框，防止用户误点击。
 		strSQL.Format(_T("SELECT * FROM PhsManu WHERE seq=%d"),Index);
 		hr = rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		rs1->MoveFirst();
 		rs1->get_Collect((_variant_t)_T("SQL"),&v);
 		rs->Open((_bstr_t)v.bstrVal, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		bool bFound=false;
 		while(!rs->adoEOF)
 		{
@@ -195,7 +195,7 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		strSQL.Format(_T("SELECT * FROM [%s]"),
 			vtos(v));
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		int iRecCount = rs->RecordCount;
 		for(i=0;i<LIGHT_COUNT && !rs->adoEOF;i++,rs->MoveNext())
 		{
@@ -209,10 +209,11 @@ void CFrmSelSpecification::Option1_Click(int Index)
 		rs1->Close();
 		db->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -382,13 +383,13 @@ void CFrmSelSpecification::SetUseCount()
 			m_List2.GetText(i,strTemp);
 			strSQL.Format(_T("SELECT * FROM PhsManu WHERE SEQ=%d"),i);
 			rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			rs1->get_Collect((_variant_t)_T("TableName"),&v);
 			rs1->Close();
 			strSQL.Format(_T("SELECT * FROM [%s] WHERE Standard=\'%s\'"),
 				vtos(v),strTemp);
 			rs2->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			rs2->get_Collect((_variant_t)_T("UseCount"),&v);
 			LONG UseCount=vtoi(v);
 			UseCount++;
@@ -398,10 +399,11 @@ void CFrmSelSpecification::SetUseCount()
 			rs2->Close();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

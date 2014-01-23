@@ -84,9 +84,11 @@ void EDIBDB::StartEXCEL(CString  FileName)
 		//不对称的使用AddRef和Release这将导致Excel不能完全释放。
 		//ObjExcelApp.Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -261,8 +263,8 @@ void EDIBDB::SumNumbers()
       //如果是设备材料表
   // End If
    //以下重新赋单位、单重等
-	rs1->Open(_variant_t(_T("SELECT * FROM TMP1")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
-	rs2->Open(_variant_t(_T("SELECT * FROM TMP2")),(IDispatch*)EDIBgbl::dbPRJ,adOpenKeyset, adLockOptimistic,adCmdText);
+	rs1->Open(_variant_t(_T("SELECT * FROM TMP1")),(IDispatch*)EDIBgbl::dbPRJ,adOpenStatic, adLockOptimistic,adCmdText);
+	rs2->Open(_variant_t(_T("SELECT * FROM TMP2")),(IDispatch*)EDIBgbl::dbPRJ,adOpenDynamic, adLockOptimistic,adCmdText);
     _variant_t v1,v2;
 	_variant_t CLgg,CLmc,CLcl,CLID,CLdz,CLdw,CLnum1;
    while(!rs1->adoEOF)
@@ -304,11 +306,12 @@ void EDIBDB::SumNumbers()
 	EDIBgbl::SQLx = _T("INSERT INTO TMP2 SELECT CLID,CLmc,CLgg,CLcl,CLdw,CLdz,CLnum1 as CLnum,CLzz,ifLJ FROM TMP1");
 	EDIBgbl::dbPRJ->Execute((_bstr_t)((EDIBgbl::SQLx)), NULL, adCmdText);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-}
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
+	}
 }
 
 void EDIBDB::UpdTotalWeightAndMaterial(_variant_t tbn)
@@ -339,7 +342,7 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
    EDIBgbl::SQLx.Format(_T("SELECT * FROM tableINFO WHERE ID= %d "),BILL);
    try
    {
-	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenKeyset, adLockOptimistic,adCmdText);
+	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,adOpenStatic, adLockOptimistic,adCmdText);
 	   CString sTmp;
 	   if(rs->BOF || rs->adoEOF)
 	   {
@@ -356,7 +359,7 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 		EDIBgbl::SQLx = CString(_T("SELECT * FROM ") )+ vtos(v) + _T(" WHERE NOT ISNULL(seq) ORDER BY seq");
 	   rs->Close();
 	   rs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)EDIBgbl::dbTable,
-		   adOpenKeyset, adLockOptimistic,adCmdText);
+		   adOpenStatic, adLockOptimistic,adCmdText);
 	   if(rs->adoEOF && rs->BOF)
 	   {
 		   dbName=EDIBgbl::GetDBName(EDIBgbl::dbSORT);
@@ -401,10 +404,11 @@ void EDIBDB::SetColumnsProperty(CDataGrid& DBGrid1, int  BILL)
 	  }
 	  rs->Close();
    }
-   catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
    }
 }
 
@@ -494,9 +498,11 @@ void EDIBDB::CloseExcel()
 			//ObjExcelApp.Release();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -543,10 +549,11 @@ bool EDIBDB::OutPutTable(CString OutputTableName, CString DestFileName, CString 
 			return true;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 	return true;
@@ -572,7 +579,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			CString ConnectionString="Provider=Microsoft.Jet.OLEDB.4.0;Persist Security Info=False;Data Source=" + strFileName;
 			db->Open((_bstr_t)ConnectionString, "", "", adModeUnknown);
 			strSQL  = "SELECT * FROM TableExcelToAccess WHERE ID = 1";
-			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+			pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenStatic, adLockOptimistic,adCmdText);
 			if( pRs->BOF || pRs->adoEOF )
 			{
 			}
@@ -599,7 +606,7 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			if( !EDIBgbl::tdfExists( dbExcel, strTblName) )
 			{
 				strSQL = "SELECT * FROM ["+strFieldTbl+"]";
-				pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+				pRs->Open(_variant_t(strSQL),(IDispatch*)db,adOpenStatic, adLockOptimistic,adCmdText);
 				//test create
 				strSQL = "CREATE TABLE ["+strTblName+"] ";
 				for(int i=0; !pRs->adoEOF; pRs->MoveNext(), i++)
@@ -627,10 +634,11 @@ void EDIBDB::CreateTableToAutoIPED(CString& strFileName, CString& strTblName, CS
 			dbExcel->Execute((_bstr_t)( strSQL ), NULL, adCmdText);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 }

@@ -479,9 +479,11 @@ void CViewTxsr::OnInitialUpdate()
 	m_bIsInit=true;
 	return;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -707,13 +709,11 @@ void CViewTxsr::OnWillMoveDatabill(long adReason, long FAR* adStatus, LPDISPATCH
 	
 	//EDIBAcad::DisplayDataZB ();
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		//AfxMessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -751,13 +751,11 @@ void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FA
 		//Invalidate();
 		this->m_Databill.Invalidate();
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		//AfxMessageBox(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -900,53 +898,12 @@ void CViewTxsr::LoadDiameterItem2ComboDW()
 	try
 	{
 		LoadtbnPAItem2ComBox(m_comboDW,"dw");
-		/*
-		CDaoRecordset rs;
-		_variant_t tmpvar;
-		CString tbn1;	
-		if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-			return;
-		if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-			modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-		else
-			modPHScal::dn="";
-		tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-		if(tbn1=="") 
-			tbn1=modPHScal::tbnPA;
-		if(modPHScal::dn=="")
-			EDIBgbl::SQLx = "SELECT DISTINCT dw FROM [" + tbn1 + "] ORDER BY dw ASC";
-		else
-			EDIBgbl::SQLx = "SELECT DISTINCT dw FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' BY dw ORDER BY dw ASC";
-		//m_dataLstComboDW->CursorLocation=adUseClient;
-		//m_dataLstComboDW->Open(_bstr_t(EDIBgbl::SQLx),(IDispatch*)modPHScal::dbZDJcrude,adOpenDynamic,adLockOptimistic,adCmdText);
-		rs.m_pDatabase=&modPHScal::dbZDJcrude;
-		rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-		//rs=modPHScal::dbZDJcrude->Execute(_bstr_t(EDIBgbl::SQLx),&tmpvar,adCmdText);
-		if(rs.IsEOF() && rs.IsBOF()) return;
-		
-		//ComboDWCurrent = ComboDW.Text
-		CString MyComboBoxCurrent;
-		m_comboDW.GetWindowText(MyComboBoxCurrent);
-		m_comboDW.ResetContent();
-		CString sTmp;
-		double dtmp;
-		while(!rs.IsEOF())
-		{
-			rs.GetFieldValue("Dw",tmpvar);
-			dtmp=tmpvar.dblVal;
-			sTmp.Format("%g",dtmp);
-			m_comboDW.AddString(sTmp);
-			rs.MoveNext();
-		}
-		rs.Close();
-		m_comboDW.SetWindowText(MyComboBoxCurrent);
-		*/
 	}
-	catch(CException * e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
-		//ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -956,46 +913,12 @@ void CViewTxsr::LoadPAMaterialItem2ComboDCL1()
 	try
 	{
 		LoadtbnPAItem2ComBox(m_PagOption->m_comboDCL1,"Material");
-		/*
-		CString tbn1;	
-		if(m_ActiveRs->adoEOF && m_ActiveRs->BOF)
-		   return;
-		if(m_ActiveRs->GetCollect("dn1").vt!=VT_NULL)
-			modPHScal::dn = vtos(m_ActiveRs->GetCollect("dn1"));
-		else
-			modPHScal::dn="";
-		tbn1 = modPHScal::sFindTBN(modPHScal::dn);
-		if(tbn1=="") 
-			tbn1=modPHScal::tbnPA;
-		if(modPHScal::dn=="")
-			EDIBgbl::SQLx = "SELECT DISTINCT Material FROM [" + tbn1 + "] ORDER BY Material ASC";
-		else
-			EDIBgbl::SQLx = "SELECT DISTINCT Material FROM [" + tbn1 + "] WHERE CustomID=\'" + modPHScal::dn + "\' ORDER BY Material ASC";
-   
-		CDaoRecordset rs;
-   _variant_t tmpvar;
-   rs.m_pDatabase=&modPHScal::dbZDJcrude;
-   rs.Open(dbOpenSnapshot,EDIBgbl::SQLx);
-
-   CString MyComboBoxCurrent;
-	m_PagOption->m_comboDCL1.GetWindowText(MyComboBoxCurrent);
-   m_PagOption->m_comboDCL1.ResetContent();
-   while(!rs.IsEOF())
-   {
-	   rs.GetFieldValue("Material",tmpvar);
-		m_PagOption->m_comboDCL1.AddString(vtos(tmpvar));
-		rs.MoveNext();
-   }
-   rs.Close();
-   m_PagOption->m_comboDCL1.SetWindowText(MyComboBoxCurrent);
-   //comboDCL1.Text = ComboDCL1Current
-	*/
 	}
-	catch(CException * e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
-		//ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1005,55 +928,43 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
    //装入管径数据到组合框
    //SQLx = "SELECT DISTINCT " & Trim(strFLD) & " FROM [" & TBNSelPrjSpec & Btype(TZA) & "] ORDER BY " & Trim(strFLD) & " ASC"
 	try{
-		//CDaoRecordset rs(&EDIBgbl::dbPRJDB);
-   //rs.CreateInstance(__uuidof(Recordset));
-	//CString sSQL=(char*)_bstr_t(m_ActiveRs->GetSource());
-//	sSQL+=" ORDER BY zdjh ";
-	//rs->CursorLocation=adUseClient;
-	//rs.Open(dbOpenDynaset,sSQL);
-	//	_variant_t bok=m_ActiveRs->Bookmark;
-	CString MyComboBoxCurrent,sTmp;
-	comBox.GetWindowText(MyComboBoxCurrent);
-	comBox.ResetContent();
+		CString MyComboBoxCurrent,sTmp;
+		comBox.GetWindowText(MyComboBoxCurrent);
+		comBox.ResetContent();
 		_RecordsetPtr bkRs=m_ActiveRs->Clone(adLockReadOnly);
 		bkRs->MoveFirst();
 		bkRs->Filter=m_ActiveRs->Filter;
-	//rs.MoveFirst();
-	_variant_t tmpvar;
-	int i=0;
-	while(!bkRs->adoEOF)
-	{
-		tmpvar=bkRs->GetCollect(_variant_t(strFLD));
-		//rs.GetFieldValue(strFLD,tmpvar);
-		sTmp=vtos(tmpvar);
-		/*if(tmpvar.vt==VT_BSTR)
-			sTmp=tmpvar.pcVal;
-		else
-			sTmp.Format("%.2f",vtof(tmpvar));*/
-		
-		comBox.AddString(sTmp);
-		bkRs->MoveNext();
-		i++;
+		_variant_t tmpvar;
+		int i=0;
+		while(!bkRs->adoEOF)
+		{
+			tmpvar=bkRs->GetCollect(_variant_t(strFLD));
+			//rs.GetFieldValue(strFLD,tmpvar);
+			sTmp=vtos(tmpvar);
+			/*if(tmpvar.vt==VT_BSTR)
+				sTmp=tmpvar.pcVal;
+			else
+				sTmp.Format("%.2f",vtof(tmpvar));*/
+			
+			comBox.AddString(sTmp);
+			bkRs->MoveNext();
+			i++;
+		}
+		//m_ActiveRs->Bookmark=bok;
+		bkRs->Close();
+		if(i>0)
+		{
+			i=comBox.FindStringExact(-1,MyComboBoxCurrent);
+			if(i!=CB_ERR)
+				comBox.SetCurSel(i);
+	   }
+		bkRs=NULL;
 	}
-	//m_ActiveRs->Bookmark=bok;
-	bkRs->Close();
-	if(i>0)
+	catch (_com_error &e)
 	{
-		i=comBox.FindStringExact(-1,MyComboBoxCurrent);
-		if(i!=CB_ERR)
-			comBox.SetCurSel(i);
-   }
-	bkRs=NULL;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-
-	catch(...)
-	{
-		//e->ReportError();
-		//e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1938,7 +1849,7 @@ void CViewTxsr::ShowPicturePASA(int Index)
 		CString strSQL;
 		strSQL.Format("SELECT CustomID FROM PhsStructureREF WHERE SampleID=%d ORDER BY SEQ ",vtoi(m_ActiveRs->GetCollect("iSelSampleID")));
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(rs->BOF && rs->adoEOF)
 		{
 			rs->Close();
@@ -1989,9 +1900,11 @@ void CViewTxsr::ShowPicturePASA(int Index)
 		GetDlgItem(IDC_EDT_A01)->SetWindowPos(&wndBottom,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);*/
 		//m_ImageViewD1.SetWindowPos(&wndBottom,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -2187,9 +2100,11 @@ void CViewTxsr::OnSelchangeZdjh()
 		RefreshBoundData();
 		DatabillReposition();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	catch(...)
@@ -2486,9 +2401,11 @@ void CViewTxsr::UndoDelete()
 			{
 				pRsUndo->Close ();
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
 			}
 			catch(...)
 			{				
@@ -2545,9 +2462,11 @@ void CViewTxsr::EditCopy()
 			conPRJDB->Execute ("SELECT ZA.* INTO Clip FROM ZA", NULL, adExecuteNoRecords);	    
 		    
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2559,9 +2478,11 @@ void CViewTxsr::EditCopy()
 			pRsClip->Open("SELECT * FROM Clip", conPRJDB.GetInterfacePtr(),
 				adOpenDynamic, adLockOptimistic, adCmdUnknown);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2600,12 +2521,11 @@ void CViewTxsr::EditCopy()
 			pRsClip->MoveNext ();
 		}	
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{	
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
 			pRsClip->Delete (adAffectCurrent);
@@ -2636,10 +2556,11 @@ try
 		//row=row+FirstRow-nCountRowforCopy;
 
 		for(i = 0; i < nCountRowforCopy; i++)
-		{       //筛除选中的记录
-				vBookMark.iVal = i;
-				m_ActiveRs->Bookmark = FrmPhsData.m_DBGbill.GetSelBookmarks().GetItem(vBookMark);
-				m_ActiveRs->Delete(adAffectCurrent);		
+		{       
+			//筛除选中的记录
+			vBookMark.iVal = i;
+			m_ActiveRs->Bookmark = FrmPhsData.m_DBGbill.GetSelBookmarks().GetItem(vBookMark);
+			m_ActiveRs->Delete(adAffectCurrent);		
 		}
 		//adAffectCurrent
 		m_ActiveRs->MoveNext();
@@ -2661,9 +2582,11 @@ try
 	   if(vBookMark.vt!=VT_NULL)
 	      m_ActiveRs->Bookmark=vBookMark;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_ActiveRs->Requery(-1);
 		FrmPhsData.m_DBGbill.SetRefDataSource(m_ActiveRs);
 		FrmPhsData.m_DBGbill.ReBind();
@@ -2748,12 +2671,11 @@ void CViewTxsr::EditPaste()
 			pRsClip-> MoveNext();
 		}
     }
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		while(!pRsClip->adoEOF && !pRsClip->BOF)
 		{
 			pRsClip->Delete (adAffectCurrent);
@@ -2791,9 +2713,11 @@ void CViewTxsr::OnBtnAdd()
 		{
 			m_ActiveRs->Filter=_variant_t((long)adFilterNone);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2802,9 +2726,11 @@ void CViewTxsr::OnBtnAdd()
 		{
 			m_Databill.SetRefRecordset(NULL);
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 		catch(...)
 		{
@@ -2815,9 +2741,13 @@ void CViewTxsr::OnBtnAdd()
 			{
 				FrmPhsData.m_DBGbill.SetRefDataSource(NULL);
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+#ifdef _DEBUG
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
+#endif
 			}
 			catch(...)
 			{
@@ -2864,19 +2794,11 @@ void CViewTxsr::OnBtnAdd()
 			EDIBDB::SetColumnsProperty(FrmPhsData.m_DBGbill, EDIBgbl::SelBillType);
 	//	}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-#ifdef _DEBUG
-		ShowMessage(e.Description());
-#endif
-		m_bIsAddNew=false;
-	}
-	catch(CException *e)
-	{
-		e->Delete();
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_bIsAddNew=false;
 	}
 	m_bIsAddNew=false;
@@ -2889,12 +2811,18 @@ void CViewTxsr::OnDestroy()
 	// TODO: Add your message handler code here
 	try
 	{
-		m_ActiveRs=NULL;
-		//delete m_pRStEvent;
+		if (m_ActiveRs->State == adStateOpen)
+		{
+			m_ActiveRs->Close();
+		}
+		
+		m_ActiveRs.Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3196,9 +3124,11 @@ void CViewTxsr::RefreshOptData()
 	m_OptPag6->UpdateData(false);
 	m_PagItem->UpdateData(false);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3480,7 +3410,7 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
    
 		_RecordsetPtr rs;
 		rs.CreateInstance(__uuidof(Recordset));
-		rs->Open(_variant_t(SQLx),(IDispatch*)modPHScal::dbZDJcrude,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs->Open(_variant_t(SQLx),(IDispatch*)EDIBgbl::dbPRJ,adOpenStatic, adLockOptimistic,adCmdText);
 		m_comboGDW1.GetWindowText(ComboGDW1Current);
 		m_comboGDW1.ResetContent();
 		_variant_t vTmp;
@@ -3496,13 +3426,11 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 		m_comboGDW1.SetWindowText(ComboGDW1Current);
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		e.Description();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
    catch(...)
 	{
@@ -3746,13 +3674,11 @@ void CViewTxsr::OnGetZdjhdata()
 			DatabillReposition();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		e.Description();
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3785,9 +3711,11 @@ long CViewTxsr::GetMaxZdjh()
 		bkRs=NULL;
 		return tmpZdjh;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -3903,7 +3831,7 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 		{
 			EDIBgbl::SQLx = "SELECT COUNT( [" + strFLD + "]) FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL";
 			rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			rs->get_Collect((_variant_t)0L, &tmpvar);
 			if(vtoi(tmpvar)>0)
 				EDIBgbl::SQLx = "SELECT DISTINCT [" + strFLD + "] FROM [" + tbn1 + "] WHERE CustomID=\'"+ modPHScal::dn + "\' AND [" + strFLD + "] IS NOT NULL ORDER BY [" + strFLD + "] ASC";
@@ -3912,7 +3840,7 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 			rs->Close();
 		}
 		rs->Open((_bstr_t)EDIBgbl::SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF) return;
 		//获得当前选择值
 		CString MyComboBoxCurrent;
@@ -3937,9 +3865,11 @@ void CViewTxsr::LoadtbnPAItem2ComBox(CComboBox &combo, CString strFLD)
 				combo.SetCurSel(i);
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -4057,7 +3987,7 @@ void CViewTxsr::OnKillfocusEdtSsid()
 			rsTmpZB.CreateInstance(__uuidof(Recordset));
 			strTemp.Format("SELECT DISTINCT nth FROM ZB WHERE VolumeID = %d AND ZDJH = %d AND bUserAdd <> -1 ",EDIBgbl::SelVlmID ,modPHScal::zdjh );
 			rsTmpZB->Open((_bstr_t)strTemp,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			int iCount;
 			if(rsTmpZB->BOF && rsTmpZB->adoEOF)
 				iCount=0;
@@ -4084,10 +4014,11 @@ void CViewTxsr::OnKillfocusEdtSsid()
 		}
 		
 	}
-	catch(CException * e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return;
 	}
 	
@@ -4285,7 +4216,7 @@ void CViewTxsr::InitBornSA()
 		strSQL=_T("select distinct BornSAName from BornSA");
 		m_ComBoBornSA.ResetContent();
 		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		if(rsBornSA->adoEOF && rsBornSA->BOF) return;
 
 		CString strComboCur;
@@ -4329,7 +4260,7 @@ void CViewTxsr::GetBornSA(CString &m_strBornSA)
 		_RecordsetPtr rsBornSA;
 		rsBornSA.CreateInstance(__uuidof(Recordset));
 		rsBornSA->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		if(rsBornSA->adoEOF && rsBornSA->BOF)
 		{
 			m_strBornSAEng="";

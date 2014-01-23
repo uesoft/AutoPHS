@@ -392,12 +392,11 @@ void CPrePointPag::SetBasePoint()
 		iSetBPbegan = iSetBPbegan + 1;
 	}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-// 		char ss[256];
-// 		e->GetErrorMessage(ss,255);
-// 		MessageBox(ss);
-// 		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	this->UpdateData(false);

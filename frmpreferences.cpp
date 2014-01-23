@@ -145,7 +145,7 @@ void CFrmPreferences::OnOK()
 			rsX->Close();
 		rsX->Open((_bstr_t)_T("SELECT * FROM phsManuSPRING ORDER BY [Observation],[standard] ASC"), 
 			_variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		modPHScal::gsPhsSPRINGSel.TrimLeft();modPHScal::gsPhsSPRINGSel.TrimRight(); 
 		if( rsX->adoEOF && rsX->BOF )
 		{

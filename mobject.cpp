@@ -28,9 +28,11 @@ IUnknown* MAtlComQIPtrAssign(IUnknown** pp, IUnknown* lp, REFIID riid)
 			pTemp->Release();
 	}
 
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	return *pp;
@@ -43,9 +45,11 @@ IDispatch* CMObject::operator=(IDispatch* lp)
 		if(p!=NULL)
 			p->Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	p=lp;
@@ -228,9 +232,11 @@ IDispatch* CMObject::operator =(_variant_t& newVar)
 		if(p!=NULL)
 			p->Release();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	p=NULL;

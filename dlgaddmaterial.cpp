@@ -152,7 +152,7 @@ void CDlgAddMaterial::LoadListClass()
 			SQLx=_T("SELECT [Index],[IndexName],[tbn] FROM ClassTypeDesc WHERE Index = 3 OR Index=4  OR Index=5  OR Index=2  OR Index=1 OR Index=6 ORDER BY seq ");
 		}
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int i;
 		int count=rs->RecordCount;
 		m_piClassIndex=new long[count];
@@ -174,10 +174,11 @@ void CDlgAddMaterial::LoadListClass()
 			i++;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}	
 }
 
@@ -270,7 +271,7 @@ void CDlgAddMaterial::LoadListDesc()
 			SQLx=_T("SELECT [CustomID],[Description],[ID] FROM ") + strTbn + _T(" WHERE ClassID<900 ORDER BY seq ");
 		
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int count,i;
 		if(!rs->BOF && !rs->adoEOF)
 		{
@@ -296,10 +297,11 @@ void CDlgAddMaterial::LoadListDesc()
 		}
 		rs->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -400,7 +402,7 @@ void CDlgAddMaterial::LoadListBH()
 		}
 
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int count,i;
 		if(!rs->BOF && !rs->adoEOF)
 		{
@@ -431,10 +433,11 @@ void CDlgAddMaterial::LoadListBH()
 			i++;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}	
 }
 
@@ -720,13 +723,13 @@ void CDlgAddMaterial::OnBtnAdd()
 				m_strInpCustomID.TrimLeft();m_strInpCustomID.TrimRight();
 				strSQL.Format(_T("Select * FROM %s WHERE Description=\'%s\' AND ClassID>=900"),m_strDescTbn,strDesc);
 				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				if(rsDesc->adoEOF && rsDesc->BOF)
 				{
 					strSQL.Format(_T("Select * FROM %s WHERE ID LIKE \'UD*\' AND ClassID>=900 ORDER BY ID "),m_strDescTbn);
 					rsDesc->Close();
 					rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(rsDesc->BOF && rsDesc->adoEOF)
 						strID=_T("UD0000");
 					else
@@ -743,7 +746,7 @@ void CDlgAddMaterial::OnBtnAdd()
 						m_strInpCustomID=strID;
 					strSQL.Format(_T("SELECT * FROM PictureClipData WHERE ID=\'%s\'"),strID);
 					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(rsTmp->adoEOF && rsTmp->BOF)
 					{
 						rsTmp->AddNew();
@@ -782,7 +785,7 @@ void CDlgAddMaterial::OnBtnAdd()
 				m_comboBH.GetWindowText(strBH);
 				strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE CustomID=\'") + strCustomID + _T("\' AND BH=\'") + strBH +_T("\'");
 				rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				if(rsBH->BOF && rsBH->adoEOF)
 				{
 					rsBH->AddNew();
@@ -816,7 +819,7 @@ void CDlgAddMaterial::OnBtnAdd()
 					strSQL=_T("SELECT * FROM ") + m_strBHTbn + _T(" WHERE (BH=\'") + strBH + _T("\' OR BH=\'") + _strBH +_T("\') AND CustomID=\'")
 						+ strCustomID + _T("\'");
 					rsBH->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					if(rsBH->BOF && rsBH->adoEOF)
 					{
 						rsBH->AddNew();
@@ -850,7 +853,7 @@ void CDlgAddMaterial::OnBtnAdd()
 				m_strBH=strBH;
 				strSQL.Format(_T("Select * FROM %s WHERE ID=\'%s\' AND Description=\'%s\' AND ClassID<900"),m_strDescTbn,strID,strDesc);
 				rsDesc->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				rsDesc->get_Collect((_variant_t)_T("BHFormat"), &vTmp);
 				strBHFormat=vtos(vTmp);
 
@@ -860,15 +863,16 @@ void CDlgAddMaterial::OnBtnAdd()
 				try
 				{
 					rsTmp->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-						adOpenKeyset, adLockOptimistic, adCmdText); 
+						adOpenStatic, adLockOptimistic, adCmdText); 
 					rsTmp->get_Collect((_variant_t)0L, &vTmp);
 					strClgg=vtos(vTmp);
 					rsTmp->Close();
 				}
-				catch(CException *e)
+				catch (_com_error &e)
 				{
-					e->Delete();
-					strClgg=strBH;
+					CString strMsg;
+					strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+					AfxMessageBox(strMsg);
 				}
 			}
 			if(!m_bIsSA)
@@ -880,7 +884,7 @@ void CDlgAddMaterial::OnBtnAdd()
 					EDIBgbl::SelVlmID,
 					modPHScal::zdjh);
 				rsTZB->Open((_bstr_t)strSQL, _variant_t((IDispatch*)EDIBgbl::dbPRJDB,true), 
-					adOpenKeyset, adLockOptimistic, adCmdText); 
+					adOpenStatic, adLockOptimistic, adCmdText); 
 				int maxrecno=0;
 				if(!rsTZB->BOF && !rsTZB->adoEOF)
 				{
@@ -946,14 +950,11 @@ void CDlgAddMaterial::OnBtnAdd()
 				this->EndDialog(IDOK);
 			}
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->ReportError();
-			e->Delete();
-		}
-		catch(_com_error e)
-		{
-			AfxMessageBox(e.Description());
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 		}
 	}
 }
@@ -978,14 +979,11 @@ void CDlgAddMaterial::UpdateTmpCSLen()
 
 		EDIBgbl::dbPRJ->Execute((_bstr_t)strSQL,NULL,adCmdText);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1065,7 +1063,7 @@ void CDlgAddMaterial::LoadListMaterial()
 			SQLx.Format(_T("SELECT * FROM SpecificationOfMaterial WHERE ClassIndex=%d AND ID=\'default\' AND tmin<=%g AND %g<tmax ORDER BY tmin,tmax,SEQ"),modPHScal::giClassIndex,modPHScal::gnConnectTJ,modPHScal::gnConnectTJ);
 		this->m_comboMaterial.ResetContent();
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPHScode,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)_T("Material"), &vTmp);
@@ -1075,10 +1073,11 @@ void CDlgAddMaterial::LoadListMaterial()
 		if(m_comboMaterial.GetCount()>0)
 			m_comboMaterial.SetCurSel(0);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1091,17 +1090,18 @@ int CDlgAddMaterial::GetMaxSEQ(CString tbn, _ConnectionPtr &db)
 		CString strSQL;
 		strSQL.Format(_T("SELECT MAX(SEQ) FROM %s"),tbn);
 		rs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF)
 			return 0;
 		_variant_t vTmp;
 		rs->get_Collect((_variant_t)0L, &vTmp);
 		return vtoi(vTmp);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return 0;
 	}
 }

@@ -628,19 +628,20 @@ double vtod(COleVariant &v)
 void RsDeleteAll(_RecordsetPtr rs)
 {
 	try{
-		if(!rs->adoEOF)// || !rs->CanUpdate())
+		if(rs->adoEOF)// || !rs->CanUpdate())
 			return ;
 		rs->MoveFirst();
-		while(!rs->adoEOF && !rs->BOF)
+		while(!rs->adoEOF)
 		{
 			rs->Delete(adAffectCurrent);
 			rs->MoveFirst();
 		}
 	}
-	catch(CException * e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 }

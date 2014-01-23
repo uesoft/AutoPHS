@@ -212,7 +212,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr pConn, CString  tbn)
 		rs->Close();
 		return true;
 	}
-	catch(_com_error )
+	catch (_com_error &e)
 	{
 		return false;
 	}
@@ -238,7 +238,7 @@ bool EDIBgbl::InitBillType()
 		hr = db->Open((_bstr_t)("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + basDirectory::DBShareDir+_T("TableFormat.mdb")), 
 			"", "", adModeUnknown);
 		hr = rs->Open((_bstr_t)_T("select * from TableINFO"), _variant_t((IDispatch*)db,true), 
-			adOpenKeyset, adLockReadOnly, adCmdText); 
+			adOpenStatic, adLockReadOnly, adCmdText); 
 
    _variant_t Var1,Var2;
    int v1;
@@ -347,14 +347,11 @@ void EDIBgbl::InitCurrWork()
 
 		GetSelPrjName();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error &e)
-	{
-		ShowMessage(CString((char*)e.ErrorMessage())+(char*)e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->ExitInstance();
 	}
 }
@@ -389,13 +386,13 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 		_variant_t v2;
 		SQLx = _T("Select * From [Volume] Where VolumeID=") + ltos(EDIBgbl::SelVlmID);
 		rs->Open((_bstr_t)SQLx,_variant_t((IDispatch*)conPRJDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(rs->adoEOF && rs->BOF)
 		{
 
 			rs->Close();
 			rs->Open((_bstr_t)_T("Select * From [Volume] "),_variant_t((IDispatch*)conPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			rs->get_Collect((_variant_t)(_T("VolumeID")),&v);
 			SelVlmID=vtoi(v);
 		}
@@ -412,7 +409,7 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 		rs->Close();
 		SQLx.Format(_T("SELECT [zymc] FROM [Speciality] WHERE ZYID=%d "),EDIBgbl::SelSpecID);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
 		{
 			rs1->get_Collect((_variant_t)0L,&v2);
@@ -428,7 +425,7 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 
 		SQLx.Format(_T("SELECT [sjjdmc] FROM [DesignStage] WHERE SJJDID=%d "),EDIBgbl::SelDsgnID);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
 		{
 			rs1->get_Collect((_variant_t)0L,&v2);
@@ -443,7 +440,7 @@ void EDIBgbl::InitDBTBN(CString  &strSQL)
 
 		SQLx.Format(_T("SELECT [SJHY] FROM [DrawSize] WHERE SJHYID=%d "),EDIBgbl::SelHyID);
 		rs1->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		if(!rs1->BOF && ! rs1->adoEOF)
 		{
 			rs1->get_Collect((_variant_t)0L, &v2);
@@ -664,7 +661,7 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		ix.intVal =ColIndex;
 		
 		rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbSORT,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		CString sTmp;
 		sTmp=MyDBGrid.GetColumns().GetItem(ix).GetDataField();
 		sTmp.TrimLeft();sTmp.TrimRight();sTmp.MakeUpper();
@@ -679,14 +676,11 @@ void EDIBgbl::SaveDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, long  ColInde
 		rs->put_Collect((_variant_t)_T("width"),ix);
 		rs->Update();
 	}
-	catch(CString e)
-	{
-		ShowMessage(e);
-	}
-	catch(CException *e)
-	{
-		e->ReportError();
-		e->Delete();
+   catch (_com_error &e)
+   {
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 	}
 }
 
@@ -710,7 +704,7 @@ void EDIBgbl::SetDBGridColumnCaptionAndWidth(CDataGrid& MyDBGrid, CString  tbn)
 
 	try{
 	   rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbTable,true), 
-		   adOpenKeyset, adLockOptimistic, adCmdText); 
+		   adOpenStatic, adLockOptimistic, adCmdText); 
 
    
 	   for(i=0;i<MyDBGrid.GetColumns().GetCount();i++)
@@ -985,7 +979,7 @@ void EDIBgbl::GetSelPrjName()
 		{
 			SQLx = _T("SELECT * FROM engin WHERE ((EnginID))=\'") + SelPrjID + _T("\' AND NOT IsNull(gcmc) AND (gcmc)<>\'\'");
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			_variant_t v;
 			if(!rs->adoEOF)
 			{
@@ -1011,7 +1005,7 @@ void EDIBgbl::GetSelPrjName()
 		{
 			SQLx = _T("SELECT * FROM DesignStage WHERE ((sjjdid))=") + ltos(SelDsgnID) + _T(" AND NOT IsNull(sjjddm) AND (sjjddm)<>\'\'") + _T(" AND (SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs2->adoEOF)
 			{
 				rs2->get_Collect((_variant_t)(_T("sjjdmc")), &v);
@@ -1025,7 +1019,7 @@ void EDIBgbl::GetSelPrjName()
 			//取得专业名称
 			SQLx = _T("SELECT * FROM Speciality WHERE (zyid)=") + ltos(SelSpecID) + _T(" AND (SJHYid)=") + ltos(SelHyID);
 			rs2->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbDSize,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenStatic, adLockOptimistic, adCmdText); 
 			if(!rs2->adoEOF)
 			{
 				rs2->get_Collect((_variant_t)(_T("zymc")), &v);
@@ -1040,7 +1034,7 @@ void EDIBgbl::GetSelPrjName()
 		{
 			SQLx = _T("SELECT * FROM [Volume] WHERE VolumeID=") + ltos(SelVlmID) + _T(" ORDER BY jcdm");
 			hr = rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			_variant_t v;
 			if(!rs->adoEOF)
 			{
@@ -1054,7 +1048,7 @@ void EDIBgbl::GetSelPrjName()
 			SQLx.Format("SELECT SUM(CLzz) AS SumWeight FROM [ZB] WHERE [VolumeID]=%d AND [ZDJH]=%d AND IsSAPart<>-1",EDIBgbl::SelVlmID,modPHScal::zdjh);
 		
 			rs->Open((_bstr_t)SQLx, _variant_t((IDispatch*)dbPRJDB,true), 
-				adOpenKeyset, adLockOptimistic, adCmdText); 
+				adOpenDynamic, adLockOptimistic, adCmdText); 
 			if(!rs->adoEOF)
 			{
 				rs->get_Collect((_variant_t)(_T("SumWeight")), &v);
@@ -1063,10 +1057,11 @@ void EDIBgbl::GetSelPrjName()
 			rs->Close();
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	rs.Release();
 	rs2.Release();
@@ -1103,7 +1098,7 @@ bool EDIBgbl::tdfExists(_ConnectionPtr db, CString tbn)
 
 		//11/3
 		TempSet->Open((_bstr_t)strSQL, _variant_t((IDispatch*)db,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		TempSet->Close();
 		return true;
 		//11/3
@@ -1239,11 +1234,11 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 			{
 				_RecordsetPtr sTDef(__uuidof(Recordset));
 				strSql.Format("SELECT * FROM [%s]", strTableName);
-				sTDef->Open(_variant_t(strSql),(IDispatch*)sDB,adOpenKeyset, adLockOptimistic,adCmdText);
+				sTDef->Open(_variant_t(strSql),(IDispatch*)sDB,adOpenStatic, adLockOptimistic,adCmdText);
 
 				_RecordsetPtr dTDef(__uuidof(Recordset));
 				strSql.Format("SELECT * FROM [%s]", strTableName);
-				dTDef->Open(_variant_t(strSql),(IDispatch*)dDB,adOpenKeyset, adLockOptimistic,adCmdText);
+				dTDef->Open(_variant_t(strSql),(IDispatch*)dDB,adOpenStatic, adLockOptimistic,adCmdText);
 
 				sListFieldName = GetFieldNameList(sTDef);
 				dListFieldName = GetFieldNameList(dTDef);	
@@ -1295,9 +1290,11 @@ void  UpgradeDB(CString strDestDB ,CString strSourceDB)
 		sDB->Close();
 		dDB->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1380,9 +1377,11 @@ void  UpgradeDB(CString strDestDB, CString strSourceDB, CStringList *sListTableN
 		sDB->Close();
 		dDB->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -1418,10 +1417,11 @@ CStringList*  GetFilterTableList(CString strDBPath, CString strFilter, CString s
 		}
 		db->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return listTableName;
 }
@@ -1524,9 +1524,11 @@ bool EDIBgbl::UpgradeDatabase()
 			if(bIndexExists(&tmptdf,_T("PrimaryKey")))
 				tmptdf.DeleteIndex(_T("PrimaryKey"));
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		}
 		tmptdf->Close();
 		
@@ -1542,7 +1544,7 @@ bool EDIBgbl::UpgradeDatabase()
 		SQLx.Format(_T("SELECT recno,VolumeID,zdjh,seq,nth,IsSAPart FROM ZB ORDER BY VolumeID,zdjh,recno DESC"));
 		//recno按降序排列，则根部排在最前，根部附件排在最后
 		_RecordsetPtr drsTmp(__uuidof(Recordset));
-		drsTmp->Open(_variant_t(SQLx),(IDispatch*)dDb,adOpenKeyset, adLockOptimistic,adCmdText);
+		drsTmp->Open(_variant_t(SQLx),(IDispatch*)dDb,adOpenDynamic, adLockOptimistic,adCmdText);
 		int maxRecno=1;//current zdjh maxmium recno
 		int iPrevZdjh=-1;//previous zdjh
 		_variant_t v;
@@ -1644,10 +1646,11 @@ bool EDIBgbl::UpgradeDatabase()
 		return true;
 	}
 	
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -1718,7 +1721,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 		strSQL=CString(_T("INSERT INTO Engin IN \'")) + EDIBgbl::GetDBName(dDb) + _T("\' SELECT DISTINCT gcdm AS EnginID ,gcmc,UnitNum From Engin");
 		sDb->Execute((_bstr_t)strSQL, NULL, adCmdText);
 
-		sRsEngin->Open(_variant_t(_T("Select * From Engin")),(IDispatch*)sDb,adOpenKeyset, adLockOptimistic,adCmdText);
+		sRsEngin->Open(_variant_t(_T("Select * From Engin")),(IDispatch*)sDb,adOpenStatic, adLockOptimistic,adCmdText);
 		sRsEngin->MoveLast();
 		sRsEngin->MoveFirst();
 
@@ -1736,7 +1739,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 */
 		int VolumeID=1;
 
-		dRsVolume->Open(_variant_t(_T("Select * From Volume")),(IDispatch*)dDb,adOpenKeyset, adLockOptimistic,adCmdText);
+		dRsVolume->Open(_variant_t(_T("Select * From Volume")),(IDispatch*)dDb,adOpenDynamic, adLockOptimistic,adCmdText);
 		_RecordsetPtr sRsData;
 		sRsData.CreateInstance(__uuidof(Recordset));
 		_RecordsetPtr dRsData;
@@ -1749,8 +1752,8 @@ bool EDIBgbl::UpdateAllPrjDB()
 		_ConnectionPtr tmpSort;
 		tmpSort.CreateInstance(__uuidof(Connection));
 		tmpSort->Open((_bstr_t)(basDirectory::DBShareDir + _T("DrawingSize")), "", "", adConnectUnspecified);//20071101 "ProjectDBDir" 改为 "DBShareDir";"Sort"改为 "DrawingSize"
-		rsJD->Open(_variant_t(_T("Select * From DesignStage")),(IDispatch*)tmpSort,adOpenKeyset, adLockOptimistic,adCmdText);
-		rsZY->Open(_variant_t(_T("Select * From Speciality")),(IDispatch*)tmpSort,adOpenKeyset, adLockOptimistic,adCmdText);
+		rsJD->Open(_variant_t(_T("Select * From DesignStage")),(IDispatch*)tmpSort,adOpenStatic, adLockOptimistic,adCmdText);
+		rsZY->Open(_variant_t(_T("Select * From Speciality")),(IDispatch*)tmpSort,adOpenStatic, adLockOptimistic,adCmdText);
 		int stc,sti;
 		sti=0;
 		stc=sRsEngin->RecordCount;
@@ -1792,7 +1795,7 @@ bool EDIBgbl::UpdateAllPrjDB()
 
 				VolumeDef.SJHYID=0;
 				strSQL=_T("Select * From [") + VoltabName[i] + _T("]");
-				sRsVolume->Open(_variant_t(strSQL),(IDispatch*)sDb,adOpenKeyset, adLockOptimistic,adCmdText);
+				sRsVolume->Open(_variant_t(strSQL),(IDispatch*)sDb,adOpenStatic, adLockOptimistic,adCmdText);
 				while(!sRsVolume->adoEOF)
 				{
 					sRsVolume->get_Collect((_variant_t)(_T("jcdm")), &vTmp);
@@ -1840,12 +1843,11 @@ bool EDIBgbl::UpdateAllPrjDB()
 											//strSQL =_T("DROP TABLE [") + VoltabName[i] + tdDefInfo.m_strName + _T("] ");
 											//dDb->Execute((_bstr_t)strSQL);
 										}
-										catch(CException *e)
+										catch (_com_error &e)
 										{
-#ifdef _DEBUG
-											e->ReportError();
-#endif
-											e->Delete();
+										CString strMsg;
+										strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+										AfxMessageBox(strMsg);
 										}
 									}
 								}
@@ -1870,10 +1872,11 @@ bool EDIBgbl::UpdateAllPrjDB()
 		AfxGetApp()->EndWaitCursor();
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		AfxGetApp()->EndWaitCursor();
 		return false;
 	}
@@ -1945,10 +1948,11 @@ bool EDIBgbl::FindTable(_ConnectionPtr db, CString sTab, CString *pSTabName, CSt
 		}
 		*/
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	*n1=iTmp;
 	*n2=iTmp2;
 		return FALSE;
@@ -1975,10 +1979,11 @@ bool EDIBgbl::VolTabAddRs(_RecordsetPtr RsVolume, _VolumeDef &VolumeDef)
 		RsVolume->MoveLast();
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2039,10 +2044,11 @@ bool EDIBgbl::DataTabAddRs(_RecordsetPtr dRsData, _RecordsetPtr sRsData, long Vo
 		dRsData->MoveLast();
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2057,9 +2063,11 @@ bool EDIBgbl::bFieldExists(_RecordsetPtr rs, CString sName)
 		fi = fields->GetItem((_variant_t)sName);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2072,9 +2080,11 @@ bool EDIBgbl::bFieldExists(CDaoTableDef *rd, CString sName)
 		rd->GetFieldInfo(sName, &fi);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 		return FALSE;
 	}
 }
@@ -2143,9 +2153,11 @@ CString EDIBgbl::GetTblField( &tbldef, CString tblName)
 		ret+=_T(" ");
 		return ret;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+	   CString strMsg;
+	   strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+	   AfxMessageBox(strMsg);
 		return CString(_T(" "));
 	}
 }
@@ -2183,7 +2195,7 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr dDb, _ConnectionPtr sDb)
 					// 表存在
 					bTDexists=true;
 
-					sRSTable->Open(_variant_t(SQLx), (IDispatch*)sDb,adOpenKeyset, adLockOptimistic,adCmdText);
+					sRSTable->Open(_variant_t(SQLx), (IDispatch*)sDb,adOpenStatic, adLockOptimistic,adCmdText);
 					pF = sRSTable->Fields;
 					int sc1= sRSTable->RecordCount;
 					for (long i1=0;i1<sc1;i1++)
@@ -2220,10 +2232,11 @@ bool EDIBgbl::ChangeDatabase(_ConnectionPtr dDb, _ConnectionPtr sDb)
 		}
 		sRS->Close();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 	return bIsChange;
@@ -2262,12 +2275,12 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 		SQLx=_T("SELECT * FROM ") + OutTblName;
 		if(rs1->State == adStateOpen)
 			rs1->Close();
-		rs1->Open(_variant_t(SQLx),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs1->Open(_variant_t(SQLx),(IDispatch*)db,adOpenDynamic, adLockOptimistic,adCmdText);
 
 		SQLx=_T("SELECT * FROM ") + TblName;
 		if(rs->State == adStateOpen)
 			rs->Close();
-		rs->Open(_variant_t(SQLx),(IDispatch*)db,adOpenKeyset, adLockOptimistic,adCmdText);
+		rs->Open(_variant_t(SQLx),(IDispatch*)db,adOpenStatic, adLockOptimistic,adCmdText);
 		if(rs->BOF || rs->BOF)
 		{
 		}
@@ -2320,11 +2333,11 @@ bool EDIBgbl::ChangeColumnsToRows(_ConnectionPtr db, CString TblName, CString Ou
 		}
 		return true;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		//ShowMessage(e->Description);
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return false;
 	}
 }
@@ -2361,10 +2374,11 @@ BOOL EDIBgbl::UpdateSortDB()
 		}while(bIsSuc==FALSE && i<10);
 		return TRUE;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		return FALSE;
 	}
 
@@ -2388,11 +2402,11 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _Conn
 		SQLx = _T("SELECT * FROM ") + SourceTBName;
 
 		tabSource->Open((_bstr_t)SQLx, _variant_t((IDispatch*)SourceDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 
 		SQLx = _T("SELECT * FROM ") + DesTBName;
 		tabDes->Open((_bstr_t)SQLx, _variant_t((IDispatch*)DesDB,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		iSourceCount = tabSource->RecordCount;
 		iDesCount = tabDes->RecordCount;
@@ -2426,9 +2440,11 @@ void EDIBgbl::UpdateDBTable(_ConnectionPtr SourceDB, CString SourceTBName, _Conn
 			}
 		}
 	}
-	catch( CException* e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 

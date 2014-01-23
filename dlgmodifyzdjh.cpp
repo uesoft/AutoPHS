@@ -579,8 +579,11 @@ void CDlgModifyZdjh::OnOK()
 				{
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->Update();
 				}
-				catch(CException *e)
+				catch (_com_error &e)
 				{
+					CString strMsg;
+					strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+					AfxMessageBox(strMsg);
 					FrmTxsr.m_pViewTxsr->m_ActiveRs->CancelUpdate();
 				}
 			}
@@ -588,9 +591,11 @@ void CDlgModifyZdjh::OnOK()
 			{
 				FrmTxsr.m_pViewTxsr->m_ActiveRs->Close();
 			}
-			catch(CException *e)
+			catch (_com_error &e)
 			{
-				e->Delete();
+				CString strMsg;
+				strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+				AfxMessageBox(strMsg);
 			}				
 		}
 		::FrmPhsData.m_DBGbill.SetRefDataSource(NULL);
@@ -638,7 +643,7 @@ void CDlgModifyZdjh::OnOK()
 	}
 	try
 	{
-		FrmTxsr.m_pViewTxsr->m_ActiveRs->Open(vSQL,(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		FrmTxsr.m_pViewTxsr->m_ActiveRs->Open(vSQL,(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		FrmTxsr.m_pViewTxsr->m_bAllowUpd=false;
 		FrmTxsr.m_pViewTxsr->m_Databill.SetRefRecordset(FrmTxsr.m_pViewTxsr->m_ActiveRs);
 		FrmTxsr.m_pViewTxsr->m_Databill.SetEnabled(TRUE);

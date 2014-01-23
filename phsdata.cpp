@@ -393,13 +393,11 @@ void CPhsData::OnRowColChangeDBGbill(VARIANT FAR* LastRow, short LastCol)
 			UpdateLabel();
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	UpdateData(false);
 }
@@ -528,9 +526,11 @@ void CPhsData::OnBeforeDeleteDBGbill(short FAR* Cancel)
 	{
 		m_ActiveRs->Update();
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		m_ActiveRs->CancelUpdate();
 	}
 	catch(...)
@@ -577,7 +577,7 @@ void CPhsData::OnAutoML()
 	strExecute = CString("DELETE * FROM [") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + "] WHERE (drawNa)=\'\'";
 	EDIBgbl::dbPRJDB->Execute((_bstr_t)strExecute, NULL, adCmdText);
 	if(bf)
-		m_ActiveRs->Open(sour,pCon,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_ActiveRs->Open(sour,pCon,adOpenStatic,adLockOptimistic,adCmdText);
    //InitDBbill
 	CString sTmp,sz;
 	int i=0;
@@ -685,7 +685,7 @@ void CPhsData::OnSumDisplay()
 	//this->m_DataSumRs->CursorLocation=adUseClient;
 		if(m_DataSumRs->State!=adStateClosed)
 			m_DataSumRs->Close();
-		this->m_DataSumRs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		this->m_DataSumRs->Open(_variant_t(EDIBgbl::SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
    //m_DBGbill.UpdateData();
 		EDIBDB::RefreshGrid(m_DBGbill,this->m_DataSumRs);
 		m_ActiveRs=this->m_DataSumRs;
@@ -883,12 +883,12 @@ void CPhsData::OnEditDelTab()
 		//conPRJDB->Close();
 		//conPRJDB->Open(_bstr_t(::dbConnectionString+basDirectory::ProjectDBDir+"AllPrjDB.mdb"),
 		//   "","",0);
-		//m_ActiveRs->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		//m_ActiveRs->Open(_variant_t(SQLx),(IDispatch*)::conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		//for(int i=0 ;i<10000;i++)
 		//	for(int j=0;j<100;j++)
 		//		;
 		//m_ActiveRs->Requery(-1);
-		m_ActiveRs->Open(tmpsur,tmpcon,adOpenDynamic/*adOpenKeyset*//*,adLockOptimistic,adCmdText);
+		m_ActiveRs->Open(tmpsur,tmpcon,adOpenDynamic/*adOpenStatic*//*,adLockOptimistic,adCmdText);
 		//m_ActiveRs->Requery(-1);
 		EDIBDB::SetColumnsProperty(m_DBGbill, EDIBgbl::SelBillType);
 		if(EDIBgbl::SelBillType==EDIBgbl::TZA)
@@ -1043,9 +1043,11 @@ CPhsData::~CPhsData()
 		m_DataSumRs=NULL;
 		m_ActiveRs=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -1114,9 +1116,11 @@ void CPhsData::UpdateLabel()
 		rsTmp->Close();
 		rsTmp=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	catch(...)
 	{
@@ -1937,7 +1941,7 @@ void CPhsData::OnExportToExcel()
 		_RecordsetPtr pRsClip;
 		pRsClip.CreateInstance(__uuidof(Recordset));
 		pRsClip->Open(_variant_t("SELECT * FROM [Clip]"), conPRJDB.GetInterfacePtr(),
-			adOpenKeyset, adLockOptimistic, adCmdText);
+			adOpenStatic, adLockOptimistic, adCmdText);
 		if (pRsClip->GetRecordCount() <= 0)
 		{
 			AfxMessageBox("ÇëÑ¡Ôñ¼ÇÂ¼£¡");

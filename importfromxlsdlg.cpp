@@ -650,7 +650,7 @@ BOOL CImportFromXLSDlg::ImportExcelToAccess(ImportFromXLSStruct *pImportStruct)
 		pConDes->Execute(_bstr_t("DELETE * FROM ["+strTblName+"]"), NULL, -1);
 		//打开ACCESS原始数据表
 		strSQL = "SELECT * FROM ["+strTblName+"] ";
-		pRsAccess->Open(_variant_t(strSQL), pConDes.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
+		pRsAccess->Open(_variant_t(strSQL), pConDes.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
 		
 		if (nExcelRecCount <= 0)
 		{
@@ -776,13 +776,13 @@ BOOL CImportFromXLSDlg::OpenExcelTable(_RecordsetPtr pRsTbl, CString& strSheetNa
 				pRsTbl->Close();
 			}
 			strSQL = "SELECT * FROM ["+strSheetName+"$] ";		//在EXCEL中的表名加上$
-			pRsTbl->Open(_variant_t(strSQL), m_pConExcel.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
+			pRsTbl->Open(_variant_t(strSQL), m_pConExcel.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
 			strSheetName += "$";								//在调用该函数之后的程序中作为EXCEL表名
 		}
 		catch (_com_error)
 		{
 			strSQL = "SELECT * FROM ["+strSheetName+"] ";
-			pRsTbl->Open(_variant_t(strSQL), m_pConExcel.GetInterfacePtr(), adOpenKeyset, adLockOptimistic, adCmdText);
+			pRsTbl->Open(_variant_t(strSQL), m_pConExcel.GetInterfacePtr(), adOpenStatic, adLockOptimistic, adCmdText);
 		} 
 	}
 	catch (_com_error& e)

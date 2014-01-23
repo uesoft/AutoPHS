@@ -118,7 +118,7 @@ void CCalculate::VBCal(long zdjh, long nth)
 		strSQL.Format("SELECT nth FROM Z1 WHERE [VolumeID]=%d AND [ZDJH]=%d",
 			PhsDrawUser::m_iVlmID,PhsDrawUser::m_iZdjh);
 		rsZ1->CursorLocation = adUseClient;
-		rsZ1->Open(_variant_t(strSQL),(IDispatch*)PhsDrawUser::m_pConnPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		rsZ1->Open(_variant_t(strSQL),(IDispatch*)PhsDrawUser::m_pConnPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		if( rsZ1->adoEOF && rsZ1->BOF )
 			return;
 
@@ -190,7 +190,7 @@ void CCalculate::VBCal(long zdjh, long nth)
 	CString strSQL; 
 
 	strSQL.Format("SELECT * FROM [ZA] WHERE [VolumeID]=%d AND [ZDJH]=%d",EDIBgbl::SelVlmID,zdjh);
-	rs->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+	rs->Open(_variant_t(strSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 	if( rs->adoEOF && rs->BOF )
 		AfxMessageBox("recordset empty");
 

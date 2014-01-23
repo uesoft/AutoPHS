@@ -100,12 +100,12 @@ void CFrmSelPDSV::initPrjDb()
 	try{
 		SQLx = _T("Select * From CurrentWork");
 		m_DataCurrWork->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 		
 		//首先必须确定行业
 		SQLx = _T("SELECT * FROM DrawSize");
 		m_DataCategory->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		m_DataCategory->MoveFirst();
 		//设计行业/公司
 		LoadDBComboCategory();
@@ -117,11 +117,11 @@ void CFrmSelPDSV::initPrjDb()
 
 		SQLx = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataDsgn->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		SQLx = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataSpe->Open((_bstr_t)SQLx, _variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		//设计阶段
 		LoadDBComboDsgn();
@@ -150,14 +150,11 @@ void CFrmSelPDSV::initPrjDb()
 		this->m_DBComboDsgn.RefLst();
 		this->m_DBComboSpec.RefLst();
    }
-   catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-   }
-   catch(_com_error e)
-   {
-	   ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
    }
 }
 
@@ -169,7 +166,7 @@ void CFrmSelPDSV::InitENG()
 		m_DataEng.CreateInstance(__uuidof(Recordset));
 		m_DataEng->CursorLocation=adUseClient;
 
-		m_DataEng->Open(_bstr_t(_T("Select * From engin")),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+		m_DataEng->Open(_bstr_t(_T("Select * From engin")),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 
 		CString sTmp=CString(_T("EnginID = \'"))+Trim(m_SelPrjID)+_T("\'");
 
@@ -188,9 +185,11 @@ void CFrmSelPDSV::InitENG()
 		m_DBGeng.GetColumns().GetItem(_variant_t(_T("EnginID"))).SetCaption(GetResStr(IDS_PRJ_NO));
 		EDIBgbl::SetDBGridColumnCaptionAndWidth(m_DBGeng, _T("teng"));
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -208,7 +207,7 @@ void CFrmSelPDSV::InitDBVlm()
 		tmpSQL +=_T(" AND SJJDID=") + ltos(EDIBgbl::SelDsgnID);
 		tmpSQL +=_T(" AND ZYID=") + ltos(EDIBgbl::SelSpecID);
 		tmpSQL +=_T(" ORDER BY jcdm ");
-	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 		m_DataVlm->Find(_bstr_t(CString(_T("VolumeID=") )+ ltos(EDIBgbl::SelVlmID)),0,adSearchForward);
 		if(m_DataVlm->adoEOF)
 		{
@@ -246,13 +245,11 @@ void CFrmSelPDSV::InitDBVlm()
 		EDIBgbl::SetDBGridColumnCaptionAndWidth (m_DBGvlm, _T("tvlm"));
 
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -378,13 +375,11 @@ void CFrmSelPDSV::OnDblClickDbgvim()
 		CString ss=EDIBgbl::gsTitle+(EDIBgbl::TBNSelPrjSpec == _T("") ? _T("") : (_T("    ") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" (") + EDIBgbl::SelJcdm + _T(")")));
 		AfxGetApp()->m_pMainWnd->SetWindowText(ss);
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
-	}
-	catch(CException *e)
-	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -494,9 +489,11 @@ void CFrmSelPDSV::OnDblClickDbgeng()
 		CString ss=EDIBgbl::gsTitle+(EDIBgbl::TBNSelPrjSpec == _T("") ? _T("") : (_T("    ") + EDIBgbl::TBNSelPrjSpec + EDIBgbl::Btype[EDIBgbl::SelBillType] + _T(" (") + EDIBgbl::SelJcdm + _T(")")));
 		AfxGetApp()->m_pMainWnd->SetWindowText(ss);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -564,9 +561,11 @@ void CFrmSelPDSV::OnRowColChangeDbgvim(VARIANT FAR* LastRow, short LastCol)
 					m_DataEng->Update();
 			}
 		}
-		catch(CException *e)
+		catch (_com_error &e)
 		{
-			e->Delete();
+			CString strMsg;
+			strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+			AfxMessageBox(strMsg);
 			m_DataEng->CancelUpdate();
 		}
 	}
@@ -632,7 +631,7 @@ void CFrmSelPDSV::OnRowColChangeDbgeng(VARIANT FAR* LastRow, short LastCol)
 		//如果是打开的，必须先关闭,否则出错。关闭前，所有正在编辑的记录必须update,否则出错。
 		if(m_DataVlm->State==adStateOpen)
 			m_DataVlm->Close();
-	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenKeyset,adLockOptimistic,adCmdText);
+	   m_DataVlm->Open(_bstr_t(tmpSQL),(IDispatch*)conPRJDB,adOpenStatic,adLockOptimistic,adCmdText);
 
 	   m_DataVlm->Find(_bstr_t(CString(_T("jcdm=\'") )+ Trim(EDIBgbl::SelJcdm) + _T("\'")),0,adSearchForward);
 		
@@ -684,9 +683,11 @@ long CFrmSelPDSV::GetMaxVolumeID()
 		rs->Close();
 		rs=NULL;
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 	return ret;
 }
@@ -713,14 +714,11 @@ void CFrmSelPDSV::OnBeforeUpdateDbgvim(short FAR* Cancel)
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJJDID"))).SetText(ltos(m_SelDsgnID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("ZYID"))).SetText(ltos(m_SelSpecID));
 		m_DBGvlm.GetColumns().GetItem(_variant_t(_T("SJHYID"))).SetText(ltos(m_SelHyID));	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
-	}
-	catch(_com_error& e)
-	{
-		AfxMessageBox(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -802,13 +800,11 @@ void CFrmSelPDSV::OnBeforeDeleteDbgvim(short FAR* Cancel)
 			}
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->Delete();
-		*Cancel=1;
-	}
-	catch(...)
-	{
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 		*Cancel=1;
 	}
 }
@@ -835,11 +831,11 @@ void CFrmSelPDSV::OnSelchangeComboHY()
 		CString sTmp;
 		sTmp = _T("SELECT * FROM DesignStage WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataDsgn->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		sTmp = _T("SELECT * FROM Speciality WHERE sjhyid=") + ltos(m_SelHyID);
 		m_DataSpe->Open((_bstr_t)sTmp,_variant_t((IDispatch*)EDIBgbl::dbDSize,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenDynamic, adLockOptimistic, adCmdText); 
 
 		//设计阶段
 		LoadDBComboDsgn();

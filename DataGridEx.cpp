@@ -383,18 +383,11 @@ void CDataGridEx::OnSortAsc()
 		strTemp+=_T(" ASC");
 		IRecordset->Sort=_bstr_t(strTemp);
 	}
-	catch(_com_error &e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.ErrorMessage());
-		return;
-	}
-	catch(COleDispatchException *e)
-	{
-		char cStr[255];
-		e->GetErrorMessage(cStr,255);
-		AfxMessageBox(cStr);
-		e->Delete();
-		return;
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	return;
@@ -427,18 +420,11 @@ void CDataGridEx::OnSortDesc()
 		strTemp+=_T(" DESC");
 		IRecordset->Sort=_bstr_t(strTemp);
 	}
-	catch(_com_error &e)
+	catch (_com_error &e)
 	{
-		AfxMessageBox(e.ErrorMessage());
-		return;
-	}
-	catch(COleDispatchException *e)
-	{
-		char cStr[255];
-		e->GetErrorMessage(cStr,255);
-		AfxMessageBox(cStr);
-		e->Delete();
-		return;
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 	

@@ -132,9 +132,11 @@ void CComboGenDlg::LoadComboBox(int i)
 			modPHScal::PreCalCrudeData(FrmPhsData.m_DataBillRs);
 		}
 	}
-	catch(_com_error e)
+	catch (_com_error &e)
 	{
-		ShowMessage(e.Description());
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 
@@ -219,7 +221,7 @@ void CComboGenDlg::LoadComboBox(int i)
 			strSQL+=" WHERE " + m_strFilter;
 		_variant_t vTmp;
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);

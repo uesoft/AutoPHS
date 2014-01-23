@@ -141,7 +141,7 @@ void CDlgSpan::LoadListDW()
 		CString strSQL;
 		strSQL=_T("SELECT * FROM [PipeDiameter] ORDER BY [DW],[S]");
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int i=0;
 		while(!rs->adoEOF)
 		{
@@ -162,10 +162,11 @@ void CDlgSpan::LoadListDW()
 			m_iDWHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 
 }
@@ -180,7 +181,7 @@ void CDlgSpan::LoadListMedia()
 		CString strSQL;
 		strSQL=_T("SELECT [Media],[Density] FROM [MediaDensity] ORDER BY [SEQ]");
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int i=0,ix;
 		float * pflt;
 		while(!rs->adoEOF)
@@ -202,10 +203,11 @@ void CDlgSpan::LoadListMedia()
 			m_iMediaHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -219,7 +221,7 @@ void CDlgSpan::LoadListMaterial()
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [Material] FROM [MechanicalOfMaterialEt] WHERE Material IN ( SELECT DISTINCT Material FROM [MechanicalOfMaterialSIGMAt] ) ");
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		int i=0;
 		while(!rs->adoEOF)
 		{
@@ -236,10 +238,11 @@ void CDlgSpan::LoadListMaterial()
 			m_iMaterialHotIndex=0;
 		}
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
@@ -511,7 +514,7 @@ void CDlgSpan::LoadTemp()
 		CString strSQL;
 		strSQL=_T("SELECT DISTINCT [t] FROM [MechanicalOfMaterialEt] WHERE material=\'") + strMaterial + _T("\'ORDER BY [t]"); 
 		rs->Open((_bstr_t)strSQL,_variant_t((IDispatch*)EDIBgbl::dbMaterial,true), 
-			adOpenKeyset, adLockOptimistic, adCmdText); 
+			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!rs->adoEOF)
 		{
 			rs->get_Collect((_variant_t)0L, &vTmp);
@@ -522,10 +525,11 @@ void CDlgSpan::LoadTemp()
 		if(m_comboTemp.GetCount()>0)
 			m_comboTemp.SetCurSel(0);
 	}
-	catch(CException *e)
+	catch (_com_error &e)
 	{
-		e->ReportError();
-		e->Delete();
+		CString strMsg;
+		strMsg.Format("%s:%d %s", __FILE__, __LINE__, (LPSTR)e.Description());
+		AfxMessageBox(strMsg);
 	}
 }
 
