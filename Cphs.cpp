@@ -1485,7 +1485,7 @@ bool Cphs::GetphsBHandSizesTest()
 		}else {
 			tmpPmax4Part = fabs(modPHScal::pjg);
 		}
-		//…Ë÷√º∆À„∫…‘ÿ≥ı º÷µ£¨“‘±„¿€º”
+		//…Ë?√º∆À„∫…‘ÿ≥ı º÷µ£¨“‘±„¿€º?
 		tmpSelPJG = tmpPmax4Part;
 		//…Ë÷√µØª…º∆À„∫…‘ÿ≥ı º÷µ£¨“‘±„¿€º”
 		tmpSelPJG = tmpPmax4Part;
