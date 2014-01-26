@@ -875,14 +875,6 @@ void CViewTxsr::OnMoveCompleteDatabill(long adReason, LPDISPATCH pError, long FA
 
 void CViewTxsr::SetOptionPZ()
 {
-/*	if(m_ActiveRs==NULL || m_ActiveRs->
-	If IsNull(Data1.Recordsetm_ActiveRs->PutCollect("DG1")) Then
-      Data1.Recordset.Edit: Data1.Recordsetm_ActiveRs->PutCollect("DG1") = "G": Data1.Recordset.Update
-   ElseIf UCase(Trim(Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "D" Then
-      frmtxsr!OptionPZ(iPZPA) = True
-   ElseIf UCase(Trim(Data1.Recordsetm_ActiveRs->PutCollect("DG1"))) = "G" Then
-      frmtxsr!OptionPZ(iPZSA) = True
-   End If*/
 }
 
 void CViewTxsr::OnButton5() 
@@ -926,7 +918,6 @@ void CViewTxsr::LoadStrFLDItem2MyComboBox(CComboBox &comBox, CString strFLD)
 {
 
    //装入管径数据到组合框
-   //SQLx = "SELECT DISTINCT " & Trim(strFLD) & " FROM [" & TBNSelPrjSpec & Btype(TZA) & "] ORDER BY " & Trim(strFLD) & " ASC"
 	try{
 		CString MyComboBoxCurrent,sTmp;
 		comBox.GetWindowText(MyComboBoxCurrent);
@@ -1610,20 +1601,6 @@ void CViewTxsr::OnImgViewg1()
 	ShowPictureGenbuFX();
 	ShowPicturePASA (iSA);
    ShowPicturePASA (iPA);
-	/*gf2.TrimLeft();gf2.TrimRight();
-	gf2.MakeUpper();
-	CString ID1=basDirectory::TemplateDir+(m_iCSnum==0 ? "GD" : "GS")+modPHScal::gf1+".bmp";
-	//CString("IDB_")+(m_iCSnum==0 ? "GD" : "GS")+modPHScal::gf1;
-   CString ID2=basDirectory::TemplateDir+(m_iCSnum==0 ? "GD" : "GS")+gf2+".bmp";
-	//CString("IDB_")+(m_iCSnum==0 ? "GD" : "GS")+gf2; 
-	ChangeImg(m_ImageViewG1,ID1);
-	ChangeImg(m_ImageViewG0,ID2);
-	m_ImageViewG1.SetWindowPos(&wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
-	m_ImageViewG0.SetWindowPos(&wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);
-	m_wndBorand.SetWindowPos(&wndTop,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE);*/
-	//UpdateBoundData();
-	//DatabillReposition();
-	
 }
 
 void CViewTxsr::ChangeImg(CStatic &con, LPCSTR nID,BOOL bt)
@@ -3391,16 +3368,13 @@ void CViewTxsr::LoadGDWItem2ComboGDW1()
 		{
 		case iSACantilever:
 		case iSALbrace:
-		//	SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] WHERE trim(CustomID)=\'" + modPHScal::gn + "\' and Not Isnull(GDW1) ORDER BY GDW1 ASC";//pfg20050218原代码
-			SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] WHERE trim(CustomID)=\'" + modPHScal::gn + "\' ORDER BY GDW1 ASC";//pfg20050218
+			SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] WHERE (CustomID)=\'" + modPHScal::gn + "\' ORDER BY GDW1 ASC";//pfg20050218
 			break;
 		case iSAbeam:
-		//	SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] WHERE Not IsNull(GDW1) ORDER BY GDW1 ASC";//pfg20050218原代码
 			SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] ORDER BY GDW1 ASC";//pfg20050218
 			break;
 		case iSALbraceFixG47:
 		case iSALbraceFixG48:
-		//	SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "]  WHERE Not IsNull(GDW1) ORDER BY GDW1 ASC";//pfg20050218原代码
 			SQLx = "SELECT DISTINCT GDW1 FROM [" + tbn1 + "] ORDER BY GDW1 ASC";//pfg20050218
 			break;
 		default:

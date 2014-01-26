@@ -274,9 +274,9 @@ void EDIBDB::SumNumbers()
 	   rs1->get_Collect((_variant_t)_T("CLcl"),&CLcl);
 	   rs1->get_Collect((_variant_t)_T("CLID"),&CLID);
 	   EDIBgbl::SQLx=CString(_T("(CLgg)=\'")) +vtos(CLgg)+
-		   _T("\' AND Trim(CLmc)=\'") +vtos(CLmc) + 
-		   _T("\' AND Trim(CLcl)=\'") +vtos(CLcl) +
-		   _T("\' AND Trim(CLID)=\'") + vtos(CLID) + _T("\'");
+		   _T("\' AND (CLmc)=\'") +vtos(CLmc) + 
+		   _T("\' AND (CLcl)=\'") +vtos(CLcl) +
+		   _T("\' AND (CLID)=\'") + vtos(CLID) + _T("\'");
 	   //EDIBgbl::SQLx = _T(" (CLgg)=\'") + Trim((char*)CLgg.bstrVal) + _T("// AND (CLmc)=//") + Trim(rs1(_T("CLmc"))) + _T("// AND (CLcl)=//") + Trim(rs1(_T("CLcl"))) + _T("// AND (CLID)=//") + Trim(rs1(_T("CLID"))) + _T("//")
 	   
 	   HRESULT hr = S_OK;

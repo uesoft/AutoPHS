@@ -1485,7 +1485,7 @@ bool Cphs::GetphsBHandSizesTest()
 		}else {
 			tmpPmax4Part = fabs(modPHScal::pjg);
 		}
-		//设?眉扑愫稍爻跏贾担员憷奂?
+		//设置计算荷载初始值，以便累加
 		tmpSelPJG = tmpPmax4Part;
 		//设置弹簧计算荷载初始值，以便累加
 		tmpSelPJG = tmpPmax4Part;
@@ -3497,7 +3497,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			//空的seq字段，写入编号给它
 			SQLx=_T("UPDATE tmpCLgroup SET seq=") + ltos(i) + _T(" WHERE ISNULL(seq) AND (CLgg)=\'");
 			SQLx+=CLgg+_T("\' AND (CLcl)=\'");
-			SQLx+=CLcl+_T("\' AND (trim(CLmc))=\'") ;
+			SQLx+=CLcl+_T("\' AND ((CLmc))=\'") ;
 			SQLx+=CLmc+_T("\'");
 			EDIBgbl::dbPRJ->Execute((_bstr_t)SQLx, NULL, adCmdText);
 			//Debug.Print dbPRJ.RecordsAffected, i, rsTmpZB(_T("CLmc")), rsTmpZB(_T("CLgg")), rsTmpZB(_T("CLcl"))
@@ -3505,7 +3505,7 @@ void Cphs::GetphsSEQ(_RecordsetPtr /*ByVal*/ rsza)
 			//	 +CLgg + _T("\' AND (CLcl)=\'") +CLcl + _T("\' AND (trim(CLmc))=\'") +CLmc+ _T("\' ");
 			// SQLx = _T("SELECT * FROM tmpCLgroup WHERE NOT ISNULL(seq) AND (CLgg)='") & Trim(rsTmpZB.Fields(_T("CLgg"))) & _T("' AND (CLcl)='") & Trim(rsTmpZB.Fields(_T("CLcl"))) & _T("' AND (trim(CLmc))='") & Trim(rsTmpZB.Fields(_T("CLmc"))) & _T("' ")
 			SQLx = _T("SELECT seq FROM tmpCLgroup WHERE NOT ISNULL(seq) AND (CLgg)=\'")
-				+ CLgg+ _T("\' AND (CLcl)=\'") +CLcl+ _T("\' AND (trim(CLmc))=\'") +CLmc+ _T("\' ");
+				+ CLgg+ _T("\' AND (CLcl)=\'") +CLcl+ _T("\' AND ((CLmc))=\'") +CLmc+ _T("\' ");
 			rsTmpCLgroup->Open((_bstr_t)SQLx,_variant_t((IDispatch*)EDIBgbl::dbPRJ,true), 
 				adOpenStatic, adLockOptimistic, adCmdText); 
 			if( rsTmpCLgroup->BOF && rsTmpCLgroup->adoEOF)
@@ -6015,15 +6015,15 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 									sID=vtos(vTmp);
 									if( NewPtypeID[i] == _T("F14") ){
 										//六角头（标准）螺栓，按直径、长度排序，取最小的一个
-										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" AND sizeH>=") + ltos(LenBolts) + _T(" ORDER BY size2,sizeH");
+										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" AND sizeH>=") + ltos(LenBolts) + _T(" ORDER BY size2,sizeH");
 									}
 									else if( NewPtypeID[i] == _T("F10") || NewPtypeID[i] == _T("F9") ){
 										//双/单头螺栓
-										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
+										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
 									}
 									else{
 										//螺母垫片
-										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
+										SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(sID) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
 									}
 									rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 										adOpenStatic, adLockOptimistic, adCmdText); 
@@ -6352,13 +6352,13 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 										rsTmpZB->get_Collect((_variant_t)_T("ID"), &vTmp);
 										if( NewPtypeID[i] == _T("F14") ){
 											//六角头（标准）螺栓，按直径、长度排序，取最小的一个
-											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" AND sizeH>=") + ltos(LenBolts) + _T(" ORDER BY size2,sizeH");
+											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" AND sizeH>=") + ltos(LenBolts) + _T(" ORDER BY size2,sizeH");
 										}else if( NewPtypeID[i] == _T("F10") || NewPtypeID[i] == _T("F9") ){
 											//双/单头螺栓
-											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
+											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
 										}else{
 											//螺母垫片
-											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
+											SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + modPHScal::sFindCustomID(vtos(vTmp)) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
 										}
 										rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 											adOpenStatic, adLockOptimistic, adCmdText); 
@@ -6444,7 +6444,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 						//首先，在螺栓螺母表里查找附件或螺栓螺母
 						tbn1 = modPHScal::tbnBoltsNuts;
 						rsTmpZB->get_Collect((_variant_t)_T("CustomID"), &vTmp);
-						SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + vtos(vTmp) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]);
+						SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + vtos(vTmp) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]);
 						
 						rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 							adOpenStatic, adLockOptimistic, adCmdText); 
@@ -6453,7 +6453,7 @@ void Cphs::GetBoltsNutsAndAttachmentsCLgg(int nth )
 							//那么，在根部附件表里查找附件或螺栓螺母
 							rsX->Close();
 							tbn1 = modPHScal::tbnAttachment;
-							SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE Trim(CustomID)=\'") + vtos(vTmp) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
+							SQLx = _T("SELECT * FROM [") + tbn1 + _T("] WHERE (CustomID)=\'") + vtos(vTmp) + _T("\' AND size2=") + ltos(iBoltsNutsDia[i]) + _T(" ORDER BY size2");
 							rsX->Open((_bstr_t)SQLx,_variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 								adOpenStatic, adLockOptimistic, adCmdText); 
 							if( rsX->adoEOF && rsX->BOF ){

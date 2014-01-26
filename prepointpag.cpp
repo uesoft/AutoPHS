@@ -198,12 +198,12 @@ void CPrePointPag::SetBasePoint()
 		rs.Open(dbOpenDynaset,SQLx);
 		CString sTmp;
 		FDp.MakeUpper();
-		_variant_t vTmp;
+		COleVariant vTmp;
 		for(int i=0;i<9;i++)
 		{
 			sTmp=m_posFld[i].FldName;
 			sTmp.MakeUpper();
-			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
+			SQLx = "((name))=\'" + FDp + sTmp + "\'";
 				//MsgBox SQLx
 			if(rs.FindFirst(SQLx))
 			{
@@ -236,7 +236,7 @@ void CPrePointPag::SetBasePoint()
 					}
 					else if (bSetBPOK )
 					{
-						vTmp=_variant_t((long)m_posFld[i].FldValue);
+						vTmp=COleVariant((long)m_posFld[i].FldValue);
 						rs.Edit();
 						rs.SetFieldValue(modPHScal::Ax+"pos",vTmp);
 						rs.Update();
@@ -336,7 +336,7 @@ void CPrePointPag::SetBasePoint()
 		{
 			sTmp=m_posFld[i].FldName;
 			sTmp.MakeUpper();
-			SQLx = "ucase(trim(name))=\'" + FDp + sTmp + "\'";
+			SQLx = "((name))=\'" + FDp + sTmp + "\'";
 				hr = rs->Find((_bstr_t)(SQLx), 0, adSearchForward);
 				if(!rs->adoEOF)
 			{

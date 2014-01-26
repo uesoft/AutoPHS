@@ -1131,7 +1131,7 @@ long EDIBAcad::GetTableHeaderBlockAttributes(_RecordsetPtr rs, bool  &bATTBEGIN,
 		EDIBgbl::GetSelPrjName();
 		HRESULT hr = S_OK;
 		CString strFind;
-		strFind = _T("Ucase(Trim(LocalCaption))=\'ATTBEGIN\'");
+		strFind = _T("((LocalCaption))=\'ATTBEGIN\'");
 		hr = rs->Find((_bstr_t)strFind, 0, adSearchForward);
 		bool bf = !rs->adoEOF;
 
@@ -6698,7 +6698,7 @@ CString EDIBAcad::GetDrawIDAndName(long lngSEQ, CString& strDrawName)
 		CString strSQL;
 		if( EDIBAcad::g_bDrawNameWithoutNo )
 		{//图号不带支吊架号
-			strSQL.Format("UPDATE [DrawSize] SET PhsDrawNameFormat=\'trim(PhsTypeName)\'");
+			strSQL.Format("UPDATE [DrawSize] SET PhsDrawNameFormat=\'(PhsTypeName)\'");
 			EDIBgbl::dbDSize->Execute((_bstr_t)strSQL, NULL, adCmdText); //20071018 "dbSORT" 改为 "dbDSize"
 		}
 		else

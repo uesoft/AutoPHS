@@ -3288,7 +3288,7 @@ void ReadResult_GLIF31New(_Recordset* rsResult, CString SourceDataFileName,long 
 		rs1.CreateInstance(__uuidof(Recordset));
 
 		strSQL.Format("SELECT G,SEQ FROM %s",strSprTbn);
-		tmprs->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
+		rs1->Open((_bstr_t)strSQL, _variant_t((IDispatch*)modPHScal::dbZDJcrude,true), 
 			adOpenStatic, adLockOptimistic, adCmdText); 
 		while(!f.eof())
 		{
